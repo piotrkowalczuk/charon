@@ -3,6 +3,7 @@ package web
 import (
 	"bytes"
 	"database/sql"
+	"html/template"
 	"net/http"
 	"strconv"
 	"time"
@@ -16,6 +17,8 @@ type Handler struct {
 	Logger      *logrus.Logger
 	DB          *sql.DB
 	Middlewares []MiddlewareFunc
+	TmplName    string
+	Tmpl        *template.Template
 }
 
 // ServeHTTP ...

@@ -4,7 +4,7 @@ import (
 	"errors"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/piotrkowalczuk/auth-service/lib"
+	"github.com/go-soa/auth/lib"
 )
 
 const (

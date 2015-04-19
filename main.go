@@ -1,6 +1,6 @@
 package main
 
-import _ "github.com/piotrkowalczuk/auth-service/cli"
+import _ "github.com/go-soa/auth/cli"
 
 func main() {
 

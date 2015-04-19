@@ -1,12 +1,13 @@
 package cli
 
 import (
+	"html/template"
 	"net/http"
 
 	"github.com/codegangsta/cli"
+	"github.com/go-soa/auth/controller/web"
+	"github.com/go-soa/auth/service"
 	"github.com/julienschmidt/httprouter"
-	"github.com/piotrkowalczuk/auth-service/controller/web"
-	"github.com/piotrkowalczuk/auth-service/service"
 )
 
 var (
@@ -22,15 +23,28 @@ func runCommandAction(context *cli.Context) {
 	service.InitLogger(service.Config.Logger)
 	service.InitDB(service.Config.DB)
 
-	registrationGET := &web.Handler{
-		Logger: service.Logger,
-		DB:     service.DBPool,
+	templates, err := template.ParseFiles(
+		"template/header.html",
+		"template/footer.html",
+		"template/registration/index.html",
+	)
+	if err != nil {
+		service.Logger.Fatal(err)
+	}
+
+	registrationIndex := &web.Handler{
+		TmplName: "registration_index",
+		Tmpl:     templates,
+		Logger:   service.Logger,
+		DB:       service.DBPool,
 		Middlewares: web.NewMiddlewares(
-			(*web.Handler).RegistrationGET,
+			(*web.Handler).RegistrationIndex,
 		),
 	}
+
 	router := httprouter.New()
-	router.Handler("GET", "/registration", registrationGET)
+	router.Handler("GET", "/registration", registrationIndex)
+	router.ServeFiles("/assets/*filepath", http.Dir("assets"))
 
 	listenOn := service.Config.Server.Host + ":" + service.Config.Server.Port
 	service.Logger.Fatal(http.ListenAndServe(listenOn, router))

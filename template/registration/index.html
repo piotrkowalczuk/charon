@@ -1,0 +1,39 @@
+{{define "registration_index"}}
+    {{template "header"}}
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-6 col-lg-offset-3">
+                <div class="page-header text-center">
+                    <h1>Registration</h1>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-4 col-lg-offset-4">
+                <form>
+                  <div class="form-group">
+                    <label for="registration-email">Email address</label>
+                    <input type="email" class="form-control" id="registration-email" placeholder="Enter email">
+                  </div>
+                  <div class="form-group">
+                    <label for="registration-password">Password</label>
+                    <input type="password" class="form-control" id="registration-password" placeholder="Password">
+                  </div>
+                  <div class="form-group">
+                    <label for="registration-first-name">First name</label>
+                    <input type="password" class="form-control" id="registration-first-name" placeholder="First name">
+                  </div>
+                  <div class="form-group">
+                    <label for="registration-last-name">Last name</label>
+                    <input type="password" class="form-control" id="registration-last-name" placeholder="Last name">
+                  </div>
+                  <hr>
+                  <div class="text-center">
+                      <button type="submit" class="btn btn-default">Create account</button>
+                  </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    {{template "footer"}}
+{{end}}

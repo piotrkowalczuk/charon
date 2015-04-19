@@ -4,7 +4,7 @@ import (
 	"io/ioutil"
 
 	"github.com/codegangsta/cli"
-	"github.com/piotrkowalczuk/auth-service/service"
+	"github.com/go-soa/auth/service"
 )
 
 var (

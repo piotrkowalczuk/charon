@@ -1,13 +1,16 @@
 package web
 
 import (
-	"fmt"
 	"net/http"
 
 	"golang.org/x/net/context"
 )
 
-// RegistrationGET ...
-func (h *Handler) RegistrationGET(ctx context.Context, rw http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(rw, "Welcome!\n")
+// RegistrationIndex ...
+func (h *Handler) RegistrationIndex(ctx context.Context, rw http.ResponseWriter, r *http.Request) {
+	err := h.Tmpl.ExecuteTemplate(rw, "registration_index", nil)
+	if err != nil {
+		http.Error(rw, err.Error(), http.StatusInternalServerError)
+		return
+	}
 }
