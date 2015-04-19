@@ -23,6 +23,16 @@ func runCommandAction(context *cli.Context) {
 	service.InitLogger(service.Config.Logger)
 	service.InitDB(service.Config.DB)
 
+	router := httprouter.New()
+
+	setupWebRoutes(router)
+	setupStaticRoutes(router)
+
+	listenOn := service.Config.Server.Host + ":" + service.Config.Server.Port
+	service.Logger.Fatal(http.ListenAndServe(listenOn, router))
+}
+
+func setupWebRoutes(router *httprouter.Router) {
 	templates, err := template.ParseFiles(
 		"template/header.html",
 		"template/footer.html",
@@ -42,10 +52,9 @@ func runCommandAction(context *cli.Context) {
 		),
 	}
 
-	router := httprouter.New()
 	router.Handler("GET", "/registration", registrationIndex)
-	router.ServeFiles("/assets/*filepath", http.Dir("assets"))
+}
 
-	listenOn := service.Config.Server.Host + ":" + service.Config.Server.Port
-	service.Logger.Fatal(http.ListenAndServe(listenOn, router))
+func setupStaticRoutes(router *httprouter.Router) {
+	router.ServeFiles("/assets/*filepath", http.Dir("assets"))
 }
