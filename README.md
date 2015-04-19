@@ -15,15 +15,29 @@ Commands
 --------
 
 #### Build
-
-    go build
+```bash
+go build
+```
 
 #### Service
-
-    ./auth-service initdb - execute data/sql/schema_{env}.sql against configured database.
-    ./auth-service help [command] - display help message about available commands
+```bash
+./auth-service initdb - execute data/sql/schema_{env}.sql against configured database.
+./auth-service help [command] - display help message about available commands
+```
     
 Dependencies
 ------------
 - PostgreSQL
 - MySQL *(not supported yet)*
+
+TODO
+----
+- [ ] Commands
+	- [x] Initialize database
+	- [ ] Start server
+- [ ] Views
+	- [ ] Registration
+- [ ] REST API
+	- [ ] Registration 
+- [ ] RPC API
+	- [ ] Registration
