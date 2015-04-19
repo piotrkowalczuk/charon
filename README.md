@@ -6,7 +6,7 @@ Auth Service
 Installation
 ------------
 1. Set you GOPATH properly (http://golang.org/doc/code.html#GOPATH)
-2. `go get github.com/piotrkowalczuk/auth-service`
+2. `go get github.com/go-soa/auth`
 3. `go get` if some dependencies are missing
 4. Create `conf/{env}.xml` based on `conf/{env}.xml.dist`
 5. Set `$AUTH_SERVICE_ENV` global variable to `test`, `development` or `production`
@@ -21,9 +21,9 @@ go build
 
 #### Service
 ```bash
-./auth-service initdb - execute data/sql/schema_{adapter}.sql against configured database.
-./auth-service run - starts server.
-./auth-service help [command] - display help message about available commands
+./authinitdb - execute data/sql/schema_{adapter}.sql against configured database.
+./auth run - starts server.
+./auth help [command] - display help message about available commands
 ```
     
 Dependencies
@@ -35,7 +35,7 @@ TODO
 ----
 - [ ] Commands
 	- [x] Initialize database
-	- [ ] Start server
+	- [x] Start server
 - [ ] Views
 	- [ ] Registration
 - [ ] REST API
