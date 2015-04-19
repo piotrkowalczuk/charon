@@ -11,6 +11,10 @@ var Config AppConfig
 
 // AppConfig ...
 type AppConfig struct {
+	Server struct {
+		Host string `xml:"host"`
+		Port string `xml:"port"`
+	} `xml:"server"`
 	Logger LoggerConfig `xml:"logger"`
 	DB     DBConfig     `xml:"database"`
 }

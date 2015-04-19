@@ -19,6 +19,7 @@ func init() {
 		},
 	}
 	app.Commands = []cli.Command{
+		runCommand,
 		initDBCommand,
 	}
 
