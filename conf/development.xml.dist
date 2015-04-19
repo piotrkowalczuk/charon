@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<config>
+  <database>
+      <adapter>postgres</adapter>
+      <connection-string>postgres://login:password@localhost/auth-service?sslmode=disable</connection-string>
+  </database>
+  <logger>
+      <adapter>console</adapter>
+      <level>5</level>
+  </logger>
+</config>
