@@ -21,7 +21,8 @@ go build
 
 #### Service
 ```bash
-./auth-service initdb - execute data/sql/schema_{env}.sql against configured database.
+./auth-service initdb - execute data/sql/schema_{adapter}.sql against configured database.
+./auth-service run - starts server.
 ./auth-service help [command] - display help message about available commands
 ```
     
