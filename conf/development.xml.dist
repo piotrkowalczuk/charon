@@ -12,4 +12,7 @@
       <adapter>console</adapter>
       <level>5</level>
   </logger>
+  <template>
+    <path>template</path>
+  </template>
 </config>

@@ -1,3 +1,2 @@
-auth-service
-development.xml
-auth
+/conf/development.xml
+/auth
