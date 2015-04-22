@@ -15,8 +15,9 @@ type AppConfig struct {
 		Host string `xml:"host"`
 		Port string `xml:"port"`
 	} `xml:"server"`
-	Logger LoggerConfig `xml:"logger"`
-	DB     DBConfig     `xml:"database"`
+	Logger   LoggerConfig   `xml:"logger"`
+	DB       DBConfig       `xml:"database"`
+	Template TemplateConfig `xml:"template"`
 }
 
 // InitConfig ...

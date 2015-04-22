@@ -6,6 +6,7 @@
     <xs:sequence>
       <xs:element name="database"></xs:element>
       <xs:element name="logger"></xs:element>
+	  <xs:element name="template"></xs:element>
     </xs:sequence>
   </xs:complexType>
 </xs:element>

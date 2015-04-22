@@ -32,11 +32,15 @@ func runCommandAction(context *cli.Context) {
 	service.Logger.Fatal(http.ListenAndServe(listenOn, router))
 }
 
+func getTemplatePath(path string) string {
+	return service.Config.Template.Path + "/" + path
+}
+
 func setupWebRoutes(router *httprouter.Router) {
 	templates, err := template.ParseFiles(
-		"template/header.html",
-		"template/footer.html",
-		"template/registration/index.html",
+		getTemplatePath("header.html"),
+		getTemplatePath("footer.html"),
+		getTemplatePath("registration/index.html"),
 	)
 	if err != nil {
 		service.Logger.Fatal(err)
