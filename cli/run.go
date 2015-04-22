@@ -22,6 +22,7 @@ func runCommandAction(context *cli.Context) {
 	service.InitConfig(context.GlobalString("environment"))
 	service.InitLogger(service.Config.Logger)
 	service.InitDB(service.Config.DB)
+	service.InitMailer(service.Config.Mailer)
 
 	router := httprouter.New()
 
@@ -54,6 +55,7 @@ func setupWebRoutes(router *httprouter.Router) {
 		Middlewares: web.NewMiddlewares(
 			(*web.Handler).RegistrationIndex,
 		),
+		Mailer: service.Mail,
 	}
 
 	router.Handler("GET", "/registration", registrationIndex)
