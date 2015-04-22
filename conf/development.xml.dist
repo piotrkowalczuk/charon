@@ -15,4 +15,12 @@
   <template>
     <path>template</path>
   </template>
+  <email>
+    <type>smtp</type>
+    <host>localhost</host>
+    <username>test</username>
+    <password>test</password>
+    <port>25</port>
+    <from>company-email@localhost</from>
+  </email>
 </config>

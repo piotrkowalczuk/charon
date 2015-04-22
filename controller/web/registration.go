@@ -13,4 +13,14 @@ func (h *Handler) RegistrationIndex(ctx context.Context, rw http.ResponseWriter,
 		http.Error(rw, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	formMail := "kamil.biela@gmail.com"
+	formUsername := "test"
+
+	err = h.Mailer.SendWelcomeMail(formMail, formUsername)
+
+	if err != nil {
+		http.Error(rw, err.Error(), http.StatusInternalServerError)
+		return
+	}
 }

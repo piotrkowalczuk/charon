@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/Sirupsen/logrus"
+	"github.com/go-soa/auth/service"
 	"golang.org/x/net/context"
 )
 
@@ -19,6 +20,7 @@ type Handler struct {
 	Middlewares []MiddlewareFunc
 	TmplName    string
 	Tmpl        *template.Template
+	Mailer      service.Mailer
 }
 
 // ServeHTTP ...
