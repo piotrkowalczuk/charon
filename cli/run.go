@@ -22,9 +22,9 @@ func runCommandAction(context *cli.Context) {
 	service.InitLogger(service.Config.Logger)
 	service.InitDB(service.Config.DB)
 	service.InitRepositoryManager(service.DBPool)
-	service.InitMailer(service.Config.Mailer)
 	service.InitPasswordHasher(service.Config.PasswordHasher)
 	service.InitTemplates(service.Config.Templates)
+	service.InitMailer(service.Config.Mailer, service.MailTemplates)
 
 	router := httprouter.New()
 
