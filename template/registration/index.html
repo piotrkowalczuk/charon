@@ -2,30 +2,42 @@
     {{template "header"}}
     <div class="container">
         <div class="row">
-            <div class="col-lg-6 col-lg-offset-3">
+            <div class="col-md-6 col-md-offset-3">
                 <div class="page-header text-center">
                     <h1>Registration</h1>
                 </div>
             </div>
         </div>
         <div class="row">
-            <div class="col-lg-4 col-lg-offset-4">
-                <form>
-                  <div class="form-group">
-                    <label for="registration-email">Email address</label>
-                    <input type="email" class="form-control" id="registration-email" placeholder="Enter email">
+            <div class="col-md-4 col-md-offset-4">
+                <form action="/registration" method="POST">
+                  <div class="form-group {{ if .validationErrors.email.HasErrors }}error has-error{{ end }}">
+                    <label class="control-label" for="registration-email">Email address</label>
+                    <input name="email" type="email" value="{{ .request.Email }}" class="form-control" id="registration-email" placeholder="Enter email">
+                    {{ range $key, $value := .validationErrors.email.Errors }}
+                        <p class="help-block">{{ $value }}</p>
+                    {{ end }}
                   </div>
-                  <div class="form-group">
+                  <div class="form-group {{ if .validationErrors.password.HasErrors }}error has-error{{ end }}">
                     <label for="registration-password">Password</label>
-                    <input type="password" class="form-control" id="registration-password" placeholder="Password">
+                    <input name="password" type="password" value="" class="form-control" id="registration-password" placeholder="Password">
+                    {{ range $key, $value := .validationErrors.password.Errors }}
+                        <p class="help-block">{{ $value }}</p>
+                    {{ end }}
                   </div>
-                  <div class="form-group">
+                  <div class="form-group {{ if .validationErrors.firstName.HasErrors }}error has-error{{ end }}">
                     <label for="registration-first-name">First name</label>
-                    <input type="password" class="form-control" id="registration-first-name" placeholder="First name">
+                    <input name="firstName" type="text" value="{{ .request.FirstName }}" class="form-control" id="registration-first-name" placeholder="First name">
+                    {{ range $key, $value := .validationErrors.firstName.Errors }}
+                        <p class="help-block">{{ $value }}</p>
+                    {{ end }}
                   </div>
-                  <div class="form-group">
+                  <div class="form-group {{ if .validationErrors.lastName.HasErrors }}error has-error{{ end }}">
                     <label for="registration-last-name">Last name</label>
-                    <input type="password" class="form-control" id="registration-last-name" placeholder="Last name">
+                    <input name="lastName" type="text" value="{{ .request.LastName }}" class="form-control" id="registration-last-name" placeholder="Last name">
+                    {{ range $key, $value := .validationErrors.lastName.Errors }}
+                        <p class="help-block">{{ $value }}</p>
+                    {{ end }}
                   </div>
                   <hr>
                   <div class="text-center">

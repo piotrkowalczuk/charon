@@ -22,12 +22,13 @@ func runCommandAction(context *cli.Context) {
 	service.InitConfig(context.GlobalString("environment"))
 	service.InitLogger(service.Config.Logger)
 	service.InitDB(service.Config.DB)
+	service.InitRepositoryManager(service.DBPool)
 	service.InitMailer(service.Config.Mailer)
 
 	router := httprouter.New()
 
-	setupWebRoutes(router)
 	setupStaticRoutes(router)
+	setupWebRoutes(router)
 
 	listenOn := service.Config.Server.Host + ":" + service.Config.Server.Port
 	service.Logger.Fatal(http.ListenAndServe(listenOn, router))
@@ -42,6 +43,7 @@ func setupWebRoutes(router *httprouter.Router) {
 		getTemplatePath("header.html"),
 		getTemplatePath("footer.html"),
 		getTemplatePath("registration/index.html"),
+		getTemplatePath("registration/success.html"),
 	)
 	if err != nil {
 		service.Logger.Fatal(err)
@@ -52,13 +54,40 @@ func setupWebRoutes(router *httprouter.Router) {
 		Tmpl:     templates,
 		Logger:   service.Logger,
 		DB:       service.DBPool,
+		RM:       service.RepositoryManager,
 		Middlewares: web.NewMiddlewares(
 			(*web.Handler).RegistrationIndex,
 		),
 		Mailer: service.Mail,
 	}
 
+	registrationSuccess := &web.Handler{
+		TmplName: "registration_success",
+		Tmpl:     templates,
+		Logger:   service.Logger,
+		DB:       service.DBPool,
+		RM:       service.RepositoryManager,
+		Middlewares: web.NewMiddlewares(
+			(*web.Handler).RegistrationSuccess,
+		),
+		Mailer: service.Mail,
+	}
+
+	registrationCreate := &web.Handler{
+		TmplName: "registration_index",
+		Tmpl:     templates,
+		Logger:   service.Logger,
+		DB:       service.DBPool,
+		RM:       service.RepositoryManager,
+		Middlewares: web.NewMiddlewares(
+			(*web.Handler).RegistrationCreate,
+		),
+		Mailer: service.Mail,
+	}
+
 	router.Handler("GET", "/registration", registrationIndex)
+	router.Handler("GET", "/registration/success", registrationSuccess)
+	router.Handler("POST", "/registration", registrationCreate)
 }
 
 func setupStaticRoutes(router *httprouter.Router) {
