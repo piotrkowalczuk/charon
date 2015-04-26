@@ -23,4 +23,10 @@
     <port>25</port>
     <from>company-email@localhost</from>
   </email>
+  <password>
+     <strategy>bcrypt</strategy>
+     <bcrypt-options>
+         <cost>12</cost>
+     </bcrypt-options>
+  </password>
 </config>
