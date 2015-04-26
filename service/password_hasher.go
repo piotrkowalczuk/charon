@@ -43,7 +43,7 @@ func InitPasswordHasher(config PasswordHasherConfig) {
 
 		ph = security.PasswordHasher(bh)
 	default:
-		Logger.Fatal(ErrLoggerAdapterNotSupported)
+		Logger.Fatal(ErrPasswordHasherStrategyNotSupported)
 	}
 
 	PasswordHasher = ph
