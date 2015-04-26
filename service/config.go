@@ -17,7 +17,7 @@ type AppConfig struct {
 	} `xml:"server"`
 	Logger         LoggerConfig         `xml:"logger"`
 	DB             DBConfig             `xml:"database"`
-	Template       TemplateConfig       `xml:"template"`
+	Templates      TemplatesConfig      `xml:"templates"`
 	Mailer         MailerConfig         `xml:"email"`
 	PasswordHasher PasswordHasherConfig `xml:"password"`
 }

@@ -1,7 +1,6 @@
 package cli
 
 import (
-	"html/template"
 	"net/http"
 
 	"github.com/codegangsta/cli"
@@ -25,6 +24,7 @@ func runCommandAction(context *cli.Context) {
 	service.InitRepositoryManager(service.DBPool)
 	service.InitMailer(service.Config.Mailer)
 	service.InitPasswordHasher(service.Config.PasswordHasher)
+	service.InitTemplates(service.Config.Templates)
 
 	router := httprouter.New()
 
@@ -35,59 +35,39 @@ func runCommandAction(context *cli.Context) {
 	service.Logger.Fatal(http.ListenAndServe(listenOn, router))
 }
 
-func getTemplatePath(path string) string {
-	return service.Config.Template.Path + "/" + path
-}
-
 func setupWebRoutes(router *httprouter.Router) {
-	templates, err := template.ParseFiles(
-		getTemplatePath("header.html"),
-		getTemplatePath("footer.html"),
-		getTemplatePath("registration/index.html"),
-		getTemplatePath("registration/success.html"),
-	)
-	if err != nil {
-		service.Logger.Fatal(err)
-	}
-
-	registrationIndex := &web.Handler{
-		TmplName:       "registration_index",
-		Tmpl:           templates,
+	container := web.ServiceContainer{
 		Logger:         service.Logger,
 		DB:             service.DBPool,
 		RM:             service.RepositoryManager,
 		PasswordHasher: service.PasswordHasher,
-		Middlewares: web.NewMiddlewares(
-			(*web.Handler).RegistrationIndex,
-		),
-		Mailer: service.Mail,
+		Mailer:         service.Mail,
+		Templates:      service.Templates,
 	}
 
-	registrationSuccess := &web.Handler{
-		TmplName:       "registration_success",
-		Tmpl:           templates,
-		Logger:         service.Logger,
-		DB:             service.DBPool,
-		RM:             service.RepositoryManager,
-		PasswordHasher: service.PasswordHasher,
-		Middlewares: web.NewMiddlewares(
+	registrationIndex := web.NewHandler(
+		"registration_index",
+		web.NewMiddlewares(
 			(*web.Handler).RegistrationSuccess,
 		),
-		Mailer: service.Mail,
-	}
+		container,
+	)
 
-	registrationCreate := &web.Handler{
-		TmplName:       "registration_index",
-		Tmpl:           templates,
-		Logger:         service.Logger,
-		DB:             service.DBPool,
-		RM:             service.RepositoryManager,
-		PasswordHasher: service.PasswordHasher,
-		Middlewares: web.NewMiddlewares(
+	registrationSuccess := web.NewHandler(
+		"registration_success",
+		web.NewMiddlewares(
+			(*web.Handler).RegistrationSuccess,
+		),
+		container,
+	)
+
+	registrationCreate := web.NewHandler(
+		"registration_index",
+		web.NewMiddlewares(
 			(*web.Handler).RegistrationCreate,
 		),
-		Mailer: service.Mail,
-	}
+		container,
+	)
 
 	router.Handler("GET", "/registration", registrationIndex)
 	router.Handler("GET", "/registration/success", registrationSuccess)

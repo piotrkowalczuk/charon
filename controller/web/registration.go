@@ -13,7 +13,7 @@ import (
 
 // RegistrationIndex ...
 func (h *Handler) RegistrationIndex(ctx context.Context, rw http.ResponseWriter, r *http.Request) {
-	err := h.Tmpl.ExecuteTemplate(rw, h.TmplName, nil)
+	err := h.Container.Templates.ExecuteTemplate(rw, h.TemplateName, nil)
 	if err != nil {
 		http.Error(rw, err.Error(), http.StatusInternalServerError)
 		return
@@ -31,7 +31,7 @@ func (h *Handler) RegistrationCreate(ctx context.Context, rw http.ResponseWriter
 
 	if validationErrorBuilder.HasErrors() {
 		rw.WriteHeader(http.StatusBadRequest)
-		err := h.Tmpl.ExecuteTemplate(rw, "registration_index", map[string]interface{}{
+		err := h.Container.Templates.ExecuteTemplate(rw, h.TemplateName, map[string]interface{}{
 			"validationErrors": validationErrorBuilder.Errors(),
 			"request":          registrationRequest,
 		})
@@ -42,12 +42,12 @@ func (h *Handler) RegistrationCreate(ctx context.Context, rw http.ResponseWriter
 		return
 	}
 
-	user, err := createAndRegisterUser(h.PasswordHasher, h.RM.User, registrationRequest)
+	user, err := createAndRegisterUser(h.Container.PasswordHasher, h.Container.RM.User, registrationRequest)
 	if err != nil {
 		if err == repository.ErrUserUniqueConstraintViolationUsername {
 			validationErrorBuilder.Add("email", "User with given email already exists.")
 
-			err = h.Tmpl.ExecuteTemplate(rw, "registration_index", map[string]interface{}{
+			err = h.Container.Templates.ExecuteTemplate(rw, h.TemplateName, map[string]interface{}{
 				"validationErrors": validationErrorBuilder.Errors(),
 				"request":          registrationRequest,
 			})
@@ -60,7 +60,7 @@ func (h *Handler) RegistrationCreate(ctx context.Context, rw http.ResponseWriter
 		return
 	}
 
-	err = h.Mailer.SendWelcomeMail(user.Username, user.String())
+	err = h.Container.Mailer.SendWelcomeMail(user.Username, user.String())
 
 	if err != nil {
 		http.Error(rw, err.Error(), http.StatusInternalServerError)
@@ -72,7 +72,7 @@ func (h *Handler) RegistrationCreate(ctx context.Context, rw http.ResponseWriter
 
 // RegistrationSuccess ...
 func (h *Handler) RegistrationSuccess(ctx context.Context, rw http.ResponseWriter, r *http.Request) {
-	err := h.Tmpl.ExecuteTemplate(rw, h.TmplName, nil)
+	err := h.Container.Templates.ExecuteTemplate(rw, h.TemplateName, nil)
 	if err != nil {
 		http.Error(rw, err.Error(), http.StatusInternalServerError)
 		return
