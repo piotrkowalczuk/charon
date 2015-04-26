@@ -15,10 +15,11 @@ type AppConfig struct {
 		Host string `xml:"host"`
 		Port string `xml:"port"`
 	} `xml:"server"`
-	Logger   LoggerConfig   `xml:"logger"`
-	DB       DBConfig       `xml:"database"`
-	Template TemplateConfig `xml:"template"`
-	Mailer   MailerConfig   `xml:"email"`
+	Logger         LoggerConfig         `xml:"logger"`
+	DB             DBConfig             `xml:"database"`
+	Templates      TemplatesConfig      `xml:"templates"`
+	Mailer         MailerConfig         `xml:"email"`
+	PasswordHasher PasswordHasherConfig `xml:"password"`
 }
 
 // InitConfig ...

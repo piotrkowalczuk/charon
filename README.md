@@ -21,11 +21,11 @@ go build
 
 #### Service
 ```bash
-./authinitdb - execute data/sql/schema_{adapter}.sql against configured database.
+./auth initdb - execute data/sql/schema_{adapter}.sql against configured database.
 ./auth run - starts server.
 ./auth help [command] - display help message about available commands
 ```
-    
+
 Dependencies
 ------------
 - PostgreSQL
@@ -37,8 +37,8 @@ TODO
 	- [x] Initialize database
 	- [x] Start server
 - [ ] Views
-	- [ ] Registration
+	- [x] Registration
 - [ ] REST API
-	- [ ] Registration 
+	- [ ] Registration
 - [ ] RPC API
 	- [ ] Registration

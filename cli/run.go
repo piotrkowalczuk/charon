@@ -1,7 +1,6 @@
 package cli
 
 import (
-	"html/template"
 	"net/http"
 
 	"github.com/codegangsta/cli"
@@ -22,43 +21,57 @@ func runCommandAction(context *cli.Context) {
 	service.InitConfig(context.GlobalString("environment"))
 	service.InitLogger(service.Config.Logger)
 	service.InitDB(service.Config.DB)
+	service.InitRepositoryManager(service.DBPool)
 	service.InitMailer(service.Config.Mailer)
+	service.InitPasswordHasher(service.Config.PasswordHasher)
+	service.InitTemplates(service.Config.Templates)
 
 	router := httprouter.New()
 
-	setupWebRoutes(router)
 	setupStaticRoutes(router)
+	setupWebRoutes(router)
 
 	listenOn := service.Config.Server.Host + ":" + service.Config.Server.Port
 	service.Logger.Fatal(http.ListenAndServe(listenOn, router))
 }
 
-func getTemplatePath(path string) string {
-	return service.Config.Template.Path + "/" + path
-}
-
 func setupWebRoutes(router *httprouter.Router) {
-	templates, err := template.ParseFiles(
-		getTemplatePath("header.html"),
-		getTemplatePath("footer.html"),
-		getTemplatePath("registration/index.html"),
-	)
-	if err != nil {
-		service.Logger.Fatal(err)
+	container := web.ServiceContainer{
+		Logger:         service.Logger,
+		DB:             service.DBPool,
+		RM:             service.RepositoryManager,
+		PasswordHasher: service.PasswordHasher,
+		Mailer:         service.Mail,
+		Templates:      service.Templates,
 	}
 
-	registrationIndex := &web.Handler{
-		TmplName: "registration_index",
-		Tmpl:     templates,
-		Logger:   service.Logger,
-		DB:       service.DBPool,
-		Middlewares: web.NewMiddlewares(
-			(*web.Handler).RegistrationIndex,
+	registrationIndex := web.NewHandler(
+		"registration_index",
+		web.NewMiddlewares(
+			(*web.Handler).RegistrationSuccess,
 		),
-		Mailer: service.Mail,
-	}
+		container,
+	)
+
+	registrationSuccess := web.NewHandler(
+		"registration_success",
+		web.NewMiddlewares(
+			(*web.Handler).RegistrationSuccess,
+		),
+		container,
+	)
+
+	registrationCreate := web.NewHandler(
+		"registration_index",
+		web.NewMiddlewares(
+			(*web.Handler).RegistrationCreate,
+		),
+		container,
+	)
 
 	router.Handler("GET", "/registration", registrationIndex)
+	router.Handler("GET", "/registration/success", registrationSuccess)
+	router.Handler("POST", "/registration", registrationCreate)
 }
 
 func setupStaticRoutes(router *httprouter.Router) {

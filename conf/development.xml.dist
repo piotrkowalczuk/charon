@@ -12,9 +12,9 @@
       <adapter>console</adapter>
       <level>5</level>
   </logger>
-  <template>
+  <templates>
     <path>template</path>
-  </template>
+  </templates>
   <email>
     <type>smtp</type>
     <host>localhost</host>

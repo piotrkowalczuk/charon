@@ -9,18 +9,36 @@ import (
 	"time"
 
 	"github.com/Sirupsen/logrus"
+	"github.com/go-soa/auth/lib/security"
+	"github.com/go-soa/auth/repository"
 	"github.com/go-soa/auth/service"
 	"golang.org/x/net/context"
 )
 
+// ServiceContainer ...
+type ServiceContainer struct {
+	Logger         *logrus.Logger
+	DB             *sql.DB
+	RM             repository.Manager
+	PasswordHasher security.PasswordHasher
+	Mailer         service.Mailer
+	Templates      *template.Template
+}
+
 // Handler ...
 type Handler struct {
-	Logger      *logrus.Logger
-	DB          *sql.DB
-	Middlewares []MiddlewareFunc
-	TmplName    string
-	Tmpl        *template.Template
-	Mailer      service.Mailer
+	TemplateName string
+	Middlewares  []MiddlewareFunc
+	Container    ServiceContainer
+}
+
+// NewHandler ...
+func NewHandler(templateName string, middlewares []MiddlewareFunc, container ServiceContainer) *Handler {
+	return &Handler{
+		TemplateName: templateName,
+		Middlewares:  middlewares,
+		Container:    container,
+	}
 }
 
 // ServeHTTP ...
@@ -53,5 +71,5 @@ func (h *Handler) logRequest(wrw *ResponseWriter, r *http.Request, startedAt tim
 	b.WriteString(" ")
 	b.WriteString(time.Since(startedAt).String())
 
-	h.Logger.Info(b.String())
+	h.Container.Logger.Info(b.String())
 }
