@@ -26,9 +26,7 @@ func NewRegistrationRequestFromForm(form url.Values) *RegistrationRequest {
 }
 
 // Validate ...
-func (rr *RegistrationRequest) Validate() *lib.ValidationErrorBuilder {
-	builder := lib.NewValidationErrorBuilder()
-
+func (rr *RegistrationRequest) Validate(builder *lib.ValidationErrorBuilder) {
 	if !validator.IsByteLength(rr.Email, 6, 45) {
 		builder.Add("email", "Email address should contain minimum 6 and maximum 45 characters.")
 	} else if !validator.IsEmail(rr.Email) {
@@ -46,6 +44,4 @@ func (rr *RegistrationRequest) Validate() *lib.ValidationErrorBuilder {
 	if !validator.IsByteLength(rr.LastName, 1, 45) {
 		builder.Add("lastName", "Last name should contain maximum 45 characters .")
 	}
-
-	return builder
 }

@@ -24,6 +24,7 @@ func runCommandAction(context *cli.Context) {
 	service.InitDB(service.Config.DB)
 	service.InitRepositoryManager(service.DBPool)
 	service.InitMailer(service.Config.Mailer)
+	service.InitPasswordHasher(service.Config.PasswordHasher)
 
 	router := httprouter.New()
 
@@ -50,11 +51,12 @@ func setupWebRoutes(router *httprouter.Router) {
 	}
 
 	registrationIndex := &web.Handler{
-		TmplName: "registration_index",
-		Tmpl:     templates,
-		Logger:   service.Logger,
-		DB:       service.DBPool,
-		RM:       service.RepositoryManager,
+		TmplName:       "registration_index",
+		Tmpl:           templates,
+		Logger:         service.Logger,
+		DB:             service.DBPool,
+		RM:             service.RepositoryManager,
+		PasswordHasher: service.PasswordHasher,
 		Middlewares: web.NewMiddlewares(
 			(*web.Handler).RegistrationIndex,
 		),
@@ -62,11 +64,12 @@ func setupWebRoutes(router *httprouter.Router) {
 	}
 
 	registrationSuccess := &web.Handler{
-		TmplName: "registration_success",
-		Tmpl:     templates,
-		Logger:   service.Logger,
-		DB:       service.DBPool,
-		RM:       service.RepositoryManager,
+		TmplName:       "registration_success",
+		Tmpl:           templates,
+		Logger:         service.Logger,
+		DB:             service.DBPool,
+		RM:             service.RepositoryManager,
+		PasswordHasher: service.PasswordHasher,
 		Middlewares: web.NewMiddlewares(
 			(*web.Handler).RegistrationSuccess,
 		),
@@ -74,11 +77,12 @@ func setupWebRoutes(router *httprouter.Router) {
 	}
 
 	registrationCreate := &web.Handler{
-		TmplName: "registration_index",
-		Tmpl:     templates,
-		Logger:   service.Logger,
-		DB:       service.DBPool,
-		RM:       service.RepositoryManager,
+		TmplName:       "registration_index",
+		Tmpl:           templates,
+		Logger:         service.Logger,
+		DB:             service.DBPool,
+		RM:             service.RepositoryManager,
+		PasswordHasher: service.PasswordHasher,
 		Middlewares: web.NewMiddlewares(
 			(*web.Handler).RegistrationCreate,
 		),

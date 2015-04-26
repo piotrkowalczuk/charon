@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/Sirupsen/logrus"
+	"github.com/go-soa/auth/lib/security"
 	"github.com/go-soa/auth/repository"
 	"github.com/go-soa/auth/service"
 	"golang.org/x/net/context"
@@ -16,13 +17,14 @@ import (
 
 // Handler ...
 type Handler struct {
-	Logger      *logrus.Logger
-	DB          *sql.DB
-	RM          repository.Manager
-	Middlewares []MiddlewareFunc
-	TmplName    string
-	Tmpl        *template.Template
-	Mailer      service.Mailer
+	Logger         *logrus.Logger
+	DB             *sql.DB
+	RM             repository.Manager
+	PasswordHasher security.PasswordHasher
+	Middlewares    []MiddlewareFunc
+	TmplName       string
+	Tmpl           *template.Template
+	Mailer         service.Mailer
 }
 
 // ServeHTTP ...

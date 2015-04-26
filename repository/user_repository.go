@@ -7,11 +7,15 @@ import (
 	"github.com/go-soa/auth/model"
 )
 
+const (
+	userUniqueConstraintViolationUsernameErrorMessage = "pq: duplicate key value violates unique constraint \"auth_user_username_key\""
+)
+
 var (
 	// ErrUserUniqueConstraintViolationUsername ...
-	ErrUserUniqueConstraintViolationUsername = errors.New("pq: duplicate key value violates unique constraint \"auth_user_username_key\"")
+	ErrUserUniqueConstraintViolationUsername = errors.New(userUniqueConstraintViolationUsernameErrorMessage)
 	userKnownErrors                          = map[string]error{
-		"pq: duplicate key value violates unique constraint \"auth_user_username_key\"": ErrUserUniqueConstraintViolationUsername,
+		userUniqueConstraintViolationUsernameErrorMessage: ErrUserUniqueConstraintViolationUsername,
 	}
 )
 
