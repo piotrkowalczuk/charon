@@ -10,6 +10,9 @@ type TemplatesConfig struct {
 // Templates ...
 var Templates *template.Template
 
+// MailTemplates ...
+var MailTemplates *template.Template
+
 // InitTemplates ...
 func InitTemplates(config TemplatesConfig) {
 	getTemplatePath := func(path string) string {
@@ -27,4 +30,12 @@ func InitTemplates(config TemplatesConfig) {
 	}
 
 	Templates = templates
+
+	// Mailer templates
+	mailTemplates, err := template.ParseGlob(getTemplatePath("mail/*"))
+	if err != nil {
+		Logger.Fatal(err)
+	}
+
+	MailTemplates = mailTemplates
 }

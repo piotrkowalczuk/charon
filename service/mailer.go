@@ -2,11 +2,29 @@ package service
 
 import (
 	"errors"
+	"html/template"
 	"log"
+
+	"github.com/go-soa/auth/mail"
 )
 
-// MailerConfig ...
-type MailerConfig struct {
+// Mail ...
+var Mail *mail.Mail
+
+// InitMailer ...
+func InitMailer(config mailConfig, templates *template.Template) {
+	var transport mail.Transporter
+	if config.Type == mailTransportSMTP {
+		transport = mail.NewTransportSMTP(config.Host, config.Username, config.Password, config.Port)
+	} else {
+		log.Fatalln(errors.New("Unsupported mailer type '" + config.Type + "'"))
+		return
+	}
+
+	Mail = mail.NewMail(transport, config.From, templates)
+}
+
+type mailConfig struct {
 	Type     string `xml:"type"`
 	Host     string `xml:"host"`
 	Username string `xml:"username"`
@@ -16,23 +34,6 @@ type MailerConfig struct {
 }
 
 const (
-	// MailerTypeSMTP ...
-	MailerTypeSMTP = "smtp"
+	// TypeSMTP ...
+	mailTransportSMTP = "smtp"
 )
-
-// Mailer ...
-type Mailer interface {
-	SendWelcomeMail(to string, toUsername string) error
-}
-
-// Mail ...
-var Mail Mailer
-
-// InitMailer ...
-func InitMailer(config MailerConfig) {
-	if config.Type == MailerTypeSMTP {
-		Mail = NewSMTP(config)
-	} else {
-		log.Fatalln(errors.New("Unsupported mailer type '" + config.Type + "'"))
-	}
-}

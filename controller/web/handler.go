@@ -11,8 +11,8 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/go-soa/auth/lib/security"
 	"github.com/go-soa/auth/repository"
-	"github.com/go-soa/auth/service"
 	"golang.org/x/net/context"
+	"github.com/go-soa/auth/mail"
 )
 
 // ServiceContainer ...
@@ -21,7 +21,7 @@ type ServiceContainer struct {
 	DB             *sql.DB
 	RM             repository.Manager
 	PasswordHasher security.PasswordHasher
-	Mailer         service.Mailer
+	Mailer         *mail.Mail
 	Templates      *template.Template
 }
 
