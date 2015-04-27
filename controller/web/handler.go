@@ -9,10 +9,10 @@ import (
 	"time"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/go-soa/auth/lib/security"
-	"github.com/go-soa/auth/repository"
+	"github.com/go-soa/charon/lib/security"
+	"github.com/go-soa/charon/repository"
 	"golang.org/x/net/context"
-	"github.com/go-soa/auth/mail"
+	"github.com/go-soa/charon/mail"
 )
 
 // ServiceContainer ...

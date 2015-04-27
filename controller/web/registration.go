@@ -3,11 +3,11 @@ package web
 import (
 	"net/http"
 
-	"github.com/go-soa/auth/controller/web/request"
-	"github.com/go-soa/auth/lib"
-	"github.com/go-soa/auth/lib/security"
-	"github.com/go-soa/auth/model"
-	"github.com/go-soa/auth/repository"
+	"github.com/go-soa/charon/controller/web/request"
+	"github.com/go-soa/charon/lib"
+	"github.com/go-soa/charon/lib/security"
+	"github.com/go-soa/charon/model"
+	"github.com/go-soa/charon/repository"
 	"golang.org/x/net/context"
 )
 

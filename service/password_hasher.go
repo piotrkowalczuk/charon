@@ -3,7 +3,7 @@ package service
 import (
 	"errors"
 
-	"github.com/go-soa/auth/lib/security"
+	"github.com/go-soa/charon/lib/security"
 )
 
 var (

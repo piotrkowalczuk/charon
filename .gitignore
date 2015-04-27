@@ -1,2 +1,4 @@
 /conf/development.xml
 /auth
+/charon
+.idea

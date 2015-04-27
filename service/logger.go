@@ -5,7 +5,7 @@ import (
 	"log"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/go-soa/auth/lib"
+	"github.com/go-soa/charon/lib"
 )
 
 const (

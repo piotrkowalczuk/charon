@@ -4,7 +4,7 @@ import (
 	"net/url"
 
 	validator "github.com/asaskevich/govalidator"
-	"github.com/go-soa/auth/lib"
+	"github.com/go-soa/charon/lib"
 )
 
 // RegistrationRequest ...

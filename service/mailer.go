@@ -5,7 +5,7 @@ import (
 	"html/template"
 	"log"
 
-	"github.com/go-soa/auth/mail"
+	"github.com/go-soa/charon/mail"
 )
 
 // Mail ...

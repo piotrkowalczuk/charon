@@ -4,8 +4,8 @@ import (
 	"net/http"
 
 	"github.com/codegangsta/cli"
-	"github.com/go-soa/auth/controller/web"
-	"github.com/go-soa/auth/service"
+	"github.com/go-soa/charon/controller/web"
+	"github.com/go-soa/charon/service"
 	"github.com/julienschmidt/httprouter"
 )
 

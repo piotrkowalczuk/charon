@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"errors"
 
-	"github.com/go-soa/auth/model"
+	"github.com/go-soa/charon/model"
 )
 
 const (

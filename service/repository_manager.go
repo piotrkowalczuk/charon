@@ -3,7 +3,7 @@ package service
 import (
 	"database/sql"
 
-	"github.com/go-soa/auth/repository"
+	"github.com/go-soa/charon/repository"
 )
 
 // Singleton instance of repository.Manager.
