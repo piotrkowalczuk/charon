@@ -36,9 +36,10 @@ func (ur *UserRepository) Insert(user *model.User) (sql.Result, error) {
 	query := `
 		INSERT INTO auth_user (
 			password, username, first_name, last_name, is_active, is_staff,
-			is_superuser, last_login, created_at, updated_at
+			is_superuser, is_confirmed, confirmation_token, last_login_at,
+			created_at, updated_at
 		)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
 		RETURNING id
 	`
 	result, err := ur.db.Exec(
@@ -50,6 +51,8 @@ func (ur *UserRepository) Insert(user *model.User) (sql.Result, error) {
 		user.IsActive,
 		user.IsStaff,
 		user.IsSuperuser,
+		user.IsConfirmed,
+		user.ConfirmationToken,
 		user.LastLoginAt,
 		user.CreatedAt,
 		user.UpdatedAt,

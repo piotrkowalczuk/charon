@@ -18,8 +18,9 @@ type AppConfig struct {
 	Logger         LoggerConfig         `xml:"logger"`
 	DB             DBConfig             `xml:"database"`
 	Templates      TemplatesConfig      `xml:"templates"`
-	Mailer         mailConfig         `xml:"email"`
+	Mailer         mailConfig           `xml:"email"`
 	PasswordHasher PasswordHasherConfig `xml:"password"`
+	Routing        RoutingConfig        `xml:"routing"`
 }
 
 // InitConfig ...

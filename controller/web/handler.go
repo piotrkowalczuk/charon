@@ -9,36 +9,53 @@ import (
 	"time"
 
 	"github.com/Sirupsen/logrus"
+	"github.com/go-soa/charon/lib/routing"
 	"github.com/go-soa/charon/lib/security"
+	"github.com/go-soa/charon/mail"
 	"github.com/go-soa/charon/repository"
 	"golang.org/x/net/context"
-	"github.com/go-soa/charon/mail"
 )
 
 // ServiceContainer ...
 type ServiceContainer struct {
-	Logger         *logrus.Logger
-	DB             *sql.DB
-	RM             repository.Manager
-	PasswordHasher security.PasswordHasher
-	Mailer         *mail.Mail
-	Templates      *template.Template
+	Logger             *logrus.Logger
+	DB                 *sql.DB
+	ConfirmationMailer mail.Sender
+	Templates          *template.Template
+	RM                 repository.Manager
+	PasswordHasher     security.PasswordHasher
+	Routes             routing.Routes
+	URLGenerator       routing.URLGenerator
+}
+
+type HandlerOpts struct {
+	Name        string
+	Method      string
+	Middlewares []MiddlewareFunc
+	Container   ServiceContainer
 }
 
 // Handler ...
 type Handler struct {
-	TemplateName string
-	Middlewares  []MiddlewareFunc
-	Container    ServiceContainer
+	Name        string
+	Method      string
+	middlewares []MiddlewareFunc
+	Container   ServiceContainer
 }
 
 // NewHandler ...
-func NewHandler(templateName string, middlewares []MiddlewareFunc, container ServiceContainer) *Handler {
+func NewHandler(options HandlerOpts) *Handler {
 	return &Handler{
-		TemplateName: templateName,
-		Middlewares:  middlewares,
-		Container:    container,
+		Name:        options.Name,
+		Method:      options.Method,
+		middlewares: options.Middlewares,
+		Container:   options.Container,
 	}
+}
+
+// RouteName ...
+func (h *Handler) RouteName() routing.RouteName {
+	return routing.RouteName(h.Name)
 }
 
 // ServeHTTP ...
@@ -49,7 +66,7 @@ func (h *Handler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	}
 	ctx := context.TODO()
 
-	for _, middleware := range h.Middlewares {
+	for _, middleware := range h.middlewares {
 		middleware(h, ctx, wrw, r)
 	}
 

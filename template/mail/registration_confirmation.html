@@ -1,0 +1,7 @@
+{{define "registration_confirmation_body"}}
+    Hi!
+
+    Welcome to our site <b>{{.user.Username}}</b>
+    Confirmation Token <b>{{.user.ConfirmationToken}}</b>
+    URL {{ url "registration_index" }}
+{{end}}
