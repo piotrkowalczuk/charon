@@ -1,7 +1,7 @@
-Auth Service
+Charon
 =============
 
-@TODO description
+![Charon](/data/logo/charon.png?raw=true "Charon")
 
 Installation
 ------------
