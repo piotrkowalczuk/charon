@@ -1,7 +1,7 @@
 Charon
 =============
 
-![Charon](/data/logo/charon.png?raw=true "Charon")
+<img src=/data/logo/charon.png width=300 />
 
 Installation
 ------------
