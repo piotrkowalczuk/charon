@@ -21,6 +21,7 @@ type AppConfig struct {
 	Mailer         mailConfig           `xml:"email"`
 	PasswordHasher PasswordHasherConfig `xml:"password"`
 	Routing        RoutingConfig        `xml:"routing"`
+	Translation    translationConfig    `xml:"translation"`
 }
 
 // InitConfig ...

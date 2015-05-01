@@ -1,7 +1,6 @@
 package service
 
 import (
-	"html/template"
 	"log"
 
 	"github.com/go-soa/charon/mail"
@@ -20,7 +19,7 @@ type mailConfig struct {
 }
 
 // InitMailer ...
-func InitMailer(config mailConfig, templates *template.Template) {
+func InitMailer(config mailConfig, tplMgr *TemplateManager) {
 	var transport mail.Transporter
 	switch config.Type {
 	case mail.TransporterTypeSMTP:
@@ -29,10 +28,7 @@ func InitMailer(config mailConfig, templates *template.Template) {
 		log.Fatalf("Unsupported mailer type '%s'", config.Type)
 	}
 
-	// TODO(Kamil): Fix this
-	templates, err := templates.ParseGlob("")
-
-	confirmationMailer, err := mail.NewConfirmationMailer(config.From, transport, templates)
+	confirmationMailer, err := mail.NewConfirmationMailer(config.From, transport, tplMgr)
 	if err != nil {
 		Logger.Fatal(err)
 	}

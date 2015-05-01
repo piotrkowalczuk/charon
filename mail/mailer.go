@@ -2,7 +2,7 @@ package mail
 
 import (
 	"bytes"
-	"html/template"
+	"io"
 )
 
 const (
@@ -14,21 +14,19 @@ type Sender interface {
 	Send(string, map[string]interface{}) error
 }
 
+type templateGetter interface {
+	GetForMail(writer io.Writer, templateName string, params map[string]interface{}) error
+}
+
 // Mailer ...
 type Mailer struct {
 	from      string
 	transport Transporter
-	templates *template.Template
+	templates templateGetter
 }
 
 // NewMailer ...
-func NewMailer(directory, from string, transport Transporter, templates *template.Template) (*Mailer, error) {
-	templates, err := templates.ParseGlob(directory + "/*")
-
-	if err != nil {
-		return nil, err
-	}
-
+func NewMailer(directory, from string, transport Transporter, templates templateGetter) (*Mailer, error) {
 	return &Mailer{
 		from:      from,
 		templates: templates,
@@ -37,58 +35,33 @@ func NewMailer(directory, from string, transport Transporter, templates *templat
 }
 
 // NewConfirmationMailer ...
-func NewConfirmationMailer(from string, transport Transporter, templates *template.Template) (*Mailer, error) {
+func NewConfirmationMailer(from string, transport Transporter, templates templateGetter) (*Mailer, error) {
 	return NewMailer(confirmationMailerDirectory, from, transport, templates)
-}
-
-func (m Mailer) renderPlainBody(params map[string]interface{}) (string, error) {
-	body := &bytes.Buffer{}
-	err := m.templates.ExecuteTemplate(body, "/body.txt", params)
-	if err != nil {
-		return "", err
-	}
-
-	return body.String(), nil
-}
-
-func (m Mailer) renderHTMLBody(params map[string]interface{}) (string, error) {
-	body := &bytes.Buffer{}
-	err := m.templates.ExecuteTemplate(body, "/body.html", params)
-	if err != nil {
-		return "", err
-	}
-
-	return body.String(), nil
-}
-
-func (m Mailer) renderTitle() (string, error) {
-	title := &bytes.Buffer{}
-	err := m.templates.ExecuteTemplate(title, "/title.txt", nil)
-	if err != nil {
-		return "", err
-	}
-
-	return title.String(), nil
 }
 
 // Send ...
 func (m Mailer) Send(to string, params map[string]interface{}) error {
-	title, err := m.renderTitle()
+	var err error
+	var topic, html, plain bytes.Buffer
+
+	err = m.templates.GetForMail(&topic, "registration_confirmation_topic", nil)
 	if err != nil {
 		return err
 	}
-	plainBody, err := m.renderPlainBody(params)
+
+	err = m.templates.GetForMail(&plain, "registration_confirmation_plain_body", params)
 	if err != nil {
 		return err
 	}
-	htmlBody, err := m.renderHTMLBody(params)
+
+	err = m.templates.GetForMail(&html, "registration_confirmation_html_body", params)
 	if err != nil {
 		return err
 	}
 
 	bodies := map[string]string{
-		"text/html":  htmlBody,
-		"text/plain": plainBody,
+		"text/html":  html.String(),
+		"text/plain": plain.String(),
 	}
-	return m.transport.Send(m.from, to, title, bodies)
+	return m.transport.Send(m.from, to, topic.String(), bodies)
 }
