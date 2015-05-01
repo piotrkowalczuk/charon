@@ -1,28 +1,15 @@
 package service
 
 import (
-	"errors"
+	"duke/dukeapi/service"
 	"html/template"
 	"log"
 
 	"github.com/go-soa/charon/mail"
 )
 
-// Mail ...
-var Mail *mail.Mail
-
-// InitMailer ...
-func InitMailer(config mailConfig, templates *template.Template) {
-	var transport mail.Transporter
-	if config.Type == mailTransportSMTP {
-		transport = mail.NewTransportSMTP(config.Host, config.Username, config.Password, config.Port)
-	} else {
-		log.Fatalln(errors.New("Unsupported mailer type '" + config.Type + "'"))
-		return
-	}
-
-	Mail = mail.NewMail(transport, config.From, templates)
-}
+// ConfirmationMailer ...
+var ConfirmationMailer mail.Sender
 
 type mailConfig struct {
 	Type     string `xml:"type"`
@@ -33,7 +20,22 @@ type mailConfig struct {
 	From     string `xml:"from"`
 }
 
-const (
-	// TypeSMTP ...
-	mailTransportSMTP = "smtp"
-)
+// InitMailer ...
+func InitMailer(config mailConfig, templates *template.Template) {
+	var transport mail.Transporter
+	switch config.Type {
+	case mail.TransporterTypeSMTP:
+		transport = mail.NewSMTPTransporter(config.Host, config.Username, config.Password, config.Port)
+	default:
+		log.Fatalf("Unsupported mailer type '%s'", config.Type)
+	}
+
+	templates = templates.ParseGlob()
+
+	confirmationMailer, err := mail.NewConfirmationMailer(config.From, transport, templates)
+	if err != nil {
+		service.Logger.Fatal(err)
+	}
+
+	ConfirmationMailer = confirmationMailer
+}

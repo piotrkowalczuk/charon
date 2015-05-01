@@ -2,7 +2,6 @@ package service
 
 import (
 	"errors"
-	"log"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/go-soa/charon/lib"
@@ -28,7 +27,6 @@ type LoggerConfig struct {
 
 // InitLogger ...
 func InitLogger(config LoggerConfig) {
-	log.Println(config.Adapter)
 	Logger = logrus.New()
 	Logger.Level = logrus.Level(config.Level)
 

@@ -3,6 +3,7 @@ package cli
 import (
 	"net/http"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/codegangsta/cli"
 	"github.com/go-soa/charon/controller/web"
 	"github.com/go-soa/charon/service"
@@ -23,7 +24,8 @@ func runCommandAction(context *cli.Context) {
 	service.InitDB(service.Config.DB)
 	service.InitRepositoryManager(service.DBPool)
 	service.InitPasswordHasher(service.Config.PasswordHasher)
-	service.InitTemplates(service.Config.Templates)
+	service.InitRouting(service.Config.Routing)
+	service.InitTemplates(service.Config.Templates, service.URLGenerator)
 	service.InitMailer(service.Config.Mailer, service.MailTemplates)
 
 	router := httprouter.New()
@@ -37,41 +39,56 @@ func runCommandAction(context *cli.Context) {
 
 func setupWebRoutes(router *httprouter.Router) {
 	container := web.ServiceContainer{
-		Logger:         service.Logger,
-		DB:             service.DBPool,
-		RM:             service.RepositoryManager,
-		PasswordHasher: service.PasswordHasher,
-		Mailer:         service.Mail,
-		Templates:      service.Templates,
+		Logger:             service.Logger,
+		DB:                 service.DBPool,
+		RM:                 service.RepositoryManager,
+		PasswordHasher:     service.PasswordHasher,
+		ConfirmationMailer: service.ConfirmationMailer,
+		Templates:          service.WebTemplates,
+		Routes:             service.Routes,
+		URLGenerator:       service.URLGenerator,
 	}
 
-	registrationIndex := web.NewHandler(
-		"registration_index",
-		web.NewMiddlewares(
-			(*web.Handler).RegistrationSuccess,
-		),
-		container,
-	)
+	handlers := []*web.Handler{
+		web.NewHandler(web.HandlerOpts{
+			Name:   "registration_index",
+			Method: "GET",
+			Middlewares: web.NewMiddlewares(
+				(*web.Handler).RegistrationSuccess,
+			),
+			Container: container,
+		}),
+		web.NewHandler(web.HandlerOpts{
+			Name:   "registration_success",
+			Method: "GET",
+			Middlewares: web.NewMiddlewares(
+				(*web.Handler).RegistrationSuccess,
+			),
+			Container: container,
+		}),
+		web.NewHandler(web.HandlerOpts{
+			Name:   "registration_index",
+			Method: "POST",
+			Middlewares: web.NewMiddlewares(
+				(*web.Handler).RegistrationCreate,
+			),
+			Container: container,
+		}),
+	}
 
-	registrationSuccess := web.NewHandler(
-		"registration_success",
-		web.NewMiddlewares(
-			(*web.Handler).RegistrationSuccess,
-		),
-		container,
-	)
+	for _, handler := range handlers {
+		method := handler.Method
+		routeName := handler.RouteName()
+		pattern := service.Routes.GetPattern(handler.RouteName()).String()
 
-	registrationCreate := web.NewHandler(
-		"registration_index",
-		web.NewMiddlewares(
-			(*web.Handler).RegistrationCreate,
-		),
-		container,
-	)
+		router.Handler(method, pattern, handler)
 
-	router.Handler("GET", "/registration", registrationIndex)
-	router.Handler("GET", "/registration/success", registrationSuccess)
-	router.Handler("POST", "/registration", registrationCreate)
+		service.Logger.WithFields(logrus.Fields{
+			"name":    routeName,
+			"method":  method,
+			"pattern": pattern,
+		}).Info("Route has been initialized successfully.")
+	}
 }
 
 func setupStaticRoutes(router *httprouter.Router) {
