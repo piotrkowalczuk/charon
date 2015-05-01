@@ -1,6 +1,7 @@
 package service
 
 import (
+	"duke/dukeapi/service"
 	"html/template"
 	"log"
 
@@ -29,6 +30,12 @@ func InitMailer(config mailConfig, templates *template.Template) {
 		log.Fatalf("Unsupported mailer type '%s'", config.Type)
 	}
 
-	mailer := mail.NewMailer(config.From, transport)
-	ConfirmationMailer = mail.NewConfirmationMailer(mailer, templates)
+	templates = templates.ParseGlob()
+
+	confirmationMailer, err := mail.NewConfirmationMailer(config.From, transport, templates)
+	if err != nil {
+		service.Logger.Fatal(err)
+	}
+
+	ConfirmationMailer = confirmationMailer
 }

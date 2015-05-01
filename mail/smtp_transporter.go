@@ -1,6 +1,20 @@
 package mail
 
-import gomail "gopkg.in/gomail.v1"
+import (
+	"errors"
+
+	gomail "gopkg.in/gomail.v1"
+)
+
+var (
+	// ErrMissingBody ...
+	ErrMissingBody = errors.New("mail: missing body")
+)
+
+const (
+	// TransporterTypeSMTP ...
+	TransporterTypeSMTP = "smtp"
+)
 
 // SMTPTransporter ...
 type SMTPTransporter struct {
@@ -8,14 +22,21 @@ type SMTPTransporter struct {
 }
 
 // Send ...
-func (t *SMTPTransporter) Send(from, to, topic, contentType, body string) error {
+func (t *SMTPTransporter) Send(from, to, topic string, bodies map[string]string) error {
 	msg := gomail.NewMessage()
 	msg.SetHeaders(map[string][]string{
 		"From":    {from},
 		"To":      {to},
 		"Subject": {topic},
 	})
-	msg.SetBody(contentType, body)
+
+	if len(bodies) == 0 {
+		return ErrMissingBody
+	}
+
+	for contentType, body := range bodies {
+		msg.SetBody(contentType, body)
+	}
 
 	return t.m.Send(msg)
 }
