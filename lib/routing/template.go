@@ -2,7 +2,6 @@ package routing
 
 import (
 	"errors"
-	"log"
 	"net/url"
 )
 
@@ -37,23 +36,14 @@ func URLAbsTemplateFunc(urlGenerator URLGenerator) func(pathName string, values 
 	}
 }
 
-func parseTemplateParams(pathName string, values ...interface{}) (string, map[string]interface{}, error) {
-	log.Printf("%#v", pathName)
-	log.Printf("%#v", values)
+func parseTemplateParams(pathName string, values []interface{}) (string, map[string]interface{}, error) {
 	if len(values)%2 != 0 && len(values) >= 2 {
 		return "", nil, ErrTemplateURLFuncInvalidNumberOfArguments
 	}
-	//	var ok bool
-	//	pathName := ""
-	//	log.Printf("%#v", values)
-	//	log.Printf("%#v", values[0])
-	//	if pathName, ok = values[0].(string); !ok {
-	//		return "", nil, ErrTemplateURLFuncInvalidArgument
-	//	}
 
 	dict := make(map[string]interface{}, len(values)/2)
 	if len(values) > 2 {
-		for i := 1; i < len(values); i += 2 {
+		for i := 0; i < len(values); i += 2 {
 			key, ok := values[i].(string)
 			if !ok {
 				return "", nil, ErrTemplateURLFuncInvalidArgument

@@ -21,7 +21,12 @@ func NewURLGenerator(baseURL string, routes Routes) URLGenerator {
 
 func (ug *URLGenerator) generate(path string, params map[string]interface{}) (*url.URL, error) {
 	for paramName, paramValue := range params {
-		strings.Replace(path, "{"+paramName+"}", fmt.Sprintf("%s", paramValue), -1)
+		switch paramValue.(type) {
+		case int:
+			path = strings.Replace(path, ":"+paramName, fmt.Sprintf("%d", paramValue), -1)
+		case string:
+			path = strings.Replace(path, ":"+paramName, paramValue.(string), -1)
+		}
 	}
 
 	u, err := url.Parse(path)
