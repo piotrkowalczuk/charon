@@ -70,8 +70,6 @@ func (h *Handler) RegistrationSuccess(ctx context.Context, rw http.ResponseWrite
 	h.renderTemplate(rw)
 }
 
-}
-
 func createAndRegisterUser(
 	passwordHasher security.PasswordHasher,
 	repository *repository.UserRepository,
