@@ -93,13 +93,20 @@ func (h *Handler) Register(router *httprouter.Router) {
 	}).Info("Route has been registered successfully.")
 }
 
-// RenderTemplate ...
-func (h *Handler) RenderTemplate(rw http.ResponseWriter) {
-	h.RenderTemplateWithData(rw, nil)
+func (h *Handler) sendErrorWithStatus(rw http.ResponseWriter, err error, status int) {
+	h.Container.Logger.Error(err)
+	http.Error(rw, err.Error(), status)
 }
 
-// RenderTemplateWithData ...
-func (h *Handler) RenderTemplateWithData(rw http.ResponseWriter, data interface{}) {
+func (h *Handler) sendError500(rw http.ResponseWriter, err error) {
+	h.sendErrorWithStatus(rw, err, http.StatusInternalServerError)
+}
+
+func (h *Handler) renderTemplate(rw http.ResponseWriter) {
+	h.renderTemplateWithData(rw, nil)
+}
+
+func (h *Handler) renderTemplateWithData(rw http.ResponseWriter, data interface{}) {
 	err := h.Container.Templates.ExecuteTemplate(rw, h.Name, data)
 	if err != nil {
 		http.Error(rw, err.Error(), http.StatusInternalServerError)

@@ -14,7 +14,7 @@ import (
 
 // RegistrationIndex ...
 func (h *Handler) RegistrationIndex(ctx context.Context, rw http.ResponseWriter, r *http.Request) {
-	h.RenderTemplate(rw)
+	h.renderTemplate(rw)
 }
 
 // RegistrationCreate ...
@@ -28,30 +28,26 @@ func (h *Handler) RegistrationCreate(ctx context.Context, rw http.ResponseWriter
 
 	if validationErrorBuilder.HasErrors() {
 		rw.WriteHeader(http.StatusBadRequest)
-		err := h.Container.Templates.ExecuteTemplate(rw, h.Name, map[string]interface{}{
+		h.renderTemplateWithData(rw, map[string]interface{}{
 			"validationErrors": validationErrorBuilder.Errors(),
 			"request":          registrationRequest,
 		})
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-		}
 
 		return
 	}
 
 	user, err := createAndRegisterUser(h.Container.PasswordHasher, h.Container.RM.User, registrationRequest)
 	if err != nil {
-		if err == repository.ErrUserUniqueConstraintViolationUsername {
+		switch err {
+		case repository.ErrUserUniqueConstraintViolationUsername:
 			validationErrorBuilder.Add("email", "User with given email already exists.")
 
-			err = h.Container.Templates.ExecuteTemplate(rw, h.Name, map[string]interface{}{
+			h.renderTemplateWithData(rw, map[string]interface{}{
 				"validationErrors": validationErrorBuilder.Errors(),
 				"request":          registrationRequest,
 			})
-		}
-
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
+		default:
+			h.sendError500(rw, err)
 		}
 
 		return
@@ -62,8 +58,7 @@ func (h *Handler) RegistrationCreate(ctx context.Context, rw http.ResponseWriter
 	})
 
 	if err != nil {
-		h.Container.Logger.Error(err)
-		http.Error(rw, err.Error(), http.StatusInternalServerError)
+		h.sendError500(rw, err)
 		return
 	}
 
@@ -72,7 +67,9 @@ func (h *Handler) RegistrationCreate(ctx context.Context, rw http.ResponseWriter
 
 // RegistrationSuccess ...
 func (h *Handler) RegistrationSuccess(ctx context.Context, rw http.ResponseWriter, r *http.Request) {
-	h.RenderTemplate(rw)
+	h.renderTemplate(rw)
+}
+
 }
 
 func createAndRegisterUser(
