@@ -3,7 +3,6 @@ package cli
 import (
 	"net/http"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/codegangsta/cli"
 	"github.com/go-soa/charon/controller/web"
 	"github.com/go-soa/charon/service"
@@ -77,17 +76,7 @@ func setupWebRoutes(router *httprouter.Router) {
 	}
 
 	for _, handler := range handlers {
-		method := handler.Method
-		routeName := handler.RouteName()
-		pattern := service.Routes.GetPattern(handler.RouteName()).String()
-
-		router.Handler(method, pattern, handler)
-
-		service.Logger.WithFields(logrus.Fields{
-			"name":    routeName,
-			"method":  method,
-			"pattern": pattern,
-		}).Info("Route has been initialized successfully.")
+		handler.Register(router)
 	}
 }
 

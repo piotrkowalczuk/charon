@@ -13,6 +13,7 @@ import (
 	"github.com/go-soa/charon/lib/security"
 	"github.com/go-soa/charon/mail"
 	"github.com/go-soa/charon/repository"
+	"github.com/julienschmidt/httprouter"
 	"golang.org/x/net/context"
 )
 
@@ -75,6 +76,21 @@ func (h *Handler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	h.logRequest(wrw, r, startedAt)
+}
+
+// Register ...
+func (h *Handler) Register(router *httprouter.Router) {
+	method := h.Method
+	routeName := h.RouteName()
+	pattern := h.Container.Routes.GetPattern(routeName).String()
+
+	router.Handler(method, pattern, h)
+
+	h.Container.Logger.WithFields(logrus.Fields{
+		"name":    routeName,
+		"method":  method,
+		"pattern": pattern,
+	}).Info("Route has been registered successfully.")
 }
 
 func (h *Handler) logRequest(wrw *ResponseWriter, r *http.Request, startedAt time.Time) {
