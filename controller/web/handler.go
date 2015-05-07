@@ -94,7 +94,21 @@ func (h *Handler) Register(router *httprouter.Router) {
 }
 
 func (h *Handler) sendErrorWithStatus(rw http.ResponseWriter, err error, status int) {
-	h.Container.Logger.Error(err)
+	switch e := err.(type) {
+	case *pq.Error:
+		h.Container.Logger.WithFields(logrus.Fields{
+			"severity":   e.Severity,
+			"code":       e.Code,
+			"detail":     e.Detail,
+			"hint":       e.Hint,
+			"position":   e.Position,
+			"table":      e.Table,
+			"constraint": e.Constraint,
+		}).Error(e.Message)
+	default:
+		h.Container.Logger.Error(e)
+	}
+
 	http.Error(rw, err.Error(), status)
 }
 
