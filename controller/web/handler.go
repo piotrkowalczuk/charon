@@ -93,6 +93,20 @@ func (h *Handler) Register(router *httprouter.Router) {
 	}).Info("Route has been registered successfully.")
 }
 
+// RenderTemplate ...
+func (h *Handler) RenderTemplate(rw http.ResponseWriter) {
+	h.RenderTemplateWithData(rw, nil)
+}
+
+// RenderTemplateWithData ...
+func (h *Handler) RenderTemplateWithData(rw http.ResponseWriter, data interface{}) {
+	err := h.Container.Templates.ExecuteTemplate(rw, h.Name, data)
+	if err != nil {
+		http.Error(rw, err.Error(), http.StatusInternalServerError)
+		return
+	}
+}
+
 func (h *Handler) logRequest(wrw *ResponseWriter, r *http.Request, startedAt time.Time) {
 	b := bytes.NewBufferString("[")
 	b.WriteString(r.Method)

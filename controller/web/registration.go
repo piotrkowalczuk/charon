@@ -14,11 +14,7 @@ import (
 
 // RegistrationIndex ...
 func (h *Handler) RegistrationIndex(ctx context.Context, rw http.ResponseWriter, r *http.Request) {
-	err := h.Container.Templates.ExecuteTemplate(rw, h.Name, nil)
-	if err != nil {
-		http.Error(rw, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	h.RenderTemplate(rw)
 }
 
 // RegistrationCreate ...
@@ -76,11 +72,7 @@ func (h *Handler) RegistrationCreate(ctx context.Context, rw http.ResponseWriter
 
 // RegistrationSuccess ...
 func (h *Handler) RegistrationSuccess(ctx context.Context, rw http.ResponseWriter, r *http.Request) {
-	err := h.Container.Templates.ExecuteTemplate(rw, h.Name, nil)
-	if err != nil {
-		http.Error(rw, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	h.RenderTemplate(rw)
 }
 
 func createAndRegisterUser(
