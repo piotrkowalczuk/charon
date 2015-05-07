@@ -2,26 +2,35 @@ package service
 
 import (
 	"database/sql"
-	"errors"
+	"time"
 
 	// ...
 	_ "github.com/lib/pq"
 )
 
-var (
-	// ErrPostgresConnectionFailed ...
-	ErrPostgresConnectionFailed = errors.New("service: postgres connection failed")
-)
+// PostgresPool ...
+var PostgresPool *sql.DB
 
 // InitPostgres ...
 func InitPostgres(config DBConfig) {
-	postgresPool, err := sql.Open("postgres", config.ConnectionString)
+	var err error
 
-	if err != nil {
-		Logger.Fatal(ErrPostgresConnectionFailed)
+	// Because of recursion it needs to be checked to not spawn more than one.
+	if PostgresPool == nil {
+		PostgresPool, err = sql.Open("postgres", config.ConnectionString)
+		if err != nil {
+			Logger.Fatal(err)
+		}
 	}
 
-	Logger.Info("Connection do PostgreSQL established successfully.")
+	// At this moment connection is not yet established.
+	// Ping is required.
+	if err := PostgresPool.Ping(); err != nil {
+		Logger.Error(err)
+		time.Sleep(2 * time.Second)
 
-	DBPool = postgresPool
+		InitPostgres(config)
+	} else {
+		Logger.Info("Connection do PostgreSQL established successfully.")
+	}
 }
