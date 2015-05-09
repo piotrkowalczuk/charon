@@ -2,6 +2,8 @@
     Hi!
 
     Welcome to our site <b>{{.user.Username}}</b>
-    Confirmation Token <b>{{.user.ConfirmationToken}}</b>
-    URL {{ url "registration_index" }}
+    To confirm your account pleas click link bellow:
+    <a href="{{ url_abs "registration_confirmation" "confirmationToken" 12 "userId" 44}}">
+        {{ url_abs "registration_confirmation" "confirmationToken" 12 "userId" 44}}
+    </a>
 {{end}}

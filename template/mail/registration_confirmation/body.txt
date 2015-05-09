@@ -1,7 +1,7 @@
 {{define "registration_confirmation_plain_body"}}
-    Hi!
+        Hi!
 
-    Welcome to our site {{.user.Username}}
-    Confirmation Token {{.user.ConfirmationToken}}
-    URL {{ url "registration_index" }}
+        Welcome to our site <b>{{.user.Username}}</b>
+        To confirm your account pleas visit link bellow:
+        {{ url_abs "registration_confirmation" "confirmationToken" 12 "userId" 44}}
 {{end}}

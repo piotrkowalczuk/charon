@@ -43,7 +43,7 @@ func NewConfirmationMailer(from string, transport Transporter, templates *templa
 
 func (m Mailer) renderPlainBody(params map[string]interface{}) (string, error) {
 	body := &bytes.Buffer{}
-	err := m.templates.ExecuteTemplate(body, "body.txt", params)
+	err := m.templates.ExecuteTemplate(body, "/body.txt", params)
 	if err != nil {
 		return "", err
 	}

@@ -13,6 +13,7 @@ var Routes routing.Routes
 var URLGenerator routing.URLGenerator
 
 type RoutingConfig struct {
+	IsSSL       bool      `xml:"is-ssl"`
 	BaseURL     string    `xml:"base-url"`
 	RoutesGroup XMLRoutes `xml:"routes"`
 }
@@ -40,5 +41,5 @@ func (rc *RoutingConfig) RoutesMap() map[string]string {
 // InitRouting ...
 func InitRouting(config RoutingConfig) {
 	Routes = routing.NewRoutes(config.RoutesMap())
-	URLGenerator = routing.NewURLGenerator(config.BaseURL, Routes)
+	URLGenerator = routing.NewURLGenerator(config.BaseURL, config.IsSSL, Routes)
 }

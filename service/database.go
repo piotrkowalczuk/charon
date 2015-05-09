@@ -14,7 +14,7 @@ const (
 
 var (
 	// DBPool ...
-	DBPool = &sql.DB{}
+	DBPool *sql.DB
 	// ErrDatabaseAdapterNotSupported ...
 	ErrDatabaseAdapterNotSupported = errors.New("service: database adapter not supported")
 )

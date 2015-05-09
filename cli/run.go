@@ -73,6 +73,14 @@ func setupWebRoutes(router *httprouter.Router) {
 			),
 			Container: container,
 		}),
+		web.NewHandler(web.HandlerOpts{
+			Name:   "registration_confirmation",
+			Method: "GET",
+			Middlewares: web.NewMiddlewares(
+				(*web.Handler).RegistrationConfirmation,
+			),
+			Container: container,
+		}),
 	}
 
 	for _, handler := range handlers {

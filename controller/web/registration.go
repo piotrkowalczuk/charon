@@ -1,10 +1,14 @@
 package web
 
 import (
+	"errors"
 	"net/http"
+
+	"strconv"
 
 	"github.com/go-soa/charon/controller/web/request"
 	"github.com/go-soa/charon/lib"
+	"github.com/go-soa/charon/lib/routing"
 	"github.com/go-soa/charon/lib/security"
 	"github.com/go-soa/charon/model"
 	"github.com/go-soa/charon/repository"
@@ -67,6 +71,39 @@ func (h *Handler) RegistrationCreate(ctx context.Context, rw http.ResponseWriter
 
 // RegistrationSuccess ...
 func (h *Handler) RegistrationSuccess(ctx context.Context, rw http.ResponseWriter, r *http.Request) {
+	h.renderTemplate(rw)
+}
+
+// RegistrationConfirmation ...
+func (h *Handler) RegistrationConfirmation(ctx context.Context, rw http.ResponseWriter, r *http.Request) {
+	var ok bool
+	var confirmationTokenParam string
+	var userIdParam string
+
+	if confirmationTokenParam, ok = routing.ParamFromContext(ctx, "confirmationToken"); !ok {
+		h.sendError400(rw, errors.New("controller/web: confirmationToken param is missing"))
+	}
+
+	if userIdParam, ok = routing.ParamFromContext(ctx, "userId"); !ok {
+		h.sendError400(rw, errors.New("controller/web: userId param is missing"))
+	}
+
+	userID, err := strconv.ParseInt(userIdParam, 10, 64)
+	if err != nil {
+		h.sendError400(rw, errors.New("controller/web: userId wrong type"))
+	}
+
+	if err := h.Container.RM.User.RegistrationConfirmation(userID, confirmationTokenParam); err != nil {
+		switch err {
+		case repository.ErrUserNotFound:
+			h.renderTemplateWithStatus(rw, http.StatusMethodNotAllowed)
+		default:
+			h.sendError500(rw, err)
+		}
+
+		return
+	}
+
 	h.renderTemplate(rw)
 }
 
