@@ -14,6 +14,7 @@ import (
 	"github.com/go-soa/charon/mail"
 	"github.com/go-soa/charon/repository"
 	"github.com/julienschmidt/httprouter"
+	"github.com/lib/pq"
 	"golang.org/x/net/context"
 )
 
@@ -60,12 +61,12 @@ func (h *Handler) RouteName() routing.RouteName {
 }
 
 // ServeHTTP ...
-func (h *Handler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
+func (h *Handler) ServeHTTP(rw http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	startedAt := time.Now()
+	ctx := routing.NewParamsContext(context.Background(), ps)
 	wrw := &ResponseWriter{
 		ResponseWriter: rw,
 	}
-	ctx := context.TODO()
 
 	for _, middleware := range h.middlewares {
 		middleware(h, ctx, wrw, r)
@@ -84,7 +85,7 @@ func (h *Handler) Register(router *httprouter.Router) {
 	routeName := h.RouteName()
 	pattern := h.Container.Routes.GetPattern(routeName).String()
 
-	router.Handler(method, pattern, h)
+	router.Handle(method, pattern, httprouter.Handle(h.ServeHTTP))
 
 	h.Container.Logger.WithFields(logrus.Fields{
 		"name":    routeName,
@@ -116,6 +117,10 @@ func (h *Handler) sendError500(rw http.ResponseWriter, err error) {
 	h.sendErrorWithStatus(rw, err, http.StatusInternalServerError)
 }
 
+func (h *Handler) sendError400(rw http.ResponseWriter, err error) {
+	h.sendErrorWithStatus(rw, err, http.StatusBadRequest)
+}
+
 func (h *Handler) renderTemplate(rw http.ResponseWriter) {
 	h.renderTemplateWithData(rw, nil)
 }
@@ -123,9 +128,42 @@ func (h *Handler) renderTemplate(rw http.ResponseWriter) {
 func (h *Handler) renderTemplateWithData(rw http.ResponseWriter, data interface{}) {
 	err := h.Container.Templates.ExecuteTemplate(rw, h.Name, data)
 	if err != nil {
-		http.Error(rw, err.Error(), http.StatusInternalServerError)
+		h.sendError500(rw, err)
 		return
 	}
+}
+
+func (h *Handler) renderTemplateWithStatus(rw http.ResponseWriter, status int) {
+	var templateName string
+
+	switch {
+	case status >= 400 && status < 500:
+		templateName = "400"
+	case status == 404:
+		templateName = "404"
+	default:
+		templateName = "500"
+	}
+
+	err := h.Container.Templates.ExecuteTemplate(rw, templateName, map[string]string{
+		"status": strconv.FormatInt(int64(status), 10),
+	})
+	if err != nil {
+		h.sendError500(rw, err)
+		return
+	}
+}
+
+func (h *Handler) renderTemplate404(rw http.ResponseWriter) {
+	h.renderTemplateWithStatus(rw, http.StatusNotFound)
+}
+
+func (h *Handler) renderTemplate400(rw http.ResponseWriter) {
+	h.renderTemplateWithStatus(rw, http.StatusBadRequest)
+}
+
+func (h *Handler) renderTemplate500(rw http.ResponseWriter) {
+	h.renderTemplateWithStatus(rw, http.StatusInternalServerError)
 }
 
 func (h *Handler) logRequest(wrw *ResponseWriter, r *http.Request, startedAt time.Time) {

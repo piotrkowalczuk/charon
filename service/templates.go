@@ -33,8 +33,12 @@ func InitTemplates(config TemplatesConfig, urlGenerator routing.URLGenerator) {
 	webTemplates, err = webTemplates.ParseFiles(
 		getTemplatePath("header.html"),
 		getTemplatePath("footer.html"),
+		getTemplatePath("400.html"),
+		getTemplatePath("404.html"),
+		getTemplatePath("500.html"),
 		getTemplatePath("registration/index.html"),
 		getTemplatePath("registration/success.html"),
+		getTemplatePath("registration/confirmation.html"),
 	)
 	if err != nil {
 		Logger.Fatal(err)
@@ -46,7 +50,7 @@ func InitTemplates(config TemplatesConfig, urlGenerator routing.URLGenerator) {
 		"url":     routing.URLTemplateFunc(URLGenerator),
 		"url_abs": routing.URLAbsTemplateFunc(URLGenerator),
 	})
-	mailTemplates, err = mailTemplates.ParseGlob(getTemplatePath("mail/*"))
+	mailTemplates, err = mailTemplates.ParseGlob(getTemplatePath("mail/**/*"))
 	if err != nil {
 		Logger.Fatal(err)
 	}

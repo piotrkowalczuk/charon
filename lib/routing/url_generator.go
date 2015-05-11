@@ -7,13 +7,15 @@ import (
 )
 
 type URLGenerator struct {
+	isSSL   bool
 	baseURL string
 	routes  Routes
 }
 
 // NewURLGenerator ...
-func NewURLGenerator(baseURL string, routes Routes) URLGenerator {
+func NewURLGenerator(baseURL string, isSSL bool, routes Routes) URLGenerator {
 	return URLGenerator{
+		isSSL:   isSSL,
 		baseURL: baseURL,
 		routes:  routes,
 	}
@@ -46,7 +48,12 @@ func (ug *URLGenerator) Generate(routeName RouteName, params map[string]interfac
 
 // GenerateAbs generates absolute path. Naive implementation.
 func (ug *URLGenerator) GenerateAbs(routeName RouteName, params map[string]interface{}) (*url.URL, error) {
+	prefix := "http://"
+	if ug.isSSL {
+		prefix = "https://"
+	}
+
 	path := ug.routes.GetPattern(routeName).String()
 
-	return ug.generate(ug.baseURL+path, params)
+	return ug.generate(prefix+ug.baseURL+path, params)
 }

@@ -12,6 +12,8 @@ const (
 )
 
 var (
+	// ErrUserNotFound  ...
+	ErrUserNotFound = errors.New("repository: user not found")
 	// ErrUserUniqueConstraintViolationUsername ...
 	ErrUserUniqueConstraintViolationUsername = errors.New(userUniqueConstraintViolationUsernameErrorMessage)
 	userKnownErrors                          = map[string]error{
@@ -59,4 +61,32 @@ func (ur *UserRepository) Insert(user *model.User) (sql.Result, error) {
 	)
 
 	return result, mapKnownErrors(userKnownErrors, err)
+}
+
+func (ur *UserRepository) RegistrationConfirmation(userID int64, confirmationToken string) error {
+	query := `
+		UPDATE auth_user
+		SET is_confirmed = true, updated_at = NOW()
+		WHERE is_confirmed = false AND id = $1 AND confirmation_token = $2;
+	`
+
+	result, err := ur.db.Exec(
+		query,
+		userID,
+		confirmationToken,
+	)
+
+	if err != nil {
+		return mapKnownErrors(userKnownErrors, err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return mapKnownErrors(userKnownErrors, err)
+	}
+	if rowsAffected == 0 {
+		return ErrUserNotFound
+	}
+
+	return nil
 }

@@ -40,6 +40,10 @@
                 <name>registration_success</name>
                 <pattern>/registration/success</pattern>
             </route>
+            <route>
+                <name>registration_confirmation</name>
+                <pattern>/registration/confirmation/:userId/:confirmationToken</pattern>
+            </route>
         </routes>
     </routing>
 </config>

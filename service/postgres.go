@@ -8,16 +8,13 @@ import (
 	_ "github.com/lib/pq"
 )
 
-// PostgresPool ...
-var PostgresPool *sql.DB
-
 // InitPostgres ...
 func InitPostgres(config DBConfig) {
 	var err error
 
 	// Because of recursion it needs to be checked to not spawn more than one.
-	if PostgresPool == nil {
-		PostgresPool, err = sql.Open("postgres", config.ConnectionString)
+	if DBPool == nil {
+		DBPool, err = sql.Open("postgres", config.ConnectionString)
 		if err != nil {
 			Logger.Fatal(err)
 		}
@@ -25,7 +22,7 @@ func InitPostgres(config DBConfig) {
 
 	// At this moment connection is not yet established.
 	// Ping is required.
-	if err := PostgresPool.Ping(); err != nil {
+	if err := DBPool.Ping(); err != nil {
 		Logger.Error(err)
 		time.Sleep(2 * time.Second)
 
