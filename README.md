@@ -38,7 +38,28 @@ TODO
 	- [x] Start server
 - [ ] Views
 	- [x] Registration
+	- [x] Registration success
+	- [x] Registration confirmation
+	- [ ] Login
+	- [ ] Logout
+	- [ ] Password recovery
+	- [ ] Password recovery confirmation
+	- [x] 400
+	- [x] 404
+	- [x] 500
 - [ ] REST API
 	- [ ] Registration
+	- [x] Registration success
+	- [x] Registration confirmation
+	- [ ] Login
+	- [ ] Logout
+	- [ ] Password recovery
+	- [ ] Password recovery confirmation
 - [ ] RPC API
 	- [ ] Registration
+	- [ ] Registration success
+	- [ ] Registration confirmation
+	- [ ] Login
+	- [ ] Logout
+	- [ ] Password recovery
+	- [ ] Password recovery confirmation
