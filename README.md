@@ -63,3 +63,6 @@ TODO
 	- [ ] Logout
 	- [ ] Password recovery
 	- [ ] Password recovery confirmation
+- [ ] OAuth2 API
+	- [ ] Login
+	- [ ] Me
