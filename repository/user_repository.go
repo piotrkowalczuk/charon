@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	userUniqueConstraintViolationUsernameErrorMessage = "pq: duplicate key value violates unique constraint \"auth_user_username_key\""
+	userUniqueConstraintViolationUsernameErrorMessage = "pq: duplicate key value violates unique constraint \"charon_user_username_key\""
 )
 
 var (
@@ -20,6 +20,11 @@ var (
 		userUniqueConstraintViolationUsernameErrorMessage: ErrUserUniqueConstraintViolationUsername,
 	}
 )
+
+// UserProvider ...
+type UserProvider interface {
+	FindByUsername(string) *model.User
+}
 
 // UserRepository ...
 type UserRepository struct {
@@ -34,9 +39,9 @@ func NewUserRepository(dbPool *sql.DB) (repository *UserRepository) {
 }
 
 // Insert ...
-func (ur *UserRepository) Insert(user *model.User) (sql.Result, error) {
+func (ur *UserRepository) Insert(user *model.User) error {
 	query := `
-		INSERT INTO auth_user (
+		INSERT INTO charon_user (
 			password, username, first_name, last_name, is_active, is_staff,
 			is_superuser, is_confirmed, confirmation_token, last_login_at,
 			created_at, updated_at
@@ -44,7 +49,7 @@ func (ur *UserRepository) Insert(user *model.User) (sql.Result, error) {
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
 		RETURNING id
 	`
-	result, err := ur.db.Exec(
+	err := ur.db.QueryRow(
 		query,
 		user.Password,
 		user.Username,
@@ -58,15 +63,15 @@ func (ur *UserRepository) Insert(user *model.User) (sql.Result, error) {
 		user.LastLoginAt,
 		user.CreatedAt,
 		user.UpdatedAt,
-	)
+	).Scan(&user.ID)
 
-	return result, mapKnownErrors(userKnownErrors, err)
+	return mapKnownErrors(userKnownErrors, err)
 }
 
 func (ur *UserRepository) RegistrationConfirmation(userID int64, confirmationToken string) error {
 	query := `
-		UPDATE auth_user
-		SET is_confirmed = true, updated_at = NOW()
+		UPDATE charon_user
+		SET is_confirmed = true, is_active = true, updated_at = NOW()
 		WHERE is_confirmed = false AND id = $1 AND confirmation_token = $2;
 	`
 
@@ -89,4 +94,38 @@ func (ur *UserRepository) RegistrationConfirmation(userID int64, confirmationTok
 	}
 
 	return nil
+}
+
+func (ur *UserRepository) FindByUsername(username string) (*model.User, error) {
+	query := `
+		SELECT id, password, username, first_name, last_name, is_active, is_staff,
+			is_superuser, is_confirmed, confirmation_token, last_login_at,
+			created_at, updated_at
+		FROM charon_user
+		WHERE username = $1
+		LIMIT 1
+	`
+
+	user := &model.User{}
+	err := ur.db.QueryRow(query, username).Scan(
+		&user.ID,
+		&user.Password,
+		&user.Username,
+		&user.FirstName,
+		&user.LastName,
+		&user.IsActive,
+		&user.IsStaff,
+		&user.IsSuperuser,
+		&user.IsConfirmed,
+		&user.ConfirmationToken,
+		&user.LastLoginAt,
+		&user.CreatedAt,
+		&user.UpdatedAt,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return user, nil
 }

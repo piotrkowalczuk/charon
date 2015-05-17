@@ -79,7 +79,7 @@ func initForDir(templateDir string) *template.Template {
 }
 
 // Get ...
-func (tm *TemplateManager) get(writer io.Writer, prefixDir string, templateName string, params map[string]interface{}) error {
+func (tm *TemplateManager) get(writer io.Writer, prefixDir string, templateName string, params interface{}) error {
 	tpls, ok := tm.templates[prefixDir]
 	if !ok {
 		return ErrTemplateWrongDir
@@ -91,11 +91,11 @@ func (tm *TemplateManager) get(writer io.Writer, prefixDir string, templateName 
 }
 
 // GetForMail ...
-func (tm *TemplateManager) GetForMail(writer io.Writer, templateName string, params map[string]interface{}) error {
+func (tm *TemplateManager) GetForMail(writer io.Writer, templateName string, params interface{}) error {
 	return tm.get(writer, mailDir, templateName, params)
 }
 
 // GetForWeb ...
-func (tm *TemplateManager) GetForWeb(writer io.Writer, templateName string, params map[string]interface{}) error {
+func (tm *TemplateManager) GetForWeb(writer io.Writer, templateName string, params interface{}) error {
 	return tm.get(writer, webDir, templateName, params)
 }

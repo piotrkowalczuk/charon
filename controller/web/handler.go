@@ -7,6 +7,8 @@ import (
 	"strconv"
 	"time"
 
+	"net/rpc"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/go-soa/charon/lib/routing"
 	"github.com/go-soa/charon/lib/security"
@@ -20,6 +22,7 @@ import (
 
 // ServiceContainer ...
 type ServiceContainer struct {
+	Config             service.AppConfig
 	Logger             *logrus.Logger
 	DB                 *sql.DB
 	ConfirmationMailer mail.Sender
@@ -28,6 +31,7 @@ type ServiceContainer struct {
 	Routes             routing.Routes
 	URLGenerator       routing.URLGenerator
 	TemplateManager    *service.TemplateManager
+	Mnemosyne          *rpc.Client
 }
 
 // HandlerOpts ...
@@ -44,6 +48,7 @@ type Handler struct {
 	Method      string
 	middlewares []MiddlewareFunc
 	Container   ServiceContainer
+	cancel      context.CancelFunc
 }
 
 // NewHandler ...
@@ -64,13 +69,22 @@ func (h *Handler) RouteName() routing.RouteName {
 // ServeHTTP ...
 func (h *Handler) ServeHTTP(rw http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	startedAt := time.Now()
-	ctx := routing.NewParamsContext(context.Background(), ps)
+	ctx, cancel := context.WithCancel(context.Background())
+	h.cancel = cancel
+	ctx = routing.NewParamsContext(ctx, ps)
 	wrw := &ResponseWriter{
 		ResponseWriter: rw,
 	}
 
 	for _, middleware := range h.middlewares {
-		middleware(h, ctx, wrw, r)
+		ctx = middleware(h, ctx, wrw, r)
+
+		select {
+		case <-ctx.Done():
+			break
+		default:
+			continue
+		}
 	}
 
 	if wrw.StatusCode == 0 {
@@ -92,10 +106,10 @@ func (h *Handler) Register(router *httprouter.Router) {
 		"name":    routeName,
 		"method":  method,
 		"pattern": pattern,
-	}).Info("Route has been registered successfully.")
+	}).Info("Web view has been registered successfully.")
 }
 
-func (h *Handler) sendErrorWithStatus(rw http.ResponseWriter, err error, status int) {
+func (h *Handler) logError(err error) {
 	switch e := err.(type) {
 	case *pq.Error:
 		h.Container.Logger.WithFields(logrus.Fields{
@@ -110,31 +124,26 @@ func (h *Handler) sendErrorWithStatus(rw http.ResponseWriter, err error, status 
 	default:
 		h.Container.Logger.Error(e)
 	}
-
-	http.Error(rw, err.Error(), status)
 }
 
-func (h *Handler) sendError500(rw http.ResponseWriter, err error) {
-	h.sendErrorWithStatus(rw, err, http.StatusInternalServerError)
+func (h *Handler) renderTemplate(rw http.ResponseWriter, ctx context.Context) context.Context {
+	return h.renderTemplateWithData(rw, ctx, nil)
 }
 
-func (h *Handler) sendError400(rw http.ResponseWriter, err error) {
-	h.sendErrorWithStatus(rw, err, http.StatusBadRequest)
-}
-
-func (h *Handler) renderTemplate(rw http.ResponseWriter) {
-	h.renderTemplateWithData(rw, nil)
-}
-
-func (h *Handler) renderTemplateWithData(rw http.ResponseWriter, data map[string]interface{}) {
+func (h *Handler) renderTemplateWithData(rw http.ResponseWriter, ctx context.Context, data interface{}) context.Context {
 	err := h.Container.TemplateManager.GetForWeb(rw, h.Name, data)
+
 	if err != nil {
-		h.sendError500(rw, err)
-		return
+		h.cancel()
+		h.logError(err)
+		http.Error(rw, "Internal Server Error", http.StatusInternalServerError)
 	}
+
+	return ctx
 }
 
-func (h *Handler) renderTemplateWithStatus(rw http.ResponseWriter, status int) {
+func (h *Handler) renderTemplateWithStatus(rw http.ResponseWriter, ctx context.Context, status int) context.Context {
+	h.cancel()
 	var templateName string
 
 	switch {
@@ -150,21 +159,29 @@ func (h *Handler) renderTemplateWithStatus(rw http.ResponseWriter, status int) {
 		"status": strconv.FormatInt(int64(status), 10),
 	})
 	if err != nil {
-		h.sendError500(rw, err)
-		return
+		h.logError(err)
+		http.Error(rw, "Internal Server Error", http.StatusInternalServerError)
+		return ctx
 	}
+
+	return ctx
 }
 
-func (h *Handler) renderTemplate404(rw http.ResponseWriter) {
-	h.renderTemplateWithStatus(rw, http.StatusNotFound)
+func (h *Handler) renderTemplate404(rw http.ResponseWriter, ctx context.Context) context.Context {
+	return h.renderTemplateWithStatus(rw, ctx, http.StatusNotFound)
 }
 
-func (h *Handler) renderTemplate400(rw http.ResponseWriter) {
-	h.renderTemplateWithStatus(rw, http.StatusBadRequest)
+func (h *Handler) renderTemplate403(rw http.ResponseWriter, ctx context.Context) context.Context {
+	return h.renderTemplateWithStatus(rw, ctx, http.StatusForbidden)
 }
 
-func (h *Handler) renderTemplate500(rw http.ResponseWriter) {
-	h.renderTemplateWithStatus(rw, http.StatusInternalServerError)
+func (h *Handler) renderTemplate400(rw http.ResponseWriter, ctx context.Context) context.Context {
+	return h.renderTemplateWithStatus(rw, ctx, http.StatusBadRequest)
+}
+
+func (h *Handler) renderTemplate500(rw http.ResponseWriter, ctx context.Context, err error) context.Context {
+	h.logError(err)
+	return h.renderTemplateWithStatus(rw, ctx, http.StatusInternalServerError)
 }
 
 func (h *Handler) logRequest(wrw *ResponseWriter, r *http.Request, startedAt time.Time) {

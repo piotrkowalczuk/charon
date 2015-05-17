@@ -11,9 +11,13 @@ var Config AppConfig
 
 // AppConfig ...
 type AppConfig struct {
+	Domain string `xml:"domain"`
 	Server struct {
-		Host string `xml:"host"`
-		Port string `xml:"port"`
+		Host     string `xml:"host"`
+		Port     string `xml:"port"`
+		TLS      bool   `xml:"tls"`
+		CertFile string `xml:"cert-file"`
+		KeyFile  string `xml:"key-file"`
 	} `xml:"server"`
 	Logger         LoggerConfig         `xml:"logger"`
 	DB             DBConfig             `xml:"database"`
@@ -22,6 +26,7 @@ type AppConfig struct {
 	PasswordHasher PasswordHasherConfig `xml:"password"`
 	Routing        RoutingConfig        `xml:"routing"`
 	Translation    translationConfig    `xml:"translation"`
+	Mnemosyne      MnemosyneConfig      `xml:"mnemosyne"`
 }
 
 // InitConfig ...

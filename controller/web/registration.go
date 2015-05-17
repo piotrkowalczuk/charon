@@ -1,7 +1,6 @@
 package web
 
 import (
-	"errors"
 	"net/http"
 
 	"strconv"
@@ -17,12 +16,12 @@ import (
 )
 
 // RegistrationIndex ...
-func (h *Handler) RegistrationIndex(ctx context.Context, rw http.ResponseWriter, r *http.Request) {
-	h.renderTemplate(rw)
+func (h *Handler) RegistrationIndex(ctx context.Context, rw http.ResponseWriter, r *http.Request) context.Context {
+	return h.renderTemplate(rw, ctx)
 }
 
-// RegistrationCreate ...
-func (h *Handler) RegistrationCreate(ctx context.Context, rw http.ResponseWriter, r *http.Request) {
+// RegistrationProcess ...
+func (h *Handler) RegistrationProcess(ctx context.Context, rw http.ResponseWriter, r *http.Request) context.Context {
 	r.ParseForm()
 
 	validationErrorBuilder := lib.NewValidationErrorBuilder()
@@ -32,12 +31,10 @@ func (h *Handler) RegistrationCreate(ctx context.Context, rw http.ResponseWriter
 
 	if validationErrorBuilder.HasErrors() {
 		rw.WriteHeader(http.StatusBadRequest)
-		h.renderTemplateWithData(rw, map[string]interface{}{
+		return h.renderTemplateWithData(rw, ctx, map[string]interface{}{
 			"validationErrors": validationErrorBuilder.Errors(),
 			"request":          registrationRequest,
 		})
-
-		return
 	}
 
 	user, err := createAndRegisterUser(h.Container.PasswordHasher, h.Container.RM.User, registrationRequest)
@@ -46,65 +43,65 @@ func (h *Handler) RegistrationCreate(ctx context.Context, rw http.ResponseWriter
 		case repository.ErrUserUniqueConstraintViolationUsername:
 			validationErrorBuilder.Add("email", "User with given email already exists.")
 
-			h.renderTemplateWithData(rw, map[string]interface{}{
+			return h.renderTemplateWithData(rw, ctx, map[string]interface{}{
 				"validationErrors": validationErrorBuilder.Errors(),
 				"request":          registrationRequest,
 			})
 		default:
-			h.sendError500(rw, err)
+			return h.renderTemplate500(rw, ctx, err)
 		}
-
-		return
 	}
 
 	err = h.Container.ConfirmationMailer.Send(user.Username, map[string]interface{}{
-		"Username": user.Username,
+		"user": user,
 	})
-
 	if err != nil {
-		h.sendError500(rw, err)
-		return
+		return h.renderTemplate500(rw, ctx, err)
 	}
 
 	http.Redirect(rw, r, "/registration/success", http.StatusFound)
+
+	return ctx
 }
 
 // RegistrationSuccess ...
-func (h *Handler) RegistrationSuccess(ctx context.Context, rw http.ResponseWriter, r *http.Request) {
-	h.renderTemplate(rw)
+func (h *Handler) RegistrationSuccess(ctx context.Context, rw http.ResponseWriter, r *http.Request) context.Context {
+	return h.renderTemplate(rw, ctx)
 }
 
 // RegistrationConfirmation ...
-func (h *Handler) RegistrationConfirmation(ctx context.Context, rw http.ResponseWriter, r *http.Request) {
+func (h *Handler) RegistrationConfirmation(ctx context.Context, rw http.ResponseWriter, r *http.Request) context.Context {
 	var ok bool
 	var confirmationTokenParam string
 	var userIDParam string
 
 	if confirmationTokenParam, ok = routing.ParamFromContext(ctx, "confirmationToken"); !ok {
-		h.sendError400(rw, errors.New("controller/web: confirmationToken param is missing"))
+		h.Container.Logger.Debug("confirmation token param is missing")
+		return h.renderTemplate400(rw, ctx)
 	}
 
 	if userIDParam, ok = routing.ParamFromContext(ctx, "userId"); !ok {
-		h.sendError400(rw, errors.New("controller/web: userId param is missing"))
+		h.Container.Logger.Debug("user id param is missing")
+		return h.renderTemplate400(rw, ctx)
 	}
 
 	userID, err := strconv.ParseInt(userIDParam, 10, 64)
 	if err != nil {
-		h.sendError400(rw, errors.New("controller/web: userId wrong type"))
+		h.Container.Logger.Debug("user id param wrong type")
+		return h.renderTemplate400(rw, ctx)
 	}
 
 	if err := h.Container.RM.User.RegistrationConfirmation(userID, confirmationTokenParam); err != nil {
 		switch err {
 		case repository.ErrUserNotFound:
-			h.renderTemplateWithStatus(rw, http.StatusMethodNotAllowed)
+			h.Container.Logger.Debug("registration confirmation failure, user not found")
+			return h.renderTemplateWithStatus(rw, ctx, http.StatusMethodNotAllowed)
 		default:
-			h.sendError500(rw, err)
+			return h.renderTemplate500(rw, ctx, err)
 		}
-
-		return
 	}
 
-	h.renderTemplate(rw)
+	return h.renderTemplate(rw, ctx)
 }
 
 func createAndRegisterUser(
@@ -126,7 +123,7 @@ func createAndRegisterUser(
 		confirmationToken,
 	)
 
-	_, err = repository.Insert(user)
+	err = repository.Insert(user)
 	if err != nil {
 		return nil, err
 	}

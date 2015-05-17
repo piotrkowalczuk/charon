@@ -1,8 +1,12 @@
 <?xml version="1.0"?>
 <config>
+    <domain>example.com</domain>
     <server>
         <host>0.0.0.0</host>
-        <port>8080</port>
+        <port>9002</port>
+        <tls>false</tls>
+        <cert-file></cert-file>
+        <key-file></key-file>
     </server>
     <database>
         <adapter>postgres</adapter>

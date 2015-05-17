@@ -3,6 +3,7 @@ package cli
 import (
 	"net/http"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/codegangsta/cli"
 	"github.com/go-soa/charon/controller/web"
 	"github.com/go-soa/charon/service"
@@ -21,6 +22,7 @@ func runCommandAction(context *cli.Context) {
 	service.InitConfig(context.GlobalString("environment"))
 	service.InitLogger(service.Config.Logger)
 	service.InitDB(service.Config.DB)
+	service.InitMnemosyne(service.Config.Mnemosyne)
 	service.InitRepositoryManager(service.DBPool)
 	service.InitPasswordHasher(service.Config.PasswordHasher)
 	service.InitTranslation(service.Config.Translation)
@@ -33,13 +35,30 @@ func runCommandAction(context *cli.Context) {
 	setupStaticRoutes(router)
 	setupWebRoutes(router)
 
-	service.Logger.Debugln("Listening on " + service.Config.Server.Host + ":" + service.Config.Server.Port)
-	listenOn := service.Config.Server.Host + ":" + service.Config.Server.Port
-	service.Logger.Fatal(http.ListenAndServe(listenOn, router))
+	host := service.Config.Server.Host
+	port := service.Config.Server.Port
+	tls := service.Config.Server.TLS
+
+	service.Logger.WithFields(logrus.Fields{
+		"tls":  tls,
+		"host": host,
+		"port": port,
+	}).Info("HTTP(S) server is going to start.")
+	if tls {
+		service.Logger.Fatal(http.ListenAndServeTLS(
+			host+":"+port,
+			service.Config.Server.CertFile,
+			service.Config.Server.KeyFile,
+			router,
+		))
+	} else {
+		service.Logger.Fatal(http.ListenAndServe(host+":"+port, router))
+	}
 }
 
 func setupWebRoutes(router *httprouter.Router) {
 	container := web.ServiceContainer{
+		Config:             service.Config,
 		Logger:             service.Logger,
 		DB:                 service.DBPool,
 		RM:                 service.RepositoryManager,
@@ -48,6 +67,7 @@ func setupWebRoutes(router *httprouter.Router) {
 		TemplateManager:    service.TplManager,
 		Routes:             service.Routes,
 		URLGenerator:       service.URLGenerator,
+		Mnemosyne:          service.Mnemosyne,
 	}
 
 	handlers := []*web.Handler{
@@ -71,7 +91,7 @@ func setupWebRoutes(router *httprouter.Router) {
 			Name:   "registration_index",
 			Method: "POST",
 			Middlewares: web.NewMiddlewares(
-				(*web.Handler).RegistrationCreate,
+				(*web.Handler).RegistrationProcess,
 			),
 			Container: container,
 		}),
@@ -80,6 +100,31 @@ func setupWebRoutes(router *httprouter.Router) {
 			Method: "GET",
 			Middlewares: web.NewMiddlewares(
 				(*web.Handler).RegistrationConfirmation,
+			),
+			Container: container,
+		}),
+		web.NewHandler(web.HandlerOpts{
+			Name:   "login_index",
+			Method: "GET",
+			Middlewares: web.NewMiddlewares(
+				(*web.Handler).LoginIndex,
+			),
+			Container: container,
+		}),
+		web.NewHandler(web.HandlerOpts{
+			Name:   "login_index",
+			Method: "POST",
+			Middlewares: web.NewMiddlewares(
+				(*web.Handler).LoginProcess,
+			),
+			Container: container,
+		}),
+		web.NewHandler(web.HandlerOpts{
+			Name:   "dashboard_index",
+			Method: "GET",
+			Middlewares: web.NewMiddlewares(
+				(*web.Handler).IsAuthenticatedMiddleware,
+				(*web.Handler).DashboardIndex,
 			),
 			Container: container,
 		}),
