@@ -23,15 +23,17 @@ func runCommandAction(context *cli.Context) {
 	service.InitDB(service.Config.DB)
 	service.InitRepositoryManager(service.DBPool)
 	service.InitPasswordHasher(service.Config.PasswordHasher)
+	service.InitTranslation(service.Config.Translation)
 	service.InitRouting(service.Config.Routing)
-	service.InitTemplates(service.Config.Templates, service.URLGenerator)
-	service.InitMailer(service.Config.Mailer, service.MailTemplates)
+	service.InitTemplateManager(service.Config.Templates)
+	service.InitMailer(service.Config.Mailer, service.TplManager)
 
 	router := httprouter.New()
 
 	setupStaticRoutes(router)
 	setupWebRoutes(router)
 
+	service.Logger.Debugln("Listening on " + service.Config.Server.Host + ":" + service.Config.Server.Port)
 	listenOn := service.Config.Server.Host + ":" + service.Config.Server.Port
 	service.Logger.Fatal(http.ListenAndServe(listenOn, router))
 }
@@ -43,7 +45,7 @@ func setupWebRoutes(router *httprouter.Router) {
 		RM:                 service.RepositoryManager,
 		PasswordHasher:     service.PasswordHasher,
 		ConfirmationMailer: service.ConfirmationMailer,
-		Templates:          service.WebTemplates,
+		TemplateManager:    service.TplManager,
 		Routes:             service.Routes,
 		URLGenerator:       service.URLGenerator,
 	}

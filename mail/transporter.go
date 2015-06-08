@@ -2,5 +2,5 @@ package mail
 
 // Transporter ...
 type Transporter interface {
-	Send(string, string, string, map[string]string) error
+	Send(from string, to string, topic string, mailBodies map[string]string) error
 }

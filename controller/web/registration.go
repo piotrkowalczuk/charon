@@ -58,7 +58,7 @@ func (h *Handler) RegistrationCreate(ctx context.Context, rw http.ResponseWriter
 	}
 
 	err = h.Container.ConfirmationMailer.Send(user.Username, map[string]interface{}{
-		"user": user,
+		"Username": user.Username,
 	})
 
 	if err != nil {
@@ -78,17 +78,17 @@ func (h *Handler) RegistrationSuccess(ctx context.Context, rw http.ResponseWrite
 func (h *Handler) RegistrationConfirmation(ctx context.Context, rw http.ResponseWriter, r *http.Request) {
 	var ok bool
 	var confirmationTokenParam string
-	var userIdParam string
+	var userIDParam string
 
 	if confirmationTokenParam, ok = routing.ParamFromContext(ctx, "confirmationToken"); !ok {
 		h.sendError400(rw, errors.New("controller/web: confirmationToken param is missing"))
 	}
 
-	if userIdParam, ok = routing.ParamFromContext(ctx, "userId"); !ok {
+	if userIDParam, ok = routing.ParamFromContext(ctx, "userId"); !ok {
 		h.sendError400(rw, errors.New("controller/web: userId param is missing"))
 	}
 
-	userID, err := strconv.ParseInt(userIdParam, 10, 64)
+	userID, err := strconv.ParseInt(userIDParam, 10, 64)
 	if err != nil {
 		h.sendError400(rw, errors.New("controller/web: userId wrong type"))
 	}

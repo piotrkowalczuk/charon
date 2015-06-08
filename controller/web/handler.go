@@ -3,7 +3,6 @@ package web
 import (
 	"bytes"
 	"database/sql"
-	"html/template"
 	"net/http"
 	"strconv"
 	"time"
@@ -13,6 +12,7 @@ import (
 	"github.com/go-soa/charon/lib/security"
 	"github.com/go-soa/charon/mail"
 	"github.com/go-soa/charon/repository"
+	"github.com/go-soa/charon/service"
 	"github.com/julienschmidt/httprouter"
 	"github.com/lib/pq"
 	"golang.org/x/net/context"
@@ -23,13 +23,14 @@ type ServiceContainer struct {
 	Logger             *logrus.Logger
 	DB                 *sql.DB
 	ConfirmationMailer mail.Sender
-	Templates          *template.Template
 	RM                 repository.Manager
 	PasswordHasher     security.PasswordHasher
 	Routes             routing.Routes
 	URLGenerator       routing.URLGenerator
+	TemplateManager    *service.TemplateManager
 }
 
+// HandlerOpts ...
 type HandlerOpts struct {
 	Name        string
 	Method      string
@@ -125,8 +126,8 @@ func (h *Handler) renderTemplate(rw http.ResponseWriter) {
 	h.renderTemplateWithData(rw, nil)
 }
 
-func (h *Handler) renderTemplateWithData(rw http.ResponseWriter, data interface{}) {
-	err := h.Container.Templates.ExecuteTemplate(rw, h.Name, data)
+func (h *Handler) renderTemplateWithData(rw http.ResponseWriter, data map[string]interface{}) {
+	err := h.Container.TemplateManager.GetForWeb(rw, h.Name, data)
 	if err != nil {
 		h.sendError500(rw, err)
 		return
@@ -145,7 +146,7 @@ func (h *Handler) renderTemplateWithStatus(rw http.ResponseWriter, status int) {
 		templateName = "500"
 	}
 
-	err := h.Container.Templates.ExecuteTemplate(rw, templateName, map[string]string{
+	err := h.Container.TemplateManager.GetForWeb(rw, templateName, map[string]interface{}{
 		"status": strconv.FormatInt(int64(status), 10),
 	})
 	if err != nil {

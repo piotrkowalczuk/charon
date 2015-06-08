@@ -1,60 +1,101 @@
 package service
 
 import (
+	"errors"
 	"html/template"
+	"io"
+	"log"
+	"os"
+	"path/filepath"
 
 	"github.com/go-soa/charon/lib/routing"
 )
+
+const (
+	webDir  = "web"
+	mailDir = "mail"
+)
+
+// ErrTemplateWrongDir ...
+var ErrTemplateWrongDir = errors.New("Can't use template from not existing directory")
 
 // TemplatesConfig ...
 type TemplatesConfig struct {
 	Path string `xml:"path"`
 }
 
-// WebTemplates ...
-var WebTemplates *template.Template
+// TemplateManager ...
+type TemplateManager struct {
+	templates map[string]*template.Template
+}
 
-// MailTemplates ...
-var MailTemplates *template.Template
+// TplManager ...
+var TplManager *TemplateManager
 
-// InitTemplates ...
-func InitTemplates(config TemplatesConfig, urlGenerator routing.URLGenerator) {
-	getTemplatePath := func(path string) string {
-		return config.Path + "/" + path
+// InitTemplateManager ...
+func InitTemplateManager(config TemplatesConfig) {
+
+	tpls := map[string]*template.Template{}
+	tpls[webDir] = initForDir(config.Path + "/" + webDir)
+	tpls[mailDir] = initForDir(config.Path + "/" + mailDir)
+
+	TplManager = &TemplateManager{
+		templates: tpls,
+	}
+}
+
+func initForDir(templateDir string) *template.Template {
+	langDecider := func() (string, error) {
+		return "en", nil
 	}
 
-	var err error
-	// Website tempaltes
-	webTemplates := template.New("")
-	webTemplates.Funcs(template.FuncMap{
+	templates := template.New("")
+	templates.Funcs(template.FuncMap{
 		"url":     routing.URLTemplateFunc(URLGenerator),
 		"url_abs": routing.URLAbsTemplateFunc(URLGenerator),
+		"trans":   Translate.GetTransFunc(langDecider),
 	})
-	webTemplates, err = webTemplates.ParseFiles(
-		getTemplatePath("header.html"),
-		getTemplatePath("footer.html"),
-		getTemplatePath("400.html"),
-		getTemplatePath("404.html"),
-		getTemplatePath("500.html"),
-		getTemplatePath("registration/index.html"),
-		getTemplatePath("registration/success.html"),
-		getTemplatePath("registration/confirmation.html"),
-	)
+
+	files := []string{}
+
+	filepath.Walk(templateDir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		if !info.IsDir() {
+			files = append(files, path)
+		}
+
+		return nil
+	})
+
+	templates, err := templates.ParseFiles(files...)
 	if err != nil {
-		Logger.Fatal(err)
+		log.Fatalln(err)
 	}
 
-	// Mail templates
-	mailTemplates := template.New("")
-	mailTemplates.Funcs(template.FuncMap{
-		"url":     routing.URLTemplateFunc(URLGenerator),
-		"url_abs": routing.URLAbsTemplateFunc(URLGenerator),
-	})
-	mailTemplates, err = mailTemplates.ParseGlob(getTemplatePath("mail/**/*"))
-	if err != nil {
-		Logger.Fatal(err)
+	return templates
+}
+
+// Get ...
+func (tm *TemplateManager) get(writer io.Writer, prefixDir string, templateName string, params map[string]interface{}) error {
+	tpls, ok := tm.templates[prefixDir]
+	if !ok {
+		return ErrTemplateWrongDir
 	}
 
-	WebTemplates = webTemplates
-	MailTemplates = mailTemplates
+	tpls.ExecuteTemplate(writer, templateName, params)
+
+	return nil
+}
+
+// GetForMail ...
+func (tm *TemplateManager) GetForMail(writer io.Writer, templateName string, params map[string]interface{}) error {
+	return tm.get(writer, mailDir, templateName, params)
+}
+
+// GetForWeb ...
+func (tm *TemplateManager) GetForWeb(writer io.Writer, templateName string, params map[string]interface{}) error {
+	return tm.get(writer, webDir, templateName, params)
 }

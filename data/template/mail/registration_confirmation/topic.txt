@@ -1,0 +1,1 @@
+{{define "registration_confirmation_topic"}}Welcome to site!{{end}}
