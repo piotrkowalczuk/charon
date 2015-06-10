@@ -1,7 +1,8 @@
 {{define "registration_confirmation_plain_body"}}
-        Hi!
+        {{ trans "mail.text.registration.hi" }}
 
-        Welcome to our site <b>{{.Username}}</b>
-        To confirm your account pleas visit link bellow:
+        {{ trans "mail.text.registration.welcome_to_our_site_user_%s" }}
+
+        {{ trans "mail.text.registration.to_confirm_visit_link_below" }}
         {{ url_abs "registration_confirmation" "confirmationToken" 12 "userId" 44}}
 {{end}}

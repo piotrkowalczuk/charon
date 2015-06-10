@@ -42,7 +42,7 @@ func parseCSVFile(csvFile io.Reader, lang string) *transMap {
 	records, err := r.ReadAll()
 
 	if err != nil {
-		log.Fatalln(err)
+		log.Fatalln("translate: reading csv file error", err)
 	}
 
 	tm := make(transMap, len(records))

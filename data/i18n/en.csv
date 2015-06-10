@@ -1,4 +1,25 @@
-SOME_TEXT,this is some text
-SOME_TEXT2,this is some text2
-SOME_TEXT3,this is some text3
-SOME_TEXT4,this is some text4
+mail.html.registration.hi,Hi!
+mail.html.registration.welcome_to_our_site_user_%s,Welcome to our site <b>{{.Username}}</b>
+mail.html.registration.to_confirm_click_link_below,To confirm your account pleas click link below:
+mail.text.registration.hi,Hi!
+mail.text.registration.welcome_to_our_site_user_%s,Welcome to our site {{.Username}}
+mail.text.registration.to_confirm_visit_link_below,To confirm your account please visit link below:
+mail.topic.registration,Welcome to site!
+web.registration.header_register,Register
+web.registration.header_email_confirmation,Email confirmation
+web.registration.account_confirmed_success,Your account has been confirmed successfully.
+web.registration.button.login,Log in
+web.registration.form_label.email,Email address
+web.registration.form_placeholder.email,Enter email
+web.registration.form_label.password,Password
+web.registration.form_placeholder.password,Enter password
+web.registration.form_label.first_name,First name
+web.registration.form_placeholder.first_name,Enter first name
+web.registration.form_label.last_name,Last name
+web.registration.form_placeholder.last_name, Enter last name
+web.registration.button.create_account,Create account
+web.registration.success_please_check_email,Success! Please check your email.
+validation_error.email_min_max_wrong,Email address should contain minimum 6 and maximum 45 characters.
+validation_error.password_min_max_wrong,Password should contain minimum 6 and maximum 45 characters.
+validation_error.firstname_max_len_wrong,First name should contain maximum 45 characters.
+validation_error.lastname_max_len_wrong,Last name should contain maximum 45 characters.

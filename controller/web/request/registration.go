@@ -28,20 +28,20 @@ func NewRegistrationRequestFromForm(form url.Values) *RegistrationRequest {
 // Validate ...
 func (rr *RegistrationRequest) Validate(builder *lib.ValidationErrorBuilder) {
 	if !validator.IsByteLength(rr.Email, 6, 45) {
-		builder.Add("email", "Email address should contain minimum 6 and maximum 45 characters.")
+		builder.Add("email", "validation_error.email_min_max_wrong")
 	} else if !validator.IsEmail(rr.Email) {
 		builder.Add("email", "Invalid email address.")
 	}
 
 	if !validator.IsByteLength(rr.Password, 6, 45) {
-		builder.Add("password", "Password should contain minimum 6 and maximum 45 characters .")
+		builder.Add("password", "validation_error.password_min_max_wrong")
 	}
 
 	if !validator.IsByteLength(rr.FirstName, 1, 45) {
-		builder.Add("firstName", "First name should contain maximum 45 characters .")
+		builder.Add("firstName", "validation_error.firstname_max_len_wrong")
 	}
 
 	if !validator.IsByteLength(rr.LastName, 1, 45) {
-		builder.Add("lastName", "Last name should contain maximum 45 characters .")
+		builder.Add("lastName", "validation_error.lastname_max_len_wrong")
 	}
 }

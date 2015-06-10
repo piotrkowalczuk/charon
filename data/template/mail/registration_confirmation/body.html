@@ -1,8 +1,9 @@
 {{define "registration_confirmation_html_body"}}
-    {{ trans "mail.registration.hi" }}
+    {{ trans "mail.html.registration.hi" }}
 
-    {{ trans "mail.registration.welcome_to_our_site" }}<b>{{.Username}}</b>
-    To confirm your account pleas click link bellow:
+    {{ trans "mail.html.registration.welcome_to_our_site_user_%s" }}
+
+    {{ trans "mail.html.registration.to_confirm_click_link_below" }}
     <a href="{{ url_abs "registration_confirmation" "confirmationToken" 12 "userId" 44}}">
         {{ url_abs "registration_confirmation" "confirmationToken" 12 "userId" 44}}
     </a>
