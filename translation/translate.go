@@ -1,6 +1,9 @@
 package translation
 
-import "errors"
+import (
+	"errors"
+	"fmt"
+)
 
 // SourceStrategy ...
 type SourceStrategy interface {
@@ -17,7 +20,7 @@ type Translate struct {
 type LangDecider func() (string, error)
 
 // TransFunc which can be used in templating
-type TransFunc func(string) (string, error)
+type TransFunc func(string, ...interface{}) (string, error)
 
 // ErrNoTranslation ...
 var ErrNoTranslation = errors.New("translation: No Translation for given key")
@@ -34,8 +37,9 @@ func (t *Translate) Get(lang string, key string) (string, error) {
 }
 
 // GetTransFunc returns function that can be used in templating
+// first arg of returned function takes translation key, rest works like arguments to fmt.Sprintf
 func (t *Translate) GetTransFunc(ld LangDecider) TransFunc {
-	return func(toTranslate string) (string, error) {
+	return func(toTranslate string, a ...interface{}) (string, error) {
 		lang, err := ld()
 
 		if err != nil {
@@ -48,7 +52,7 @@ func (t *Translate) GetTransFunc(ld LangDecider) TransFunc {
 			return translated, err
 		}
 
-		return translated, nil
+		return fmt.Sprintf(translated, a...), nil
 	}
 }
 

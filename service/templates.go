@@ -72,6 +72,7 @@ func initForDir(templateDir string) *template.Template {
 
 	templates, err := templates.ParseFiles(files...)
 	if err != nil {
+		log.Fatal("templates: ")
 		log.Fatalln(err)
 	}
 
