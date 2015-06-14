@@ -2,22 +2,26 @@ package service
 
 import "github.com/go-soa/charon/translation"
 
+const (
+	translatorInputStrategyCSV = "csv"
+)
+
+var (
+	// Translate  ...
+	Translate *translation.Translate
+)
+
 type translationConfig struct {
 	DefaultLang string `xml:"default-lang"`
 	Strategy    string `xml:"strategy"`
 }
-
-const translaterInputStrategyCSV = "csv"
-
-// Translater ...
-var Translate *translation.Translate
 
 // InitTranslation ...
 func InitTranslation(config translationConfig) {
 	var sourceStrategy translation.SourceStrategy
 
 	switch config.Strategy {
-	case translaterInputStrategyCSV:
+	case translatorInputStrategyCSV:
 		sourceStrategy = translation.NewCSVSource("data/i18n")
 	}
 

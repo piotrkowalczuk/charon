@@ -15,6 +15,10 @@
     <templates>
         <path>data/template</path>
     </templates>
+    <translation>
+        <default-lang>en</default-lang>
+        <strategy>csv</strategy>
+    </translation>
     <email>
         <type>smtp</type>
         <host>smtp.gmail.com</host>

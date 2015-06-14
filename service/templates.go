@@ -17,7 +17,7 @@ const (
 )
 
 // ErrTemplateWrongDir ...
-var ErrTemplateWrongDir = errors.New("Can't use template from not existing directory")
+var ErrTemplateWrongDir = errors.New("service: can't use template from not existing directory")
 
 // TemplatesConfig ...
 type TemplatesConfig struct {
@@ -72,7 +72,6 @@ func initForDir(templateDir string) *template.Template {
 
 	templates, err := templates.ParseFiles(files...)
 	if err != nil {
-		log.Fatal("templates: ")
 		log.Fatalln(err)
 	}
 
