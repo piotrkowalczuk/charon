@@ -15,7 +15,7 @@ type Sender interface {
 }
 
 type templateGetter interface {
-	GetForMail(writer io.Writer, templateName string, params map[string]interface{}) error
+	GetForMail(writer io.Writer, templateName string, params interface{}) error
 }
 
 // Mailer ...

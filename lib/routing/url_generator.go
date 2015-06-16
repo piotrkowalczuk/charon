@@ -23,11 +23,14 @@ func NewURLGenerator(baseURL string, isSSL bool, routes Routes) URLGenerator {
 
 func (ug *URLGenerator) generate(path string, params map[string]interface{}) (*url.URL, error) {
 	for paramName, paramValue := range params {
-		switch paramValue.(type) {
+		// TODO: add more types if necessary
+		switch p := paramValue.(type) {
 		case int:
-			path = strings.Replace(path, ":"+paramName, fmt.Sprintf("%d", paramValue), -1)
+			path = strings.Replace(path, ":"+paramName, fmt.Sprintf("%d", p), -1)
+		case int64:
+			path = strings.Replace(path, ":"+paramName, fmt.Sprintf("%d", p), -1)
 		case string:
-			path = strings.Replace(path, ":"+paramName, paramValue.(string), -1)
+			path = strings.Replace(path, ":"+paramName, p, -1)
 		}
 	}
 

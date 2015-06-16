@@ -1,0 +1,33 @@
+{{define "dashboard_index"}}
+{{template "header"}}
+<div class="container">
+    <div class="row">
+        <div class="col-md-6 col-md-offset-3">
+            <div class="page-header text-center">
+                <h1>Dashboard</h1>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            {{ if .session }}
+                <dl class="dl-horizontal">
+                    <dt>First Name</dt>
+                    <dd>{{ .session.first_name }}</dd>
+                    <dt>Last Name</dt>
+                    <dd>{{ .session.last_name }}</dd>
+                    <dt>Username</dt>
+                    <dd>{{ .session.username }}</dd>
+                    <dt>ID</dt>
+                    <dd>{{ .session.user_id }}</dd>
+                </dl>
+            {{ else }}
+                <div class="alert alert-danger">
+                    <strong>Oops..</strong> you are not logged in.
+                </div>
+            {{ end }}
+        </div>
+    </div>
+</div>
+{{template "footer"}}
+{{end}}

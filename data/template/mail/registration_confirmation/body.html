@@ -4,7 +4,7 @@
     {{ trans "mail.html.registration.welcome_to_our_site_user_%s" }}
 
     {{ trans "mail.html.registration.to_confirm_click_link_below" }}
-    <a href="{{ url_abs "registration_confirmation" "confirmationToken" 12 "userId" 44}}">
-        {{ url_abs "registration_confirmation" "confirmationToken" 12 "userId" 44}}
+    <a href="{{ url_abs "registration_confirmation" "confirmationToken" .user.ConfirmationToken "userId" .user.ID }}">
+        {{ url_abs "registration_confirmation" "confirmationToken" .user.ConfirmationToken "userId" .user.ID }}
     </a>
 {{end}}

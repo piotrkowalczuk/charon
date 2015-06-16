@@ -7,16 +7,16 @@ import (
 )
 
 // MiddlewareFunc ...
-type MiddlewareFunc func(*Handler, context.Context, http.ResponseWriter, *http.Request)
+type MiddlewareFunc func(*Handler, context.Context, http.ResponseWriter, *http.Request) context.Context
 
 // Middlewares ...
 type Middlewares []MiddlewareFunc
 
 // NewMiddlewares ...
-func NewMiddlewares(fncs ...func(*Handler, context.Context, http.ResponseWriter, *http.Request)) Middlewares {
+func NewMiddlewares(fns ...func(*Handler, context.Context, http.ResponseWriter, *http.Request) context.Context) Middlewares {
 	middlewares := Middlewares{}
 
-	for _, fn := range fncs {
+	for _, fn := range fns {
 		middlewares.Add(MiddlewareFunc(fn))
 	}
 

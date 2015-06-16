@@ -8,14 +8,14 @@ import (
 
 func init() {
 	app := cli.NewApp()
-	app.Name = "auth-service"
+	app.Name = "charon"
 	app.Usage = "..."
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
 			Name:   "environment, e",
 			Value:  "development",
 			Usage:  "environment in wich application is running",
-			EnvVar: "AUTH_SERVICE_ENV",
+			EnvVar: "CHARON_ENV",
 		},
 	}
 	app.Commands = []cli.Command{
