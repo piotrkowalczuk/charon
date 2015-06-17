@@ -76,12 +76,13 @@ func (h *Handler) ServeHTTP(rw http.ResponseWriter, r *http.Request, ps httprout
 		ResponseWriter: rw,
 	}
 
+MiddlewaresLoop:
 	for _, middleware := range h.middlewares {
 		ctx = middleware(h, ctx, wrw, r)
 
 		select {
 		case <-ctx.Done():
-			break
+			break MiddlewaresLoop
 		default:
 			continue
 		}
@@ -147,10 +148,12 @@ func (h *Handler) renderTemplateWithStatus(rw http.ResponseWriter, ctx context.C
 	var templateName string
 
 	switch {
-	case status >= 400 && status < 500:
-		templateName = "400"
 	case status == 404:
 		templateName = "404"
+		break
+	case status >= 400 && status < 500:
+		templateName = "400"
+		break
 	default:
 		templateName = "500"
 	}

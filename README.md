@@ -40,8 +40,8 @@ TODO
 	- [x] Registration
 	- [x] Registration success
 	- [x] Registration confirmation
-	- [ ] Login
-	- [ ] Logout
+	- [x] Login
+	- [x] Logout
 	- [ ] Password recovery
 	- [ ] Password recovery confirmation
 	- [x] 400
@@ -49,8 +49,8 @@ TODO
 	- [x] 500
 - [ ] REST API
 	- [ ] Registration
-	- [x] Registration success
-	- [x] Registration confirmation
+	- [ ] Registration success
+	- [ ] Registration confirmation
 	- [ ] Login
 	- [ ] Logout
 	- [ ] Password recovery

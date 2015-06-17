@@ -8,7 +8,7 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/go-soa/charon/controller/web/request"
 	"github.com/go-soa/charon/lib"
-	mnemosynelib "github.com/go-soa/mnemosyne/lib"
+	mnemosyne "github.com/go-soa/mnemosyne/lib"
 	"golang.org/x/net/context"
 )
 
@@ -51,8 +51,8 @@ func (h *Handler) LoginProcess(ctx context.Context, rw http.ResponseWriter, r *h
 		return h.renderTemplate403(rw, ctx)
 	}
 
-	session := mnemosynelib.Session{}
-	sessionData := mnemosynelib.SessionData{
+	session := mnemosyne.Session{}
+	sessionData := mnemosyne.SessionData{
 		"user_id":    strconv.FormatInt(user.ID, 10),
 		"username":   user.Username,
 		"first_name": user.FirstName,
@@ -61,13 +61,14 @@ func (h *Handler) LoginProcess(ctx context.Context, rw http.ResponseWriter, r *h
 
 	err = h.Container.Mnemosyne.Call("Store.New", sessionData, &session)
 	if err != nil {
-		h.renderTemplate500(rw, ctx, err)
+		return h.renderTemplate500(rw, ctx, err)
 	}
 
 	cookie := &http.Cookie{
 		Name:     "sid",
 		Value:    session.ID.String(),
 		HttpOnly: true,
+		// TODO: need to be checked what behavior is preferred
 		//		Domain:   h.Container.Config.Domain,
 	}
 
@@ -79,5 +80,27 @@ func (h *Handler) LoginProcess(ctx context.Context, rw http.ResponseWriter, r *h
 
 // LogoutIndex ...
 func (h *Handler) LogoutIndex(ctx context.Context, rw http.ResponseWriter, r *http.Request) context.Context {
-	return h.renderTemplate(rw, ctx)
+	cookie, err := r.Cookie("sid")
+	if err != nil {
+		switch err {
+		case http.ErrNoCookie:
+			return h.renderTemplate400(rw, ctx)
+		default:
+			return h.renderTemplate500(rw, ctx, err)
+		}
+	}
+
+	err = h.Container.Mnemosyne.Call("Store.Abandon", mnemosyne.SessionID(cookie.Value), nil)
+	if err != nil {
+		switch err {
+		case mnemosyne.ErrSessionNotFound:
+			return h.renderTemplate403(rw, ctx)
+		default:
+			return h.renderTemplate500(rw, ctx, err)
+		}
+	}
+
+	http.Redirect(rw, r, "/login", http.StatusFound)
+
+	return ctx
 }

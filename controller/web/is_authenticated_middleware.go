@@ -10,7 +10,6 @@ import (
 // IsAuthenticatedMiddleware ...
 func (h *Handler) IsAuthenticatedMiddleware(ctx context.Context, rw http.ResponseWriter, r *http.Request) context.Context {
 	cookie, err := r.Cookie("sid")
-
 	if err != nil {
 		switch err {
 		case http.ErrNoCookie:
@@ -23,8 +22,8 @@ func (h *Handler) IsAuthenticatedMiddleware(ctx context.Context, rw http.Respons
 	session := mnemosyne.Session{}
 	err = h.Container.Mnemosyne.Call("Store.Get", mnemosyne.SessionID(cookie.Value), &session)
 	if err != nil {
-		switch err {
-		case mnemosyne.ErrSessionNotFound:
+		switch err.Error() {
+		case mnemosyne.ErrSessionNotFound.Error():
 			return h.renderTemplate403(rw, ctx)
 		default:
 			return h.renderTemplate500(rw, ctx, err)

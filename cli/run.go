@@ -32,6 +32,7 @@ func runCommandAction(context *cli.Context) {
 
 	router := httprouter.New()
 
+	setupNotFoundRoute(router)
 	setupStaticRoutes(router)
 	setupWebRoutes(router)
 
@@ -104,6 +105,14 @@ func setupWebRoutes(router *httprouter.Router) {
 			Container: container,
 		}),
 		web.NewHandler(web.HandlerOpts{
+			Name:   "logout_index",
+			Method: "GET",
+			Middlewares: web.NewMiddlewares(
+				(*web.Handler).LogoutIndex,
+			),
+			Container: container,
+		}),
+		web.NewHandler(web.HandlerOpts{
 			Name:   "login_index",
 			Method: "GET",
 			Middlewares: web.NewMiddlewares(
@@ -137,4 +146,10 @@ func setupWebRoutes(router *httprouter.Router) {
 
 func setupStaticRoutes(router *httprouter.Router) {
 	router.ServeFiles("/assets/*filepath", http.Dir("assets"))
+}
+
+func setupNotFoundRoute(router *httprouter.Router) {
+	router.NotFound = http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+		http.Redirect(rw, r, "/login", http.StatusTemporaryRedirect)
+	})
 }
