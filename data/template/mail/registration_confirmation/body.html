@@ -1,7 +1,7 @@
 {{define "registration_confirmation_html_body"}}
     {{ trans "mail.html.registration.hi" }}
 
-    {{ trans "mail.html.registration.welcome_to_our_site_user_%s" }}
+    {{ trans "mail.html.registration.welcome_to_our_site_user_%s" .user.Username }}
 
     {{ trans "mail.html.registration.to_confirm_click_link_below" }}
     <a href="{{ url_abs "registration_confirmation" "confirmationToken" .user.ConfirmationToken "userId" .user.ID }}">

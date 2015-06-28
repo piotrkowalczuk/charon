@@ -1,8 +1,8 @@
 mail.html.registration.hi,Hi!
-mail.html.registration.welcome_to_our_site_user_%s,Welcome to our site <b>{{.Username}}</b>
+mail.html.registration.welcome_to_our_site_user_%s,Welcome to our site <b>%s</b>
 mail.html.registration.to_confirm_click_link_below,To confirm your account pleas click link below:
 mail.text.registration.hi,Hi!
-mail.text.registration.welcome_to_our_site_user_%s,Welcome to our site {{.Username}}
+mail.text.registration.welcome_to_our_site_user_%s,Welcome to our site %s
 mail.text.registration.to_confirm_visit_link_below,To confirm your account please visit link below:
 mail.topic.registration,Welcome to site!
 web.registration.header_register,Register
