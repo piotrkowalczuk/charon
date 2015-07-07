@@ -10,8 +10,7 @@ import (
 	"github.com/go-soa/charon/lib/routing"
 	"github.com/go-soa/charon/lib/security"
 	"github.com/go-soa/charon/model"
-	"github.com/go-soa/charon/repository"
-	"github.com/satori/go.uuid"
+	uuid "github.com/satori/go.uuid"
 	"golang.org/x/net/context"
 )
 
@@ -40,7 +39,7 @@ func (h *Handler) RegistrationProcess(ctx context.Context, rw http.ResponseWrite
 	user, err := createAndRegisterUser(h.Container.PasswordHasher, h.Container.RM.User, registrationRequest)
 	if err != nil {
 		switch err {
-		case repository.ErrUserUniqueConstraintViolationUsername:
+		case lib.ErrUserUniqueConstraintViolationUsername:
 			validationErrorBuilder.Add("email", "User with given email already exists.")
 
 			return h.renderTemplateWithData(rw, ctx, map[string]interface{}{
@@ -59,7 +58,7 @@ func (h *Handler) RegistrationProcess(ctx context.Context, rw http.ResponseWrite
 		return h.renderTemplate500(rw, ctx, err)
 	}
 
-	http.Redirect(rw, r, "/registration/success", http.StatusFound)
+	h.redirect(rw, r, "registration_success", http.StatusFound)
 
 	return ctx
 }
@@ -76,25 +75,25 @@ func (h *Handler) RegistrationConfirmation(ctx context.Context, rw http.Response
 	var userIDParam string
 
 	if confirmationTokenParam, ok = routing.ParamFromContext(ctx, "confirmationToken"); !ok {
-		h.Container.Logger.Debug("confirmation token param is missing")
+		h.Container.Logger.Debug("Confirmation token param is missing.")
 		return h.renderTemplate400(rw, ctx)
 	}
 
 	if userIDParam, ok = routing.ParamFromContext(ctx, "userId"); !ok {
-		h.Container.Logger.Debug("user id param is missing")
+		h.Container.Logger.Debug("User ID param is missing.")
 		return h.renderTemplate400(rw, ctx)
 	}
 
 	userID, err := strconv.ParseInt(userIDParam, 10, 64)
 	if err != nil {
-		h.Container.Logger.Debug("user id param wrong type")
+		h.Container.Logger.Debug("User ID param wrong type.")
 		return h.renderTemplate400(rw, ctx)
 	}
 
 	if err := h.Container.RM.User.RegistrationConfirmation(userID, confirmationTokenParam); err != nil {
 		switch err {
-		case repository.ErrUserNotFound:
-			h.Container.Logger.Debug("registration confirmation failure, user not found")
+		case lib.ErrUserNotFound:
+			h.Container.Logger.Debug("Registration confirmation failure, user not found.")
 			return h.renderTemplateWithStatus(rw, ctx, http.StatusMethodNotAllowed)
 		default:
 			return h.renderTemplate500(rw, ctx, err)
@@ -106,7 +105,7 @@ func (h *Handler) RegistrationConfirmation(ctx context.Context, rw http.Response
 
 func createAndRegisterUser(
 	passwordHasher security.PasswordHasher,
-	repository *repository.UserRepository,
+	repository lib.UserRepository,
 	request *request.RegistrationRequest,
 ) (*model.User, error) {
 	confirmationToken := uuid.NewV4().String()

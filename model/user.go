@@ -2,6 +2,11 @@ package model
 
 import "time"
 
+const (
+	// UserConfirmationTokenUsed is a value that is used when confirmation token was already used.
+	UserConfirmationTokenUsed = "!"
+)
+
 // User ...
 type User struct {
 	ID                int64

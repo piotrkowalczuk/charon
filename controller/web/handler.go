@@ -10,10 +10,9 @@ import (
 	"net/rpc"
 
 	"github.com/Sirupsen/logrus"
+	"github.com/go-soa/charon/lib"
 	"github.com/go-soa/charon/lib/routing"
 	"github.com/go-soa/charon/lib/security"
-	"github.com/go-soa/charon/mail"
-	"github.com/go-soa/charon/repository"
 	"github.com/go-soa/charon/service"
 	"github.com/julienschmidt/httprouter"
 	"github.com/lib/pq"
@@ -25,19 +24,21 @@ type ServiceContainer struct {
 	Config             service.AppConfig
 	Logger             *logrus.Logger
 	DB                 *sql.DB
-	ConfirmationMailer mail.Sender
-	RM                 repository.Manager
+	ConfirmationMailer lib.Sender
+	RM                 lib.RepositoryManager
 	PasswordHasher     security.PasswordHasher
 	Routes             routing.Routes
 	URLGenerator       routing.URLGenerator
 	TemplateManager    *service.TemplateManager
 	Mnemosyne          *rpc.Client
+	PasswordRecoverer  lib.PasswordRecoverer
 }
 
 // HandlerOpts ...
 type HandlerOpts struct {
 	Name        string
 	Method      string
+	Template    string
 	Middlewares []MiddlewareFunc
 	Container   ServiceContainer
 }
@@ -45,6 +46,7 @@ type HandlerOpts struct {
 // Handler ...
 type Handler struct {
 	Name        string
+	Template    string
 	Method      string
 	middlewares []MiddlewareFunc
 	Container   ServiceContainer
@@ -55,6 +57,7 @@ type Handler struct {
 func NewHandler(options HandlerOpts) *Handler {
 	return &Handler{
 		Name:        options.Name,
+		Template:    options.Template,
 		Method:      options.Method,
 		middlewares: options.Middlewares,
 		Container:   options.Container,
@@ -132,7 +135,12 @@ func (h *Handler) renderTemplate(rw http.ResponseWriter, ctx context.Context) co
 }
 
 func (h *Handler) renderTemplateWithData(rw http.ResponseWriter, ctx context.Context, data interface{}) context.Context {
-	err := h.Container.TemplateManager.GetForWeb(rw, h.Name, data)
+	var err error
+	if h.Template == "" {
+		err = h.Container.TemplateManager.GetForWeb(rw, h.Name, data)
+	} else {
+		err = h.Container.TemplateManager.GetForWeb(rw, h.Template, data)
+	}
 
 	if err != nil {
 		h.cancel()
@@ -199,4 +207,8 @@ func (h *Handler) logRequest(wrw *ResponseWriter, r *http.Request, startedAt tim
 	b.WriteString(time.Since(startedAt).String())
 
 	h.Container.Logger.Info(b.String())
+}
+
+func (h *Handler) redirect(rw http.ResponseWriter, r *http.Request, routeName routing.RouteName, status int) {
+	http.Redirect(rw, r, h.Container.Routes.GetPattern(routeName).String(), status)
 }

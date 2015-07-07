@@ -65,7 +65,7 @@ CREATE SEQUENCE charon_permission_id_seq
 ALTER SEQUENCE charon_permission_id_seq OWNED BY charon_permission.id;
 
 --
--- Charon UserPermission
+-- Charon UserPermissions
 --
 CREATE TABLE charon_user_permissions (
     id integer NOT NULL,
@@ -84,7 +84,7 @@ ALTER SEQUENCE charon_user_permissions_id_seq OWNED BY charon_user_permissions.i
 -- Charon User
 --
 CREATE TABLE charon_user (
-    id integer NOT NULL,
+    id serial PRIMARY KEY,
     password character varying(128) NOT NULL,
     username character varying(75) NOT NULL,
     first_name character varying(45) NOT NULL,
@@ -98,17 +98,9 @@ CREATE TABLE charon_user (
     created_at timestamp with time zone NOT NULL,
     updated_at timestamp with time zone NOT NULL
 );
-CREATE SEQUENCE charon_user_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-ALTER SEQUENCE charon_user_id_seq OWNED BY charon_user.id;
-
 
 --
--- Charon User Groups
+-- Charon UserGroups
 --
 CREATE TABLE charon_user_groups (
     id integer NOT NULL,
@@ -123,6 +115,19 @@ CREATE SEQUENCE charon_user_groups_id_seq
     CACHE 1;
 ALTER SEQUENCE charon_user_groups_id_seq OWNED BY charon_user_groups.id;
 
+--
+-- Charon PasswordRecovery
+--
+CREATE TABLE charon_password_recovery (
+    id serial NOT NULL,
+    user_id integer NOT NULL,
+    status integer default 0,
+    confirmation_token character varying(122) NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    recovered_at timestamp with time zone,
+
+    FOREIGN KEY (user_id) REFERENCES charon_user (id)
+);
 
 --
 -- Charon ContentType
@@ -145,7 +150,6 @@ ALTER SEQUENCE charon_content_type_id_seq OWNED BY charon_content_type.id;
 ALTER TABLE ONLY charon_group ALTER COLUMN id SET DEFAULT nextval('charon_group_id_seq'::regclass);
 ALTER TABLE ONLY charon_group_permissions ALTER COLUMN id SET DEFAULT nextval('charon_group_permissions_id_seq'::regclass);
 ALTER TABLE ONLY charon_permission ALTER COLUMN id SET DEFAULT nextval('charon_permission_id_seq'::regclass);
-ALTER TABLE ONLY charon_user ALTER COLUMN id SET DEFAULT nextval('charon_user_id_seq'::regclass);
 ALTER TABLE ONLY charon_user_groups ALTER COLUMN id SET DEFAULT nextval('charon_user_groups_id_seq'::regclass);
 ALTER TABLE ONLY charon_user_permissions ALTER COLUMN id SET DEFAULT nextval('charon_user_permissions_id_seq'::regclass);
 ALTER TABLE ONLY charon_content_type ALTER COLUMN id SET DEFAULT nextval('charon_content_type_id_seq'::regclass);
@@ -173,9 +177,6 @@ ALTER TABLE ONLY charon_user_groups
 
 ALTER TABLE ONLY charon_user_groups
     ADD CONSTRAINT charon_user_groups_user_id_3da41bdcd69daabb_uniq UNIQUE (user_id, group_id);
-
-ALTER TABLE ONLY charon_user
-    ADD CONSTRAINT charon_user_pkey PRIMARY KEY (id);
 
 ALTER TABLE ONLY charon_user_permissions
     ADD CONSTRAINT charon_user_permissions_id_seq_pkey PRIMARY KEY (id);

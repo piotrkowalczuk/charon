@@ -1,4 +1,4 @@
-{{define "registration_index"}}
+{{define "registration"}}
     {{template "header"}}
     <div class="container">
         <div class="row">
@@ -17,7 +17,7 @@
                     </label>
                     <input name="email" type="email" value="{{ .request.Email }}" class="form-control" id="registration-email" placeholder="{{ trans "web.registration.form_placeholder.email" }}">
                     {{ range $key, $value := .validationErrors.email.Errors }}
-                        <p class="help-block">{{ trans $value}}</p>
+                        <p class="help-block">{{ trans $value }}</p>
                     {{ end }}
                   </div>
                   <div class="form-group {{ if .validationErrors.password.HasErrors }}error has-error{{ end }}">
@@ -47,7 +47,7 @@
                   </div>
                   <hr>
                   <div class="text-center">
-                      <button type="submit" class="btn btn-default">{{ trans "web.registration.button.create_account" }}</button>
+                      <button type="submit" class="btn btn-primary">{{ trans "web.registration.button.create_account" }}</button>
                   </div>
                 </form>
             </div>
