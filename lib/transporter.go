@@ -1,4 +1,4 @@
-package mail
+package lib
 
 // Transporter ...
 type Transporter interface {

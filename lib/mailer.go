@@ -1,17 +1,13 @@
-package mail
+package lib
 
 import (
 	"bytes"
 	"io"
 )
 
-const (
-	confirmationMailerDirectory = "registration_confirmation"
-)
-
 // Sender ...
 type Sender interface {
-	Send(string, map[string]interface{}) error
+	Send(string, interface{}) error
 }
 
 type templateGetter interface {
@@ -20,6 +16,7 @@ type templateGetter interface {
 
 // Mailer ...
 type Mailer struct {
+	directory string
 	from      string
 	transport Transporter
 	templates templateGetter
@@ -28,33 +25,29 @@ type Mailer struct {
 // NewMailer ...
 func NewMailer(directory, from string, transport Transporter, templates templateGetter) (*Mailer, error) {
 	return &Mailer{
+		directory: directory,
 		from:      from,
 		templates: templates,
 		transport: transport,
 	}, nil
 }
 
-// NewConfirmationMailer ...
-func NewConfirmationMailer(from string, transport Transporter, templates templateGetter) (*Mailer, error) {
-	return NewMailer(confirmationMailerDirectory, from, transport, templates)
-}
-
 // Send ...
-func (m Mailer) Send(to string, params map[string]interface{}) error {
+func (m Mailer) Send(to string, params interface{}) error {
 	var err error
 	var topic, html, plain bytes.Buffer
 
-	err = m.templates.GetForMail(&topic, "registration_confirmation_topic", nil)
+	err = m.templates.GetForMail(&topic, m.directory+"_topic", nil)
 	if err != nil {
 		return err
 	}
 
-	err = m.templates.GetForMail(&plain, "registration_confirmation_plain_body", params)
+	err = m.templates.GetForMail(&plain, m.directory+"_plain_body", params)
 	if err != nil {
 		return err
 	}
 
-	err = m.templates.GetForMail(&html, "registration_confirmation_html_body", params)
+	err = m.templates.GetForMail(&html, m.directory+"_html_body", params)
 	if err != nil {
 		return err
 	}

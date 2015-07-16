@@ -1,0 +1,37 @@
+{{define "password_recovery_confirmation"}}
+{{template "header"}}
+<div class="container">
+    <div class="row">
+        <div class="col-md-6 col-md-offset-3">
+            <div class="page-header text-center">
+                <h1>Password Recovery Confirmation</h1>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-4 col-md-offset-4">
+            <form action="{{ url "password_recovery_confirmation" "confirmationToken" .confirmation_token "userId" .user_id }}" method="POST">
+                <div class="form-group {{ if .validationErrors.password.HasErrors }}error has-error{{ end }}">
+                    <label class="control-label" for="password-recovery-password">Password</label>
+                    <input name="password" type="password" value="{{ .request.Password }}" class="form-control" id="password-recovery-password" placeholder="Enter password">
+                    {{ range $key, $value := .validationErrors.password.Errors }}
+                    <p class="help-block">{{ trans $value }}</p>
+                    {{ end }}
+                </div>
+                <div class="form-group {{ if .validationErrors.passwordRepeat.HasErrors }}error has-error{{ end }}">
+                    <label class="control-label" for="password-recovery-password">Repeat password</label>
+                    <input name="passwordRepeat" type="password" value="{{ .request.PasswordRepeat }}" class="form-control" id="password-recovery-password-repeat" placeholder="Repeat password">
+                    {{ range $key, $value := .validationErrors.passwordRepeat.Errors }}
+                    <p class="help-block">{{ trans $value }}</p>
+                    {{ end }}
+                </div>
+                <hr>
+                <div class="text-center">
+                    <button type="submit" class="btn btn-primary">Change password</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{{template "footer"}}
+{{end}}

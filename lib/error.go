@@ -1,4 +1,4 @@
-package repository
+package lib
 
 func mapKnownErrors(knownErrors map[string]error, err error) error {
 	if err == nil {

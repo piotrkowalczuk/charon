@@ -3,11 +3,20 @@ package service
 import (
 	"log"
 
-	"github.com/go-soa/charon/mail"
+	"github.com/go-soa/charon/lib"
 )
 
-// ConfirmationMailer ...
-var ConfirmationMailer mail.Sender
+const (
+	registrationConfirmationMailerDirectory = "registration_confirmation"
+	passwordRecoveryMailerDirectory         = "password_recovery"
+)
+
+var (
+	// RegistrationConfirmationMailer ...
+	RegistrationConfirmationMailer lib.Sender
+	// PasswordRecoveryMailer ...
+	PasswordRecoveryMailer lib.Sender
+)
 
 type mailConfig struct {
 	Type     string `xml:"type"`
@@ -18,20 +27,26 @@ type mailConfig struct {
 	From     string `xml:"from"`
 }
 
-// InitMailer ...
-func InitMailer(config mailConfig, tplMgr *TemplateManager) {
-	var transport mail.Transporter
+// InitMailers ...
+func InitMailers(config mailConfig, tplMgr *TemplateManager) {
+	var transport lib.Transporter
 	switch config.Type {
-	case mail.TransporterTypeSMTP:
-		transport = mail.NewSMTPTransporter(config.Host, config.Username, config.Password, config.Port)
+	case lib.TransporterTypeSMTP:
+		transport = lib.NewSMTPTransporter(config.Host, config.Username, config.Password, config.Port)
 	default:
 		log.Fatalf("Unsupported mailer type '%s'", config.Type)
 	}
 
-	confirmationMailer, err := mail.NewConfirmationMailer(config.From, transport, tplMgr)
+	registrationConfirmationMailer, err := lib.NewMailer(registrationConfirmationMailerDirectory, config.From, transport, tplMgr)
 	if err != nil {
 		Logger.Fatal(err)
 	}
 
-	ConfirmationMailer = confirmationMailer
+	passwordRecoveryMailer, err := lib.NewMailer(passwordRecoveryMailerDirectory, config.From, transport, tplMgr)
+	if err != nil {
+		Logger.Fatal(err)
+	}
+
+	RegistrationConfirmationMailer = registrationConfirmationMailer
+	PasswordRecoveryMailer = passwordRecoveryMailer
 }

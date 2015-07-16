@@ -1,4 +1,4 @@
-{{define "dashboard_index"}}
+{{define "dashboard"}}
 {{template "header"}}
 <div class="container">
     <div class="row">
@@ -9,19 +9,22 @@
         </div>
     </div>
     <div class="row">
-        <div class="col-md-12">
+        <div class="col-md-4 col-md-offset-4">
             {{ if .session }}
-                <a href="/logout" class="btn">logout</a>
                 <dl class="dl-horizontal">
+                    <dt>ID</dt>
+                    <dd>{{ .session.user_id }}</dd>
                     <dt>First Name</dt>
                     <dd>{{ .session.first_name }}</dd>
                     <dt>Last Name</dt>
                     <dd>{{ .session.last_name }}</dd>
                     <dt>Username</dt>
                     <dd>{{ .session.username }}</dd>
-                    <dt>ID</dt>
-                    <dd>{{ .session.user_id }}</dd>
                 </dl>
+                <hr>
+                <div class="text-center">
+                    <a href="/logout" class="btn btn-default">Logout</a>
+                </div>
             {{ else }}
                 <div class="alert alert-danger">
                     <strong>Oops..</strong> you are not logged in.

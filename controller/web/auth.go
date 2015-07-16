@@ -34,7 +34,7 @@ func (h *Handler) LoginProcess(ctx context.Context, rw http.ResponseWriter, r *h
 		})
 	}
 
-	user, err := h.Container.RM.User.FindByUsername(loginRequest.Email)
+	user, err := h.Container.RM.User.FindOneByUsername(loginRequest.Email)
 	if err != nil {
 		return h.renderTemplate500(rw, ctx, err)
 	}
@@ -44,7 +44,12 @@ func (h *Handler) LoginProcess(ctx context.Context, rw http.ResponseWriter, r *h
 			"username": loginRequest.Email,
 			"password": loginRequest.Password,
 		}).Debug("Wrong password provided.")
-		return h.renderTemplate400(rw, ctx)
+
+		validationErrorBuilder.Add("form", "The email address and password you entered do not match.")
+		return h.renderTemplateWithData(rw, ctx, map[string]interface{}{
+			"validationErrors": validationErrorBuilder.Errors(),
+			"request":          loginRequest,
+		})
 	}
 
 	if !user.IsConfirmed || !user.IsActive {
@@ -64,6 +69,11 @@ func (h *Handler) LoginProcess(ctx context.Context, rw http.ResponseWriter, r *h
 		return h.renderTemplate500(rw, ctx, err)
 	}
 
+	err = h.Container.RM.User.UpdateLastLoginAt(user.ID)
+	if err != nil {
+		return h.renderTemplate500(rw, ctx, err)
+	}
+
 	cookie := &http.Cookie{
 		Name:     "sid",
 		Value:    session.ID.String(),
@@ -73,7 +83,8 @@ func (h *Handler) LoginProcess(ctx context.Context, rw http.ResponseWriter, r *h
 	}
 
 	http.SetCookie(rw, cookie)
-	http.Redirect(rw, r, "/dashboard", http.StatusFound)
+
+	h.redirect(rw, r, "dashboard", http.StatusFound)
 
 	return ctx
 }
@@ -100,7 +111,7 @@ func (h *Handler) LogoutIndex(ctx context.Context, rw http.ResponseWriter, r *ht
 		}
 	}
 
-	http.Redirect(rw, r, "/login", http.StatusFound)
+	h.redirect(rw, r, "login", http.StatusFound)
 
 	return ctx
 }

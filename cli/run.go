@@ -28,7 +28,14 @@ func runCommandAction(context *cli.Context) {
 	service.InitTranslation(service.Config.Translation)
 	service.InitRouting(service.Config.Routing)
 	service.InitTemplateManager(service.Config.Templates)
-	service.InitMailer(service.Config.Mailer, service.TplManager)
+	service.InitMailers(service.Config.Mailer, service.TplManager)
+	service.InitPasswordRecoverer(
+		service.Logger,
+		service.PasswordHasher,
+		service.RepositoryManager.User,
+		service.RepositoryManager.PasswordRecovery,
+		service.PasswordRecoveryMailer,
+	)
 
 	router := httprouter.New()
 
@@ -64,19 +71,28 @@ func setupWebRoutes(router *httprouter.Router) {
 		DB:                 service.DBPool,
 		RM:                 service.RepositoryManager,
 		PasswordHasher:     service.PasswordHasher,
-		ConfirmationMailer: service.ConfirmationMailer,
+		ConfirmationMailer: service.RegistrationConfirmationMailer,
 		TemplateManager:    service.TplManager,
 		Routes:             service.Routes,
 		URLGenerator:       service.URLGenerator,
 		Mnemosyne:          service.Mnemosyne,
+		PasswordRecoverer:  service.PasswordRecoverer,
 	}
 
 	handlers := []*web.Handler{
 		web.NewHandler(web.HandlerOpts{
-			Name:   "registration_index",
+			Name:   "registration",
 			Method: "GET",
 			Middlewares: web.NewMiddlewares(
 				(*web.Handler).RegistrationSuccess,
+			),
+			Container: container,
+		}),
+		web.NewHandler(web.HandlerOpts{
+			Name:   "registration",
+			Method: "POST",
+			Middlewares: web.NewMiddlewares(
+				(*web.Handler).RegistrationProcess,
 			),
 			Container: container,
 		}),
@@ -89,14 +105,6 @@ func setupWebRoutes(router *httprouter.Router) {
 			Container: container,
 		}),
 		web.NewHandler(web.HandlerOpts{
-			Name:   "registration_index",
-			Method: "POST",
-			Middlewares: web.NewMiddlewares(
-				(*web.Handler).RegistrationProcess,
-			),
-			Container: container,
-		}),
-		web.NewHandler(web.HandlerOpts{
 			Name:   "registration_confirmation",
 			Method: "GET",
 			Middlewares: web.NewMiddlewares(
@@ -105,7 +113,7 @@ func setupWebRoutes(router *httprouter.Router) {
 			Container: container,
 		}),
 		web.NewHandler(web.HandlerOpts{
-			Name:   "logout_index",
+			Name:   "logout",
 			Method: "GET",
 			Middlewares: web.NewMiddlewares(
 				(*web.Handler).LogoutIndex,
@@ -113,7 +121,7 @@ func setupWebRoutes(router *httprouter.Router) {
 			Container: container,
 		}),
 		web.NewHandler(web.HandlerOpts{
-			Name:   "login_index",
+			Name:   "login",
 			Method: "GET",
 			Middlewares: web.NewMiddlewares(
 				(*web.Handler).LoginIndex,
@@ -121,7 +129,7 @@ func setupWebRoutes(router *httprouter.Router) {
 			Container: container,
 		}),
 		web.NewHandler(web.HandlerOpts{
-			Name:   "login_index",
+			Name:   "login",
 			Method: "POST",
 			Middlewares: web.NewMiddlewares(
 				(*web.Handler).LoginProcess,
@@ -129,7 +137,56 @@ func setupWebRoutes(router *httprouter.Router) {
 			Container: container,
 		}),
 		web.NewHandler(web.HandlerOpts{
-			Name:   "dashboard_index",
+			Name:   "password_recovery",
+			Method: "GET",
+			Middlewares: web.NewMiddlewares(
+				(*web.Handler).PasswordRecoveryIndex,
+			),
+			Container: container,
+		}),
+		web.NewHandler(web.HandlerOpts{
+			Name:   "password_recovery",
+			Method: "POST",
+			Middlewares: web.NewMiddlewares(
+				(*web.Handler).PasswordRecoveryProcess,
+			),
+			Container: container,
+		}),
+		web.NewHandler(web.HandlerOpts{
+			Name:   "password_recovery_success",
+			Method: "GET",
+			Middlewares: web.NewMiddlewares(
+				(*web.Handler).PasswordRecoverySuccess,
+			),
+			Container: container,
+		}),
+		web.NewHandler(web.HandlerOpts{
+			Name:   "password_recovery_confirmation",
+			Method: "GET",
+			Middlewares: web.NewMiddlewares(
+				(*web.Handler).PasswordRecoveryConfirmationIndex,
+			),
+			Container: container,
+		}),
+		web.NewHandler(web.HandlerOpts{
+			Name:   "password_recovery_confirmation",
+			Method: "POST",
+			Middlewares: web.NewMiddlewares(
+				(*web.Handler).PasswordRecoveryConfirmationProcess,
+			),
+			Container: container,
+		}),
+		web.NewHandler(web.HandlerOpts{
+			Name:     "password_recovery_confirmation_success",
+			Template: "password_recovery_success",
+			Method:   "GET",
+			Middlewares: web.NewMiddlewares(
+				(*web.Handler).PasswordRecoveryConfirmationSuccess,
+			),
+			Container: container,
+		}),
+		web.NewHandler(web.HandlerOpts{
+			Name:   "dashboard",
 			Method: "GET",
 			Middlewares: web.NewMiddlewares(
 				(*web.Handler).IsAuthenticatedMiddleware,

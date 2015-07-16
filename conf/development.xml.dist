@@ -41,16 +41,44 @@
         <base-url>localhost:8080</base-url>
         <routes>
             <route>
-                <name>registration_index</name>
-                <pattern>/registration</pattern>
+               <name>registration_confirmation</name>
+               <pattern>/registration/confirmation/:userId/:confirmationToken</pattern>
             </route>
             <route>
-                <name>registration_success</name>
-                <pattern>/registration/success</pattern>
+               <name>registration</name>
+               <pattern>/registration</pattern>
             </route>
             <route>
-                <name>registration_confirmation</name>
-                <pattern>/registration/confirmation/:userId/:confirmationToken</pattern>
+               <name>registration_success</name>
+               <pattern>/registration/success</pattern>
+            </route>
+            <route>
+               <name>login</name>
+               <pattern>/login</pattern>
+            </route>
+            <route>
+               <name>logout</name>
+               <pattern>/logout</pattern>
+            </route>
+            <route>
+               <name>password_recovery</name>
+               <pattern>/password-recovery</pattern>
+            </route>
+            <route>
+               <name>password_recovery_success</name>
+               <pattern>/password-recovery/success</pattern>
+            </route>
+            <route>
+               <name>password_recovery_confirmation</name>
+               <pattern>/password-recovery/confirmation/:userId/:confirmationToken</pattern>
+            </route>
+            <route>
+               <name>password_recovery_confirmation_success</name>
+               <pattern>/password-recovery/confirmation-success</pattern>
+            </route>
+            <route>
+               <name>dashboard</name>
+               <pattern>/dashboard</pattern>
             </route>
         </routes>
     </routing>

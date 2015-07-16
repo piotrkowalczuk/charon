@@ -1,4 +1,4 @@
-package mail
+package lib
 
 import (
 	"errors"
@@ -7,8 +7,8 @@ import (
 )
 
 var (
-	// ErrMissingBody ...
-	ErrMissingBody = errors.New("mail: missing body")
+	// ErrMissingMailBody ...
+	ErrMissingMailBody = errors.New("charon: missing mail body")
 )
 
 const (
@@ -31,7 +31,7 @@ func (t *SMTPTransporter) Send(from, to, topic string, bodies map[string]string)
 	})
 
 	if len(bodies) == 0 {
-		return ErrMissingBody
+		return ErrMissingMailBody
 	}
 
 	for contentType, body := range bodies {
