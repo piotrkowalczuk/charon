@@ -1,0 +1,95 @@
+syntax = "proto3";
+
+package charon;
+
+import "github.com/piotrkowalczuk/mnemosyne/mnemosyne.proto";
+
+service RPC {
+
+    // Authentication
+
+    rpc Login(LoginRequest) returns (LoginResponse) {};
+    rpc Logout(LogoutRequest) returns (LogoutResponse) {};
+
+    // Authorization
+
+    rpc IsGranted(IsGrantedRequest) returns (IsGrantedResponse) {};
+    rpc HasPrivileges(HasPrivilegesRequest) returns (HasPrivilegesResponse) {};
+
+    rpc CreateUser(CreateUserRequest) returns (CreateUserResponse) {};
+    rpc ModifyUser(ModifyUserRequest) returns (ModifyUserResponse) {};
+    rpc GetUser(GetUserRequest) returns (GetUserResponse) {};
+    rpc GetUsers(GetUsersRequest) returns (GetUsersResponse) {};
+    rpc DeleteUser(DeleteUserRequest) returns (DeleteUserResponse) {};
+//    rpc Register(RegisterRequest) returns (RegisterResponse) {};
+//    rpc ConfirmRegistration(ConfirmRegistrationRequest) returns (ConfirmRegistrationResponse) {};
+//    rpc RecoverPassword(RecoverPasswordRequest) returns (RecoverPasswordResponse) {};
+//    rpc ConfirmPasswordRecovery(ConfirmPasswordRecoveryRequest) returns (ConfirmPasswordRecoveryResponse) {};
+}
+
+// Login
+
+message LoginRequest {}
+message LoginResponse {
+    mnemosyne.Session session = 1;
+}
+
+// Logout
+
+message LogoutRequest {}
+message LogoutResponse {}
+
+// Register
+
+message RegisterRequest {}
+message RegisterResponse {}
+
+// ConfirmRegistration
+
+message ConfirmRegistrationRequest {}
+message ConfirmRegistrationResponse {}
+
+// RecoverPassword
+
+message RecoverPasswordRequest {}
+message RecoverPasswordResponse {}
+
+// ConfirmPasswordRecovery
+
+message ConfirmPasswordRecoveryRequest {}
+message ConfirmPasswordRecoveryResponse {}
+
+// IsGranted
+
+message IsGrantedRequest {}
+message IsGrantedResponse {}
+
+// HasPrivileges
+
+message HasPrivilegesRequest {}
+message HasPrivilegesResponse {}
+
+// CreateUser
+
+message CreateUserRequest {}
+message CreateUserResponse {}
+
+// GetUser
+
+message GetUserRequest {}
+message GetUserResponse {}
+
+// GetUsers
+
+message GetUsersRequest {}
+message GetUsersResponse {}
+
+// DeleteUser
+
+message DeleteUserRequest {}
+message DeleteUserResponse {}
+
+// ModifyUser
+
+message ModifyUserRequest {}
+message ModifyUserResponse {}

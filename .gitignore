@@ -1,6 +1,4 @@
-/conf/development.xml
-/auth
-/charon
-/.idea
-/auth.iml
-/charon.iml
+charond/conf/development.xml
+charond/charond
+.idea
+charon.iml
