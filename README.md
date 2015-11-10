@@ -1,4 +1,4 @@
-Charon [![Build Status](https://travis-ci.org/piotrkowalczuk/charon.svg)](https://travis-ci.org/piotrkowalczuk/charon)
+Charon [![GoDoc](https://godoc.org/github.com/piotrkowalczuk/charon?status.svg)](http://godoc.org/github.com/piotrkowalczuk/charon)&nbsp;[![Build Status](https://travis-ci.org/piotrkowalczuk/charon.svg)](https://travis-ci.org/piotrkowalczuk/charon)
 =============
 
 <img src="/charond/data/logo/charon.png?raw=true" width="300">
