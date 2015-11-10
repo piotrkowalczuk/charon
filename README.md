@@ -1,7 +1,7 @@
 Charon [![Build Status](https://travis-ci.org/piotrkowalczuk/charon.svg)](https://travis-ci.org/piotrkowalczuk/charon)
 =============
 
-<img src="/data/logo/charon.png?raw=true" width="300">
+<img src="/charond/data/logo/charon.png?raw=true" width="300">
 
 ## Documentation
 Documentation is available on [charon.readme.io](http://charon.readme.io).
