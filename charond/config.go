@@ -36,8 +36,8 @@ func (c *configuration) Init() {
 	flag.StringVar(&c.logger.format, "lf", loggerFormatJSON, "logger format")
 	flag.IntVar(&c.logger.level, "ll", 6, "logger level")
 	flag.StringVar(&c.monitoring.engine, "me", monitoringEnginePrometheus, "monitoring engine")
-	flag.StringVar(&c.postgres.connectionString, "spcs", "postgres://localhost:5432?sslmode=disable", "storage postgres connection string")
-	flag.IntVar(&c.postgres.retry, "spr", 10, "storage postgres possible attempts")
+	flag.StringVar(&c.postgres.connectionString, "pcs", "postgres://localhost:5432?sslmode=disable", "storage postgres connection string")
+	flag.IntVar(&c.postgres.retry, "pr", 10, "storage postgres possible attempts")
 }
 
 // Parse ...
