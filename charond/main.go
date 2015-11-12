@@ -24,12 +24,13 @@ func init() {
 func main() {
 	config.Parse()
 
-	initLogger(config.logger.adapter, config.logger.format, config.logger.level, sklog.KeySubsystem, config.subsystem)
-	initPostgres(
+	logger := initLogger(config.logger.adapter, config.logger.format, config.logger.level, sklog.KeySubsystem, config.subsystem)
+	postgres := initPostgres(
 		config.postgres.connectionString,
 		config.postgres.retry,
 		logger,
 	)
+	passwordHasher := initPasswordHasher(config.password.bcrypt.cost, logger)
 
 	hostname, err := os.Hostname()
 	if err != nil {
@@ -63,7 +64,9 @@ func main() {
 	gRPCServer := grpc.NewServer(opts...)
 
 	charonServer := &rpcServer{
-		logger: logger,
+		logger:         logger,
+		passwordHasher: passwordHasher,
+		userRepository: NewUserRepository(postgres),
 	}
 	charon.RegisterRPCServer(gRPCServer, charonServer)
 

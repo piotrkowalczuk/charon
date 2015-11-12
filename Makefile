@@ -11,11 +11,11 @@ FLAGS=
 all: proto build test run
 
 proto:
-	${PROTOC} --proto_path=${GOPATH}/src \
+	@${PROTOC} --proto_path=${GOPATH}/src \
 	    --proto_path=. \
 	    --go_out=plugins=grpc:. \
 	    ${SERVICE}.proto
-	@ls -al
+	@ls -al | grep pb.go
 
 build: build-daemon
 

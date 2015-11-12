@@ -18,7 +18,7 @@ const (
 
 var logger log.Logger
 
-func initLogger(adapter, format string, level int, context ...interface{}) {
+func initLogger(adapter, format string, level int, context ...interface{}) log.Logger {
 	var l log.Logger
 
 	if adapter != loggerAdapterStdOut {
@@ -40,5 +40,5 @@ func initLogger(adapter, format string, level int, context ...interface{}) {
 
 	sklog.Info(l, "logger has been initialized successfully", "adapter", adapter, "format", format, "level", level)
 
-	logger = l
+	return l
 }

@@ -1,8 +1,15 @@
 package main
 
-import "github.com/go-kit/kit/log"
+import (
+	"github.com/go-kit/kit/log"
+	"github.com/piotrkowalczuk/charon"
+	"github.com/piotrkowalczuk/mnemosyne"
+)
 
 type rpcServer struct {
-	logger  log.Logger
-	monitor *monitoring
+	logger         log.Logger
+	monitor        *monitoring
+	mnemosyne      mnemosyne.RPCClient
+	passwordHasher charon.PasswordHasher
+	userRepository UserRepository
 }

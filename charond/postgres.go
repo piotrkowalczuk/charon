@@ -11,11 +11,10 @@ import (
 	"github.com/piotrkowalczuk/sklog"
 )
 
-var postgres *sql.DB
-
-func initPostgres(connectionString string, retry int, logger log.Logger) {
+func initPostgres(connectionString string, retry int, logger log.Logger) *sql.DB {
 	var err error
 	var attempts int
+	var postgres *sql.DB
 
 	// Because of recursion it needs to be checked to not spawn more than one.
 	if postgres == nil {
@@ -40,4 +39,6 @@ func initPostgres(connectionString string, retry int, logger log.Logger) {
 	} else {
 		sklog.Info(logger, "connection do postgres established successfully")
 	}
+
+	return postgres
 }

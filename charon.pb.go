@@ -54,6 +54,8 @@ var _ = fmt.Errorf
 var _ = math.Inf
 
 type LoginRequest struct {
+	Username string `protobuf:"bytes,1,opt,name=username" json:"username,omitempty"`
+	Password string `protobuf:"bytes,2,opt,name=password" json:"password,omitempty"`
 }
 
 func (m *LoginRequest) Reset()         { *m = LoginRequest{} }
@@ -76,11 +78,19 @@ func (m *LoginResponse) GetSession() *mnemosyne1.Session {
 }
 
 type LogoutRequest struct {
+	SessionId *mnemosyne1.ID `protobuf:"bytes,1,opt,name=session_id" json:"session_id,omitempty"`
 }
 
 func (m *LogoutRequest) Reset()         { *m = LogoutRequest{} }
 func (m *LogoutRequest) String() string { return proto.CompactTextString(m) }
 func (*LogoutRequest) ProtoMessage()    {}
+
+func (m *LogoutRequest) GetSessionId() *mnemosyne1.ID {
+	if m != nil {
+		return m.SessionId
+	}
+	return nil
+}
 
 type LogoutResponse struct {
 }

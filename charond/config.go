@@ -13,6 +13,12 @@ type configuration struct {
 		format  string
 		level   int
 	}
+	password struct {
+		strategy string
+		bcrypt   struct {
+			cost int
+		}
+	}
 	monitoring struct {
 		engine string
 	}
