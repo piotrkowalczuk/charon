@@ -64,21 +64,21 @@ func (rs *rpcServer) Login(ctx context.Context, r *charon.LoginRequest) (*charon
 
 // Logout ...
 func (rs *rpcServer) Logout(ctx context.Context, r *charon.LogoutRequest) (*charon.LogoutResponse, error) {
-	if r.SessionId.String() == "" { // TODO: propably wrong, implement IsEmpty method for ID
+	if r.Token.String() == "" { // TODO: probably wrong, implement IsEmpty method for ID
 		return nil, grpc.Errorf(codes.InvalidArgument, "charond: empty session id, logout aborted")
 	}
 
-	resp, err := rs.mnemosyne.Abandon(context.Background(), &mnemosyne.AbandonRequest{Id: r.SessionId})
+	resp, err := rs.mnemosyne.Abandon(context.Background(), &mnemosyne.AbandonRequest{Token: r.Token})
 	if err != nil {
-		sklog.Error(rs.logger, err, "session_id", r.SessionId)
+		sklog.Error(rs.logger, err, "session_id", r.Token)
 
 		return nil, err
 	}
 
 	if !resp.Abandoned {
-		sklog.Debug(rs.logger, "mnemosyne responded without error but session was not abandoned, propably does not exists", "session_id", r.SessionId)
+		sklog.Debug(rs.logger, "mnemosyne responded without error but session was not abandoned, propably does not exists", "session_id", r.Token)
 	} else {
-		sklog.Debug(rs.logger, "successful logout", "session_id", r.SessionId)
+		sklog.Debug(rs.logger, "successful logout", "session_id", r.Token)
 	}
 
 	return &charon.LogoutResponse{}, nil

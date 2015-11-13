@@ -38,7 +38,7 @@ message LoginResponse {
 // Logout
 
 message LogoutRequest {
-    mnemosyne.ID session_id = 1;
+    mnemosyne.Token token = 1;
 }
 message LogoutResponse {}
 

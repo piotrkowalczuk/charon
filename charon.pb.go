@@ -78,16 +78,16 @@ func (m *LoginResponse) GetSession() *mnemosyne1.Session {
 }
 
 type LogoutRequest struct {
-	SessionId *mnemosyne1.ID `protobuf:"bytes,1,opt,name=session_id" json:"session_id,omitempty"`
+	Token *mnemosyne1.Token `protobuf:"bytes,1,opt,name=token" json:"token,omitempty"`
 }
 
 func (m *LogoutRequest) Reset()         { *m = LogoutRequest{} }
 func (m *LogoutRequest) String() string { return proto.CompactTextString(m) }
 func (*LogoutRequest) ProtoMessage()    {}
 
-func (m *LogoutRequest) GetSessionId() *mnemosyne1.ID {
+func (m *LogoutRequest) GetToken() *mnemosyne1.Token {
 	if m != nil {
-		return m.SessionId
+		return m.Token
 	}
 	return nil
 }
