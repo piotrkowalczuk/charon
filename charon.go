@@ -1,5 +1,22 @@
 package charon
 
+import "golang.org/x/net/context"
+
+const (
+	contextKeyRPCClient = "charon_rpc_client"
+)
+
+// NewContext returns a new Context that carries RPCClient instance.
+func NewContext(ctx context.Context, c RPCClient) context.Context {
+	return context.WithValue(ctx, contextKeyRPCClient, c)
+}
+
+// FromContext returns the RPCClient instance stored in context, if any.
+func FromContext(ctx context.Context) (RPCClient, bool) {
+	c, ok := ctx.Value(contextKeyRPCClient).(RPCClient)
+	return c, ok
+}
+
 // Error ...
 type Error struct {
 	StatusCode   int
