@@ -41,7 +41,7 @@ package charon
 import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
 import math "math"
-import mnemosyne1 "github.com/piotrkowalczuk/mnemosyne"
+import mnemosyne "github.com/piotrkowalczuk/mnemosyne"
 
 import (
 	context "golang.org/x/net/context"
@@ -63,14 +63,14 @@ func (m *LoginRequest) String() string { return proto.CompactTextString(m) }
 func (*LoginRequest) ProtoMessage()    {}
 
 type LoginResponse struct {
-	Session *mnemosyne1.Session `protobuf:"bytes,1,opt,name=session" json:"session,omitempty"`
+	Session *mnemosyne.Session `protobuf:"bytes,1,opt,name=session" json:"session,omitempty"`
 }
 
 func (m *LoginResponse) Reset()         { *m = LoginResponse{} }
 func (m *LoginResponse) String() string { return proto.CompactTextString(m) }
 func (*LoginResponse) ProtoMessage()    {}
 
-func (m *LoginResponse) GetSession() *mnemosyne1.Session {
+func (m *LoginResponse) GetSession() *mnemosyne.Session {
 	if m != nil {
 		return m.Session
 	}
@@ -78,14 +78,14 @@ func (m *LoginResponse) GetSession() *mnemosyne1.Session {
 }
 
 type LogoutRequest struct {
-	SessionId *mnemosyne1.ID `protobuf:"bytes,1,opt,name=session_id" json:"session_id,omitempty"`
+	SessionId *mnemosyne.ID `protobuf:"bytes,1,opt,name=session_id" json:"session_id,omitempty"`
 }
 
 func (m *LogoutRequest) Reset()         { *m = LogoutRequest{} }
 func (m *LogoutRequest) String() string { return proto.CompactTextString(m) }
 func (*LogoutRequest) ProtoMessage()    {}
 
-func (m *LogoutRequest) GetSessionId() *mnemosyne1.ID {
+func (m *LogoutRequest) GetSessionId() *mnemosyne.ID {
 	if m != nil {
 		return m.SessionId
 	}
@@ -252,35 +252,6 @@ type ModifyUserResponse struct {
 func (m *ModifyUserResponse) Reset()         { *m = ModifyUserResponse{} }
 func (m *ModifyUserResponse) String() string { return proto.CompactTextString(m) }
 func (*ModifyUserResponse) ProtoMessage()    {}
-
-func init() {
-	proto.RegisterType((*LoginRequest)(nil), "charon.LoginRequest")
-	proto.RegisterType((*LoginResponse)(nil), "charon.LoginResponse")
-	proto.RegisterType((*LogoutRequest)(nil), "charon.LogoutRequest")
-	proto.RegisterType((*LogoutResponse)(nil), "charon.LogoutResponse")
-	proto.RegisterType((*RegisterRequest)(nil), "charon.RegisterRequest")
-	proto.RegisterType((*RegisterResponse)(nil), "charon.RegisterResponse")
-	proto.RegisterType((*ConfirmRegistrationRequest)(nil), "charon.ConfirmRegistrationRequest")
-	proto.RegisterType((*ConfirmRegistrationResponse)(nil), "charon.ConfirmRegistrationResponse")
-	proto.RegisterType((*RecoverPasswordRequest)(nil), "charon.RecoverPasswordRequest")
-	proto.RegisterType((*RecoverPasswordResponse)(nil), "charon.RecoverPasswordResponse")
-	proto.RegisterType((*ConfirmPasswordRecoveryRequest)(nil), "charon.ConfirmPasswordRecoveryRequest")
-	proto.RegisterType((*ConfirmPasswordRecoveryResponse)(nil), "charon.ConfirmPasswordRecoveryResponse")
-	proto.RegisterType((*IsGrantedRequest)(nil), "charon.IsGrantedRequest")
-	proto.RegisterType((*IsGrantedResponse)(nil), "charon.IsGrantedResponse")
-	proto.RegisterType((*HasPrivilegesRequest)(nil), "charon.HasPrivilegesRequest")
-	proto.RegisterType((*HasPrivilegesResponse)(nil), "charon.HasPrivilegesResponse")
-	proto.RegisterType((*CreateUserRequest)(nil), "charon.CreateUserRequest")
-	proto.RegisterType((*CreateUserResponse)(nil), "charon.CreateUserResponse")
-	proto.RegisterType((*GetUserRequest)(nil), "charon.GetUserRequest")
-	proto.RegisterType((*GetUserResponse)(nil), "charon.GetUserResponse")
-	proto.RegisterType((*GetUsersRequest)(nil), "charon.GetUsersRequest")
-	proto.RegisterType((*GetUsersResponse)(nil), "charon.GetUsersResponse")
-	proto.RegisterType((*DeleteUserRequest)(nil), "charon.DeleteUserRequest")
-	proto.RegisterType((*DeleteUserResponse)(nil), "charon.DeleteUserResponse")
-	proto.RegisterType((*ModifyUserRequest)(nil), "charon.ModifyUserRequest")
-	proto.RegisterType((*ModifyUserResponse)(nil), "charon.ModifyUserResponse")
-}
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ context.Context

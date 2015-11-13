@@ -16,8 +16,6 @@ const (
 	loggerFormatLogFmt  = "logfmt"
 )
 
-var logger log.Logger
-
 func initLogger(adapter, format string, level int, context ...interface{}) log.Logger {
 	var l log.Logger
 

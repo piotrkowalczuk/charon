@@ -13,16 +13,10 @@ import (
 	"google.golang.org/grpc/grpclog"
 )
 
-var (
-	config configuration
-)
-
-func init() {
-	config.Init()
-}
-
 func main() {
-	config.Parse()
+	var config configuration
+	config.init()
+	config.parse()
 
 	logger := initLogger(config.logger.adapter, config.logger.format, config.logger.level, sklog.KeySubsystem, config.subsystem)
 	postgres := initPostgres(
@@ -69,6 +63,8 @@ func main() {
 		userRepository: NewUserRepository(postgres),
 	}
 	charon.RegisterRPCServer(gRPCServer, charonServer)
+
+	sklog.Info(logger, "rpc api is running", "host", config.host, "port", config.port, "subsystem", config.subsystem, "namespace", config.namespace)
 
 	gRPCServer.Serve(listen)
 }

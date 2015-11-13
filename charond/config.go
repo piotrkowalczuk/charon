@@ -2,7 +2,6 @@ package main
 
 import "flag"
 
-// configuration ...
 type configuration struct {
 	host      string
 	port      int
@@ -28,8 +27,7 @@ type configuration struct {
 	}
 }
 
-// Init ...
-func (c *configuration) Init() {
+func (c *configuration) init() {
 	if c == nil {
 		*c = configuration{}
 	}
@@ -40,14 +38,15 @@ func (c *configuration) Init() {
 	flag.StringVar(&c.subsystem, "s", "mnemosyne", "subsystem")
 	flag.StringVar(&c.logger.adapter, "la", loggerAdapterStdOut, "logger adapter")
 	flag.StringVar(&c.logger.format, "lf", loggerFormatJSON, "logger format")
+	flag.StringVar(&c.password.strategy, "ps", "bcrypt", "strategy how password will be stored")
+	flag.IntVar(&c.password.bcrypt.cost, "pbc", 10, "bcrypt cost, bigget than safer (and longer to create)")
 	flag.IntVar(&c.logger.level, "ll", 6, "logger level")
 	flag.StringVar(&c.monitoring.engine, "me", monitoringEnginePrometheus, "monitoring engine")
 	flag.StringVar(&c.postgres.connectionString, "pcs", "postgres://localhost:5432?sslmode=disable", "storage postgres connection string")
 	flag.IntVar(&c.postgres.retry, "pr", 10, "storage postgres possible attempts")
 }
 
-// Parse ...
-func (c *configuration) Parse() {
+func (c *configuration) parse() {
 	if !flag.Parsed() {
 		flag.Parse()
 	}

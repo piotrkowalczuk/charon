@@ -2,3 +2,4 @@ charond/conf/development.xml
 charond/charond
 .idea
 charon.iml
+run.sh
