@@ -35,19 +35,19 @@ func (c *configuration) init() {
 		*c = configuration{}
 	}
 
-	flag.StringVar(&c.host, "h", "127.0.0.1", "host")
-	flag.IntVar(&c.port, "p", 8080, "port")
-	flag.StringVar(&c.namespace, "n", "", "namespace")
-	flag.StringVar(&c.subsystem, "s", "mnemosyne", "subsystem")
-	flag.StringVar(&c.logger.adapter, "la", loggerAdapterStdOut, "logger adapter")
-	flag.StringVar(&c.logger.format, "lf", loggerFormatJSON, "logger format")
-	flag.StringVar(&c.mnemosyne.address, "ma", "", "mnemosyne session store connection address")
-	flag.StringVar(&c.password.strategy, "ps", "bcrypt", "strategy how password will be stored")
-	flag.IntVar(&c.password.bcrypt.cost, "pbc", 10, "bcrypt cost, bigget than safer (and longer to create)")
-	flag.IntVar(&c.logger.level, "ll", 6, "logger level")
-	flag.StringVar(&c.monitoring.engine, "me", monitoringEnginePrometheus, "monitoring engine")
-	flag.StringVar(&c.postgres.connectionString, "pcs", "postgres://localhost:5432?sslmode=disable", "storage postgres connection string")
-	flag.IntVar(&c.postgres.retry, "pr", 10, "storage postgres possible attempts")
+	flag.StringVar(&c.host, "host", "127.0.0.1", "host")
+	flag.IntVar(&c.port, "port", 8080, "port")
+	flag.StringVar(&c.namespace, "namespace", "", "namespace")
+	flag.StringVar(&c.subsystem, "subsystem", "mnemosyne", "subsystem")
+	flag.StringVar(&c.logger.adapter, "l.adapter", loggerAdapterStdOut, "logger adapter")
+	flag.StringVar(&c.logger.format, "l.format", loggerFormatJSON, "logger format")
+	flag.IntVar(&c.logger.level, "l.level", 6, "logger level")
+	flag.StringVar(&c.mnemosyne.address, "mnemo.address", "", "mnemosyne session store connection address")
+	flag.StringVar(&c.password.strategy, "pwd.strategy", "bcrypt", "strategy how password will be stored")
+	flag.IntVar(&c.password.bcrypt.cost, "pwd.bcryptcost", 10, "bcrypt cost, bigget than safer (and longer to create)")
+	flag.StringVar(&c.monitoring.engine, "m.engine", monitoringEnginePrometheus, "monitoring engine")
+	flag.StringVar(&c.postgres.connectionString, "ps.connectionstring", "postgres://localhost:5432?sslmode=disable", "storage postgres connection string")
+	flag.IntVar(&c.postgres.retry, "ps.retry", 10, "storage postgres possible attempts")
 }
 
 func (c *configuration) parse() {

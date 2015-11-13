@@ -4,19 +4,19 @@ PACKAGE=github.com/piotrkowalczuk/charon
 PACKAGE_DAEMON=$(PACKAGE)/$(SERVICE)d
 BINARY=${SERVICE}d/${SERVICE}d
 
-FLAGS=-h=$(CHARON_HOST) \
-      	    -p=$(CHARON_PORT) \
-      	    -s=$(CHARON_SUBSYSTEM) \
-      	    -n=$(CHARON_NAMESPACE) \
-      	    -lf=$(CHARON_LOGGER_FORMAT) \
-      	    -la=$(CHARON_LOGGER_ADAPTER) \
-      	    -ll=$(CHARON_LOGGER_LEVEL) \
-      	    -me=$(CHARON_MONITORING_ENGINE) \
-      	    -pcs=$(CHARON_POSTGRES_CONNECTION_STRING) \
-      	    -pr=$(CHARON_POSTGRES_RETRY) \
-      	    -ps=$(CHARON_PASSWORD_STRATEGY) \
-      	    -pbc=$(CHARON_PASSWORD_BCRYPT_COST) \
-      	    -ma=$(CHARON_MNEMOSYNE_ADDRESS)
+FLAGS=-host=$(CHARON_HOST) \
+      	    -port=$(CHARON_PORT) \
+      	    -subsystem=$(CHARON_SUBSYSTEM) \
+      	    -namespace=$(CHARON_NAMESPACE) \
+      	    -l.format=$(CHARON_LOGGER_FORMAT) \
+      	    -l.adapter=$(CHARON_LOGGER_ADAPTER) \
+      	    -l.level=$(CHARON_LOGGER_LEVEL) \
+      	    -m.engine=$(CHARON_MONITORING_ENGINE) \
+      	    -ps.connectionstring=$(CHARON_POSTGRES_CONNECTION_STRING) \
+      	    -ps.retry=$(CHARON_POSTGRES_RETRY) \
+      	    -pwd.strategy=$(CHARON_PASSWORD_STRATEGY) \
+      	    -pwd.bcryptcost=$(CHARON_PASSWORD_BCRYPT_COST) \
+      	    -mnemo.address=$(CHARON_MNEMOSYNE_ADDRESS)
 
 .PHONY:	all proto build build-daemon run test test-unit test-postgres
 
