@@ -4,7 +4,7 @@ PACKAGE=github.com/piotrkowalczuk/charon
 PACKAGE_DAEMON=$(PACKAGE)/$(SERVICE)d
 BINARY=${SERVICE}d/${SERVICE}d
 
-FLAGS= -h=$(CHARON_HOST) \
+FLAGS=-h=$(CHARON_HOST) \
       	    -p=$(CHARON_PORT) \
       	    -s=$(CHARON_SUBSYSTEM) \
       	    -n=$(CHARON_NAMESPACE) \
@@ -14,16 +14,18 @@ FLAGS= -h=$(CHARON_HOST) \
       	    -me=$(CHARON_MONITORING_ENGINE) \
       	    -pcs=$(CHARON_POSTGRES_CONNECTION_STRING) \
       	    -pr=$(CHARON_POSTGRES_RETRY) \
-      	    -ps=$(CHARON_PASSWORD_STRATEGY)
+      	    -ps=$(CHARON_PASSWORD_STRATEGY) \
+      	    -pbc=$(CHARON_PASSWORD_BCRYPT_COST) \
+      	    -ma=$(CHARON_MNEMOSYNE_ADDRESS)
 
 .PHONY:	all proto build build-daemon run test test-unit test-postgres
 
 all: proto build test run
 
 proto:
-	@${PROTOC} --proto_path=${GOPATH}/src \
-	    --proto_path=. \
-	    --go_out=plugins=grpc:. \
+	@${PROTOC} --proto_path=. \
+	    --proto_path=${GOPATH}/src/github.com/piotrkowalczuk/mnemosyne \
+	    --go_out=Mmnemosyne.proto=github.com/piotrkowalczuk/mnemosyne,plugins=grpc:. \
 	    ${SERVICE}.proto
 	@ls -al | grep pb.go
 

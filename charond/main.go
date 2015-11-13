@@ -25,6 +25,9 @@ func main() {
 		logger,
 	)
 	passwordHasher := initPasswordHasher(config.password.bcrypt.cost, logger)
+	mnemosyneConn, mnemosyneClient := initMnemosyne(config.mnemosyne.address, logger)
+
+	defer mnemosyneConn.Close()
 
 	hostname, err := os.Hostname()
 	if err != nil {
@@ -61,6 +64,7 @@ func main() {
 		logger:         logger,
 		passwordHasher: passwordHasher,
 		userRepository: NewUserRepository(postgres),
+		mnemosyne:      mnemosyneClient,
 	}
 	charon.RegisterRPCServer(gRPCServer, charonServer)
 

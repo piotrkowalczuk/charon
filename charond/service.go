@@ -4,11 +4,11 @@ import (
 	"database/sql"
 	"time"
 
-	// ...
-
 	"github.com/go-kit/kit/log"
 	_ "github.com/lib/pq"
+	"github.com/piotrkowalczuk/mnemosyne"
 	"github.com/piotrkowalczuk/sklog"
+	"google.golang.org/grpc"
 )
 
 func initPostgres(connectionString string, retry int, logger log.Logger) *sql.DB {
@@ -37,8 +37,19 @@ func initPostgres(connectionString string, retry int, logger log.Logger) *sql.DB
 
 		initPostgres(connectionString, retry, logger)
 	} else {
-		sklog.Info(logger, "connection do postgres established successfully")
+		sklog.Info(logger, "connection do postgres established successfully", "address", connectionString)
 	}
 
 	return postgres
+}
+
+func initMnemosyne(address string, logger log.Logger) (*grpc.ClientConn, mnemosyne.RPCClient) {
+	conn, err := grpc.Dial(address, grpc.WithInsecure())
+	if err != nil {
+		sklog.Fatal(logger, err, "address", address)
+	}
+
+	sklog.Info(logger, "rpc connection to mnemosyne has been established", "address", address)
+
+	return conn, mnemosyne.NewRPCClient(conn)
 }

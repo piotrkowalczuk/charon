@@ -41,7 +41,7 @@ package charon
 import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
 import math "math"
-import mnemosyne "github.com/piotrkowalczuk/mnemosyne"
+import mnemosyne1 "github.com/piotrkowalczuk/mnemosyne"
 
 import (
 	context "golang.org/x/net/context"
@@ -63,14 +63,14 @@ func (m *LoginRequest) String() string { return proto.CompactTextString(m) }
 func (*LoginRequest) ProtoMessage()    {}
 
 type LoginResponse struct {
-	Session *mnemosyne.Session `protobuf:"bytes,1,opt,name=session" json:"session,omitempty"`
+	Session *mnemosyne1.Session `protobuf:"bytes,1,opt,name=session" json:"session,omitempty"`
 }
 
 func (m *LoginResponse) Reset()         { *m = LoginResponse{} }
 func (m *LoginResponse) String() string { return proto.CompactTextString(m) }
 func (*LoginResponse) ProtoMessage()    {}
 
-func (m *LoginResponse) GetSession() *mnemosyne.Session {
+func (m *LoginResponse) GetSession() *mnemosyne1.Session {
 	if m != nil {
 		return m.Session
 	}
@@ -78,14 +78,14 @@ func (m *LoginResponse) GetSession() *mnemosyne.Session {
 }
 
 type LogoutRequest struct {
-	SessionId *mnemosyne.ID `protobuf:"bytes,1,opt,name=session_id" json:"session_id,omitempty"`
+	SessionId *mnemosyne1.ID `protobuf:"bytes,1,opt,name=session_id" json:"session_id,omitempty"`
 }
 
 func (m *LogoutRequest) Reset()         { *m = LogoutRequest{} }
 func (m *LogoutRequest) String() string { return proto.CompactTextString(m) }
 func (*LogoutRequest) ProtoMessage()    {}
 
-func (m *LogoutRequest) GetSessionId() *mnemosyne.ID {
+func (m *LogoutRequest) GetSessionId() *mnemosyne1.ID {
 	if m != nil {
 		return m.SessionId
 	}

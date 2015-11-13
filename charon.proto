@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package charon;
 
-import "github.com/piotrkowalczuk/mnemosyne/mnemosyne.proto";
+import "mnemosyne.proto";
 
 service RPC {
 

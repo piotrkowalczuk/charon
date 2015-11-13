@@ -12,6 +12,9 @@ type configuration struct {
 		format  string
 		level   int
 	}
+	mnemosyne struct {
+		address string
+	}
 	password struct {
 		strategy string
 		bcrypt   struct {
@@ -38,6 +41,7 @@ func (c *configuration) init() {
 	flag.StringVar(&c.subsystem, "s", "mnemosyne", "subsystem")
 	flag.StringVar(&c.logger.adapter, "la", loggerAdapterStdOut, "logger adapter")
 	flag.StringVar(&c.logger.format, "lf", loggerFormatJSON, "logger format")
+	flag.StringVar(&c.mnemosyne.address, "ma", "", "mnemosyne session store connection address")
 	flag.StringVar(&c.password.strategy, "ps", "bcrypt", "strategy how password will be stored")
 	flag.IntVar(&c.password.bcrypt.cost, "pbc", 10, "bcrypt cost, bigget than safer (and longer to create)")
 	flag.IntVar(&c.logger.level, "ll", 6, "logger level")
