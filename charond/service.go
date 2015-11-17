@@ -43,7 +43,7 @@ func initPostgres(connectionString string, retry int, logger log.Logger) *sql.DB
 	return postgres
 }
 
-func initMnemosyne(address string, logger log.Logger) (*grpc.ClientConn, mnemosyne.RPCClient) {
+func initMnemosyne(address string, logger log.Logger) (*grpc.ClientConn, mnemosyne.Mnemosyne) {
 	conn, err := grpc.Dial(address, grpc.WithInsecure())
 	if err != nil {
 		sklog.Fatal(logger, err, "address", address)
@@ -51,5 +51,5 @@ func initMnemosyne(address string, logger log.Logger) (*grpc.ClientConn, mnemosy
 
 	sklog.Info(logger, "rpc connection to mnemosyne has been established", "address", address)
 
-	return conn, mnemosyne.NewRPCClient(conn)
+	return conn, mnemosyne.New(conn, mnemosyne.MnemosyneOpts{})
 }

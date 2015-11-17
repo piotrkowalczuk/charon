@@ -9,7 +9,7 @@ import (
 type rpcServer struct {
 	logger         log.Logger
 	monitor        *monitoring
-	mnemosyne      mnemosyne.RPCClient
+	mnemosyne      mnemosyne.Mnemosyne
 	passwordHasher charon.PasswordHasher
 	userRepository UserRepository
 }

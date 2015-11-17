@@ -4,7 +4,6 @@ import (
 	"strconv"
 
 	"github.com/piotrkowalczuk/charon"
-	"github.com/piotrkowalczuk/mnemosyne"
 	"github.com/piotrkowalczuk/sklog"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
@@ -38,13 +37,11 @@ func (rs *rpcServer) Login(ctx context.Context, r *charon.LoginRequest) (*charon
 		return nil, grpc.Errorf(codes.Unauthenticated, "charond: user is not active")
 	}
 
-	resp, err := rs.mnemosyne.Create(context.Background(), &mnemosyne.CreateRequest{
-		Data: map[string]string{
-			"user_id":    strconv.FormatInt(user.ID, 10),
-			"username":   user.Username,
-			"first_name": user.FirstName,
-			"last_name":  user.LastName,
-		},
+	session, err := rs.mnemosyne.Create(ctx, map[string]string{
+		"user_id":    strconv.FormatInt(user.ID, 10),
+		"username":   user.Username,
+		"first_name": user.FirstName,
+		"last_name":  user.LastName,
 	})
 	if err != nil {
 		sklog.Error(rs.logger, err, "username", r.Username)
@@ -59,7 +56,7 @@ func (rs *rpcServer) Login(ctx context.Context, r *charon.LoginRequest) (*charon
 		return nil, grpc.Errorf(codes.Internal, "charond: last login update failure: %s", err)
 	}
 
-	return &charon.LoginResponse{Session: resp.Session}, nil
+	return &charon.LoginResponse{Session: session}, nil
 }
 
 // Logout ...
@@ -68,14 +65,14 @@ func (rs *rpcServer) Logout(ctx context.Context, r *charon.LogoutRequest) (*char
 		return nil, grpc.Errorf(codes.InvalidArgument, "charond: empty session id, logout aborted")
 	}
 
-	resp, err := rs.mnemosyne.Abandon(context.Background(), &mnemosyne.AbandonRequest{Token: r.Token})
+	abandoned, err := rs.mnemosyne.Abandon(ctx, r.Token)
 	if err != nil {
 		sklog.Error(rs.logger, err, "session_id", r.Token)
 
 		return nil, err
 	}
 
-	if !resp.Abandoned {
+	if !abandoned {
 		sklog.Debug(rs.logger, "mnemosyne responded without error but session was not abandoned, propably does not exists", "session_id", r.Token)
 	} else {
 		sklog.Debug(rs.logger, "successful logout", "session_id", r.Token)
@@ -89,7 +86,7 @@ func (rs *rpcServer) IsGranted(ctx context.Context, r *charon.IsGrantedRequest) 
 	return nil, grpc.Errorf(codes.Unimplemented, "is granted is not implemented yet")
 }
 
-// HasPrivileges ...
-func (rs *rpcServer) HasPrivileges(ctx context.Context, r *charon.HasPrivilegesRequest) (*charon.HasPrivilegesResponse, error) {
-	return nil, grpc.Errorf(codes.Unimplemented, "has privileges is not implemented yet")
+// IsAuthenticated ...
+func (rs *rpcServer) IsAuthenticated(ctx context.Context, r *charon.IsAuthenticatedRequest) (*charon.IsAuthenticatedResponse, error) {
+	return nil, grpc.Errorf(codes.Unimplemented, "is authenticated is not implemented yet")
 }
