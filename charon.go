@@ -52,8 +52,8 @@ type AuthorizationChecker func(context.Context, Permission, ...interface{}) (boo
 type Charon interface {
 	IsGranted(context.Context, Permission, ...interface{}) (bool, error)
 	IsAuthenticated(context.Context) (bool, error)
-	Login(string, string) (*mnemosyne.Session, error)
-	Logout(*mnemosyne.Token) error
+	Login(context.Context, string, string) (*mnemosyne.Session, error)
+	Logout(context.Context, *mnemosyne.Token) error
 }
 
 type charon struct {
@@ -73,7 +73,7 @@ func New(conn *grpc.ClientConn, options CharonOpts) Charon {
 	}
 }
 
-// IsGranted ...
+// IsGranted implements Charon interface.
 func (c *charon) IsGranted(ctx context.Context, perm Permission, args ...interface{}) (bool, error) {
 	var req *IsGrantedRequest
 
@@ -109,7 +109,7 @@ func (c *charon) IsGranted(ctx context.Context, perm Permission, args ...interfa
 	return c.checker(ctx, perm, args...)
 }
 
-// IsAuthenticated ...
+// IsAuthenticated implements Charon interface.
 func (c *charon) IsAuthenticated(ctx context.Context) (bool, error) {
 	session, ok := mnemosyne.FromContext(ctx)
 	if !ok {
@@ -126,10 +126,23 @@ func (c *charon) IsAuthenticated(ctx context.Context) (bool, error) {
 	return res.IsAuthenticated, nil
 }
 
-func (c *charon) Login(username, password string) (*mnemosyne.Session, error) {
-	return nil, nil
+// Login implements Charon interface.
+func (c *charon) Login(ctx context.Context, username, password string) (*mnemosyne.Session, error) {
+	res, err := c.client.Login(ctx, &LoginRequest{
+		Username: username,
+		Password: password,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return res.Session, nil
 }
 
-func (c *charon) Logout(token *mnemosyne.Token) error {
-	return nil
+// Logout implements Charon interface.
+func (c *charon) Logout(ctx context.Context, token *mnemosyne.Token) error {
+	_, err := c.client.Logout(ctx, &LogoutRequest{
+		Token: token,
+	})
+	return err
 }
