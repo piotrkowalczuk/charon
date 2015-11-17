@@ -5,16 +5,18 @@ package charon;
 import "mnemosyne.proto";
 
 service RPC {
-
     // Authentication
 
     rpc Login(LoginRequest) returns (LoginResponse) {};
     rpc Logout(LogoutRequest) returns (LogoutResponse) {};
+    rpc IsAuthenticated(IsAuthenticatedRequest) returns (IsAuthenticatedResponse) {};
 
     // Authorization
 
     rpc IsGranted(IsGrantedRequest) returns (IsGrantedResponse) {};
-    rpc HasPrivileges(HasPrivilegesRequest) returns (HasPrivilegesResponse) {};
+//    rpc BelongsTo(BelongsToRequest) returns (BelongsToResponse) {};
+
+    // CRUD
 
     rpc CreateUser(CreateUserRequest) returns (CreateUserResponse) {};
     rpc ModifyUser(ModifyUserRequest) returns (ModifyUserResponse) {};
@@ -26,6 +28,12 @@ service RPC {
 //    rpc RecoverPassword(RecoverPasswordRequest) returns (RecoverPasswordResponse) {};
 //    rpc ConfirmPasswordRecovery(ConfirmPasswordRecoveryRequest) returns (ConfirmPasswordRecoveryResponse) {};
 }
+
+message User {
+    int64 id = 1;
+}
+
+// Login
 
 message LoginRequest {
     string username = 1;
@@ -41,6 +49,15 @@ message LogoutRequest {
     mnemosyne.Token token = 1;
 }
 message LogoutResponse {}
+
+// IsAuthenticated
+
+message IsAuthenticatedRequest {
+    mnemosyne.Token token = 1;
+}
+message IsAuthenticatedResponse {
+    bool is_authenticated = 1;
+}
 
 // Register
 
@@ -64,28 +81,40 @@ message ConfirmPasswordRecoveryResponse {}
 
 // IsGranted
 
-message IsGrantedRequest {}
-message IsGrantedResponse {}
+message IsGrantedRequest {
+    string token = 1;
+    int64 user_id = 2;
+    string permission = 3;
+}
+message IsGrantedResponse {
+    bool is_granted = 1;
+}
 
 // HasPrivileges
 
-message HasPrivilegesRequest {}
-message HasPrivilegesResponse {}
+message BelongsToRequest {}
+message BelongsToResponse {}
 
 // CreateUser
 
 message CreateUserRequest {}
-message CreateUserResponse {}
+message CreateUserResponse {
+    User user = 1;
+}
 
 // GetUser
 
 message GetUserRequest {}
-message GetUserResponse {}
+message GetUserResponse {
+    User user = 1;
+}
 
 // GetUsers
 
 message GetUsersRequest {}
-message GetUsersResponse {}
+message GetUsersResponse {
+    repeated User user = 1;
+}
 
 // DeleteUser
 

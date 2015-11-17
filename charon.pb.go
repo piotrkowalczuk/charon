@@ -9,10 +9,13 @@ It is generated from these files:
 	charon.proto
 
 It has these top-level messages:
+	User
 	LoginRequest
 	LoginResponse
 	LogoutRequest
 	LogoutResponse
+	IsAuthenticatedRequest
+	IsAuthenticatedResponse
 	RegisterRequest
 	RegisterResponse
 	ConfirmRegistrationRequest
@@ -23,8 +26,8 @@ It has these top-level messages:
 	ConfirmPasswordRecoveryResponse
 	IsGrantedRequest
 	IsGrantedResponse
-	HasPrivilegesRequest
-	HasPrivilegesResponse
+	BelongsToRequest
+	BelongsToResponse
 	CreateUserRequest
 	CreateUserResponse
 	GetUserRequest
@@ -52,6 +55,14 @@ import (
 var _ = proto.Marshal
 var _ = fmt.Errorf
 var _ = math.Inf
+
+type User struct {
+	Id int64 `protobuf:"varint,1,opt,name=id" json:"id,omitempty"`
+}
+
+func (m *User) Reset()         { *m = User{} }
+func (m *User) String() string { return proto.CompactTextString(m) }
+func (*User) ProtoMessage()    {}
 
 type LoginRequest struct {
 	Username string `protobuf:"bytes,1,opt,name=username" json:"username,omitempty"`
@@ -98,6 +109,29 @@ type LogoutResponse struct {
 func (m *LogoutResponse) Reset()         { *m = LogoutResponse{} }
 func (m *LogoutResponse) String() string { return proto.CompactTextString(m) }
 func (*LogoutResponse) ProtoMessage()    {}
+
+type IsAuthenticatedRequest struct {
+	Token *mnemosyne1.Token `protobuf:"bytes,1,opt,name=token" json:"token,omitempty"`
+}
+
+func (m *IsAuthenticatedRequest) Reset()         { *m = IsAuthenticatedRequest{} }
+func (m *IsAuthenticatedRequest) String() string { return proto.CompactTextString(m) }
+func (*IsAuthenticatedRequest) ProtoMessage()    {}
+
+func (m *IsAuthenticatedRequest) GetToken() *mnemosyne1.Token {
+	if m != nil {
+		return m.Token
+	}
+	return nil
+}
+
+type IsAuthenticatedResponse struct {
+	IsAuthenticated bool `protobuf:"varint,1,opt,name=is_authenticated" json:"is_authenticated,omitempty"`
+}
+
+func (m *IsAuthenticatedResponse) Reset()         { *m = IsAuthenticatedResponse{} }
+func (m *IsAuthenticatedResponse) String() string { return proto.CompactTextString(m) }
+func (*IsAuthenticatedResponse) ProtoMessage()    {}
 
 type RegisterRequest struct {
 }
@@ -156,6 +190,9 @@ func (m *ConfirmPasswordRecoveryResponse) String() string { return proto.Compact
 func (*ConfirmPasswordRecoveryResponse) ProtoMessage()    {}
 
 type IsGrantedRequest struct {
+	Token      string `protobuf:"bytes,1,opt,name=token" json:"token,omitempty"`
+	UserId     int64  `protobuf:"varint,2,opt,name=user_id" json:"user_id,omitempty"`
+	Permission string `protobuf:"bytes,3,opt,name=permission" json:"permission,omitempty"`
 }
 
 func (m *IsGrantedRequest) Reset()         { *m = IsGrantedRequest{} }
@@ -163,25 +200,26 @@ func (m *IsGrantedRequest) String() string { return proto.CompactTextString(m) }
 func (*IsGrantedRequest) ProtoMessage()    {}
 
 type IsGrantedResponse struct {
+	IsGranted bool `protobuf:"varint,1,opt,name=is_granted" json:"is_granted,omitempty"`
 }
 
 func (m *IsGrantedResponse) Reset()         { *m = IsGrantedResponse{} }
 func (m *IsGrantedResponse) String() string { return proto.CompactTextString(m) }
 func (*IsGrantedResponse) ProtoMessage()    {}
 
-type HasPrivilegesRequest struct {
+type BelongsToRequest struct {
 }
 
-func (m *HasPrivilegesRequest) Reset()         { *m = HasPrivilegesRequest{} }
-func (m *HasPrivilegesRequest) String() string { return proto.CompactTextString(m) }
-func (*HasPrivilegesRequest) ProtoMessage()    {}
+func (m *BelongsToRequest) Reset()         { *m = BelongsToRequest{} }
+func (m *BelongsToRequest) String() string { return proto.CompactTextString(m) }
+func (*BelongsToRequest) ProtoMessage()    {}
 
-type HasPrivilegesResponse struct {
+type BelongsToResponse struct {
 }
 
-func (m *HasPrivilegesResponse) Reset()         { *m = HasPrivilegesResponse{} }
-func (m *HasPrivilegesResponse) String() string { return proto.CompactTextString(m) }
-func (*HasPrivilegesResponse) ProtoMessage()    {}
+func (m *BelongsToResponse) Reset()         { *m = BelongsToResponse{} }
+func (m *BelongsToResponse) String() string { return proto.CompactTextString(m) }
+func (*BelongsToResponse) ProtoMessage()    {}
 
 type CreateUserRequest struct {
 }
@@ -191,11 +229,19 @@ func (m *CreateUserRequest) String() string { return proto.CompactTextString(m) 
 func (*CreateUserRequest) ProtoMessage()    {}
 
 type CreateUserResponse struct {
+	User *User `protobuf:"bytes,1,opt,name=user" json:"user,omitempty"`
 }
 
 func (m *CreateUserResponse) Reset()         { *m = CreateUserResponse{} }
 func (m *CreateUserResponse) String() string { return proto.CompactTextString(m) }
 func (*CreateUserResponse) ProtoMessage()    {}
+
+func (m *CreateUserResponse) GetUser() *User {
+	if m != nil {
+		return m.User
+	}
+	return nil
+}
 
 type GetUserRequest struct {
 }
@@ -205,11 +251,19 @@ func (m *GetUserRequest) String() string { return proto.CompactTextString(m) }
 func (*GetUserRequest) ProtoMessage()    {}
 
 type GetUserResponse struct {
+	User *User `protobuf:"bytes,1,opt,name=user" json:"user,omitempty"`
 }
 
 func (m *GetUserResponse) Reset()         { *m = GetUserResponse{} }
 func (m *GetUserResponse) String() string { return proto.CompactTextString(m) }
 func (*GetUserResponse) ProtoMessage()    {}
+
+func (m *GetUserResponse) GetUser() *User {
+	if m != nil {
+		return m.User
+	}
+	return nil
+}
 
 type GetUsersRequest struct {
 }
@@ -219,11 +273,19 @@ func (m *GetUsersRequest) String() string { return proto.CompactTextString(m) }
 func (*GetUsersRequest) ProtoMessage()    {}
 
 type GetUsersResponse struct {
+	User []*User `protobuf:"bytes,1,rep,name=user" json:"user,omitempty"`
 }
 
 func (m *GetUsersResponse) Reset()         { *m = GetUsersResponse{} }
 func (m *GetUsersResponse) String() string { return proto.CompactTextString(m) }
 func (*GetUsersResponse) ProtoMessage()    {}
+
+func (m *GetUsersResponse) GetUser() []*User {
+	if m != nil {
+		return m.User
+	}
+	return nil
+}
 
 type DeleteUserRequest struct {
 }
@@ -262,8 +324,8 @@ var _ grpc.ClientConn
 type RPCClient interface {
 	Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error)
 	Logout(ctx context.Context, in *LogoutRequest, opts ...grpc.CallOption) (*LogoutResponse, error)
+	IsAuthenticated(ctx context.Context, in *IsAuthenticatedRequest, opts ...grpc.CallOption) (*IsAuthenticatedResponse, error)
 	IsGranted(ctx context.Context, in *IsGrantedRequest, opts ...grpc.CallOption) (*IsGrantedResponse, error)
-	HasPrivileges(ctx context.Context, in *HasPrivilegesRequest, opts ...grpc.CallOption) (*HasPrivilegesResponse, error)
 	CreateUser(ctx context.Context, in *CreateUserRequest, opts ...grpc.CallOption) (*CreateUserResponse, error)
 	ModifyUser(ctx context.Context, in *ModifyUserRequest, opts ...grpc.CallOption) (*ModifyUserResponse, error)
 	GetUser(ctx context.Context, in *GetUserRequest, opts ...grpc.CallOption) (*GetUserResponse, error)
@@ -297,18 +359,18 @@ func (c *rPCClient) Logout(ctx context.Context, in *LogoutRequest, opts ...grpc.
 	return out, nil
 }
 
-func (c *rPCClient) IsGranted(ctx context.Context, in *IsGrantedRequest, opts ...grpc.CallOption) (*IsGrantedResponse, error) {
-	out := new(IsGrantedResponse)
-	err := grpc.Invoke(ctx, "/charon.RPC/IsGranted", in, out, c.cc, opts...)
+func (c *rPCClient) IsAuthenticated(ctx context.Context, in *IsAuthenticatedRequest, opts ...grpc.CallOption) (*IsAuthenticatedResponse, error) {
+	out := new(IsAuthenticatedResponse)
+	err := grpc.Invoke(ctx, "/charon.RPC/IsAuthenticated", in, out, c.cc, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *rPCClient) HasPrivileges(ctx context.Context, in *HasPrivilegesRequest, opts ...grpc.CallOption) (*HasPrivilegesResponse, error) {
-	out := new(HasPrivilegesResponse)
-	err := grpc.Invoke(ctx, "/charon.RPC/HasPrivileges", in, out, c.cc, opts...)
+func (c *rPCClient) IsGranted(ctx context.Context, in *IsGrantedRequest, opts ...grpc.CallOption) (*IsGrantedResponse, error) {
+	out := new(IsGrantedResponse)
+	err := grpc.Invoke(ctx, "/charon.RPC/IsGranted", in, out, c.cc, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -365,8 +427,8 @@ func (c *rPCClient) DeleteUser(ctx context.Context, in *DeleteUserRequest, opts 
 type RPCServer interface {
 	Login(context.Context, *LoginRequest) (*LoginResponse, error)
 	Logout(context.Context, *LogoutRequest) (*LogoutResponse, error)
+	IsAuthenticated(context.Context, *IsAuthenticatedRequest) (*IsAuthenticatedResponse, error)
 	IsGranted(context.Context, *IsGrantedRequest) (*IsGrantedResponse, error)
-	HasPrivileges(context.Context, *HasPrivilegesRequest) (*HasPrivilegesResponse, error)
 	CreateUser(context.Context, *CreateUserRequest) (*CreateUserResponse, error)
 	ModifyUser(context.Context, *ModifyUserRequest) (*ModifyUserResponse, error)
 	GetUser(context.Context, *GetUserRequest) (*GetUserResponse, error)
@@ -402,24 +464,24 @@ func _RPC_Logout_Handler(srv interface{}, ctx context.Context, dec func(interfac
 	return out, nil
 }
 
-func _RPC_IsGranted_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error) (interface{}, error) {
-	in := new(IsGrantedRequest)
+func _RPC_IsAuthenticated_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error) (interface{}, error) {
+	in := new(IsAuthenticatedRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
-	out, err := srv.(RPCServer).IsGranted(ctx, in)
+	out, err := srv.(RPCServer).IsAuthenticated(ctx, in)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func _RPC_HasPrivileges_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error) (interface{}, error) {
-	in := new(HasPrivilegesRequest)
+func _RPC_IsGranted_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error) (interface{}, error) {
+	in := new(IsGrantedRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
-	out, err := srv.(RPCServer).HasPrivileges(ctx, in)
+	out, err := srv.(RPCServer).IsGranted(ctx, in)
 	if err != nil {
 		return nil, err
 	}
@@ -499,12 +561,12 @@ var _RPC_serviceDesc = grpc.ServiceDesc{
 			Handler:    _RPC_Logout_Handler,
 		},
 		{
-			MethodName: "IsGranted",
-			Handler:    _RPC_IsGranted_Handler,
+			MethodName: "IsAuthenticated",
+			Handler:    _RPC_IsAuthenticated_Handler,
 		},
 		{
-			MethodName: "HasPrivileges",
-			Handler:    _RPC_HasPrivileges_Handler,
+			MethodName: "IsGranted",
+			Handler:    _RPC_IsGranted_Handler,
 		},
 		{
 			MethodName: "CreateUser",
