@@ -97,6 +97,11 @@ func (rs *rpcServer) IsGranted(ctx context.Context, r *charon.IsGrantedRequest) 
 	return nil, grpc.Errorf(codes.Unimplemented, "is granted is not implemented yet")
 }
 
+// BelongsTo ...
+func (rs *rpcServer) BelongsTo(ctx context.Context, r *charon.BelongsToRequest) (*charon.BelongsToResponse, error) {
+	return nil, grpc.Errorf(codes.Unimplemented, "belongs to is not implemented yet")
+}
+
 // IsAuthenticated ...
 func (rs *rpcServer) IsAuthenticated(ctx context.Context, r *charon.IsAuthenticatedRequest) (*charon.IsAuthenticatedResponse, error) {
 	return nil, grpc.Errorf(codes.Unimplemented, "is authenticated is not implemented yet")

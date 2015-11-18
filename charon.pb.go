@@ -222,6 +222,11 @@ func (m *BelongsToResponse) String() string { return proto.CompactTextString(m) 
 func (*BelongsToResponse) ProtoMessage()    {}
 
 type CreateUserRequest struct {
+	Name           string `protobuf:"bytes,1,opt,name=name" json:"name,omitempty"`
+	PlainPassword  string `protobuf:"bytes,2,opt,name=plain_password" json:"plain_password,omitempty"`
+	SecurePassword string `protobuf:"bytes,3,opt,name=secure_password" json:"secure_password,omitempty"`
+	FirstName      string `protobuf:"bytes,4,opt,name=first_name" json:"first_name,omitempty"`
+	LastName       string `protobuf:"bytes,5,opt,name=last_name" json:"last_name,omitempty"`
 }
 
 func (m *CreateUserRequest) Reset()         { *m = CreateUserRequest{} }
@@ -326,6 +331,7 @@ type RPCClient interface {
 	Logout(ctx context.Context, in *LogoutRequest, opts ...grpc.CallOption) (*LogoutResponse, error)
 	IsAuthenticated(ctx context.Context, in *IsAuthenticatedRequest, opts ...grpc.CallOption) (*IsAuthenticatedResponse, error)
 	IsGranted(ctx context.Context, in *IsGrantedRequest, opts ...grpc.CallOption) (*IsGrantedResponse, error)
+	BelongsTo(ctx context.Context, in *BelongsToRequest, opts ...grpc.CallOption) (*BelongsToResponse, error)
 	CreateUser(ctx context.Context, in *CreateUserRequest, opts ...grpc.CallOption) (*CreateUserResponse, error)
 	ModifyUser(ctx context.Context, in *ModifyUserRequest, opts ...grpc.CallOption) (*ModifyUserResponse, error)
 	GetUser(ctx context.Context, in *GetUserRequest, opts ...grpc.CallOption) (*GetUserResponse, error)
@@ -371,6 +377,15 @@ func (c *rPCClient) IsAuthenticated(ctx context.Context, in *IsAuthenticatedRequ
 func (c *rPCClient) IsGranted(ctx context.Context, in *IsGrantedRequest, opts ...grpc.CallOption) (*IsGrantedResponse, error) {
 	out := new(IsGrantedResponse)
 	err := grpc.Invoke(ctx, "/charon.RPC/IsGranted", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *rPCClient) BelongsTo(ctx context.Context, in *BelongsToRequest, opts ...grpc.CallOption) (*BelongsToResponse, error) {
+	out := new(BelongsToResponse)
+	err := grpc.Invoke(ctx, "/charon.RPC/BelongsTo", in, out, c.cc, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -429,6 +444,7 @@ type RPCServer interface {
 	Logout(context.Context, *LogoutRequest) (*LogoutResponse, error)
 	IsAuthenticated(context.Context, *IsAuthenticatedRequest) (*IsAuthenticatedResponse, error)
 	IsGranted(context.Context, *IsGrantedRequest) (*IsGrantedResponse, error)
+	BelongsTo(context.Context, *BelongsToRequest) (*BelongsToResponse, error)
 	CreateUser(context.Context, *CreateUserRequest) (*CreateUserResponse, error)
 	ModifyUser(context.Context, *ModifyUserRequest) (*ModifyUserResponse, error)
 	GetUser(context.Context, *GetUserRequest) (*GetUserResponse, error)
@@ -482,6 +498,18 @@ func _RPC_IsGranted_Handler(srv interface{}, ctx context.Context, dec func(inter
 		return nil, err
 	}
 	out, err := srv.(RPCServer).IsGranted(ctx, in)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func _RPC_BelongsTo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error) (interface{}, error) {
+	in := new(BelongsToRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	out, err := srv.(RPCServer).BelongsTo(ctx, in)
 	if err != nil {
 		return nil, err
 	}
@@ -567,6 +595,10 @@ var _RPC_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "IsGranted",
 			Handler:    _RPC_IsGranted_Handler,
+		},
+		{
+			MethodName: "BelongsTo",
+			Handler:    _RPC_BelongsTo_Handler,
 		},
 		{
 			MethodName: "CreateUser",
