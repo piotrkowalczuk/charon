@@ -12,6 +12,17 @@ import (
 
 // Login ...
 func (rs *rpcServer) Login(ctx context.Context, r *charon.LoginRequest) (*charon.LoginResponse, error) {
+	if r.Username == "" {
+		sklog.Debug(rs.logger, "login failed, empty username")
+
+		return nil, grpc.Errorf(codes.Unauthenticated, "charond: empty username")
+	}
+	if r.Password == "" {
+		sklog.Debug(rs.logger, "login failed, empty password", "username", r.Username)
+
+		return nil, grpc.Errorf(codes.Unauthenticated, "charond: empty password")
+	}
+
 	user, err := rs.userRepository.FindOneByUsername(r.Username)
 	if err != nil {
 		sklog.Debug(rs.logger, "login failed, user with such username does not exists", "username", r.Username)
