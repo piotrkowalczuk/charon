@@ -2,6 +2,8 @@ package main
 
 import (
 	"database/sql"
+	stdlog "log"
+	"os"
 	"time"
 
 	"github.com/go-kit/kit/log"
@@ -10,6 +12,38 @@ import (
 	"github.com/piotrkowalczuk/sklog"
 	"google.golang.org/grpc"
 )
+
+const (
+	loggerAdapterStdOut = "stdout"
+	loggerFormatJSON    = "json"
+	loggerFormatHumane  = "humane"
+	loggerFormatLogFmt  = "logfmt"
+)
+
+func initLogger(adapter, format string, level int, context ...interface{}) log.Logger {
+	var l log.Logger
+
+	if adapter != loggerAdapterStdOut {
+		stdlog.Fatal("service: unsupported logger adapter")
+	}
+
+	switch format {
+	case loggerFormatHumane:
+		l = sklog.NewHumaneLogger(os.Stdout, sklog.DefaultHTTPFormatter)
+	case loggerFormatJSON:
+		l = log.NewJSONLogger(os.Stdout)
+	case loggerFormatLogFmt:
+		l = log.NewLogfmtLogger(os.Stdout)
+	default:
+		stdlog.Fatal("charond: unsupported logger format")
+	}
+
+	l = log.NewContext(l).With(context...)
+
+	sklog.Info(l, "logger has been initialized successfully", "adapter", adapter, "format", format, "level", level)
+
+	return l
+}
 
 func initPostgres(connectionString string, retry int, logger log.Logger) *sql.DB {
 	var err error
