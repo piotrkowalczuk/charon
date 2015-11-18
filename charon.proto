@@ -14,7 +14,7 @@ service RPC {
     // Authorization
 
     rpc IsGranted(IsGrantedRequest) returns (IsGrantedResponse) {};
-//    rpc BelongsTo(BelongsToRequest) returns (BelongsToResponse) {};
+    rpc BelongsTo(BelongsToRequest) returns (BelongsToResponse) {};
 
     // CRUD
 
@@ -97,7 +97,13 @@ message BelongsToResponse {}
 
 // CreateUser
 
-message CreateUserRequest {}
+message CreateUserRequest {
+    string name = 1;
+    string plain_password = 2;
+    string secure_password = 3;
+    string first_name = 4;
+    string last_name = 5;
+}
 message CreateUserResponse {
     User user = 1;
 }
