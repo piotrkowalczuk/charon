@@ -3,6 +3,7 @@ syntax = "proto3";
 package charon;
 
 import "mnemosyne.proto";
+import "protot.proto";
 
 service RPC {
     // Authentication
@@ -24,6 +25,8 @@ service RPC {
     rpc GetUsers(GetUsersRequest) returns (GetUsersResponse) {};
     rpc DeleteUser(DeleteUserRequest) returns (DeleteUserResponse) {};
     rpc ModifyUserPassword(ModifyUserPasswordRequest) returns (ModifyUserPasswordResponse) {};
+
+    rpc GetUserPermissions(GetUserPermissionsRequest) returns (GetUserPermissionsResponse) {};
 }
 
 message User {
@@ -35,10 +38,11 @@ message User {
     bool is_active = 6;
     bool is_staff = 7;
     bool is_confirmed = 8;
-    mnemosyne.Timestamp created_at = 9;
+    protot.Timestamp created_at = 9;
     int64 created_by = 10;
-    mnemosyne.Timestamp updated_at = 11;
+    protot.Timestamp updated_at = 11;
     int64 updated_by = 12;
+    repeated string permissions = 13;
 }
 
 // Login
@@ -91,19 +95,22 @@ message CreateUserRequest {
     string secure_password = 3;
     string first_name = 4;
     string last_name = 5;
-    bool is_superuser = 6;
-    bool is_active = 7;
-    bool is_staff = 8;
-    bool is_confirmed = 9;
+    protot.NilBool is_superuser = 6;
+    protot.NilBool is_active = 7;
+    protot.NilBool is_staff = 8;
+    protot.NilBool is_confirmed = 9;
 }
 message CreateUserResponse {
     int64 id = 1;
-    mnemosyne.Timestamp created_at = 2;
+    protot.Timestamp created_at = 2;
 }
 
 // GetUser
 
-message GetUserRequest {}
+message GetUserRequest {
+    mnemosyne.Token token = 1;
+    int64 id = 2;
+}
 message GetUserResponse {
     User user = 1;
 }
@@ -134,4 +141,12 @@ message ModifyUserPasswordRequest{
 }
 message ModifyUserPasswordResponse{
     string generated = 1;
+}
+
+message GetUserPermissionsRequest {
+    mnemosyne.Token token = 1;
+    int64 user_id = 2;
+}
+message GetUserPermissionsResponse {
+    repeated string permissions = 1;
 }

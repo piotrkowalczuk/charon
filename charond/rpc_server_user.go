@@ -3,7 +3,7 @@ package main
 import (
 	"code.google.com/p/go-uuid/uuid"
 	"github.com/piotrkowalczuk/charon"
-	"github.com/piotrkowalczuk/mnemosyne"
+	"github.com/piotrkowalczuk/protot"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -11,20 +11,25 @@ import (
 
 // CreateUser ...
 func (rs *rpcServer) CreateUser(ctx context.Context, r *charon.CreateUserRequest) (*charon.CreateUserResponse, error) {
-	session, err := rs.mnemosyne.GetArbitrarily(ctx)
+	user, _, permissions, err := rs.retrieveUserData(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	userID, err := charon.UserIDFromSession(session)
-	if err != nil {
-		return nil, err
+	if r.IsSuperuser.Valid && !user.IsSuperuser && !permissions.Contains(charon.UserCanCreateSuper) {
+		return nil, grpc.Errorf(codes.PermissionDenied, "charond: user is not allowed to create user with is_superuser property that has custom value")
 	}
 
-	// TODO: take into account permissions (do not allow to create superuser/staff user without necessary permissions)
-	_, err = rs.permissionRepository.FindByUserID(userID)
-	if err != nil {
-		return nil, err
+	if r.IsStaff.Valid && !user.IsSuperuser && !permissions.Contains(charon.UserCanCreateStaff) {
+		return nil, grpc.Errorf(codes.PermissionDenied, "charond: user is not allowed to create user with is_staff property that has custom value")
+	}
+
+	if r.IsActive.Valid && !user.IsSuperuser && !permissions.Contains(charon.UserCanCreateActive) {
+		return nil, grpc.Errorf(codes.PermissionDenied, "charond: user is not allowed to create user with is_active property that has custom value")
+	}
+
+	if r.IsConfirmed.Valid && !user.IsSuperuser && !permissions.Contains(charon.UserCanCreateConfirmed) {
+		return nil, grpc.Errorf(codes.PermissionDenied, "charond: user is not allowed to create user with is_confirmed property that has custom value")
 	}
 
 	if r.SecurePassword == "" {
@@ -32,16 +37,30 @@ func (rs *rpcServer) CreateUser(ctx context.Context, r *charon.CreateUserRequest
 		if err != nil {
 			return nil, err
 		}
+	} else {
+		if !user.IsSuperuser {
+			return nil, grpc.Errorf(codes.PermissionDenied, "charond: only superuser can create an user with manualy defined secure password")
+		}
 	}
 
-	entity, err := rs.userRepository.Create(r.Username, r.SecurePassword, r.FirstName, r.LastName, uuid.New())
+	entity, err := rs.userRepository.Create(
+		r.Username,
+		r.SecurePassword,
+		r.FirstName,
+		r.LastName,
+		uuid.New(),
+		r.IsSuperuser.BoolOr(false),
+		r.IsStaff.BoolOr(false),
+		r.IsActive.BoolOr(false),
+		r.IsConfirmed.BoolOr(false),
+	)
 	if err != nil {
 		return nil, err
 	}
 
 	return &charon.CreateUserResponse{
 		Id:        entity.ID,
-		CreatedAt: mnemosyne.TimeToTimestamp(*entity.CreatedAt),
+		CreatedAt: protot.TimeToTimestamp(*entity.CreatedAt),
 	}, nil
 }
 

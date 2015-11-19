@@ -3,10 +3,11 @@ package main
 import (
 	"database/sql"
 	"time"
+
+	"github.com/piotrkowalczuk/charon"
 )
 
-// PermissionEntity ...
-type PermissionEntity struct {
+type permissionEntity struct {
 	ID          int64
 	SubsystemID int64
 	Subsystem   string
@@ -15,8 +16,13 @@ type PermissionEntity struct {
 	CreatedAt   *time.Time
 }
 
-// UserPermissionEntity ...
-type UserPermissionEntity struct {
+// Permission returns Permission value that is concatenated
+// using entity properties like subsystem, module and action.
+func (pe *permissionEntity) Permission() charon.Permission {
+	return charon.Permission(pe.Subsystem + ":" + pe.Module + ":" + pe.Action)
+}
+
+type userPermissionEntity struct {
 	ID           int64
 	UserID       int64
 	PermissionID int64
@@ -26,7 +32,7 @@ type UserPermissionEntity struct {
 
 // PermissionRepository ...
 type PermissionRepository interface {
-	FindByUserID(int64) ([]*PermissionEntity, error)
+	FindByUserID(int64) ([]*permissionEntity, error)
 }
 
 type permissionRepository struct {
@@ -40,7 +46,7 @@ func newPermissionRepository(dbPool *sql.DB) *permissionRepository {
 }
 
 // FindOneByID retrieves all permissions for user represented by given id.
-func (pr *permissionRepository) FindByUserID(userID int64) ([]*PermissionEntity, error) {
+func (pr *permissionRepository) FindByUserID(userID int64) ([]*permissionEntity, error) {
 	query := `
 		SELECT DISTINCT ON (p.id)
 			p.id ,
@@ -60,9 +66,9 @@ func (pr *permissionRepository) FindByUserID(userID int64) ([]*PermissionEntity,
 		return nil, err
 	}
 
-	permissions := []*PermissionEntity{}
+	permissions := []*permissionEntity{}
 	for rows.Next() {
-		var p *PermissionEntity
+		var p *permissionEntity
 		err = rows.Scan(
 			&p.ID,
 			&p.SubsystemID,

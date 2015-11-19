@@ -48,6 +48,7 @@ func main() {
 	}
 
 	userRepo := newUserRepository(postgres)
+	permissionRepo := newPermissionRepository(postgres)
 
 	// If any of this flags are set, try to create superuser. Will fail if data is wrong, or any user already exists.
 	superuser := config.superuser
@@ -82,6 +83,7 @@ func main() {
 		session:              mnemosyneClient,
 		passwordHasher:       passwordHasher,
 		userRepository:       userRepo,
+		permissionRepository: permissionRepo,
 	}
 	charon.RegisterRPCServer(gRPCServer, charonServer)
 

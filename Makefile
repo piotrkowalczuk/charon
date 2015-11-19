@@ -25,7 +25,8 @@ all: proto build test run
 proto:
 	@${PROTOC} --proto_path=. \
 	    --proto_path=${GOPATH}/src/github.com/piotrkowalczuk/mnemosyne \
-	    --go_out=Mmnemosyne.proto=github.com/piotrkowalczuk/mnemosyne,plugins=grpc:. \
+	    --proto_path=${GOPATH}/src/github.com/piotrkowalczuk/protot \
+	    --go_out=Mmnemosyne.proto=github.com/piotrkowalczuk/mnemosyne,Mprotot.proto=github.com/piotrkowalczuk/protot,plugins=grpc:. \
 	    ${SERVICE}.proto
 	@ls -al | grep pb.go
 

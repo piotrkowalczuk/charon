@@ -32,6 +32,8 @@ It has these top-level messages:
 	ModifyUserResponse
 	ModifyUserPasswordRequest
 	ModifyUserPasswordResponse
+	GetUserPermissionsRequest
+	GetUserPermissionsResponse
 */
 package charon
 
@@ -39,6 +41,7 @@ import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
 import math "math"
 import mnemosyne1 "github.com/piotrkowalczuk/mnemosyne"
+import protot "github.com/piotrkowalczuk/protot"
 
 import (
 	context "golang.org/x/net/context"
@@ -51,32 +54,33 @@ var _ = fmt.Errorf
 var _ = math.Inf
 
 type User struct {
-	Id          int64                 `protobuf:"varint,1,opt,name=id" json:"id,omitempty"`
-	Username    string                `protobuf:"bytes,2,opt,name=username" json:"username,omitempty"`
-	FirstName   string                `protobuf:"bytes,3,opt,name=first_name" json:"first_name,omitempty"`
-	LastName    string                `protobuf:"bytes,4,opt,name=last_name" json:"last_name,omitempty"`
-	IsSuperuser bool                  `protobuf:"varint,5,opt,name=is_superuser" json:"is_superuser,omitempty"`
-	IsActive    bool                  `protobuf:"varint,6,opt,name=is_active" json:"is_active,omitempty"`
-	IsStaff     bool                  `protobuf:"varint,7,opt,name=is_staff" json:"is_staff,omitempty"`
-	IsConfirmed bool                  `protobuf:"varint,8,opt,name=is_confirmed" json:"is_confirmed,omitempty"`
-	CreatedAt   *mnemosyne1.Timestamp `protobuf:"bytes,9,opt,name=created_at" json:"created_at,omitempty"`
-	CreatedBy   int64                 `protobuf:"varint,10,opt,name=created_by" json:"created_by,omitempty"`
-	UpdatedAt   *mnemosyne1.Timestamp `protobuf:"bytes,11,opt,name=updated_at" json:"updated_at,omitempty"`
-	UpdatedBy   int64                 `protobuf:"varint,12,opt,name=updated_by" json:"updated_by,omitempty"`
+	Id          int64             `protobuf:"varint,1,opt,name=id" json:"id,omitempty"`
+	Username    string            `protobuf:"bytes,2,opt,name=username" json:"username,omitempty"`
+	FirstName   string            `protobuf:"bytes,3,opt,name=first_name" json:"first_name,omitempty"`
+	LastName    string            `protobuf:"bytes,4,opt,name=last_name" json:"last_name,omitempty"`
+	IsSuperuser bool              `protobuf:"varint,5,opt,name=is_superuser" json:"is_superuser,omitempty"`
+	IsActive    bool              `protobuf:"varint,6,opt,name=is_active" json:"is_active,omitempty"`
+	IsStaff     bool              `protobuf:"varint,7,opt,name=is_staff" json:"is_staff,omitempty"`
+	IsConfirmed bool              `protobuf:"varint,8,opt,name=is_confirmed" json:"is_confirmed,omitempty"`
+	CreatedAt   *protot.Timestamp `protobuf:"bytes,9,opt,name=created_at" json:"created_at,omitempty"`
+	CreatedBy   int64             `protobuf:"varint,10,opt,name=created_by" json:"created_by,omitempty"`
+	UpdatedAt   *protot.Timestamp `protobuf:"bytes,11,opt,name=updated_at" json:"updated_at,omitempty"`
+	UpdatedBy   int64             `protobuf:"varint,12,opt,name=updated_by" json:"updated_by,omitempty"`
+	Permissions []string          `protobuf:"bytes,13,rep,name=permissions" json:"permissions,omitempty"`
 }
 
 func (m *User) Reset()         { *m = User{} }
 func (m *User) String() string { return proto.CompactTextString(m) }
 func (*User) ProtoMessage()    {}
 
-func (m *User) GetCreatedAt() *mnemosyne1.Timestamp {
+func (m *User) GetCreatedAt() *protot.Timestamp {
 	if m != nil {
 		return m.CreatedAt
 	}
 	return nil
 }
 
-func (m *User) GetUpdatedAt() *mnemosyne1.Timestamp {
+func (m *User) GetUpdatedAt() *protot.Timestamp {
 	if m != nil {
 		return m.UpdatedAt
 	}
@@ -192,31 +196,59 @@ func (m *BelongsToResponse) String() string { return proto.CompactTextString(m) 
 func (*BelongsToResponse) ProtoMessage()    {}
 
 type CreateUserRequest struct {
-	Username       string `protobuf:"bytes,1,opt,name=username" json:"username,omitempty"`
-	PlainPassword  string `protobuf:"bytes,2,opt,name=plain_password" json:"plain_password,omitempty"`
-	SecurePassword string `protobuf:"bytes,3,opt,name=secure_password" json:"secure_password,omitempty"`
-	FirstName      string `protobuf:"bytes,4,opt,name=first_name" json:"first_name,omitempty"`
-	LastName       string `protobuf:"bytes,5,opt,name=last_name" json:"last_name,omitempty"`
-	IsSuperuser    bool   `protobuf:"varint,6,opt,name=is_superuser" json:"is_superuser,omitempty"`
-	IsActive       bool   `protobuf:"varint,7,opt,name=is_active" json:"is_active,omitempty"`
-	IsStaff        bool   `protobuf:"varint,8,opt,name=is_staff" json:"is_staff,omitempty"`
-	IsConfirmed    bool   `protobuf:"varint,9,opt,name=is_confirmed" json:"is_confirmed,omitempty"`
+	Username       string          `protobuf:"bytes,1,opt,name=username" json:"username,omitempty"`
+	PlainPassword  string          `protobuf:"bytes,2,opt,name=plain_password" json:"plain_password,omitempty"`
+	SecurePassword string          `protobuf:"bytes,3,opt,name=secure_password" json:"secure_password,omitempty"`
+	FirstName      string          `protobuf:"bytes,4,opt,name=first_name" json:"first_name,omitempty"`
+	LastName       string          `protobuf:"bytes,5,opt,name=last_name" json:"last_name,omitempty"`
+	IsSuperuser    *protot.NilBool `protobuf:"bytes,6,opt,name=is_superuser" json:"is_superuser,omitempty"`
+	IsActive       *protot.NilBool `protobuf:"bytes,7,opt,name=is_active" json:"is_active,omitempty"`
+	IsStaff        *protot.NilBool `protobuf:"bytes,8,opt,name=is_staff" json:"is_staff,omitempty"`
+	IsConfirmed    *protot.NilBool `protobuf:"bytes,9,opt,name=is_confirmed" json:"is_confirmed,omitempty"`
 }
 
 func (m *CreateUserRequest) Reset()         { *m = CreateUserRequest{} }
 func (m *CreateUserRequest) String() string { return proto.CompactTextString(m) }
 func (*CreateUserRequest) ProtoMessage()    {}
 
+func (m *CreateUserRequest) GetIsSuperuser() *protot.NilBool {
+	if m != nil {
+		return m.IsSuperuser
+	}
+	return nil
+}
+
+func (m *CreateUserRequest) GetIsActive() *protot.NilBool {
+	if m != nil {
+		return m.IsActive
+	}
+	return nil
+}
+
+func (m *CreateUserRequest) GetIsStaff() *protot.NilBool {
+	if m != nil {
+		return m.IsStaff
+	}
+	return nil
+}
+
+func (m *CreateUserRequest) GetIsConfirmed() *protot.NilBool {
+	if m != nil {
+		return m.IsConfirmed
+	}
+	return nil
+}
+
 type CreateUserResponse struct {
-	Id        int64                 `protobuf:"varint,1,opt,name=id" json:"id,omitempty"`
-	CreatedAt *mnemosyne1.Timestamp `protobuf:"bytes,2,opt,name=created_at" json:"created_at,omitempty"`
+	Id        int64             `protobuf:"varint,1,opt,name=id" json:"id,omitempty"`
+	CreatedAt *protot.Timestamp `protobuf:"bytes,2,opt,name=created_at" json:"created_at,omitempty"`
 }
 
 func (m *CreateUserResponse) Reset()         { *m = CreateUserResponse{} }
 func (m *CreateUserResponse) String() string { return proto.CompactTextString(m) }
 func (*CreateUserResponse) ProtoMessage()    {}
 
-func (m *CreateUserResponse) GetCreatedAt() *mnemosyne1.Timestamp {
+func (m *CreateUserResponse) GetCreatedAt() *protot.Timestamp {
 	if m != nil {
 		return m.CreatedAt
 	}
@@ -224,11 +256,20 @@ func (m *CreateUserResponse) GetCreatedAt() *mnemosyne1.Timestamp {
 }
 
 type GetUserRequest struct {
+	Token *mnemosyne1.Token `protobuf:"bytes,1,opt,name=token" json:"token,omitempty"`
+	Id    int64             `protobuf:"varint,2,opt,name=id" json:"id,omitempty"`
 }
 
 func (m *GetUserRequest) Reset()         { *m = GetUserRequest{} }
 func (m *GetUserRequest) String() string { return proto.CompactTextString(m) }
 func (*GetUserRequest) ProtoMessage()    {}
+
+func (m *GetUserRequest) GetToken() *mnemosyne1.Token {
+	if m != nil {
+		return m.Token
+	}
+	return nil
+}
 
 type GetUserResponse struct {
 	User *User `protobuf:"bytes,1,opt,name=user" json:"user,omitempty"`
@@ -315,6 +356,30 @@ func (m *ModifyUserPasswordResponse) Reset()         { *m = ModifyUserPasswordRe
 func (m *ModifyUserPasswordResponse) String() string { return proto.CompactTextString(m) }
 func (*ModifyUserPasswordResponse) ProtoMessage()    {}
 
+type GetUserPermissionsRequest struct {
+	Token  *mnemosyne1.Token `protobuf:"bytes,1,opt,name=token" json:"token,omitempty"`
+	UserId int64             `protobuf:"varint,2,opt,name=user_id" json:"user_id,omitempty"`
+}
+
+func (m *GetUserPermissionsRequest) Reset()         { *m = GetUserPermissionsRequest{} }
+func (m *GetUserPermissionsRequest) String() string { return proto.CompactTextString(m) }
+func (*GetUserPermissionsRequest) ProtoMessage()    {}
+
+func (m *GetUserPermissionsRequest) GetToken() *mnemosyne1.Token {
+	if m != nil {
+		return m.Token
+	}
+	return nil
+}
+
+type GetUserPermissionsResponse struct {
+	Permissions []string `protobuf:"bytes,1,rep,name=permissions" json:"permissions,omitempty"`
+}
+
+func (m *GetUserPermissionsResponse) Reset()         { *m = GetUserPermissionsResponse{} }
+func (m *GetUserPermissionsResponse) String() string { return proto.CompactTextString(m) }
+func (*GetUserPermissionsResponse) ProtoMessage()    {}
+
 // Reference imports to suppress errors if they are not otherwise used.
 var _ context.Context
 var _ grpc.ClientConn
@@ -333,6 +398,7 @@ type RPCClient interface {
 	GetUsers(ctx context.Context, in *GetUsersRequest, opts ...grpc.CallOption) (*GetUsersResponse, error)
 	DeleteUser(ctx context.Context, in *DeleteUserRequest, opts ...grpc.CallOption) (*DeleteUserResponse, error)
 	ModifyUserPassword(ctx context.Context, in *ModifyUserPasswordRequest, opts ...grpc.CallOption) (*ModifyUserPasswordResponse, error)
+	GetUserPermissions(ctx context.Context, in *GetUserPermissionsRequest, opts ...grpc.CallOption) (*GetUserPermissionsResponse, error)
 }
 
 type rPCClient struct {
@@ -442,6 +508,15 @@ func (c *rPCClient) ModifyUserPassword(ctx context.Context, in *ModifyUserPasswo
 	return out, nil
 }
 
+func (c *rPCClient) GetUserPermissions(ctx context.Context, in *GetUserPermissionsRequest, opts ...grpc.CallOption) (*GetUserPermissionsResponse, error) {
+	out := new(GetUserPermissionsResponse)
+	err := grpc.Invoke(ctx, "/charon.RPC/GetUserPermissions", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for RPC service
 
 type RPCServer interface {
@@ -456,6 +531,7 @@ type RPCServer interface {
 	GetUsers(context.Context, *GetUsersRequest) (*GetUsersResponse, error)
 	DeleteUser(context.Context, *DeleteUserRequest) (*DeleteUserResponse, error)
 	ModifyUserPassword(context.Context, *ModifyUserPasswordRequest) (*ModifyUserPasswordResponse, error)
+	GetUserPermissions(context.Context, *GetUserPermissionsRequest) (*GetUserPermissionsResponse, error)
 }
 
 func RegisterRPCServer(s *grpc.Server, srv RPCServer) {
@@ -594,6 +670,18 @@ func _RPC_ModifyUserPassword_Handler(srv interface{}, ctx context.Context, dec f
 	return out, nil
 }
 
+func _RPC_GetUserPermissions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error) (interface{}, error) {
+	in := new(GetUserPermissionsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	out, err := srv.(RPCServer).GetUserPermissions(ctx, in)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 var _RPC_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "charon.RPC",
 	HandlerType: (*RPCServer)(nil),
@@ -641,6 +729,10 @@ var _RPC_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ModifyUserPassword",
 			Handler:    _RPC_ModifyUserPassword_Handler,
+		},
+		{
+			MethodName: "GetUserPermissions",
+			Handler:    _RPC_GetUserPermissions_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{},
