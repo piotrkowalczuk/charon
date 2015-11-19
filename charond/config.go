@@ -28,6 +28,12 @@ type configuration struct {
 		connectionString string
 		retry            int
 	}
+	superuser struct {
+		username  string
+		password  string
+		firstName string
+		lastName  string
+	}
 }
 
 func (c *configuration) init() {
@@ -38,7 +44,7 @@ func (c *configuration) init() {
 	flag.StringVar(&c.host, "host", "127.0.0.1", "host")
 	flag.IntVar(&c.port, "port", 8080, "port")
 	flag.StringVar(&c.namespace, "namespace", "", "namespace")
-	flag.StringVar(&c.subsystem, "subsystem", "mnemosyne", "subsystem")
+	flag.StringVar(&c.subsystem, "subsystem", "charon", "subsystem")
 	flag.StringVar(&c.logger.adapter, "l.adapter", loggerAdapterStdOut, "logger adapter")
 	flag.StringVar(&c.logger.format, "l.format", loggerFormatJSON, "logger format")
 	flag.IntVar(&c.logger.level, "l.level", 6, "logger level")
@@ -48,6 +54,12 @@ func (c *configuration) init() {
 	flag.StringVar(&c.monitoring.engine, "m.engine", monitoringEnginePrometheus, "monitoring engine")
 	flag.StringVar(&c.postgres.connectionString, "ps.connectionstring", "postgres://localhost:5432?sslmode=disable", "storage postgres connection string")
 	flag.IntVar(&c.postgres.retry, "ps.retry", 10, "storage postgres possible attempts")
+
+	// Superuser configuration
+	flag.StringVar(&c.superuser.username, "su.username", "", "superuser username")
+	flag.StringVar(&c.superuser.password, "su.password", "", "superuser password")
+	flag.StringVar(&c.superuser.firstName, "su.firstname", "", "superuser first name")
+	flag.StringVar(&c.superuser.lastName, "su.lastname", "", "superuser last name")
 }
 
 func (c *configuration) parse() {

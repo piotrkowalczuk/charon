@@ -47,6 +47,19 @@ func main() {
 		sklog.Fatal(logger, errors.New("charond: unknown monitoring engine"))
 	}
 
+	userRepo := newUserRepository(postgres)
+
+	// If any of this flags are set, try to create superuser. Will fail if data is wrong, or any user already exists.
+	superuser := config.superuser
+	if superuser.username != "" || superuser.password != "" || superuser.firstName != "" || superuser.lastName != "" {
+		user, err := createSuperuser(userRepo, passwordHasher, superuser.username, superuser.password, superuser.firstName, superuser.lastName)
+		if err != nil {
+			sklog.Fatal(logger, err)
+		}
+
+		sklog.Info(logger, "superuser has been created", "username", user.Username, "first_name", user.FirstName, "last_name", user.LastName)
+	}
+
 	listenOn := config.host + ":" + strconv.FormatInt(int64(config.port), 10)
 	listen, err := net.Listen("tcp", listenOn)
 	if err != nil {
@@ -65,14 +78,30 @@ func main() {
 	gRPCServer := grpc.NewServer(opts...)
 
 	charonServer := &rpcServer{
-		logger:         logger,
-		passwordHasher: passwordHasher,
-		userRepository: NewUserRepository(postgres),
-		mnemosyne:      mnemosyneClient,
+		logger:               logger,
+		session:              mnemosyneClient,
+		passwordHasher:       passwordHasher,
+		userRepository:       userRepo,
 	}
 	charon.RegisterRPCServer(gRPCServer, charonServer)
 
 	sklog.Info(logger, "rpc api is running", "host", config.host, "port", config.port, "subsystem", config.subsystem, "namespace", config.namespace)
 
 	gRPCServer.Serve(listen)
+}
+
+func createSuperuser(userRepo *userRepository, hasher charon.PasswordHasher, username, plainPassword, firstName, lastName string) (*userEntity, error) {
+	count, err := userRepo.Count()
+	if err != nil {
+		return nil, err
+	}
+	if count > 0 {
+		return nil, errors.New("charond: superuser cannot be created, database is full of users")
+	}
+
+	securePassword, err := hasher.Hash(plainPassword)
+	if err != nil {
+		return nil, err
+	}
+	return userRepo.CreateSuperuser(username, securePassword, firstName, lastName)
 }
