@@ -4,3 +4,4 @@ charond/charond
 charon.iml
 run.sh
 test.sh
+schema.sql
