@@ -76,18 +76,14 @@ func (rs *rpcServer) Logout(ctx context.Context, r *charon.LogoutRequest) (*char
 		return nil, grpc.Errorf(codes.InvalidArgument, "charond: empty session id, logout aborted")
 	}
 
-	abandoned, err := rs.session.Abandon(ctx)
+	err := rs.session.Abandon(ctx)
 	if err != nil {
 		sklog.Error(rs.logger, err, "session_id", r.Token)
 
 		return nil, err
 	}
 
-	if !abandoned {
-		sklog.Debug(rs.logger, "mnemosyne responded without error but session was not abandoned, propably does not exists", "session_id", r.Token)
-	} else {
-		sklog.Debug(rs.logger, "successful logout", "session_id", r.Token)
-	}
+	sklog.Debug(rs.logger, "successful logout", "session_id", r.Token)
 
 	return &charon.LogoutResponse{}, nil
 }
