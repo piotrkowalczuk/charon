@@ -23,14 +23,22 @@ service RPC {
     rpc GetUser(GetUserRequest) returns (GetUserResponse) {};
     rpc GetUsers(GetUsersRequest) returns (GetUsersResponse) {};
     rpc DeleteUser(DeleteUserRequest) returns (DeleteUserResponse) {};
-//    rpc Register(RegisterRequest) returns (RegisterResponse) {};
-//    rpc ConfirmRegistration(ConfirmRegistrationRequest) returns (ConfirmRegistrationResponse) {};
-//    rpc RecoverPassword(RecoverPasswordRequest) returns (RecoverPasswordResponse) {};
-//    rpc ConfirmPasswordRecovery(ConfirmPasswordRecoveryRequest) returns (ConfirmPasswordRecoveryResponse) {};
+    rpc ModifyUserPassword(ModifyUserPasswordRequest) returns (ModifyUserPasswordResponse) {};
 }
 
 message User {
     int64 id = 1;
+    string username = 2;
+    string first_name = 3;
+    string last_name = 4;
+    bool is_superuser = 5;
+    bool is_active = 6;
+    bool is_staff = 7;
+    bool is_confirmed = 8;
+    mnemosyne.Timestamp created_at = 9;
+    int64 created_by = 10;
+    mnemosyne.Timestamp updated_at = 11;
+    int64 updated_by = 12;
 }
 
 // Login
@@ -40,7 +48,7 @@ message LoginRequest {
     string password = 2;
 }
 message LoginResponse {
-    mnemosyne.Session session = 1;
+    mnemosyne.Token token = 1;
 }
 
 // Logout
@@ -59,30 +67,10 @@ message IsAuthenticatedResponse {
     bool is_authenticated = 1;
 }
 
-// Register
-
-message RegisterRequest {}
-message RegisterResponse {}
-
-// ConfirmRegistration
-
-message ConfirmRegistrationRequest {}
-message ConfirmRegistrationResponse {}
-
-// RecoverPassword
-
-message RecoverPasswordRequest {}
-message RecoverPasswordResponse {}
-
-// ConfirmPasswordRecovery
-
-message ConfirmPasswordRecoveryRequest {}
-message ConfirmPasswordRecoveryResponse {}
-
 // IsGranted
 
 message IsGrantedRequest {
-    string token = 1;
+    mnemosyne.Token token = 1;
     int64 user_id = 2;
     string permission = 3;
 }
@@ -90,7 +78,7 @@ message IsGrantedResponse {
     bool is_granted = 1;
 }
 
-// HasPrivileges
+// BelongsTo
 
 message BelongsToRequest {}
 message BelongsToResponse {}
@@ -98,14 +86,19 @@ message BelongsToResponse {}
 // CreateUser
 
 message CreateUserRequest {
-    string name = 1;
+    string username = 1;
     string plain_password = 2;
     string secure_password = 3;
     string first_name = 4;
     string last_name = 5;
+    bool is_superuser = 6;
+    bool is_active = 7;
+    bool is_staff = 8;
+    bool is_confirmed = 9;
 }
 message CreateUserResponse {
-    User user = 1;
+    int64 id = 1;
+    mnemosyne.Timestamp created_at = 2;
 }
 
 // GetUser
@@ -131,3 +124,14 @@ message DeleteUserResponse {}
 
 message ModifyUserRequest {}
 message ModifyUserResponse {}
+
+message ModifyUserPasswordRequest{
+    int64 id = 1;
+    string plain_password = 2;
+    string secure_password = 3;
+    bool regenerate = 4;
+    bool is_confirmed = 5;
+}
+message ModifyUserPasswordResponse{
+    string generated = 1;
+}

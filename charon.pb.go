@@ -16,14 +16,6 @@ It has these top-level messages:
 	LogoutResponse
 	IsAuthenticatedRequest
 	IsAuthenticatedResponse
-	RegisterRequest
-	RegisterResponse
-	ConfirmRegistrationRequest
-	ConfirmRegistrationResponse
-	RecoverPasswordRequest
-	RecoverPasswordResponse
-	ConfirmPasswordRecoveryRequest
-	ConfirmPasswordRecoveryResponse
 	IsGrantedRequest
 	IsGrantedResponse
 	BelongsToRequest
@@ -38,6 +30,8 @@ It has these top-level messages:
 	DeleteUserResponse
 	ModifyUserRequest
 	ModifyUserResponse
+	ModifyUserPasswordRequest
+	ModifyUserPasswordResponse
 */
 package charon
 
@@ -57,12 +51,37 @@ var _ = fmt.Errorf
 var _ = math.Inf
 
 type User struct {
-	Id int64 `protobuf:"varint,1,opt,name=id" json:"id,omitempty"`
+	Id          int64                 `protobuf:"varint,1,opt,name=id" json:"id,omitempty"`
+	Username    string                `protobuf:"bytes,2,opt,name=username" json:"username,omitempty"`
+	FirstName   string                `protobuf:"bytes,3,opt,name=first_name" json:"first_name,omitempty"`
+	LastName    string                `protobuf:"bytes,4,opt,name=last_name" json:"last_name,omitempty"`
+	IsSuperuser bool                  `protobuf:"varint,5,opt,name=is_superuser" json:"is_superuser,omitempty"`
+	IsActive    bool                  `protobuf:"varint,6,opt,name=is_active" json:"is_active,omitempty"`
+	IsStaff     bool                  `protobuf:"varint,7,opt,name=is_staff" json:"is_staff,omitempty"`
+	IsConfirmed bool                  `protobuf:"varint,8,opt,name=is_confirmed" json:"is_confirmed,omitempty"`
+	CreatedAt   *mnemosyne1.Timestamp `protobuf:"bytes,9,opt,name=created_at" json:"created_at,omitempty"`
+	CreatedBy   int64                 `protobuf:"varint,10,opt,name=created_by" json:"created_by,omitempty"`
+	UpdatedAt   *mnemosyne1.Timestamp `protobuf:"bytes,11,opt,name=updated_at" json:"updated_at,omitempty"`
+	UpdatedBy   int64                 `protobuf:"varint,12,opt,name=updated_by" json:"updated_by,omitempty"`
 }
 
 func (m *User) Reset()         { *m = User{} }
 func (m *User) String() string { return proto.CompactTextString(m) }
 func (*User) ProtoMessage()    {}
+
+func (m *User) GetCreatedAt() *mnemosyne1.Timestamp {
+	if m != nil {
+		return m.CreatedAt
+	}
+	return nil
+}
+
+func (m *User) GetUpdatedAt() *mnemosyne1.Timestamp {
+	if m != nil {
+		return m.UpdatedAt
+	}
+	return nil
+}
 
 type LoginRequest struct {
 	Username string `protobuf:"bytes,1,opt,name=username" json:"username,omitempty"`
@@ -74,16 +93,16 @@ func (m *LoginRequest) String() string { return proto.CompactTextString(m) }
 func (*LoginRequest) ProtoMessage()    {}
 
 type LoginResponse struct {
-	Session *mnemosyne1.Session `protobuf:"bytes,1,opt,name=session" json:"session,omitempty"`
+	Token *mnemosyne1.Token `protobuf:"bytes,1,opt,name=token" json:"token,omitempty"`
 }
 
 func (m *LoginResponse) Reset()         { *m = LoginResponse{} }
 func (m *LoginResponse) String() string { return proto.CompactTextString(m) }
 func (*LoginResponse) ProtoMessage()    {}
 
-func (m *LoginResponse) GetSession() *mnemosyne1.Session {
+func (m *LoginResponse) GetToken() *mnemosyne1.Token {
 	if m != nil {
-		return m.Session
+		return m.Token
 	}
 	return nil
 }
@@ -133,71 +152,22 @@ func (m *IsAuthenticatedResponse) Reset()         { *m = IsAuthenticatedResponse
 func (m *IsAuthenticatedResponse) String() string { return proto.CompactTextString(m) }
 func (*IsAuthenticatedResponse) ProtoMessage()    {}
 
-type RegisterRequest struct {
-}
-
-func (m *RegisterRequest) Reset()         { *m = RegisterRequest{} }
-func (m *RegisterRequest) String() string { return proto.CompactTextString(m) }
-func (*RegisterRequest) ProtoMessage()    {}
-
-type RegisterResponse struct {
-}
-
-func (m *RegisterResponse) Reset()         { *m = RegisterResponse{} }
-func (m *RegisterResponse) String() string { return proto.CompactTextString(m) }
-func (*RegisterResponse) ProtoMessage()    {}
-
-type ConfirmRegistrationRequest struct {
-}
-
-func (m *ConfirmRegistrationRequest) Reset()         { *m = ConfirmRegistrationRequest{} }
-func (m *ConfirmRegistrationRequest) String() string { return proto.CompactTextString(m) }
-func (*ConfirmRegistrationRequest) ProtoMessage()    {}
-
-type ConfirmRegistrationResponse struct {
-}
-
-func (m *ConfirmRegistrationResponse) Reset()         { *m = ConfirmRegistrationResponse{} }
-func (m *ConfirmRegistrationResponse) String() string { return proto.CompactTextString(m) }
-func (*ConfirmRegistrationResponse) ProtoMessage()    {}
-
-type RecoverPasswordRequest struct {
-}
-
-func (m *RecoverPasswordRequest) Reset()         { *m = RecoverPasswordRequest{} }
-func (m *RecoverPasswordRequest) String() string { return proto.CompactTextString(m) }
-func (*RecoverPasswordRequest) ProtoMessage()    {}
-
-type RecoverPasswordResponse struct {
-}
-
-func (m *RecoverPasswordResponse) Reset()         { *m = RecoverPasswordResponse{} }
-func (m *RecoverPasswordResponse) String() string { return proto.CompactTextString(m) }
-func (*RecoverPasswordResponse) ProtoMessage()    {}
-
-type ConfirmPasswordRecoveryRequest struct {
-}
-
-func (m *ConfirmPasswordRecoveryRequest) Reset()         { *m = ConfirmPasswordRecoveryRequest{} }
-func (m *ConfirmPasswordRecoveryRequest) String() string { return proto.CompactTextString(m) }
-func (*ConfirmPasswordRecoveryRequest) ProtoMessage()    {}
-
-type ConfirmPasswordRecoveryResponse struct {
-}
-
-func (m *ConfirmPasswordRecoveryResponse) Reset()         { *m = ConfirmPasswordRecoveryResponse{} }
-func (m *ConfirmPasswordRecoveryResponse) String() string { return proto.CompactTextString(m) }
-func (*ConfirmPasswordRecoveryResponse) ProtoMessage()    {}
-
 type IsGrantedRequest struct {
-	Token      string `protobuf:"bytes,1,opt,name=token" json:"token,omitempty"`
-	UserId     int64  `protobuf:"varint,2,opt,name=user_id" json:"user_id,omitempty"`
-	Permission string `protobuf:"bytes,3,opt,name=permission" json:"permission,omitempty"`
+	Token      *mnemosyne1.Token `protobuf:"bytes,1,opt,name=token" json:"token,omitempty"`
+	UserId     int64             `protobuf:"varint,2,opt,name=user_id" json:"user_id,omitempty"`
+	Permission string            `protobuf:"bytes,3,opt,name=permission" json:"permission,omitempty"`
 }
 
 func (m *IsGrantedRequest) Reset()         { *m = IsGrantedRequest{} }
 func (m *IsGrantedRequest) String() string { return proto.CompactTextString(m) }
 func (*IsGrantedRequest) ProtoMessage()    {}
+
+func (m *IsGrantedRequest) GetToken() *mnemosyne1.Token {
+	if m != nil {
+		return m.Token
+	}
+	return nil
+}
 
 type IsGrantedResponse struct {
 	IsGranted bool `protobuf:"varint,1,opt,name=is_granted" json:"is_granted,omitempty"`
@@ -222,11 +192,15 @@ func (m *BelongsToResponse) String() string { return proto.CompactTextString(m) 
 func (*BelongsToResponse) ProtoMessage()    {}
 
 type CreateUserRequest struct {
-	Name           string `protobuf:"bytes,1,opt,name=name" json:"name,omitempty"`
+	Username       string `protobuf:"bytes,1,opt,name=username" json:"username,omitempty"`
 	PlainPassword  string `protobuf:"bytes,2,opt,name=plain_password" json:"plain_password,omitempty"`
 	SecurePassword string `protobuf:"bytes,3,opt,name=secure_password" json:"secure_password,omitempty"`
 	FirstName      string `protobuf:"bytes,4,opt,name=first_name" json:"first_name,omitempty"`
 	LastName       string `protobuf:"bytes,5,opt,name=last_name" json:"last_name,omitempty"`
+	IsSuperuser    bool   `protobuf:"varint,6,opt,name=is_superuser" json:"is_superuser,omitempty"`
+	IsActive       bool   `protobuf:"varint,7,opt,name=is_active" json:"is_active,omitempty"`
+	IsStaff        bool   `protobuf:"varint,8,opt,name=is_staff" json:"is_staff,omitempty"`
+	IsConfirmed    bool   `protobuf:"varint,9,opt,name=is_confirmed" json:"is_confirmed,omitempty"`
 }
 
 func (m *CreateUserRequest) Reset()         { *m = CreateUserRequest{} }
@@ -234,16 +208,17 @@ func (m *CreateUserRequest) String() string { return proto.CompactTextString(m) 
 func (*CreateUserRequest) ProtoMessage()    {}
 
 type CreateUserResponse struct {
-	User *User `protobuf:"bytes,1,opt,name=user" json:"user,omitempty"`
+	Id        int64                 `protobuf:"varint,1,opt,name=id" json:"id,omitempty"`
+	CreatedAt *mnemosyne1.Timestamp `protobuf:"bytes,2,opt,name=created_at" json:"created_at,omitempty"`
 }
 
 func (m *CreateUserResponse) Reset()         { *m = CreateUserResponse{} }
 func (m *CreateUserResponse) String() string { return proto.CompactTextString(m) }
 func (*CreateUserResponse) ProtoMessage()    {}
 
-func (m *CreateUserResponse) GetUser() *User {
+func (m *CreateUserResponse) GetCreatedAt() *mnemosyne1.Timestamp {
 	if m != nil {
-		return m.User
+		return m.CreatedAt
 	}
 	return nil
 }
@@ -320,6 +295,26 @@ func (m *ModifyUserResponse) Reset()         { *m = ModifyUserResponse{} }
 func (m *ModifyUserResponse) String() string { return proto.CompactTextString(m) }
 func (*ModifyUserResponse) ProtoMessage()    {}
 
+type ModifyUserPasswordRequest struct {
+	Id             int64  `protobuf:"varint,1,opt,name=id" json:"id,omitempty"`
+	PlainPassword  string `protobuf:"bytes,2,opt,name=plain_password" json:"plain_password,omitempty"`
+	SecurePassword string `protobuf:"bytes,3,opt,name=secure_password" json:"secure_password,omitempty"`
+	Regenerate     bool   `protobuf:"varint,4,opt,name=regenerate" json:"regenerate,omitempty"`
+	IsConfirmed    bool   `protobuf:"varint,5,opt,name=is_confirmed" json:"is_confirmed,omitempty"`
+}
+
+func (m *ModifyUserPasswordRequest) Reset()         { *m = ModifyUserPasswordRequest{} }
+func (m *ModifyUserPasswordRequest) String() string { return proto.CompactTextString(m) }
+func (*ModifyUserPasswordRequest) ProtoMessage()    {}
+
+type ModifyUserPasswordResponse struct {
+	Generated string `protobuf:"bytes,1,opt,name=generated" json:"generated,omitempty"`
+}
+
+func (m *ModifyUserPasswordResponse) Reset()         { *m = ModifyUserPasswordResponse{} }
+func (m *ModifyUserPasswordResponse) String() string { return proto.CompactTextString(m) }
+func (*ModifyUserPasswordResponse) ProtoMessage()    {}
+
 // Reference imports to suppress errors if they are not otherwise used.
 var _ context.Context
 var _ grpc.ClientConn
@@ -337,6 +332,7 @@ type RPCClient interface {
 	GetUser(ctx context.Context, in *GetUserRequest, opts ...grpc.CallOption) (*GetUserResponse, error)
 	GetUsers(ctx context.Context, in *GetUsersRequest, opts ...grpc.CallOption) (*GetUsersResponse, error)
 	DeleteUser(ctx context.Context, in *DeleteUserRequest, opts ...grpc.CallOption) (*DeleteUserResponse, error)
+	ModifyUserPassword(ctx context.Context, in *ModifyUserPasswordRequest, opts ...grpc.CallOption) (*ModifyUserPasswordResponse, error)
 }
 
 type rPCClient struct {
@@ -437,6 +433,15 @@ func (c *rPCClient) DeleteUser(ctx context.Context, in *DeleteUserRequest, opts 
 	return out, nil
 }
 
+func (c *rPCClient) ModifyUserPassword(ctx context.Context, in *ModifyUserPasswordRequest, opts ...grpc.CallOption) (*ModifyUserPasswordResponse, error) {
+	out := new(ModifyUserPasswordResponse)
+	err := grpc.Invoke(ctx, "/charon.RPC/ModifyUserPassword", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for RPC service
 
 type RPCServer interface {
@@ -450,6 +455,7 @@ type RPCServer interface {
 	GetUser(context.Context, *GetUserRequest) (*GetUserResponse, error)
 	GetUsers(context.Context, *GetUsersRequest) (*GetUsersResponse, error)
 	DeleteUser(context.Context, *DeleteUserRequest) (*DeleteUserResponse, error)
+	ModifyUserPassword(context.Context, *ModifyUserPasswordRequest) (*ModifyUserPasswordResponse, error)
 }
 
 func RegisterRPCServer(s *grpc.Server, srv RPCServer) {
@@ -576,6 +582,18 @@ func _RPC_DeleteUser_Handler(srv interface{}, ctx context.Context, dec func(inte
 	return out, nil
 }
 
+func _RPC_ModifyUserPassword_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error) (interface{}, error) {
+	in := new(ModifyUserPasswordRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	out, err := srv.(RPCServer).ModifyUserPassword(ctx, in)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 var _RPC_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "charon.RPC",
 	HandlerType: (*RPCServer)(nil),
@@ -619,6 +637,10 @@ var _RPC_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteUser",
 			Handler:    _RPC_DeleteUser_Handler,
+		},
+		{
+			MethodName: "ModifyUserPassword",
+			Handler:    _RPC_ModifyUserPassword_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{},

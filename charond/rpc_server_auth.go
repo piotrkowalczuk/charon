@@ -67,7 +67,7 @@ func (rs *rpcServer) Login(ctx context.Context, r *charon.LoginRequest) (*charon
 		return nil, grpc.Errorf(codes.Internal, "charond: last login update failure: %s", err)
 	}
 
-	return &charon.LoginResponse{Session: session}, nil
+	return &charon.LoginResponse{Token: session.Token}, nil
 }
 
 // Logout ...

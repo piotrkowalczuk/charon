@@ -7,9 +7,10 @@ import (
 )
 
 type rpcServer struct {
-	logger         log.Logger
-	monitor        *monitoring
-	mnemosyne      mnemosyne.Mnemosyne
-	passwordHasher charon.PasswordHasher
-	userRepository UserRepository
+	logger               log.Logger
+	monitor              *monitoring
+	mnemosyne            mnemosyne.Mnemosyne
+	passwordHasher       charon.PasswordHasher
+	userRepository       UserRepository
+	permissionRepository PermissionRepository
 }

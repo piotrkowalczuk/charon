@@ -5,13 +5,15 @@ import (
 	"fmt"
 )
 
+// Permission is a string that consist of subsystem, module/content type and an action.
 type Permission string
 
-// NewPermission splits given string and allocates new Permission.
+// NewPermission allocate new Permission object using given string.
 func NewPermission(s string) Permission {
 	return Permission(s)
 }
 
+// Split returns subsystem, module/content ty and action that describes single Permission.
 func (p Permission) Split() (string, string, string) {
 	if p == "" {
 		return "", "", ""
@@ -39,7 +41,7 @@ func (p Permission) MarshalJSON() ([]byte, error) {
 	return []byte(p), nil
 }
 
-// UnmarshalJSON implements json.Unmarshaller interface.
+// UnmarshalJSON implements json.Unmarshaler interface.
 func (p *Permission) UnmarshalJSON(src interface{}) error {
 	switch s := src.(type) {
 	case string:

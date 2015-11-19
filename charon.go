@@ -52,7 +52,7 @@ type AuthorizationChecker func(context.Context, Permission, ...interface{}) (boo
 type Charon interface {
 	IsGranted(context.Context, Permission, ...interface{}) (bool, error)
 	IsAuthenticated(context.Context) (bool, error)
-	Login(context.Context, string, string) (*mnemosyne.Session, error)
+	Login(context.Context, string, string) (*mnemosyne.Token, error)
 	Logout(context.Context, *mnemosyne.Token) error
 }
 
@@ -79,13 +79,13 @@ func (c *charon) IsGranted(ctx context.Context, perm Permission, args ...interfa
 
 	user, ok := FromContext(ctx)
 	if !ok {
-		session, ok := mnemosyne.FromContext(ctx)
+		token, ok := mnemosyne.TokenFromContext(ctx)
 		if !ok {
-			return false, errors.New("charon: permission cannot be checked, user nor session exists in context")
+			return false, errors.New("charon: permission cannot be checked, session token missing in context")
 		}
 
 		req = &IsGrantedRequest{
-			Token: session.Token.String(),
+			Token: &token,
 		}
 	} else {
 		req = &IsGrantedRequest{
@@ -111,13 +111,13 @@ func (c *charon) IsGranted(ctx context.Context, perm Permission, args ...interfa
 
 // IsAuthenticated implements Charon interface.
 func (c *charon) IsAuthenticated(ctx context.Context) (bool, error) {
-	session, ok := mnemosyne.FromContext(ctx)
+	token, ok := mnemosyne.TokenFromContext(ctx)
 	if !ok {
-		return false, errors.New("charon: is not authenticated, missing session in context")
+		return false, errors.New("charon: is not authenticated, missing session token in context")
 	}
 
 	res, err := c.client.IsAuthenticated(ctx, &IsAuthenticatedRequest{
-		Token: session.Token,
+		Token: &token,
 	})
 	if err != nil {
 		return false, err
@@ -127,7 +127,7 @@ func (c *charon) IsAuthenticated(ctx context.Context) (bool, error) {
 }
 
 // Login implements Charon interface.
-func (c *charon) Login(ctx context.Context, username, password string) (*mnemosyne.Session, error) {
+func (c *charon) Login(ctx context.Context, username, password string) (*mnemosyne.Token, error) {
 	res, err := c.client.Login(ctx, &LoginRequest{
 		Username: username,
 		Password: password,
@@ -136,7 +136,7 @@ func (c *charon) Login(ctx context.Context, username, password string) (*mnemosy
 		return nil, err
 	}
 
-	return res.Session, nil
+	return res.Token, nil
 }
 
 // Logout implements Charon interface.
