@@ -48,7 +48,7 @@ func (rs *rpcServer) Login(ctx context.Context, r *charon.LoginRequest) (*charon
 		return nil, grpc.Errorf(codes.Unauthenticated, "charond: user is not active")
 	}
 
-	session, err := rs.mnemosyne.Create(ctx, map[string]string{
+	session, err := rs.session.Create(ctx, map[string]string{
 		"user_id":    strconv.FormatInt(user.ID, 10),
 		"username":   user.Username,
 		"first_name": user.FirstName,
@@ -76,7 +76,7 @@ func (rs *rpcServer) Logout(ctx context.Context, r *charon.LogoutRequest) (*char
 		return nil, grpc.Errorf(codes.InvalidArgument, "charond: empty session id, logout aborted")
 	}
 
-	abandoned, err := rs.mnemosyne.Abandon(ctx, r.Token)
+	abandoned, err := rs.session.Abandon(ctx)
 	if err != nil {
 		sklog.Error(rs.logger, err, "session_id", r.Token)
 

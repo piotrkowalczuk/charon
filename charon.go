@@ -14,6 +14,12 @@ const (
 	DecisionGranted = 1
 )
 
+var (
+	// ErrMissingTokenInContext can be returned by functions
+	// that are using arbitrary token taken from a context if it missing.
+	ErrMissingTokenInContext = errors.New("charon: missing token in context")
+)
+
 // NewContext returns a new Context that carries User value.
 func NewContext(ctx context.Context, u User) context.Context {
 	return context.WithValue(ctx, contextKeyUser, u)
@@ -52,8 +58,9 @@ type AuthorizationChecker func(context.Context, Permission, ...interface{}) (boo
 type Charon interface {
 	IsGranted(context.Context, Permission, ...interface{}) (bool, error)
 	IsAuthenticated(context.Context) (bool, error)
+	Subject(context.Context) (*Subject, error)
 	Login(context.Context, string, string) (*mnemosyne.Token, error)
-	Logout(context.Context, *mnemosyne.Token) error
+	Logout(context.Context) error
 }
 
 type charon struct {
@@ -75,22 +82,14 @@ func New(conn *grpc.ClientConn, options CharonOpts) Charon {
 
 // IsGranted implements Charon interface.
 func (c *charon) IsGranted(ctx context.Context, perm Permission, args ...interface{}) (bool, error) {
-	var req *IsGrantedRequest
-
-	user, ok := FromContext(ctx)
+	token, ok := mnemosyne.TokenFromContext(ctx)
 	if !ok {
-		token, ok := mnemosyne.TokenFromContext(ctx)
-		if !ok {
-			return false, errors.New("charon: permission cannot be checked, session token missing in context")
-		}
+		return false, errors.New("charon: permission cannot be checked, session token missing in context")
+	}
 
-		req = &IsGrantedRequest{
-			Token: &token,
-		}
-	} else {
-		req = &IsGrantedRequest{
-			UserId: user.Id,
-		}
+	req := &IsGrantedRequest{
+		Token:      &token,
+		Permission: perm.String(),
 	}
 
 	res, err := c.client.IsGranted(ctx, req)
@@ -109,11 +108,35 @@ func (c *charon) IsGranted(ctx context.Context, perm Permission, args ...interfa
 	return c.checker(ctx, perm, args...)
 }
 
+// Subject implements Charon interface.
+func (c *charon) Subject(ctx context.Context) (*Subject, error) {
+	token, ok := mnemosyne.TokenFromContext(ctx)
+	if !ok {
+		return nil, ErrMissingTokenInContext
+	}
+
+	resp1, err := c.client.GetUser(ctx, &GetUserRequest{Token: &token})
+	if err != nil {
+		return nil, err
+	}
+	resp2, err := c.client.GetUserPermissions(ctx, &GetUserPermissionsRequest{Token: &token})
+	if err != nil {
+		return nil, err
+	}
+
+	return &Subject{
+		ID:          resp1.User.Id,
+		Name:        resp1.User.Name(),
+		Email:       resp1.User.Username,
+		Permissions: NewPermissions(resp2.Permissions),
+	}, nil
+}
+
 // IsAuthenticated implements Charon interface.
 func (c *charon) IsAuthenticated(ctx context.Context) (bool, error) {
 	token, ok := mnemosyne.TokenFromContext(ctx)
 	if !ok {
-		return false, errors.New("charon: is not authenticated, missing session token in context")
+		return false, ErrMissingTokenInContext
 	}
 
 	res, err := c.client.IsAuthenticated(ctx, &IsAuthenticatedRequest{
@@ -140,9 +163,27 @@ func (c *charon) Login(ctx context.Context, username, password string) (*mnemosy
 }
 
 // Logout implements Charon interface.
-func (c *charon) Logout(ctx context.Context, token *mnemosyne.Token) error {
+func (c *charon) Logout(ctx context.Context) error {
+	token, ok := mnemosyne.TokenFromContext(ctx)
+	if !ok {
+		return ErrMissingTokenInContext
+	}
+
 	_, err := c.client.Logout(ctx, &LogoutRequest{
-		Token: token,
+		Token: &token,
 	})
 	return err
+}
+
+// Subject is a generic object that represent anything that can be under control of charon.
+type Subject struct {
+	ID          int64       `json:"id"`
+	Name        string      `json:"name"`
+	Email       string      `json:"email"`
+	Permissions Permissions `json:"permissions"`
+}
+
+// Name return concatenated first and last name.
+func (u *User) Name() string {
+	return u.FirstName + " " + u.LastName
 }

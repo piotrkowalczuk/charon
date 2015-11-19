@@ -13,9 +13,13 @@ import (
 	"google.golang.org/grpc/grpclog"
 )
 
-func main() {
-	var config configuration
+var config configuration
+
+func init() {
 	config.init()
+}
+
+func main() {
 	config.parse()
 
 	logger := initLogger(config.logger.adapter, config.logger.format, config.logger.level, sklog.KeySubsystem, config.subsystem)
