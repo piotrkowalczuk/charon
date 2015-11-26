@@ -1,8 +1,6 @@
 package main
 
 import (
-	"strconv"
-
 	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/sklog"
 	"golang.org/x/net/context"
@@ -10,7 +8,7 @@ import (
 	"google.golang.org/grpc/codes"
 )
 
-// Login ...
+// Login implements charon.RPCServer interface.
 func (rs *rpcServer) Login(ctx context.Context, r *charon.LoginRequest) (*charon.LoginResponse, error) {
 	if r.Username == "" {
 		sklog.Debug(rs.logger, "login failed, empty username")
@@ -48,8 +46,7 @@ func (rs *rpcServer) Login(ctx context.Context, r *charon.LoginRequest) (*charon
 		return nil, grpc.Errorf(codes.Unauthenticated, "charond: user is not active")
 	}
 
-	session, err := rs.session.Create(ctx, map[string]string{
-		"user_id":    strconv.FormatInt(user.ID, 10),
+	session, err := rs.session.Start(ctx, user.subjectID(), map[string]string{
 		"username":   user.Username,
 		"first_name": user.FirstName,
 		"last_name":  user.LastName,
@@ -70,13 +67,13 @@ func (rs *rpcServer) Login(ctx context.Context, r *charon.LoginRequest) (*charon
 	return &charon.LoginResponse{Token: session.Token}, nil
 }
 
-// Logout ...
+// Logout implements charon.RPCServer interface.
 func (rs *rpcServer) Logout(ctx context.Context, r *charon.LogoutRequest) (*charon.LogoutResponse, error) {
-	if r.Token.String() == "" { // TODO: probably wrong, implement IsEmpty method for ID
+	if r.Token.Encode() == "" { // TODO: probably wrong, implement IsEmpty method for ID
 		return nil, grpc.Errorf(codes.InvalidArgument, "charond: empty session id, logout aborted")
 	}
 
-	err := rs.session.Abandon(ctx)
+	err := rs.session.Abandon(ctx, *r.Token)
 	if err != nil {
 		sklog.Error(rs.logger, err, "session_id", r.Token)
 
@@ -88,17 +85,17 @@ func (rs *rpcServer) Logout(ctx context.Context, r *charon.LogoutRequest) (*char
 	return &charon.LogoutResponse{}, nil
 }
 
-// IsGranted ...
+// IsGranted implements charon.RPCServer interface.
 func (rs *rpcServer) IsGranted(ctx context.Context, r *charon.IsGrantedRequest) (*charon.IsGrantedResponse, error) {
 	return nil, grpc.Errorf(codes.Unimplemented, "is granted is not implemented yet")
 }
 
-// BelongsTo ...
+// BelongsTo implements charon.RPCServer interface.
 func (rs *rpcServer) BelongsTo(ctx context.Context, r *charon.BelongsToRequest) (*charon.BelongsToResponse, error) {
 	return nil, grpc.Errorf(codes.Unimplemented, "belongs to is not implemented yet")
 }
 
-// IsAuthenticated ...
+// IsAuthenticated implements charon.RPCServer interface.
 func (rs *rpcServer) IsAuthenticated(ctx context.Context, r *charon.IsAuthenticatedRequest) (*charon.IsAuthenticatedResponse, error) {
 	return nil, grpc.Errorf(codes.Unimplemented, "is authenticated is not implemented yet")
 }

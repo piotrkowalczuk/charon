@@ -117,20 +117,45 @@ message GetUserResponse {
 
 // GetUsers
 
-message GetUsersRequest {}
+message GetUsersRequest {
+    reserved 1 to 99, 102 to 200;
+//    protot.NilString username = 1;
+//    protot.NilString first_name = 2;
+//    protot.NilString last_name = 3;
+//    protot.TimestampRange created_at = 98;
+//    protot.TimestampRange updated_at = 99;
+
+    protot.NilInt64 offset = 100;
+    protot.NilInt64 limit = 101;
+//    repeated string sort = 102;
+}
 message GetUsersResponse {
-    repeated User user = 1;
+    repeated User users = 1;
 }
 
 // DeleteUser
 
-message DeleteUserRequest {}
+message DeleteUserRequest {
+    int64 id = 1;
+}
 message DeleteUserResponse {}
 
 // ModifyUser
 
-message ModifyUserRequest {}
-message ModifyUserResponse {}
+message ModifyUserRequest {
+    string username = 1;
+    protot.NilString plain_password = 2;
+    protot.NilString secure_password = 3;
+    string first_name = 4;
+    string last_name = 5;
+    protot.NilBool is_superuser = 6;
+    protot.NilBool is_active = 7;
+    protot.NilBool is_staff = 8;
+    protot.NilBool is_confirmed = 9;
+}
+message ModifyUserResponse {
+    User user = 1;
+}
 
 message ModifyUserPasswordRequest{
     int64 id = 1;

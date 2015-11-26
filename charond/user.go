@@ -2,7 +2,11 @@ package main
 
 import (
 	"database/sql"
+	"strconv"
 	"time"
+
+	"github.com/piotrkowalczuk/charon"
+	"github.com/piotrkowalczuk/protot"
 )
 
 const (
@@ -46,8 +50,42 @@ type userEntity struct {
 }
 
 // String return concatenated first and last name of the user.
-func (u *userEntity) String() string {
-	return u.FirstName + " " + u.LastName
+func (ue *userEntity) String() string {
+	return ue.FirstName + " " + ue.LastName
+}
+
+func (ue *userEntity) subjectID() string {
+	return strconv.FormatInt(ue.ID, 10)
+}
+
+// Message allocates new corresponding protobuf message.
+func (ue *userEntity) Message() *charon.User {
+	var (
+		createdAt *protot.Timestamp
+		updatedAt *protot.Timestamp
+	)
+
+	if ue.CreatedAt != nil {
+		createdAt = protot.TimeToTimestamp(*ue.CreatedAt)
+	}
+
+	if ue.UpdatedAt != nil {
+		createdAt = protot.TimeToTimestamp(*ue.UpdatedAt)
+	}
+	return &charon.User{
+		Id:          ue.ID,
+		Username:    ue.Username,
+		FirstName:   ue.FirstName,
+		LastName:    ue.LastName,
+		IsSuperuser: ue.IsSuperuser,
+		IsActive:    ue.IsActive,
+		IsStaff:     ue.IsStaff,
+		IsConfirmed: ue.IsConfirmed,
+		CreatedAt:   createdAt,
+		CreatedBy:   ue.CreatedBy.Int64,
+		UpdatedAt:   updatedAt,
+		UpdatedBy:   ue.UpdatedBy.Int64,
+	}
 }
 
 // UserRepository ...
@@ -58,6 +96,7 @@ type UserRepository interface {
 	Count() (int64, error)
 	UpdateLastLoginAt(id int64) error
 	ChangePassword(id int64, password string) error
+	Find(offset, limit *protot.NilInt64) ([]*userEntity, error)
 	FindOneByID(id int64) (*userEntity, error)
 	FindOneByUsername(username string) (*userEntity, error)
 	RegistrationConfirmation(id int64, confirmationToken string) error
@@ -194,7 +233,7 @@ func (ur *userRepository) findOneBy(fieldName string, value interface{}) (*userE
 		LIMIT 1
 	`
 
-	user := &userEntity{}
+	var user userEntity
 	err := ur.db.QueryRow(query, value).Scan(
 		&user.ID,
 		&user.Password,
@@ -215,7 +254,62 @@ func (ur *userRepository) findOneBy(fieldName string, value interface{}) (*userE
 		return nil, err
 	}
 
-	return user, nil
+	return &user, nil
+}
+
+// Find implements UserRepository interface.
+func (ur *userRepository) Find(offset, limit *protot.NilInt64) ([]*userEntity, error) {
+	query := `
+		SELECT id, password, username, first_name, last_name, is_active, is_staff,
+			is_superuser, is_confirmed, confirmation_token, last_login_at,
+			created_at, updated_at
+		FROM charon.user
+		OFFSET $1
+		LIMIT $2
+	`
+
+	if offset == nil && !offset.Valid {
+		offset = &protot.NilInt64{Int64: 0, Valid: true}
+	}
+
+	if limit == nil || !limit.Valid {
+		limit = &protot.NilInt64{Int64: 10, Valid: true}
+	}
+
+	rows, err := ur.db.Query(query, offset.Int64, limit.Int64)
+	if err != nil {
+		return nil, err
+	}
+
+	users := []*userEntity{}
+	for rows.Next() {
+		var user userEntity
+		err = rows.Scan(
+			&user.ID,
+			&user.Password,
+			&user.Username,
+			&user.FirstName,
+			&user.LastName,
+			&user.IsActive,
+			&user.IsStaff,
+			&user.IsSuperuser,
+			&user.IsConfirmed,
+			&user.ConfirmationToken,
+			&user.LastLoginAt,
+			&user.CreatedAt,
+			&user.UpdatedAt,
+		)
+		if err != nil {
+			return nil, err
+		}
+		users = append(users, &user)
+	}
+
+	if rows.Err() != nil {
+		return nil, rows.Err()
+	}
+
+	return users, nil
 }
 
 // UpdateLastLoginAt implements UserRepository interface.

@@ -11,7 +11,11 @@ import (
 
 // CreateUser ...
 func (rs *rpcServer) CreateUser(ctx context.Context, r *charon.CreateUserRequest) (*charon.CreateUserResponse, error) {
-	user, _, permissions, err := rs.retrieveUserData(ctx)
+	token, err := rs.token(ctx)
+	if err != nil {
+		return nil, err
+	}
+	user, _, permissions, err := rs.retrieveUserData(ctx, token)
 	if err != nil {
 		return nil, err
 	}
@@ -71,12 +75,41 @@ func (rs *rpcServer) ModifyUser(ctx context.Context, r *charon.ModifyUserRequest
 
 // GetUser ...
 func (rs *rpcServer) GetUser(ctx context.Context, r *charon.GetUserRequest) (*charon.GetUserResponse, error) {
-	return nil, grpc.Errorf(codes.Unimplemented, "get user is not implemented yet")
+	token, err := rs.token(ctx)
+	if err != nil {
+		return nil, err
+	}
+	subjectID, err := rs.retrieveSubjectID(ctx, token)
+	if err != nil {
+		return nil, err
+	}
+
+	user, err := rs.userRepository.FindOneByID(subjectID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &charon.GetUserResponse{
+		User: user.Message(),
+	}, nil
 }
 
 // GetUsers ...
 func (rs *rpcServer) GetUsers(ctx context.Context, r *charon.GetUsersRequest) (*charon.GetUsersResponse, error) {
-	return nil, grpc.Errorf(codes.Unimplemented, "get users is not implemented yet")
+	users, err := rs.userRepository.Find(r.Offset, r.Limit)
+	if err != nil {
+		return nil, err
+	}
+
+	resp := &charon.GetUsersResponse{
+		Users: make([]*charon.User, 0, len(users)),
+	}
+
+	for _, u := range users {
+		resp.Users = append(resp.Users, u.Message())
+	}
+
+	return resp, nil
 }
 
 // DeleteUser ...

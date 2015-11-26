@@ -40,7 +40,7 @@ package charon
 import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
 import math "math"
-import mnemosyne1 "github.com/piotrkowalczuk/mnemosyne"
+import mnemosyne "github.com/piotrkowalczuk/mnemosyne"
 import protot "github.com/piotrkowalczuk/protot"
 
 import (
@@ -69,9 +69,10 @@ type User struct {
 	Permissions []string          `protobuf:"bytes,13,rep,name=permissions" json:"permissions,omitempty"`
 }
 
-func (m *User) Reset()         { *m = User{} }
-func (m *User) String() string { return proto.CompactTextString(m) }
-func (*User) ProtoMessage()    {}
+func (m *User) Reset()                    { *m = User{} }
+func (m *User) String() string            { return proto.CompactTextString(m) }
+func (*User) ProtoMessage()               {}
+func (*User) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{0} }
 
 func (m *User) GetCreatedAt() *protot.Timestamp {
 	if m != nil {
@@ -92,19 +93,21 @@ type LoginRequest struct {
 	Password string `protobuf:"bytes,2,opt,name=password" json:"password,omitempty"`
 }
 
-func (m *LoginRequest) Reset()         { *m = LoginRequest{} }
-func (m *LoginRequest) String() string { return proto.CompactTextString(m) }
-func (*LoginRequest) ProtoMessage()    {}
+func (m *LoginRequest) Reset()                    { *m = LoginRequest{} }
+func (m *LoginRequest) String() string            { return proto.CompactTextString(m) }
+func (*LoginRequest) ProtoMessage()               {}
+func (*LoginRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{1} }
 
 type LoginResponse struct {
-	Token *mnemosyne1.Token `protobuf:"bytes,1,opt,name=token" json:"token,omitempty"`
+	Token *mnemosyne.Token `protobuf:"bytes,1,opt,name=token" json:"token,omitempty"`
 }
 
-func (m *LoginResponse) Reset()         { *m = LoginResponse{} }
-func (m *LoginResponse) String() string { return proto.CompactTextString(m) }
-func (*LoginResponse) ProtoMessage()    {}
+func (m *LoginResponse) Reset()                    { *m = LoginResponse{} }
+func (m *LoginResponse) String() string            { return proto.CompactTextString(m) }
+func (*LoginResponse) ProtoMessage()               {}
+func (*LoginResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{2} }
 
-func (m *LoginResponse) GetToken() *mnemosyne1.Token {
+func (m *LoginResponse) GetToken() *mnemosyne.Token {
 	if m != nil {
 		return m.Token
 	}
@@ -112,14 +115,15 @@ func (m *LoginResponse) GetToken() *mnemosyne1.Token {
 }
 
 type LogoutRequest struct {
-	Token *mnemosyne1.Token `protobuf:"bytes,1,opt,name=token" json:"token,omitempty"`
+	Token *mnemosyne.Token `protobuf:"bytes,1,opt,name=token" json:"token,omitempty"`
 }
 
-func (m *LogoutRequest) Reset()         { *m = LogoutRequest{} }
-func (m *LogoutRequest) String() string { return proto.CompactTextString(m) }
-func (*LogoutRequest) ProtoMessage()    {}
+func (m *LogoutRequest) Reset()                    { *m = LogoutRequest{} }
+func (m *LogoutRequest) String() string            { return proto.CompactTextString(m) }
+func (*LogoutRequest) ProtoMessage()               {}
+func (*LogoutRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{3} }
 
-func (m *LogoutRequest) GetToken() *mnemosyne1.Token {
+func (m *LogoutRequest) GetToken() *mnemosyne.Token {
 	if m != nil {
 		return m.Token
 	}
@@ -129,19 +133,21 @@ func (m *LogoutRequest) GetToken() *mnemosyne1.Token {
 type LogoutResponse struct {
 }
 
-func (m *LogoutResponse) Reset()         { *m = LogoutResponse{} }
-func (m *LogoutResponse) String() string { return proto.CompactTextString(m) }
-func (*LogoutResponse) ProtoMessage()    {}
+func (m *LogoutResponse) Reset()                    { *m = LogoutResponse{} }
+func (m *LogoutResponse) String() string            { return proto.CompactTextString(m) }
+func (*LogoutResponse) ProtoMessage()               {}
+func (*LogoutResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{4} }
 
 type IsAuthenticatedRequest struct {
-	Token *mnemosyne1.Token `protobuf:"bytes,1,opt,name=token" json:"token,omitempty"`
+	Token *mnemosyne.Token `protobuf:"bytes,1,opt,name=token" json:"token,omitempty"`
 }
 
-func (m *IsAuthenticatedRequest) Reset()         { *m = IsAuthenticatedRequest{} }
-func (m *IsAuthenticatedRequest) String() string { return proto.CompactTextString(m) }
-func (*IsAuthenticatedRequest) ProtoMessage()    {}
+func (m *IsAuthenticatedRequest) Reset()                    { *m = IsAuthenticatedRequest{} }
+func (m *IsAuthenticatedRequest) String() string            { return proto.CompactTextString(m) }
+func (*IsAuthenticatedRequest) ProtoMessage()               {}
+func (*IsAuthenticatedRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{5} }
 
-func (m *IsAuthenticatedRequest) GetToken() *mnemosyne1.Token {
+func (m *IsAuthenticatedRequest) GetToken() *mnemosyne.Token {
 	if m != nil {
 		return m.Token
 	}
@@ -152,21 +158,23 @@ type IsAuthenticatedResponse struct {
 	IsAuthenticated bool `protobuf:"varint,1,opt,name=is_authenticated" json:"is_authenticated,omitempty"`
 }
 
-func (m *IsAuthenticatedResponse) Reset()         { *m = IsAuthenticatedResponse{} }
-func (m *IsAuthenticatedResponse) String() string { return proto.CompactTextString(m) }
-func (*IsAuthenticatedResponse) ProtoMessage()    {}
+func (m *IsAuthenticatedResponse) Reset()                    { *m = IsAuthenticatedResponse{} }
+func (m *IsAuthenticatedResponse) String() string            { return proto.CompactTextString(m) }
+func (*IsAuthenticatedResponse) ProtoMessage()               {}
+func (*IsAuthenticatedResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{6} }
 
 type IsGrantedRequest struct {
-	Token      *mnemosyne1.Token `protobuf:"bytes,1,opt,name=token" json:"token,omitempty"`
-	UserId     int64             `protobuf:"varint,2,opt,name=user_id" json:"user_id,omitempty"`
-	Permission string            `protobuf:"bytes,3,opt,name=permission" json:"permission,omitempty"`
+	Token      *mnemosyne.Token `protobuf:"bytes,1,opt,name=token" json:"token,omitempty"`
+	UserId     int64            `protobuf:"varint,2,opt,name=user_id" json:"user_id,omitempty"`
+	Permission string           `protobuf:"bytes,3,opt,name=permission" json:"permission,omitempty"`
 }
 
-func (m *IsGrantedRequest) Reset()         { *m = IsGrantedRequest{} }
-func (m *IsGrantedRequest) String() string { return proto.CompactTextString(m) }
-func (*IsGrantedRequest) ProtoMessage()    {}
+func (m *IsGrantedRequest) Reset()                    { *m = IsGrantedRequest{} }
+func (m *IsGrantedRequest) String() string            { return proto.CompactTextString(m) }
+func (*IsGrantedRequest) ProtoMessage()               {}
+func (*IsGrantedRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{7} }
 
-func (m *IsGrantedRequest) GetToken() *mnemosyne1.Token {
+func (m *IsGrantedRequest) GetToken() *mnemosyne.Token {
 	if m != nil {
 		return m.Token
 	}
@@ -177,23 +185,26 @@ type IsGrantedResponse struct {
 	IsGranted bool `protobuf:"varint,1,opt,name=is_granted" json:"is_granted,omitempty"`
 }
 
-func (m *IsGrantedResponse) Reset()         { *m = IsGrantedResponse{} }
-func (m *IsGrantedResponse) String() string { return proto.CompactTextString(m) }
-func (*IsGrantedResponse) ProtoMessage()    {}
+func (m *IsGrantedResponse) Reset()                    { *m = IsGrantedResponse{} }
+func (m *IsGrantedResponse) String() string            { return proto.CompactTextString(m) }
+func (*IsGrantedResponse) ProtoMessage()               {}
+func (*IsGrantedResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{8} }
 
 type BelongsToRequest struct {
 }
 
-func (m *BelongsToRequest) Reset()         { *m = BelongsToRequest{} }
-func (m *BelongsToRequest) String() string { return proto.CompactTextString(m) }
-func (*BelongsToRequest) ProtoMessage()    {}
+func (m *BelongsToRequest) Reset()                    { *m = BelongsToRequest{} }
+func (m *BelongsToRequest) String() string            { return proto.CompactTextString(m) }
+func (*BelongsToRequest) ProtoMessage()               {}
+func (*BelongsToRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{9} }
 
 type BelongsToResponse struct {
 }
 
-func (m *BelongsToResponse) Reset()         { *m = BelongsToResponse{} }
-func (m *BelongsToResponse) String() string { return proto.CompactTextString(m) }
-func (*BelongsToResponse) ProtoMessage()    {}
+func (m *BelongsToResponse) Reset()                    { *m = BelongsToResponse{} }
+func (m *BelongsToResponse) String() string            { return proto.CompactTextString(m) }
+func (*BelongsToResponse) ProtoMessage()               {}
+func (*BelongsToResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{10} }
 
 type CreateUserRequest struct {
 	Username       string          `protobuf:"bytes,1,opt,name=username" json:"username,omitempty"`
@@ -207,9 +218,10 @@ type CreateUserRequest struct {
 	IsConfirmed    *protot.NilBool `protobuf:"bytes,9,opt,name=is_confirmed" json:"is_confirmed,omitempty"`
 }
 
-func (m *CreateUserRequest) Reset()         { *m = CreateUserRequest{} }
-func (m *CreateUserRequest) String() string { return proto.CompactTextString(m) }
-func (*CreateUserRequest) ProtoMessage()    {}
+func (m *CreateUserRequest) Reset()                    { *m = CreateUserRequest{} }
+func (m *CreateUserRequest) String() string            { return proto.CompactTextString(m) }
+func (*CreateUserRequest) ProtoMessage()               {}
+func (*CreateUserRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{11} }
 
 func (m *CreateUserRequest) GetIsSuperuser() *protot.NilBool {
 	if m != nil {
@@ -244,9 +256,10 @@ type CreateUserResponse struct {
 	CreatedAt *protot.Timestamp `protobuf:"bytes,2,opt,name=created_at" json:"created_at,omitempty"`
 }
 
-func (m *CreateUserResponse) Reset()         { *m = CreateUserResponse{} }
-func (m *CreateUserResponse) String() string { return proto.CompactTextString(m) }
-func (*CreateUserResponse) ProtoMessage()    {}
+func (m *CreateUserResponse) Reset()                    { *m = CreateUserResponse{} }
+func (m *CreateUserResponse) String() string            { return proto.CompactTextString(m) }
+func (*CreateUserResponse) ProtoMessage()               {}
+func (*CreateUserResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{12} }
 
 func (m *CreateUserResponse) GetCreatedAt() *protot.Timestamp {
 	if m != nil {
@@ -256,15 +269,16 @@ func (m *CreateUserResponse) GetCreatedAt() *protot.Timestamp {
 }
 
 type GetUserRequest struct {
-	Token *mnemosyne1.Token `protobuf:"bytes,1,opt,name=token" json:"token,omitempty"`
-	Id    int64             `protobuf:"varint,2,opt,name=id" json:"id,omitempty"`
+	Token *mnemosyne.Token `protobuf:"bytes,1,opt,name=token" json:"token,omitempty"`
+	Id    int64            `protobuf:"varint,2,opt,name=id" json:"id,omitempty"`
 }
 
-func (m *GetUserRequest) Reset()         { *m = GetUserRequest{} }
-func (m *GetUserRequest) String() string { return proto.CompactTextString(m) }
-func (*GetUserRequest) ProtoMessage()    {}
+func (m *GetUserRequest) Reset()                    { *m = GetUserRequest{} }
+func (m *GetUserRequest) String() string            { return proto.CompactTextString(m) }
+func (*GetUserRequest) ProtoMessage()               {}
+func (*GetUserRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{13} }
 
-func (m *GetUserRequest) GetToken() *mnemosyne1.Token {
+func (m *GetUserRequest) GetToken() *mnemosyne.Token {
 	if m != nil {
 		return m.Token
 	}
@@ -275,9 +289,10 @@ type GetUserResponse struct {
 	User *User `protobuf:"bytes,1,opt,name=user" json:"user,omitempty"`
 }
 
-func (m *GetUserResponse) Reset()         { *m = GetUserResponse{} }
-func (m *GetUserResponse) String() string { return proto.CompactTextString(m) }
-func (*GetUserResponse) ProtoMessage()    {}
+func (m *GetUserResponse) Reset()                    { *m = GetUserResponse{} }
+func (m *GetUserResponse) String() string            { return proto.CompactTextString(m) }
+func (*GetUserResponse) ProtoMessage()               {}
+func (*GetUserResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{14} }
 
 func (m *GetUserResponse) GetUser() *User {
 	if m != nil {
@@ -287,54 +302,136 @@ func (m *GetUserResponse) GetUser() *User {
 }
 
 type GetUsersRequest struct {
+	Offset *protot.NilInt64 `protobuf:"bytes,100,opt,name=offset" json:"offset,omitempty"`
+	Limit  *protot.NilInt64 `protobuf:"bytes,101,opt,name=limit" json:"limit,omitempty"`
 }
 
-func (m *GetUsersRequest) Reset()         { *m = GetUsersRequest{} }
-func (m *GetUsersRequest) String() string { return proto.CompactTextString(m) }
-func (*GetUsersRequest) ProtoMessage()    {}
+func (m *GetUsersRequest) Reset()                    { *m = GetUsersRequest{} }
+func (m *GetUsersRequest) String() string            { return proto.CompactTextString(m) }
+func (*GetUsersRequest) ProtoMessage()               {}
+func (*GetUsersRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{15} }
+
+func (m *GetUsersRequest) GetOffset() *protot.NilInt64 {
+	if m != nil {
+		return m.Offset
+	}
+	return nil
+}
+
+func (m *GetUsersRequest) GetLimit() *protot.NilInt64 {
+	if m != nil {
+		return m.Limit
+	}
+	return nil
+}
 
 type GetUsersResponse struct {
-	User []*User `protobuf:"bytes,1,rep,name=user" json:"user,omitempty"`
+	Users []*User `protobuf:"bytes,1,rep,name=users" json:"users,omitempty"`
 }
 
-func (m *GetUsersResponse) Reset()         { *m = GetUsersResponse{} }
-func (m *GetUsersResponse) String() string { return proto.CompactTextString(m) }
-func (*GetUsersResponse) ProtoMessage()    {}
+func (m *GetUsersResponse) Reset()                    { *m = GetUsersResponse{} }
+func (m *GetUsersResponse) String() string            { return proto.CompactTextString(m) }
+func (*GetUsersResponse) ProtoMessage()               {}
+func (*GetUsersResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{16} }
 
-func (m *GetUsersResponse) GetUser() []*User {
+func (m *GetUsersResponse) GetUsers() []*User {
 	if m != nil {
-		return m.User
+		return m.Users
 	}
 	return nil
 }
 
 type DeleteUserRequest struct {
+	Id int64 `protobuf:"varint,1,opt,name=id" json:"id,omitempty"`
 }
 
-func (m *DeleteUserRequest) Reset()         { *m = DeleteUserRequest{} }
-func (m *DeleteUserRequest) String() string { return proto.CompactTextString(m) }
-func (*DeleteUserRequest) ProtoMessage()    {}
+func (m *DeleteUserRequest) Reset()                    { *m = DeleteUserRequest{} }
+func (m *DeleteUserRequest) String() string            { return proto.CompactTextString(m) }
+func (*DeleteUserRequest) ProtoMessage()               {}
+func (*DeleteUserRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{17} }
 
 type DeleteUserResponse struct {
 }
 
-func (m *DeleteUserResponse) Reset()         { *m = DeleteUserResponse{} }
-func (m *DeleteUserResponse) String() string { return proto.CompactTextString(m) }
-func (*DeleteUserResponse) ProtoMessage()    {}
+func (m *DeleteUserResponse) Reset()                    { *m = DeleteUserResponse{} }
+func (m *DeleteUserResponse) String() string            { return proto.CompactTextString(m) }
+func (*DeleteUserResponse) ProtoMessage()               {}
+func (*DeleteUserResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{18} }
 
 type ModifyUserRequest struct {
+	Username       string            `protobuf:"bytes,1,opt,name=username" json:"username,omitempty"`
+	PlainPassword  *protot.NilString `protobuf:"bytes,2,opt,name=plain_password" json:"plain_password,omitempty"`
+	SecurePassword *protot.NilString `protobuf:"bytes,3,opt,name=secure_password" json:"secure_password,omitempty"`
+	FirstName      string            `protobuf:"bytes,4,opt,name=first_name" json:"first_name,omitempty"`
+	LastName       string            `protobuf:"bytes,5,opt,name=last_name" json:"last_name,omitempty"`
+	IsSuperuser    *protot.NilBool   `protobuf:"bytes,6,opt,name=is_superuser" json:"is_superuser,omitempty"`
+	IsActive       *protot.NilBool   `protobuf:"bytes,7,opt,name=is_active" json:"is_active,omitempty"`
+	IsStaff        *protot.NilBool   `protobuf:"bytes,8,opt,name=is_staff" json:"is_staff,omitempty"`
+	IsConfirmed    *protot.NilBool   `protobuf:"bytes,9,opt,name=is_confirmed" json:"is_confirmed,omitempty"`
 }
 
-func (m *ModifyUserRequest) Reset()         { *m = ModifyUserRequest{} }
-func (m *ModifyUserRequest) String() string { return proto.CompactTextString(m) }
-func (*ModifyUserRequest) ProtoMessage()    {}
+func (m *ModifyUserRequest) Reset()                    { *m = ModifyUserRequest{} }
+func (m *ModifyUserRequest) String() string            { return proto.CompactTextString(m) }
+func (*ModifyUserRequest) ProtoMessage()               {}
+func (*ModifyUserRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{19} }
+
+func (m *ModifyUserRequest) GetPlainPassword() *protot.NilString {
+	if m != nil {
+		return m.PlainPassword
+	}
+	return nil
+}
+
+func (m *ModifyUserRequest) GetSecurePassword() *protot.NilString {
+	if m != nil {
+		return m.SecurePassword
+	}
+	return nil
+}
+
+func (m *ModifyUserRequest) GetIsSuperuser() *protot.NilBool {
+	if m != nil {
+		return m.IsSuperuser
+	}
+	return nil
+}
+
+func (m *ModifyUserRequest) GetIsActive() *protot.NilBool {
+	if m != nil {
+		return m.IsActive
+	}
+	return nil
+}
+
+func (m *ModifyUserRequest) GetIsStaff() *protot.NilBool {
+	if m != nil {
+		return m.IsStaff
+	}
+	return nil
+}
+
+func (m *ModifyUserRequest) GetIsConfirmed() *protot.NilBool {
+	if m != nil {
+		return m.IsConfirmed
+	}
+	return nil
+}
 
 type ModifyUserResponse struct {
+	User *User `protobuf:"bytes,1,opt,name=user" json:"user,omitempty"`
 }
 
-func (m *ModifyUserResponse) Reset()         { *m = ModifyUserResponse{} }
-func (m *ModifyUserResponse) String() string { return proto.CompactTextString(m) }
-func (*ModifyUserResponse) ProtoMessage()    {}
+func (m *ModifyUserResponse) Reset()                    { *m = ModifyUserResponse{} }
+func (m *ModifyUserResponse) String() string            { return proto.CompactTextString(m) }
+func (*ModifyUserResponse) ProtoMessage()               {}
+func (*ModifyUserResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{20} }
+
+func (m *ModifyUserResponse) GetUser() *User {
+	if m != nil {
+		return m.User
+	}
+	return nil
+}
 
 type ModifyUserPasswordRequest struct {
 	Id             int64  `protobuf:"varint,1,opt,name=id" json:"id,omitempty"`
@@ -344,28 +441,31 @@ type ModifyUserPasswordRequest struct {
 	IsConfirmed    bool   `protobuf:"varint,5,opt,name=is_confirmed" json:"is_confirmed,omitempty"`
 }
 
-func (m *ModifyUserPasswordRequest) Reset()         { *m = ModifyUserPasswordRequest{} }
-func (m *ModifyUserPasswordRequest) String() string { return proto.CompactTextString(m) }
-func (*ModifyUserPasswordRequest) ProtoMessage()    {}
+func (m *ModifyUserPasswordRequest) Reset()                    { *m = ModifyUserPasswordRequest{} }
+func (m *ModifyUserPasswordRequest) String() string            { return proto.CompactTextString(m) }
+func (*ModifyUserPasswordRequest) ProtoMessage()               {}
+func (*ModifyUserPasswordRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{21} }
 
 type ModifyUserPasswordResponse struct {
 	Generated string `protobuf:"bytes,1,opt,name=generated" json:"generated,omitempty"`
 }
 
-func (m *ModifyUserPasswordResponse) Reset()         { *m = ModifyUserPasswordResponse{} }
-func (m *ModifyUserPasswordResponse) String() string { return proto.CompactTextString(m) }
-func (*ModifyUserPasswordResponse) ProtoMessage()    {}
+func (m *ModifyUserPasswordResponse) Reset()                    { *m = ModifyUserPasswordResponse{} }
+func (m *ModifyUserPasswordResponse) String() string            { return proto.CompactTextString(m) }
+func (*ModifyUserPasswordResponse) ProtoMessage()               {}
+func (*ModifyUserPasswordResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{22} }
 
 type GetUserPermissionsRequest struct {
-	Token  *mnemosyne1.Token `protobuf:"bytes,1,opt,name=token" json:"token,omitempty"`
-	UserId int64             `protobuf:"varint,2,opt,name=user_id" json:"user_id,omitempty"`
+	Token  *mnemosyne.Token `protobuf:"bytes,1,opt,name=token" json:"token,omitempty"`
+	UserId int64            `protobuf:"varint,2,opt,name=user_id" json:"user_id,omitempty"`
 }
 
-func (m *GetUserPermissionsRequest) Reset()         { *m = GetUserPermissionsRequest{} }
-func (m *GetUserPermissionsRequest) String() string { return proto.CompactTextString(m) }
-func (*GetUserPermissionsRequest) ProtoMessage()    {}
+func (m *GetUserPermissionsRequest) Reset()                    { *m = GetUserPermissionsRequest{} }
+func (m *GetUserPermissionsRequest) String() string            { return proto.CompactTextString(m) }
+func (*GetUserPermissionsRequest) ProtoMessage()               {}
+func (*GetUserPermissionsRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{23} }
 
-func (m *GetUserPermissionsRequest) GetToken() *mnemosyne1.Token {
+func (m *GetUserPermissionsRequest) GetToken() *mnemosyne.Token {
 	if m != nil {
 		return m.Token
 	}
@@ -376,9 +476,38 @@ type GetUserPermissionsResponse struct {
 	Permissions []string `protobuf:"bytes,1,rep,name=permissions" json:"permissions,omitempty"`
 }
 
-func (m *GetUserPermissionsResponse) Reset()         { *m = GetUserPermissionsResponse{} }
-func (m *GetUserPermissionsResponse) String() string { return proto.CompactTextString(m) }
-func (*GetUserPermissionsResponse) ProtoMessage()    {}
+func (m *GetUserPermissionsResponse) Reset()                    { *m = GetUserPermissionsResponse{} }
+func (m *GetUserPermissionsResponse) String() string            { return proto.CompactTextString(m) }
+func (*GetUserPermissionsResponse) ProtoMessage()               {}
+func (*GetUserPermissionsResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{24} }
+
+func init() {
+	proto.RegisterType((*User)(nil), "charon.User")
+	proto.RegisterType((*LoginRequest)(nil), "charon.LoginRequest")
+	proto.RegisterType((*LoginResponse)(nil), "charon.LoginResponse")
+	proto.RegisterType((*LogoutRequest)(nil), "charon.LogoutRequest")
+	proto.RegisterType((*LogoutResponse)(nil), "charon.LogoutResponse")
+	proto.RegisterType((*IsAuthenticatedRequest)(nil), "charon.IsAuthenticatedRequest")
+	proto.RegisterType((*IsAuthenticatedResponse)(nil), "charon.IsAuthenticatedResponse")
+	proto.RegisterType((*IsGrantedRequest)(nil), "charon.IsGrantedRequest")
+	proto.RegisterType((*IsGrantedResponse)(nil), "charon.IsGrantedResponse")
+	proto.RegisterType((*BelongsToRequest)(nil), "charon.BelongsToRequest")
+	proto.RegisterType((*BelongsToResponse)(nil), "charon.BelongsToResponse")
+	proto.RegisterType((*CreateUserRequest)(nil), "charon.CreateUserRequest")
+	proto.RegisterType((*CreateUserResponse)(nil), "charon.CreateUserResponse")
+	proto.RegisterType((*GetUserRequest)(nil), "charon.GetUserRequest")
+	proto.RegisterType((*GetUserResponse)(nil), "charon.GetUserResponse")
+	proto.RegisterType((*GetUsersRequest)(nil), "charon.GetUsersRequest")
+	proto.RegisterType((*GetUsersResponse)(nil), "charon.GetUsersResponse")
+	proto.RegisterType((*DeleteUserRequest)(nil), "charon.DeleteUserRequest")
+	proto.RegisterType((*DeleteUserResponse)(nil), "charon.DeleteUserResponse")
+	proto.RegisterType((*ModifyUserRequest)(nil), "charon.ModifyUserRequest")
+	proto.RegisterType((*ModifyUserResponse)(nil), "charon.ModifyUserResponse")
+	proto.RegisterType((*ModifyUserPasswordRequest)(nil), "charon.ModifyUserPasswordRequest")
+	proto.RegisterType((*ModifyUserPasswordResponse)(nil), "charon.ModifyUserPasswordResponse")
+	proto.RegisterType((*GetUserPermissionsRequest)(nil), "charon.GetUserPermissionsRequest")
+	proto.RegisterType((*GetUserPermissionsResponse)(nil), "charon.GetUserPermissionsResponse")
+}
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ context.Context
@@ -736,4 +865,67 @@ var _RPC_serviceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams: []grpc.StreamDesc{},
+}
+
+var fileDescriptor0 = []byte{
+	// 941 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x09, 0x6e, 0x88, 0x02, 0xff, 0xd4, 0x55, 0xef, 0x6e, 0xdc, 0x44,
+	0x10, 0xcf, 0xfd, 0x8d, 0x3d, 0xb9, 0xe6, 0x7c, 0xdb, 0x90, 0x38, 0x46, 0x22, 0xe9, 0x4a, 0x11,
+	0x05, 0x89, 0x50, 0xae, 0xa8, 0x52, 0x25, 0x10, 0x22, 0x05, 0x45, 0xa9, 0x28, 0x8a, 0xca, 0x21,
+	0xf1, 0x05, 0x9d, 0xdc, 0xf3, 0xde, 0x75, 0xc5, 0xd9, 0x7b, 0x78, 0xf7, 0x40, 0xf9, 0xca, 0x23,
+	0xf0, 0x12, 0xbc, 0x02, 0xaf, 0xc0, 0x9b, 0xf0, 0x18, 0xac, 0xd7, 0x6b, 0xef, 0x9e, 0xed, 0x4b,
+	0x4b, 0xbe, 0xf5, 0x93, 0xe5, 0xdf, 0xce, 0xfc, 0x76, 0x66, 0xf6, 0x37, 0x33, 0x30, 0x98, 0xbd,
+	0x0e, 0x53, 0x96, 0x9c, 0xaf, 0x52, 0x26, 0x18, 0xea, 0xe7, 0x7f, 0xc1, 0x30, 0x4e, 0x48, 0xcc,
+	0xf8, 0x4d, 0x42, 0xf2, 0x83, 0x60, 0xa0, 0x3e, 0x22, 0xff, 0xc3, 0x7f, 0xb5, 0xa1, 0xfb, 0x23,
+	0x27, 0x29, 0x02, 0x68, 0xd3, 0xc8, 0x6f, 0x9d, 0xb6, 0x1e, 0x76, 0x90, 0x07, 0xce, 0x5a, 0x62,
+	0x49, 0x18, 0x13, 0xbf, 0x2d, 0x11, 0x17, 0xc9, 0xe3, 0x39, 0x4d, 0xb9, 0x98, 0x2a, 0xac, 0xa3,
+	0xb0, 0x11, 0xb8, 0xcb, 0xb0, 0x80, 0xba, 0x0a, 0x3a, 0x80, 0x01, 0xe5, 0x53, 0xbe, 0x5e, 0x91,
+	0x34, 0x23, 0xf0, 0x7b, 0x12, 0x75, 0x32, 0x43, 0x89, 0x86, 0x33, 0x41, 0x7f, 0x23, 0x7e, 0x5f,
+	0x41, 0xf2, 0x86, 0xcc, 0x50, 0x84, 0xf3, 0xb9, 0xbf, 0xab, 0x90, 0xdc, 0x75, 0xc6, 0x12, 0x79,
+	0x4f, 0x4c, 0x22, 0xdf, 0x51, 0xe8, 0x19, 0xc0, 0x2c, 0x25, 0xa1, 0x20, 0xd1, 0x34, 0x14, 0xbe,
+	0x2b, 0xb1, 0xbd, 0xf1, 0xe8, 0x5c, 0x67, 0x30, 0xa1, 0x31, 0x91, 0x14, 0xf1, 0x2a, 0x0b, 0xaf,
+	0x30, 0x7b, 0x75, 0xe3, 0x83, 0x4a, 0x42, 0xba, 0xae, 0x57, 0x51, 0xe1, 0xba, 0x77, 0x8b, 0x6b,
+	0x61, 0x26, 0x5d, 0x07, 0xca, 0xf5, 0x3e, 0xec, 0xc9, 0x0c, 0x62, 0xca, 0x39, 0x65, 0x09, 0xf7,
+	0xef, 0x9d, 0x76, 0x1e, 0xba, 0x78, 0x0c, 0x83, 0xef, 0xd8, 0x82, 0x26, 0x2f, 0xc9, 0xaf, 0x6b,
+	0xe9, 0xbb, 0x51, 0xa4, 0x96, 0xca, 0x5e, 0x22, 0xab, 0x90, 0xf3, 0xdf, 0x59, 0x1a, 0xe5, 0x65,
+	0xc3, 0x8f, 0xe0, 0x9e, 0xf6, 0xe1, 0x2b, 0xc9, 0x44, 0xd0, 0x09, 0xf4, 0x04, 0xfb, 0x85, 0x24,
+	0xca, 0x63, 0x6f, 0xec, 0x9d, 0x9b, 0xd7, 0x99, 0x64, 0xb8, 0xf6, 0x60, 0x6b, 0x51, 0x5c, 0xf3,
+	0x46, 0x0f, 0x0f, 0xf6, 0x0b, 0x8f, 0xfc, 0x12, 0xfc, 0x14, 0x0e, 0xaf, 0xf8, 0xd7, 0x6b, 0xf1,
+	0x9a, 0x24, 0x82, 0xce, 0xb2, 0xd4, 0xde, 0x9a, 0xec, 0x31, 0x1c, 0xd5, 0x5c, 0x75, 0xe8, 0x3e,
+	0x78, 0xd9, 0x2b, 0xda, 0x67, 0x8a, 0xc6, 0xc1, 0x3f, 0x81, 0x77, 0xc5, 0x2f, 0xd3, 0x30, 0xf9,
+	0x1f, 0x37, 0xa1, 0x21, 0xec, 0x66, 0xe5, 0x9b, 0xd2, 0xbc, 0x56, 0x9d, 0xec, 0x21, 0x4c, 0xd1,
+	0x73, 0x89, 0xe1, 0x0f, 0x61, 0x64, 0x31, 0xeb, 0x40, 0xa4, 0xa1, 0x0c, 0x64, 0x91, 0xa3, 0x3a,
+	0x04, 0x04, 0xde, 0x05, 0x59, 0xb2, 0x64, 0xc1, 0x27, 0x4c, 0x87, 0x80, 0xef, 0xc3, 0xc8, 0xc2,
+	0x74, 0x6d, 0xfe, 0x6c, 0xc3, 0xe8, 0x99, 0x92, 0x4a, 0xa6, 0xfa, 0xed, 0x6f, 0x79, 0x08, 0xfb,
+	0xab, 0x65, 0x48, 0x93, 0xe9, 0xe6, 0x8b, 0xa2, 0x23, 0x18, 0x72, 0x32, 0x5b, 0xa7, 0xc4, 0x1c,
+	0x74, 0x1a, 0x3a, 0xa4, 0x5b, 0xef, 0x90, 0x9e, 0x82, 0xce, 0x2a, 0x1d, 0xd2, 0x57, 0xe5, 0x19,
+	0x16, 0xba, 0xfc, 0x9e, 0x2e, 0x2f, 0x18, 0x5b, 0x22, 0x6c, 0xb7, 0xcc, 0x6e, 0xb3, 0xcd, 0x03,
+	0xab, 0x87, 0x9c, 0x66, 0x93, 0xb3, 0x4a, 0x53, 0xb9, 0x8d, 0x66, 0xf8, 0x12, 0x90, 0x5d, 0x13,
+	0x5d, 0x67, 0x7b, 0x22, 0x6c, 0xf6, 0x61, 0x7b, 0x4b, 0x33, 0xe1, 0x2f, 0x61, 0xff, 0x92, 0x08,
+	0xbb, 0xb2, 0x6f, 0xd4, 0x41, 0x7e, 0x8b, 0x92, 0x00, 0xfe, 0x04, 0x86, 0xa5, 0xbb, 0x0e, 0x22,
+	0x80, 0xae, 0xaa, 0x53, 0xee, 0x3e, 0x38, 0xd7, 0x33, 0x2e, 0xb3, 0xc1, 0x61, 0x69, 0xce, 0x8b,
+	0xeb, 0x4e, 0xa1, 0xcf, 0xe6, 0x73, 0x4e, 0x84, 0x1f, 0xe9, 0xfb, 0x4c, 0xaa, 0x57, 0x89, 0x78,
+	0xf2, 0x79, 0x16, 0xd0, 0x92, 0xc6, 0x54, 0xf8, 0xa4, 0xd9, 0xe0, 0x79, 0xd7, 0x69, 0x79, 0xd1,
+	0xf3, 0x9e, 0x33, 0xf7, 0xfe, 0x69, 0xe1, 0x4f, 0xc1, 0x33, 0x57, 0xe8, 0x90, 0xde, 0x87, 0x5e,
+	0x16, 0x12, 0x97, 0x31, 0x75, 0x6a, 0x31, 0x9d, 0xc0, 0xe8, 0x1b, 0xb2, 0x24, 0x9b, 0xf2, 0xb2,
+	0x2a, 0x89, 0x0f, 0x00, 0xd9, 0x06, 0x5a, 0x96, 0x7f, 0x4b, 0x59, 0xbe, 0x60, 0x11, 0x9d, 0xdf,
+	0xdc, 0x2e, 0xcb, 0x8f, 0x1a, 0x65, 0x69, 0xbd, 0x85, 0x4c, 0xe3, 0x07, 0x91, 0xd2, 0x64, 0x81,
+	0x3e, 0x6e, 0x56, 0x6a, 0xa3, 0xed, 0xbb, 0x2c, 0xde, 0x47, 0x80, 0xec, 0xca, 0xbd, 0x85, 0x6e,
+	0xfe, 0x68, 0xc1, 0xb1, 0x71, 0xb9, 0xd6, 0xd5, 0x69, 0x78, 0xac, 0x3b, 0x4d, 0x81, 0x94, 0x2c,
+	0x48, 0x42, 0x52, 0xd9, 0x2b, 0xaa, 0x90, 0xf5, 0xcd, 0xa6, 0x96, 0xa2, 0x54, 0x56, 0xd0, 0x14,
+	0x83, 0x0e, 0x5f, 0x16, 0xbf, 0x60, 0xc9, 0x63, 0x71, 0xf1, 0x0b, 0x38, 0xd6, 0x52, 0xbc, 0x36,
+	0xbb, 0xe9, 0xce, 0xe3, 0x16, 0x7f, 0x06, 0x41, 0x13, 0x9d, 0xbe, 0xbf, 0xb2, 0x01, 0x33, 0xa5,
+	0xbb, 0xe3, 0x7f, 0xfb, 0xd0, 0x79, 0x79, 0xfd, 0x0c, 0x3d, 0x81, 0x9e, 0xda, 0x6a, 0xe8, 0xa0,
+	0x28, 0xab, 0xbd, 0x18, 0x83, 0xf7, 0x2a, 0xa8, 0x96, 0xf8, 0x0e, 0x7a, 0x0a, 0xfd, 0x7c, 0x53,
+	0x21, 0xdb, 0xc4, 0xec, 0xba, 0xe0, 0xb0, 0x0a, 0x97, 0xae, 0x13, 0x18, 0x56, 0xf6, 0x12, 0xfa,
+	0xa0, 0x30, 0x6e, 0xde, 0x75, 0xc1, 0xc9, 0xd6, 0xf3, 0x92, 0xf5, 0x02, 0xdc, 0x72, 0xbd, 0x20,
+	0xdf, 0xd8, 0x6f, 0xee, 0xb2, 0xe0, 0xb8, 0xe1, 0xc4, 0xe6, 0x28, 0xb7, 0x8c, 0xe1, 0xa8, 0x2e,
+	0x23, 0xc3, 0x51, 0x5f, 0x49, 0x3b, 0xe8, 0x5b, 0x00, 0x33, 0x7f, 0x51, 0x69, 0x5a, 0xdb, 0x53,
+	0x41, 0xd0, 0x74, 0x64, 0xd3, 0x18, 0x49, 0x19, 0x9a, 0xda, 0x5c, 0x31, 0x34, 0xf5, 0xc6, 0x91,
+	0x34, 0x5f, 0xc0, 0xae, 0x56, 0x06, 0x2a, 0x1f, 0x64, 0x73, 0xaa, 0x07, 0x47, 0x35, 0xbc, 0xf4,
+	0xfe, 0x0a, 0x9c, 0x62, 0x62, 0xa2, 0xaa, 0x59, 0x21, 0xd7, 0xc0, 0xaf, 0x1f, 0xd8, 0x59, 0x98,
+	0x01, 0x69, 0xb2, 0xa8, 0x4d, 0x55, 0x93, 0x45, 0xc3, 0x3c, 0xdd, 0x41, 0x3f, 0xdb, 0x63, 0xa1,
+	0xe8, 0x2f, 0xf4, 0xa0, 0x9e, 0x79, 0xa5, 0xff, 0x03, 0x7c, 0x9b, 0x89, 0x4d, 0x5f, 0x6f, 0x1f,
+	0x43, 0xbf, 0xb5, 0x53, 0x0d, 0xfd, 0xf6, 0xee, 0xc3, 0x3b, 0xaf, 0xfa, 0x6a, 0xc8, 0x3d, 0xfe,
+	0x2f, 0x00, 0x00, 0xff, 0xff, 0xb1, 0xc8, 0x03, 0xff, 0xd4, 0x0b, 0x00, 0x00,
 }
