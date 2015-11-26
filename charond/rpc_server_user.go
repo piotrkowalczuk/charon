@@ -4,6 +4,7 @@ import (
 	"code.google.com/p/go-uuid/uuid"
 	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/protot"
+	"github.com/piotrkowalczuk/sklog"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -75,19 +76,12 @@ func (rs *rpcServer) ModifyUser(ctx context.Context, r *charon.ModifyUserRequest
 
 // GetUser ...
 func (rs *rpcServer) GetUser(ctx context.Context, r *charon.GetUserRequest) (*charon.GetUserResponse, error) {
-	token, err := rs.token(ctx)
-	if err != nil {
-		return nil, err
-	}
-	subjectID, err := rs.retrieveSubjectID(ctx, token)
+	user, err := rs.userRepository.FindOneByID(r.Id)
 	if err != nil {
 		return nil, err
 	}
 
-	user, err := rs.userRepository.FindOneByID(subjectID)
-	if err != nil {
-		return nil, err
-	}
+	sklog.Debug(rs.logger, "user retrieved", "id", r.Id)
 
 	return &charon.GetUserResponse{
 		User: user.Message(),
@@ -109,12 +103,26 @@ func (rs *rpcServer) GetUsers(ctx context.Context, r *charon.GetUsersRequest) (*
 		resp.Users = append(resp.Users, u.Message())
 	}
 
+	sklog.Debug(rs.logger, "users list retrieved", "count", len(users))
+
 	return resp, nil
 }
 
 // DeleteUser ...
 func (rs *rpcServer) DeleteUser(ctx context.Context, r *charon.DeleteUserRequest) (*charon.DeleteUserResponse, error) {
-	return nil, grpc.Errorf(codes.Unimplemented, "delete user is not implemented yet")
+	if r.Id == 0 {
+		return nil, grpc.Errorf(codes.FailedPrecondition, "charond: user id needs to be greater than zero")
+	}
+	affected, err := rs.userRepository.DeleteOneByID(r.Id)
+	if err != nil {
+		return nil, err
+	}
+
+	sklog.Debug(rs.logger, "users deleted", "id", r.Id)
+
+	return &charon.DeleteUserResponse{
+		Affected: affected,
+	}, nil
 }
 
 // ModifyUserPassword ...

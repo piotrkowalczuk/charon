@@ -99,6 +99,7 @@ type UserRepository interface {
 	Find(offset, limit *protot.NilInt64) ([]*userEntity, error)
 	FindOneByID(id int64) (*userEntity, error)
 	FindOneByUsername(username string) (*userEntity, error)
+	DeleteOneByID(id int64) (int64, error)
 	RegistrationConfirmation(id int64, confirmationToken string) error
 }
 
@@ -330,4 +331,18 @@ func (ur *userRepository) UpdateLastLoginAt(userID int64) error {
 	_, err = result.RowsAffected()
 
 	return err
+}
+
+func (ur *userRepository) DeleteOneByID(id int64) (int64, error) {
+	query := `
+		DELETE FROM charon.user
+		WHERE id = $1
+	`
+
+	res, err := ur.db.Exec(query, id)
+	if err != nil {
+		return 0, err
+	}
+
+	return res.RowsAffected()
 }
