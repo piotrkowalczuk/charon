@@ -8,4 +8,4 @@ script:
 - go build
 notifications:
   slack:
-    secure: fdudk0mFUc+v8BScA+okn4mtNLa7kapaPaDuh4mR98k+JBLUFe74Nk+j/mHJ/27CSZQB0Ooz87I5SQsEkxOMMHltU8dWIg8sEwd6pu9fDNuhz8QzNasD5vZ+0jgFiAOhZwFoZu2caMf9d2PzJPPyuSm2ejg9VMTsJwSVJizVWrk=
+    secure: $SLACK_SECURE
