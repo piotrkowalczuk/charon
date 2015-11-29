@@ -5,6 +5,14 @@ import (
 	"time"
 
 	"github.com/piotrkowalczuk/charon"
+	"github.com/piotrkowalczuk/pqcnstr"
+)
+
+const (
+	sqlCnstrPrimaryKeyPermission                  pqcnstr.Constraint = "charon.permission_pkey"
+	sqlCnstrUniquePermissionSubsystemModuleAction pqcnstr.Constraint = "charon.permission_subsystem_module_action_key"
+	sqlCnstrForeignKeyPermissionSubsystemID       pqcnstr.Constraint = "charon.permission_subsystem_id_fkey"
+	sqlCnstrForeignKeyPermissionCreatedBy         pqcnstr.Constraint = "charon.permission_created_by_fkey"
 )
 
 type permissionEntity struct {
@@ -57,7 +65,7 @@ func (pr *permissionRepository) FindByUserID(userID int64) ([]*permissionEntity,
 			p.created_at
 		FROM charon.permission AS p
 		JOIN charon.user_permissions AS up ON up.user_id = $1
-		JOIN charon.user_group AS ug ON ug.user_id = $1
+		JOIN charon.user_groups AS ug ON ug.user_id = $1
 		JOIN charon.group_permissions AS gp ON gp.group_id = ug.group_id
 	`
 

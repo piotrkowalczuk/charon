@@ -1,9 +1,11 @@
 package main
 
 import (
+	"fmt"
+
 	"code.google.com/p/go-uuid/uuid"
 	"github.com/piotrkowalczuk/charon"
-	"github.com/piotrkowalczuk/protot"
+	"github.com/piotrkowalczuk/pqcnstr"
 	"github.com/piotrkowalczuk/sklog"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
@@ -12,28 +14,39 @@ import (
 
 // CreateUser ...
 func (rs *rpcServer) CreateUser(ctx context.Context, r *charon.CreateUserRequest) (*charon.CreateUserResponse, error) {
+	var err error
+	defer func() {
+		if err != nil {
+			sklog.Error(rs.logger, err)
+		} else {
+			sklog.Debug(rs.logger, "user created")
+		}
+	}()
+
 	token, err := rs.token(ctx)
 	if err != nil {
 		return nil, err
 	}
+
 	user, _, permissions, err := rs.retrieveUserData(ctx, token)
 	if err != nil {
 		return nil, err
 	}
 
-	if r.IsSuperuser.Valid && !user.IsSuperuser && !permissions.Contains(charon.UserCanCreateSuper) {
+	fmt.Println(user, permissions)
+	if r.IsSuperuser != nil && r.IsSuperuser.Valid && !user.IsSuperuser && !permissions.Contains(charon.UserCanCreateSuper) {
 		return nil, grpc.Errorf(codes.PermissionDenied, "charond: user is not allowed to create user with is_superuser property that has custom value")
 	}
 
-	if r.IsStaff.Valid && !user.IsSuperuser && !permissions.Contains(charon.UserCanCreateStaff) {
+	if r.IsStaff != nil && r.IsStaff.Valid && !user.IsSuperuser && !permissions.Contains(charon.UserCanCreateStaff) {
 		return nil, grpc.Errorf(codes.PermissionDenied, "charond: user is not allowed to create user with is_staff property that has custom value")
 	}
 
-	if r.IsActive.Valid && !user.IsSuperuser && !permissions.Contains(charon.UserCanCreateActive) {
+	if r.IsActive != nil && r.IsActive.Valid && !user.IsSuperuser && !permissions.Contains(charon.UserCanCreateActive) {
 		return nil, grpc.Errorf(codes.PermissionDenied, "charond: user is not allowed to create user with is_active property that has custom value")
 	}
 
-	if r.IsConfirmed.Valid && !user.IsSuperuser && !permissions.Contains(charon.UserCanCreateConfirmed) {
+	if r.IsConfirmed != nil && r.IsConfirmed.Valid && !user.IsSuperuser && !permissions.Contains(charon.UserCanCreateConfirmed) {
 		return nil, grpc.Errorf(codes.PermissionDenied, "charond: user is not allowed to create user with is_confirmed property that has custom value")
 	}
 
@@ -60,18 +73,36 @@ func (rs *rpcServer) CreateUser(ctx context.Context, r *charon.CreateUserRequest
 		r.IsConfirmed.BoolOr(false),
 	)
 	if err != nil {
-		return nil, err
+		return nil, mapUserError(err)
 	}
 
 	return &charon.CreateUserResponse{
-		Id:        entity.ID,
-		CreatedAt: protot.TimeToTimestamp(*entity.CreatedAt),
+		User: entity.Message(),
 	}, nil
 }
 
 // ModifyUser ...
 func (rs *rpcServer) ModifyUser(ctx context.Context, r *charon.ModifyUserRequest) (*charon.ModifyUserResponse, error) {
-	return nil, grpc.Errorf(codes.Unimplemented, "modify user is not implemented yet")
+	user, err := rs.userRepository.UpdateOneByID(
+		r.Id,
+		r.Username,
+		r.SecurePassword,
+		r.FirstName,
+		r.LastName,
+		r.IsSuperuser,
+		r.IsActive,
+		r.IsStaff,
+		r.IsConfirmed,
+	)
+	if err != nil {
+		return nil, mapUserError(err)
+	}
+
+	sklog.Debug(rs.logger, "user modified", "id", r.Id)
+
+	return &charon.ModifyUserResponse{
+		User: user.Message(),
+	}, nil
 }
 
 // GetUser ...
@@ -125,7 +156,13 @@ func (rs *rpcServer) DeleteUser(ctx context.Context, r *charon.DeleteUserRequest
 	}, nil
 }
 
-// ModifyUserPassword ...
-func (rs *rpcServer) ModifyUserPassword(ctx context.Context, r *charon.ModifyUserPasswordRequest) (*charon.ModifyUserPasswordResponse, error) {
-	return nil, grpc.Errorf(codes.Unimplemented, "modify user password is not implemented yet")
+func mapUserError(err error) error {
+	switch pqcnstr.FromError(err) {
+	case sqlCnstrPrimaryKeyUser:
+		return grpc.Errorf(codes.AlreadyExists, charon.ErrDescUserWithIDExists)
+	case sqlCnstrUniqueUserUsername:
+		return grpc.Errorf(codes.AlreadyExists, charon.ErrDescUserWithUsernameExists)
+	default:
+		return err
+	}
 }

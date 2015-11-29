@@ -8,6 +8,8 @@ import (
 	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/mnemosyne"
 	"golang.org/x/net/context"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 )
 
@@ -27,14 +29,17 @@ func (rs *rpcServer) retrieveUserData(ctx context.Context, token mnemosyne.Token
 
 	session, err = rs.session.Get(ctx, token)
 	if err != nil {
+		if err == mnemosyne.ErrSessionNotFound {
+			err = grpc.Errorf(codes.Unauthenticated, err.Error())
+			return
+		}
 		return
 	}
 
-	userID, err = charon.UserIDFromSession(session)
+	userID, err = charon.SessionSubjectID(session.SubjectId).UserID()
 	if err != nil {
 		return
 	}
-
 	user, err = rs.userRepository.FindOneByID(userID)
 	if err != nil {
 		return

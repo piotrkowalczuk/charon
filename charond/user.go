@@ -2,33 +2,21 @@ package main
 
 import (
 	"database/sql"
+	"errors"
+	"fmt"
 	"strconv"
 	"time"
 
 	"github.com/piotrkowalczuk/charon"
+	"github.com/piotrkowalczuk/pqcnstr"
 	"github.com/piotrkowalczuk/protot"
 )
 
 const (
 	// UserConfirmationTokenUsed is a value that is used when confirmation token was already used.
-	UserConfirmationTokenUsed = "!"
-	sqlSchemaUser             = `
-		CREATE TABLE IF NOT EXISTS (
-			id serial PRIMARY KEY,
-			password character varying(128) NOT NULL,
-			username character varying(75) NOT NULL,
-			first_name character varying(45) NOT NULL,
-			last_name character varying(45) NOT NULL,
-			is_superuser boolean NOT NULL,
-			is_active boolean NOT NULL,
-			is_staff boolean NOT NULL,
-			is_confirmed boolean NOT NULL,
-			confirmation_token character varying(122) NOT NULL,
-			last_login_at timestamp with time zone NOT NULL,
-			created_at timestamp with time zone NOT NULL,
-			updated_at timestamp with time zone NOT NULL
-		)
-	`
+	UserConfirmationTokenUsed                     = "!"
+	sqlCnstrPrimaryKeyUser     pqcnstr.Constraint = "charon.user_pkey"
+	sqlCnstrUniqueUserUsername pqcnstr.Constraint = "charon.user_username_key"
 )
 
 type userEntity struct {
@@ -100,6 +88,7 @@ type UserRepository interface {
 	FindOneByID(id int64) (*userEntity, error)
 	FindOneByUsername(username string) (*userEntity, error)
 	DeleteOneByID(id int64) (int64, error)
+	UpdateOneByID(id int64, username, securePassword, firstName, lastName *protot.NilString, isSuperuser, isActive, isStaff, isConfirmed *protot.NilBool) (*userEntity, error)
 	RegistrationConfirmation(id int64, confirmationToken string) error
 }
 
@@ -345,4 +334,76 @@ func (ur *userRepository) DeleteOneByID(id int64) (int64, error) {
 	}
 
 	return res.RowsAffected()
+}
+
+func (ur *userRepository) UpdateOneByID(id int64, username, securePassword, firstName, lastName *protot.NilString, isSuperuser, isActive, isStaff, isConfirmed *protot.NilBool) (*userEntity, error) {
+	keys := make([]string, 0, 8)
+	values := make([]interface{}, 0, 9)
+	values = append(values, id)
+
+	addString := func(key string, s *protot.NilString) {
+		if s != nil && s.Valid {
+			keys = append(keys, key)
+			values = append(values, s.String)
+		}
+	}
+
+	addBool := func(key string, s *protot.NilBool) {
+		if s != nil && s.Valid {
+			keys = append(keys, key)
+			values = append(values, s.Bool)
+		}
+	}
+
+	addString("username", username)
+	addString("password", securePassword)
+	addString("first_name", firstName)
+	addString("last_name", lastName)
+
+	addBool("is_superuser", isSuperuser)
+	addBool("is_active", isActive)
+	addBool("is_staff", isStaff)
+	addBool("is_confirmed", isConfirmed)
+
+	if len(keys) == 0 {
+		return nil, errors.New("charond: nothing to update")
+	}
+
+	query := `UPDATE charon.user SET `
+	for j, key := range keys {
+		if j != 0 {
+			query += ", "
+		}
+
+		query += fmt.Sprintf("%s = $%d", key, j+2) // plus 2, because of where clause (1+1)
+	}
+
+	query += `
+		WHERE id = $1
+		RETURNING id, password, username, first_name, last_name, is_active, is_staff,
+			is_superuser, is_confirmed, confirmation_token, last_login_at,
+			created_at, updated_at
+	`
+
+	var user userEntity
+	err := ur.db.QueryRow(query, values...).Scan(
+		&user.ID,
+		&user.Password,
+		&user.Username,
+		&user.FirstName,
+		&user.LastName,
+		&user.IsActive,
+		&user.IsStaff,
+		&user.IsSuperuser,
+		&user.IsConfirmed,
+		&user.ConfirmationToken,
+		&user.LastLoginAt,
+		&user.CreatedAt,
+		&user.UpdatedAt,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return &user, nil
 }

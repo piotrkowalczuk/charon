@@ -15,9 +15,9 @@ import (
 
 const (
 	loggerAdapterStdOut = "stdout"
-	loggerFormatJSON    = "json"
-	loggerFormatHumane  = "humane"
-	loggerFormatLogFmt  = "logfmt"
+	loggerFormatJSON = "json"
+	loggerFormatHumane = "humane"
+	loggerFormatLogFmt = "logfmt"
 )
 
 func initLogger(adapter, format string, level int, context ...interface{}) log.Logger {

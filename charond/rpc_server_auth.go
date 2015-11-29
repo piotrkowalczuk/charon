@@ -46,7 +46,7 @@ func (rs *rpcServer) Login(ctx context.Context, r *charon.LoginRequest) (*charon
 		return nil, grpc.Errorf(codes.Unauthenticated, "charond: user is not active")
 	}
 
-	session, err := rs.session.Start(ctx, user.subjectID(), map[string]string{
+	session, err := rs.session.Start(ctx, charon.NewSessionSubjectID(user.ID).String(), map[string]string{
 		"username":   user.Username,
 		"first_name": user.FirstName,
 		"last_name":  user.LastName,
@@ -97,5 +97,15 @@ func (rs *rpcServer) BelongsTo(ctx context.Context, r *charon.BelongsToRequest) 
 
 // IsAuthenticated implements charon.RPCServer interface.
 func (rs *rpcServer) IsAuthenticated(ctx context.Context, r *charon.IsAuthenticatedRequest) (*charon.IsAuthenticatedResponse, error) {
-	return nil, grpc.Errorf(codes.Unimplemented, "is authenticated is not implemented yet")
+	if r.Token == nil {
+		return nil, grpc.Errorf(codes.InvalidArgument, "charond: authentication status cannot be checked, missing token")
+	}
+	ok, err := rs.session.Exists(ctx, *r.Token)
+	if err != nil {
+		return nil, err
+	}
+
+	return &charon.IsAuthenticatedResponse{
+		IsAuthenticated: ok,
+	}, nil
 }
