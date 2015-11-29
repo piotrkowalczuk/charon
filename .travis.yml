@@ -8,4 +8,4 @@ script:
 - go build
 notifications:
   slack:
-    secure: Nb0TMbRmFs98vNgWDDjKx6EELHSnYEmusLQ+ndvcUrQpyVD/plza3X9Wp5NsDNauKvVJj+jvSF0LMhJU5+l3bfnabM0Ttd1vx+KiGToPA7UtyTDuNL8AoTeyXWM+SlCbATHiiIhIGTUpDbwgBp24KUi9cJ4VeYDQon9cQ8d4eD8=
+    secure: GlbUiPiSpa05wDHorgk+uOmupZ0kNNcaoGaJehhPRKrD6NZRgLr9bjrQgzHOKxZqgbK98l4aGPsCCJXtIw5bUrXu/Si7AaxzE4qP74FUnzpXkXxUxqexV+DAvI3WuPaqho7NXkqMs+EvYj/roM+ieuZ47jM2noPpPvLbw7Vp8CE=
