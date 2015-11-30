@@ -16,7 +16,7 @@ func TestPermissions_Contains(t *testing.T) {
 	}
 
 	for expected, permissions := range positive {
-		if permissions.Contains(unexpected) {
+		if !permissions.Contains(expected) {
 			t.Errorf("expected permission (%s), is not present", expected)
 		}
 	}
