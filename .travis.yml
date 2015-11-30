@@ -3,9 +3,11 @@ go:
 - 1.4
 - tip
 install:
-- go get .
+- make get
 script:
-- go build
+- make build
+- make test-unit
+- make test-postgres
 notifications:
   slack:
     secure: GlbUiPiSpa05wDHorgk+uOmupZ0kNNcaoGaJehhPRKrD6NZRgLr9bjrQgzHOKxZqgbK98l4aGPsCCJXtIw5bUrXu/Si7AaxzE4qP74FUnzpXkXxUxqexV+DAvI3WuPaqho7NXkqMs+EvYj/roM+ieuZ47jM2noPpPvLbw7Vp8CE=

@@ -115,7 +115,7 @@ func (c *charon) Subject(ctx context.Context, token mnemosyne.Token) (*Subject, 
 		ID:          resp1.User.Id,
 		Name:        resp1.User.Name(),
 		Email:       resp1.User.Username,
-		Permissions: NewPermissions(resp2.Permissions),
+		Permissions: NewPermissions(resp2.Permissions...),
 	}, nil
 }
 

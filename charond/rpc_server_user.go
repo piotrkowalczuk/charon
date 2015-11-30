@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-
 	"code.google.com/p/go-uuid/uuid"
 	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/pqcnstr"
@@ -28,26 +26,19 @@ func (rs *rpcServer) CreateUser(ctx context.Context, r *charon.CreateUserRequest
 		return nil, err
 	}
 
-	user, _, permissions, err := rs.retrieveUserData(ctx, token)
+	user, _, permissions, err := rs.retrieveActor(ctx, token)
 	if err != nil {
 		return nil, err
 	}
 
-	fmt.Println(user, permissions)
-	if r.IsSuperuser != nil && r.IsSuperuser.Valid && !user.IsSuperuser && !permissions.Contains(charon.UserCanCreateSuper) {
-		return nil, grpc.Errorf(codes.PermissionDenied, "charond: user is not allowed to create user with is_superuser property that has custom value")
-	}
+	if !user.IsSuperuser {
+		if r.IsSuperuser != nil && r.IsSuperuser.Valid {
+			return nil, grpc.Errorf(codes.PermissionDenied, "charond: user is not allowed to create superuser")
+		}
 
-	if r.IsStaff != nil && r.IsStaff.Valid && !user.IsSuperuser && !permissions.Contains(charon.UserCanCreateStaff) {
-		return nil, grpc.Errorf(codes.PermissionDenied, "charond: user is not allowed to create user with is_staff property that has custom value")
-	}
-
-	if r.IsActive != nil && r.IsActive.Valid && !user.IsSuperuser && !permissions.Contains(charon.UserCanCreateActive) {
-		return nil, grpc.Errorf(codes.PermissionDenied, "charond: user is not allowed to create user with is_active property that has custom value")
-	}
-
-	if r.IsConfirmed != nil && r.IsConfirmed.Valid && !user.IsSuperuser && !permissions.Contains(charon.UserCanCreateConfirmed) {
-		return nil, grpc.Errorf(codes.PermissionDenied, "charond: user is not allowed to create user with is_confirmed property that has custom value")
+		if r.IsStaff != nil && r.IsStaff.Valid && !permissions.Contains(charon.UserCanCreateStaff) {
+			return nil, grpc.Errorf(codes.PermissionDenied, "charond: user is not allowed to create staff user")
+		}
 	}
 
 	if r.SecurePassword == "" {
@@ -83,7 +74,26 @@ func (rs *rpcServer) CreateUser(ctx context.Context, r *charon.CreateUserRequest
 
 // ModifyUser ...
 func (rs *rpcServer) ModifyUser(ctx context.Context, r *charon.ModifyUserRequest) (*charon.ModifyUserResponse, error) {
-	user, err := rs.userRepository.UpdateOneByID(
+	token, err := rs.token(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	actor, _, permissions, err := rs.retrieveActor(ctx, token)
+	if err != nil {
+		return nil, err
+	}
+
+	entity, err := rs.userRepository.FindOneByID(r.Id)
+	if err != nil {
+		return nil, err
+	}
+
+	if hint, ok := modifyUserFirewall(r, entity, actor, permissions); !ok {
+		return nil, grpc.Errorf(codes.PermissionDenied, "charond: "+hint)
+	}
+
+	entity, err = rs.userRepository.UpdateOneByID(
 		r.Id,
 		r.Username,
 		r.SecurePassword,
@@ -101,8 +111,29 @@ func (rs *rpcServer) ModifyUser(ctx context.Context, r *charon.ModifyUserRequest
 	sklog.Debug(rs.logger, "user modified", "id", r.Id)
 
 	return &charon.ModifyUserResponse{
-		User: user.Message(),
+		User: entity.Message(),
 	}, nil
+}
+
+func modifyUserFirewall(r *charon.ModifyUserRequest, entity *userEntity, actor *userEntity, perms charon.Permissions) (string, bool) {
+	isOwner := actor.ID == entity.ID
+
+	if !actor.IsSuperuser {
+		switch {
+		case entity.IsSuperuser:
+			return "only superuser can modify a superuser account", false
+		case entity.IsStaff && !isOwner && perms.Contains(charon.UserCanModifyStaffAsStranger):
+			return "missing permission to modify an account as a stranger", false
+		case entity.IsStaff && isOwner && perms.Contains(charon.UserCanModifyStaffAsOwner):
+			return "missing permission to modify an account as an owner", false
+		case r.IsSuperuser != nil && r.IsSuperuser.Valid:
+			return "only superuser can change existing account to superuser", false
+		case r.IsStaff != nil && r.IsStaff.Valid && !perms.Contains(charon.UserCanCreateStaff):
+			return "user is not allowed to create user with is_staff property that has custom value", false
+		}
+	}
+
+	return "", true
 }
 
 // GetUser ...

@@ -23,14 +23,14 @@ type rpcServer struct {
 	permissionRepository PermissionRepository
 }
 
-func (rs *rpcServer) retrieveUserData(ctx context.Context, token mnemosyne.Token) (user *userEntity, session *mnemosyne.Session, permissions charon.Permissions, err error) {
+func (rs *rpcServer) retrieveActor(ctx context.Context, token mnemosyne.Token) (user *userEntity, session *mnemosyne.Session, permissions charon.Permissions, err error) {
 	var userID int64
 	var entities []*permissionEntity
 
 	session, err = rs.session.Get(ctx, token)
 	if err != nil {
 		if err == mnemosyne.ErrSessionNotFound {
-			err = grpc.Errorf(codes.Unauthenticated, err.Error())
+			err = grpc.Errorf(codes.Unauthenticated, "charond: action cannot be performed: %s", grpc.ErrorDesc(err))
 			return
 		}
 		return

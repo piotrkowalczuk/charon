@@ -11,7 +11,6 @@ func TestPermissions_Contains(t *testing.T) {
 		UserCanCreate: {
 			UserCanCreate,
 			UserCanDeleteAsOwner,
-			UserCanEditAsOwner,
 		},
 		UserPermissionCanCreate: {
 			UserPermissionCanCreate,
@@ -26,7 +25,6 @@ func TestPermissions_Contains(t *testing.T) {
 		PermissionCanCreate: {
 			UserCanCreate,
 			UserCanDeleteAsOwner,
-			UserCanEditAsOwner,
 		},
 		UserCanDeleteAsStranger: {
 			UserPermissionCanCreate,

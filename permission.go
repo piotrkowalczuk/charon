@@ -6,43 +6,43 @@ import (
 )
 
 const (
-	UserCanCreate             Permission = "charon:user:can create"
-	UserCanCreateSuper        Permission = "charon:user:can create, super"
-	UserCanCreateStaff        Permission = "charon:user:can create, staff"
-	UserCanCreateActive       Permission = "charon:user:can create, active"
-	UserCanCreateConfirmed    Permission = "charon:user:can create, confirmed"
-	UserCanDeleteAsStranger   Permission = "charon:user:can delete as stranger"
-	UserCanDeleteAsStaff      Permission = "charon:user:can delete as staff"
-	UserCanDeleteAsSuper      Permission = "charon:user:can delete as super"
-	UserCanDeleteAsOwner      Permission = "charon:user:can delete as owner"
-	UserCanEditAsStranger     Permission = "charon:user:can edity as stranger"
-	UserCanEditAsOwner        Permission = "charon:user:can edity as owner"
-	UserCanRetrieveAsOwner    Permission = "charon:user:can retrieve as owner"
-	UserCanRetrieveAsStranger Permission = "charon:user:can retrieve as stranger"
+	UserCanCreate      Permission = "charon:user:can create"
+	UserCanCreateStaff Permission = "charon:user:can create staff"
 
-	UserPermissionCanCreate             Permission = "charon:user_permission:can create"
-	UserPermissionCanDelete             Permission = "charon:user_permission:can delete"
-	UserPermissionCanEdit               Permission = "charon:user_permission:can edity"
-	UserPermissionCanRetrieveAsOwner    Permission = "charon:user_permission:can retrieve as owner"
-	UserPermissionCanRetrieveAsStranger Permission = "charon:user_permission:can retrieve as stranger"
+	UserCanDeleteAsStranger      Permission = "charon:user:can delete as stranger"
+	UserCanDeleteAsOwner         Permission = "charon:user:can delete as owner"
+	UserCanDeleteStaffAsStranger Permission = "charon:user:can delete staff as stranger"
+	UserCanDeleteStaffAsOwner    Permission = "charon:user:can delete staff as owner"
 
-	PermissionCanCreate             Permission = "charon:permission:can create"
-	PermissionCanDelete             Permission = "charon:permission:can create"
-	PermissionCanEdit               Permission = "charon:permission:can create"
-	PermissionCanRetrieveAsOwner    Permission = "charon:permission:can create as owner"
-	PermissionCanRetrieveAsStranger Permission = "charon:permission:can create as stranger"
+	UserCanModifyAsStranger      Permission = "charon:user:can modify as stranger"
+	UserCanModifyAsOwner         Permission = "charon:user:can modify as owner"
+	UserCanModifyStaffAsStranger Permission = "charon:user:can modify staff as stranger"
+	UserCanModifyStaffAsOwner    Permission = "charon:user:can modify staff as owner"
 
-	GroupCanCreate             Permission = "charon:group:can create"
-	GroupCanDelete             Permission = "charon:group:can create"
-	GroupCanEdit               Permission = "charon:group:can create"
-	GroupCanRetrieveAsOwner    Permission = "charon:group:can create as owner"
-	GroupCanRetrieveAsStranger Permission = "charon:group:can create as stranger"
+	UserCanRetrieveAsOwner         Permission = "charon:user:can retrieve as owner"
+	UserCanRetrieveAsStranger      Permission = "charon:user:can retrieve as stranger"
+	UserCanRetrieveStaffAsOwner    Permission = "charon:user:can retrieve staff as owner"
+	UserCanRetrieveStaffAsStranger Permission = "charon:user:can retrieve staff as stranger"
 
-	GroupPermissionCanCreate             Permission = "charon:group_permission:can create"
-	GroupPermissionCanDelete             Permission = "charon:group_permission:can delete"
-	GroupPermissionCanEdit               Permission = "charon:group_permission:can edity"
-	GroupPermissionCanRetrieveAsOwner    Permission = "charon:group_permission:can retrieve as owner"
-	GroupPermissionCanRetrieveAsStranger Permission = "charon:group_permission:can retrieve as stranger"
+	UserPermissionCanCreate   Permission = "charon:user_permission:can create"
+	UserPermissionCanDelete   Permission = "charon:user_permission:can delete"
+	UserPermissionCanModify   Permission = "charon:user_permission:can modify"
+	UserPermissionCanRetrieve Permission = "charon:user_permission:can retrieve"
+
+	PermissionCanCreate   Permission = "charon:permission:can create"
+	PermissionCanDelete   Permission = "charon:permission:can delete"
+	PermissionCanModify   Permission = "charon:permission:can modify"
+	PermissionCanRetrieve Permission = "charon:permission:can retrieve"
+
+	GroupCanCreate   Permission = "charon:group:can create"
+	GroupCanDelete   Permission = "charon:group:can delete"
+	GroupCanModify   Permission = "charon:group:can modify"
+	GroupCanRetrieve Permission = "charon:group:can retrieve"
+
+	GroupPermissionCanCreate   Permission = "charon:group_permission:can create"
+	GroupPermissionCanDelete   Permission = "charon:group_permission:can delete"
+	GroupPermissionCanModify   Permission = "charon:group_permission:can modify"
+	GroupPermissionCanRetrieve Permission = "charon:group_permission:can retrieve"
 )
 
 var (
@@ -109,7 +109,7 @@ type Permissions []Permission
 
 // NewPermissions allocates new Permissions using given slice of strings.
 // It maps each string in a slice into Permission.
-func NewPermissions(ss []string) Permissions {
+func NewPermissions(ss ...string) Permissions {
 	ps := make(Permissions, 0, len(ss))
 	for _, s := range ss {
 		ps = append(ps, Permission(s))
