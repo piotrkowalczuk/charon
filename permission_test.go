@@ -2,8 +2,6 @@ package charon
 
 import (
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
 func TestPermissions_Contains(t *testing.T) {
@@ -18,7 +16,9 @@ func TestPermissions_Contains(t *testing.T) {
 	}
 
 	for expected, permissions := range positive {
-		assert.True(t, permissions.Contains(expected))
+		if permissions.Contains(unexpected) {
+			t.Errorf("expected permission (%s), is not present", expected)
+		}
 	}
 
 	negative := map[Permission]Permissions{
@@ -33,6 +33,8 @@ func TestPermissions_Contains(t *testing.T) {
 	}
 
 	for unexpected, permissions := range negative {
-		assert.False(t, permissions.Contains(unexpected))
+		if permissions.Contains(unexpected) {
+			t.Errorf("unexpected permission (%s), should not be present", unexpected)
+		}
 	}
 }
