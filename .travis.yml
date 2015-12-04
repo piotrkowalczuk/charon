@@ -2,12 +2,16 @@ language: go
 go:
 - 1.4
 - tip
+before_install:
+- pip install --user codecov
 install:
 - make get
 script:
 - make build
 - make test-unit
 - make test-postgres
+after_success:
+- codecov
 notifications:
   slack:
     secure: GlbUiPiSpa05wDHorgk+uOmupZ0kNNcaoGaJehhPRKrD6NZRgLr9bjrQgzHOKxZqgbK98l4aGPsCCJXtIw5bUrXu/Si7AaxzE4qP74FUnzpXkXxUxqexV+DAvI3WuPaqho7NXkqMs+EvYj/roM+ieuZ47jM2noPpPvLbw7Vp8CE=
