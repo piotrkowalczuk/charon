@@ -208,7 +208,7 @@ message ListUserGroupsRequest {
 }
 
 message ListUserGroupsResponse {
-    repeated string groups = 1;
+    repeated Group groups = 1;
 }
 
 message SetUserGroupsRequest {

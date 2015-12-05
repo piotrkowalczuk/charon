@@ -10,7 +10,19 @@ import (
 
 // ListUserGroups implements charon.RPCServer interface.
 func (rs *rpcServer) ListUserGroups(ctx context.Context, req *charon.ListUserGroupsRequest) (*charon.ListUserGroupsResponse, error) {
-	return nil, grpc.Errorf(codes.Unimplemented, "charond: list user groups endpoint is not implemented yet")
+	entities, err := rs.repository.group.FindByUserID(req.Id)
+	if err != nil {
+		return nil, err
+	}
+
+	groups := make([]*charon.Group, 0, len(entities))
+	for _, e := range entities {
+		groups = append(groups, e.Message())
+	}
+
+	return &charon.ListUserGroupsResponse{
+		Groups: groups,
+	}, nil
 }
 
 // SetUserGroups implements charon.RPCServer interface.
