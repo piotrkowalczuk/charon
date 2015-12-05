@@ -14,9 +14,42 @@ import (
 
 const (
 	// UserConfirmationTokenUsed is a value that is used when confirmation token was already used.
-	UserConfirmationTokenUsed                     = "!"
-	sqlCnstrPrimaryKeyUser     pqcnstr.Constraint = "charon.user_pkey"
-	sqlCnstrUniqueUserUsername pqcnstr.Constraint = "charon.user_username_key"
+	UserConfirmationTokenUsed = "!"
+
+	tableUser                                                 = "charon.user"
+	tableUserConstraintPrimaryKey          pqcnstr.Constraint = tableUser + "_pkey"
+	tableUserConstraintUniqueUsername      pqcnstr.Constraint = tableUser + "_username_key"
+	tableUserConstraintForeignKeyCreatedBy pqcnstr.Constraint = tableUser + "_created_by_fkey"
+	tableUserConstraintForeignKeyUpdatedBy pqcnstr.Constraint = tableUser + "_updated_by_fkey"
+	tableUserCreate                                           = `
+		CREATE TABLE IF NOT EXISTS ` + tableUser + ` (
+			id                 SERIAL,
+			password           TEXT                      NOT NULL,
+			username           TEXT                      NOT NULL,
+			first_name         TEXT                      NOT NULL,
+			last_name          TEXT                      NOT NULL,
+			is_superuser       BOOLEAN                   NOT NULL,
+			is_active          BOOLEAN                   NOT NULL,
+			is_staff           BOOLEAN                   NOT NULL,
+			is_confirmed       BOOLEAN                   NOT NULL,
+			confirmation_token TEXT                      NOT NULL,
+			last_login_at      TIMESTAMPTZ,
+			created_at         TIMESTAMPTZ DEFAULT NOW() NOT NULL,
+			created_by         INTEGER,
+			updated_at         TIMESTAMPTZ,
+			updated_by         INTEGER,
+
+			CONSTRAINT "` + tableUserConstraintPrimaryKey + `" PRIMARY KEY (id),
+			CONSTRAINT "` + tableUserConstraintUniqueUsername + `" UNIQUE (username),
+			CONSTRAINT "` + tableUserConstraintForeignKeyCreatedBy + `" FOREIGN KEY (created_by) REFERENCES ` + tableUser + ` (id),
+			CONSTRAINT "` + tableUserConstraintForeignKeyUpdatedBy + `" FOREIGN KEY (updated_by) REFERENCES ` + tableUser + ` (id)
+		)
+	`
+	tableUserColumns = `
+		id, password, username, first_name, last_name, is_active, is_staff,
+		is_superuser, is_confirmed, confirmation_token, last_login_at,
+		created_at, updated_at
+	`
 )
 
 type userEntity struct {
@@ -215,9 +248,7 @@ func (ur *userRepository) FindOneByID(id int64) (*userEntity, error) {
 
 func (ur *userRepository) findOneBy(fieldName string, value interface{}) (*userEntity, error) {
 	query := `
-		SELECT id, password, username, first_name, last_name, is_active, is_staff,
-			is_superuser, is_confirmed, confirmation_token, last_login_at,
-			created_at, updated_at
+		SELECT ` + tableUserColumns + `
 		FROM charon.user
 		WHERE ` + fieldName + ` = $1
 		LIMIT 1
@@ -250,9 +281,7 @@ func (ur *userRepository) findOneBy(fieldName string, value interface{}) (*userE
 // Find implements UserRepository interface.
 func (ur *userRepository) Find(offset, limit *protot.NilInt64) ([]*userEntity, error) {
 	query := `
-		SELECT id, password, username, first_name, last_name, is_active, is_staff,
-			is_superuser, is_confirmed, confirmation_token, last_login_at,
-			created_at, updated_at
+		SELECT ` + tableUserColumns + `
 		FROM charon.user
 		OFFSET $1
 		LIMIT $2
@@ -380,9 +409,7 @@ func (ur *userRepository) UpdateOneByID(id int64, username, securePassword, firs
 
 	query += `
 		WHERE id = $1
-		RETURNING id, password, username, first_name, last_name, is_active, is_staff,
-			is_superuser, is_confirmed, confirmation_token, last_login_at,
-			created_at, updated_at
+		RETURNING ` + tableUserColumns + `
 	`
 
 	var user userEntity
