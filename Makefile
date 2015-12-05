@@ -51,4 +51,6 @@ test-postgres:
 	@go test -v -tags=postgres ${PACKAGE_DAEMON} ${FLAGS}
 
 get:
+	@go get ${PACKAGE}
+	@go get ${PACKAGE_TEST}
 	@go get ${PACKAGE_DAEMON}
