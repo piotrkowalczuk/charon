@@ -1,6 +1,0 @@
-{{define "password_recovery_plain_body"}}
-        {{ trans "mail.password_recovery.hi" }}
-
-        {{ trans "mail.password_recovery.to_continue_visit_link_below" }}
-        {{ url_abs "password_recovery_confirmation" "confirmationToken" .confirmation_token "userId" .user_id }}
-{{end}}

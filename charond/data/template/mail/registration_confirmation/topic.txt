@@ -1,1 +1,0 @@
-{{define "registration_confirmation_topic"}}{{ trans "mail.topic.registration" }}{{end}}
