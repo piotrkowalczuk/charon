@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/piotrkowalczuk/charon"
-	"github.com/piotrkowalczuk/protot"
+	"github.com/piotrkowalczuk/nilt"
 )
 
 func TestUserModifyFirewall(t *testing.T) {
@@ -19,25 +19,25 @@ func TestUserModifyFirewall(t *testing.T) {
 	}{
 		{
 			hint:   "superuser should be able to degrade itself",
-			req:    charon.ModifyUserRequest{Id: 1, IsSuperuser: &protot.NilBool{Bool: false, Valid: true}},
+			req:    charon.ModifyUserRequest{Id: 1, IsSuperuser: &nilt.Bool{Bool: false, Valid: true}},
 			entity: userEntity{ID: 1, IsSuperuser: true},
 			actor:  userEntity{ID: 1, IsSuperuser: true},
 		},
 		{
 			hint:   "superuser should be able to promote an user",
-			req:    charon.ModifyUserRequest{Id: 2, IsSuperuser: &protot.NilBool{Bool: true, Valid: true}},
+			req:    charon.ModifyUserRequest{Id: 2, IsSuperuser: &nilt.Bool{Bool: true, Valid: true}},
 			entity: userEntity{ID: 2},
 			actor:  userEntity{ID: 1, IsSuperuser: true},
 		},
 		{
 			hint:   "superuser should be able to promote a staff user",
-			req:    charon.ModifyUserRequest{Id: 2, IsSuperuser: &protot.NilBool{Bool: true, Valid: true}},
+			req:    charon.ModifyUserRequest{Id: 2, IsSuperuser: &nilt.Bool{Bool: true, Valid: true}},
 			entity: userEntity{ID: 2},
 			actor:  userEntity{ID: 1, IsSuperuser: true},
 		},
 		{
 			hint:   "superuser should be able to degrade another superuser",
-			req:    charon.ModifyUserRequest{Id: 2, IsSuperuser: &protot.NilBool{Bool: false, Valid: true}},
+			req:    charon.ModifyUserRequest{Id: 2, IsSuperuser: &nilt.Bool{Bool: false, Valid: true}},
 			entity: userEntity{ID: 2, IsSuperuser: true},
 			actor:  userEntity{ID: 1, IsSuperuser: true},
 		},

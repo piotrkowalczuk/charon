@@ -4,10 +4,10 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"strconv"
 	"time"
 
 	"github.com/piotrkowalczuk/charon"
+	"github.com/piotrkowalczuk/nilt"
 	"github.com/piotrkowalczuk/pqcnstr"
 	"github.com/piotrkowalczuk/protot"
 )
@@ -65,18 +65,14 @@ type userEntity struct {
 	ConfirmationToken string
 	LastLoginAt       *time.Time
 	CreatedAt         *time.Time
-	CreatedBy         sql.NullInt64
+	CreatedBy         nilt.Int64
 	UpdatedAt         *time.Time
-	UpdatedBy         sql.NullInt64
+	UpdatedBy         nilt.Int64
 }
 
 // String return concatenated first and last name of the user.
 func (ue *userEntity) String() string {
 	return ue.FirstName + " " + ue.LastName
-}
-
-func (ue *userEntity) subjectID() string {
-	return strconv.FormatInt(ue.ID, 10)
 }
 
 // Message allocates new corresponding protobuf message.
@@ -117,11 +113,11 @@ type UserRepository interface {
 	Count() (int64, error)
 	UpdateLastLoginAt(id int64) error
 	ChangePassword(id int64, password string) error
-	Find(offset, limit *protot.NilInt64) ([]*userEntity, error)
+	Find(offset, limit *nilt.Int64) ([]*userEntity, error)
 	FindOneByID(id int64) (*userEntity, error)
 	FindOneByUsername(username string) (*userEntity, error)
 	DeleteOneByID(id int64) (int64, error)
-	UpdateOneByID(id int64, username, securePassword, firstName, lastName *protot.NilString, isSuperuser, isActive, isStaff, isConfirmed *protot.NilBool) (*userEntity, error)
+	UpdateOneByID(id int64, username, securePassword, firstName, lastName *nilt.String, isSuperuser, isActive, isStaff, isConfirmed *nilt.Bool) (*userEntity, error)
 	RegistrationConfirmation(id int64, confirmationToken string) error
 }
 
@@ -279,7 +275,7 @@ func (ur *userRepository) findOneBy(fieldName string, value interface{}) (*userE
 }
 
 // Find implements UserRepository interface.
-func (ur *userRepository) Find(offset, limit *protot.NilInt64) ([]*userEntity, error) {
+func (ur *userRepository) Find(offset, limit *nilt.Int64) ([]*userEntity, error) {
 	query := `
 		SELECT ` + tableUserColumns + `
 		FROM charon.user
@@ -288,11 +284,11 @@ func (ur *userRepository) Find(offset, limit *protot.NilInt64) ([]*userEntity, e
 	`
 
 	if offset == nil && !offset.Valid {
-		offset = &protot.NilInt64{Int64: 0, Valid: true}
+		offset = &nilt.Int64{Int64: 0, Valid: true}
 	}
 
 	if limit == nil || !limit.Valid {
-		limit = &protot.NilInt64{Int64: 10, Valid: true}
+		limit = &nilt.Int64{Int64: 10, Valid: true}
 	}
 
 	rows, err := ur.db.Query(query, offset.Int64, limit.Int64)
@@ -365,19 +361,19 @@ func (ur *userRepository) DeleteOneByID(id int64) (int64, error) {
 	return res.RowsAffected()
 }
 
-func (ur *userRepository) UpdateOneByID(id int64, username, securePassword, firstName, lastName *protot.NilString, isSuperuser, isActive, isStaff, isConfirmed *protot.NilBool) (*userEntity, error) {
+func (ur *userRepository) UpdateOneByID(id int64, username, securePassword, firstName, lastName *nilt.String, isSuperuser, isActive, isStaff, isConfirmed *nilt.Bool) (*userEntity, error) {
 	keys := make([]string, 0, 8)
 	values := make([]interface{}, 0, 9)
 	values = append(values, id)
 
-	addString := func(key string, s *protot.NilString) {
+	addString := func(key string, s *nilt.String) {
 		if s != nil && s.Valid {
 			keys = append(keys, key)
 			values = append(values, s.String)
 		}
 	}
 
-	addBool := func(key string, s *protot.NilBool) {
+	addBool := func(key string, s *nilt.Bool) {
 		if s != nil && s.Valid {
 			keys = append(keys, key)
 			values = append(values, s.Bool)
