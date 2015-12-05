@@ -1,6 +1,10 @@
 package main
 
-import "github.com/piotrkowalczuk/pqcnstr"
+import (
+	"time"
+
+	"github.com/piotrkowalczuk/pqcnstr"
+)
 
 const (
 	tableUserPermissions                                                      = "charon.user_permissions"
@@ -25,3 +29,10 @@ const (
 		user_id, permission_id, created_at, created_by
 	`
 )
+
+type userPermissionEntity struct {
+	UserID       int64
+	PermissionID int64
+	CreatedAt    *time.Time
+	CreatedBy    int64
+}

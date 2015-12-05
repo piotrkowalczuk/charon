@@ -142,10 +142,6 @@ func modifyUserFirewall(req *charon.ModifyUserRequest, entity *userEntity, actor
 
 // GetUser ...
 func (rs *rpcServer) GetUser(ctx context.Context, req *charon.GetUserRequest) (*charon.GetUserResponse, error) {
-	//	userID, err := rs.userID(ctx, req.Id, req.Token)
-	//	if err != nil {
-	//		return nil, grpc.Errorf(codes.InvalidArgument, "charond: user cannot be retrieved: %s", err.Error())
-	//	}
 	user, err := rs.userRepository.FindOneByID(req.Id)
 	if err != nil {
 		return nil, err

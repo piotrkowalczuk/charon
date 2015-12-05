@@ -8,6 +8,7 @@ import (
 
 	"github.com/go-kit/kit/log"
 	_ "github.com/lib/pq"
+	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/mnemosyne"
 	"github.com/piotrkowalczuk/sklog"
 	"google.golang.org/grpc"
@@ -15,9 +16,9 @@ import (
 
 const (
 	loggerAdapterStdOut = "stdout"
-	loggerFormatJSON = "json"
-	loggerFormatHumane = "humane"
-	loggerFormatLogFmt = "logfmt"
+	loggerFormatJSON    = "json"
+	loggerFormatHumane  = "humane"
+	loggerFormatLogFmt  = "logfmt"
 )
 
 func initLogger(adapter, format string, level int, context ...interface{}) log.Logger {
@@ -90,4 +91,13 @@ func initMnemosyne(address string, logger log.Logger) (*grpc.ClientConn, mnemosy
 	sklog.Info(logger, "rpc connection to mnemosyne has been established", "address", address)
 
 	return conn, mnemosyne.New(conn, mnemosyne.MnemosyneOpts{})
+}
+
+func initPasswordHasher(cost int, logger log.Logger) charon.PasswordHasher {
+	bh, err := charon.NewBcryptPasswordHasher(cost, logger)
+	if err != nil {
+		sklog.Fatal(logger, err)
+	}
+
+	return bh
 }

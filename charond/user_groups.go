@@ -1,6 +1,10 @@
 package main
 
-import "github.com/piotrkowalczuk/pqcnstr"
+import (
+	"time"
+
+	"github.com/piotrkowalczuk/pqcnstr"
+)
 
 const (
 	tableUserGroups                                                 = "charon.user_groups"
@@ -25,3 +29,10 @@ const (
 		user_id, group_id, created_at, created_by
 	`
 )
+
+type userGroupEntity struct {
+	UserID    int64
+	GroupID   int64
+	CreatedAt *time.Time
+	CreatedBy int64
+}

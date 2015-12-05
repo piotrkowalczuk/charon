@@ -47,14 +47,6 @@ func (pe *permissionEntity) Permission() charon.Permission {
 	return charon.Permission(pe.Subsystem + ":" + pe.Module + ":" + pe.Action)
 }
 
-type userPermissionEntity struct {
-	ID           int64
-	UserID       int64
-	PermissionID int64
-	CreatedAt    *time.Time
-	CreatedBy    int64
-}
-
 // PermissionRepository ...
 type PermissionRepository interface {
 	FindByUserID(int64) ([]*permissionEntity, error)
