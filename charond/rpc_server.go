@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"strconv"
 
 	"github.com/go-kit/kit/log"
 	"github.com/piotrkowalczuk/charon"
@@ -87,22 +86,4 @@ func (rs *rpcServer) metadata(md metadata.MD) metadata.MD {
 	}
 
 	return md
-}
-
-func (rs *rpcServer) retrieveSubjectID(ctx context.Context, token mnemosyne.Token) (int64, error) {
-	ses, err := rs.session.Get(ctx, token)
-	if err != nil {
-		return 0, err
-	}
-
-	return strconv.ParseInt(ses.SubjectId, 10, 64)
-	//	if err != nil {
-	//		if _, ok := err.(*strconv.NumError); ok {
-	//			return 0, errors.New("charond: subject id stored in the session, cannot be cast into int64")
-	//		}
-	//
-	//		return 0, err
-	//	}
-	//
-	//	return subjectID, nil
 }
