@@ -1,7 +1,15 @@
 language: go
 go:
-- 1.4
 - tip
+addons:
+  postgresql: '9.3'
+env:
+  CHARON_HOST: localhost
+  CHARON_PORT: 9001
+  CHARON_SUBSYSTEM: charon_travis
+  CHARON_LOGGER_FORMAT: humane
+  CHARON_LOGGER_ADAPTER: stdout
+  CHARON_POSTGRES_CONNECTION_STRING: postgres://postgres:@localhost/travis_ci_test?sslmode=disable
 before_install:
 - pip install --user codecov
 install:

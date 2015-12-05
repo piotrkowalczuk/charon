@@ -30,3 +30,19 @@ func setupDatabase(db *sql.DB) error {
 		string(tableGroupPermissionsCreate),
 	)
 }
+
+func tearDownDatabase(db *sql.DB) error {
+	drop := func(tableName string) string {
+		return "DROP TABLE IF EXISTS " + tableName + " CASCADE"
+	}
+
+	return execQueries(
+		db,
+		drop(tableUser),
+		drop(tableGroup),
+		drop(tablePermission),
+		drop(tableUserGroups),
+		drop(tableUserPermissions),
+		drop(tableGroupPermissions),
+	)
+}
