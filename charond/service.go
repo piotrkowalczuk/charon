@@ -71,7 +71,11 @@ func initPostgres(connectionString string, retry int, logger log.Logger) *sql.DB
 
 		initPostgres(connectionString, retry, logger)
 	} else {
-		sklog.Info(logger, "connection do postgres established successfully", "address", connectionString)
+		err = setupDatabase(postgres)
+		if err != nil {
+			sklog.Fatal(logger, err)
+		}
+		sklog.Info(logger, "postgres connection has been established", "address", connectionString)
 	}
 
 	return postgres
