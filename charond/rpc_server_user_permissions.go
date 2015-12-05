@@ -18,7 +18,7 @@ func (rs *rpcServer) SetUserPermissions(ctx context.Context, req *charon.SetUser
 
 // ListUserPermissions implements charon.RPCServer interface.
 func (rs *rpcServer) ListUserPermissions(ctx context.Context, req *charon.ListUserPermissionsRequest) (*charon.ListUserPermissionsResponse, error) {
-	permissions, err := rs.permissionRepository.FindByUserID(req.Id)
+	permissions, err := rs.repository.permission.FindByUserID(req.Id)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			sklog.Debug(rs.logger, "user permissions retrieved", "user_id", req.Id, "count", len(permissions))

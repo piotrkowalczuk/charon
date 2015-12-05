@@ -68,9 +68,9 @@ func (pr *permissionRepository) FindByUserID(userID int64) ([]*permissionEntity,
 		SELECT DISTINCT ON (p.id)
 			` + tablePermissionColumns + `
 		FROM ` + tablePermission + ` AS p
-		LEFT JOIN charon.user_permissions AS up ON up.permission_id = p.id AND up.user_id = $1
-		LEFT JOIN charon.user_groups AS ug ON ug.user_id = $1
-		LEFT JOIN charon.group_permissions AS gp ON gp.permission_id = p.id AND gp.group_id = ug.group_id
+		LEFT JOIN ` + tableUserPermissions + ` AS up ON up.permission_id = p.id AND up.user_id = $1
+		LEFT JOIN ` + tableUserGroups + ` AS ug ON ug.user_id = $1
+		LEFT JOIN ` + tableGroupPermissions + ` AS gp ON gp.permission_id = p.id AND gp.group_id = ug.group_id
 		WHERE up.user_id = $1 OR ug.user_id = $1
 	`
 

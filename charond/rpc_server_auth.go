@@ -25,7 +25,7 @@ func (rs *rpcServer) Login(ctx context.Context, r *charon.LoginRequest) (*charon
 		return nil, grpc.Errorf(codes.Unauthenticated, "charond: empty password")
 	}
 
-	user, err := rs.userRepository.FindOneByUsername(r.Username)
+	user, err := rs.repository.user.FindOneByUsername(r.Username)
 	if err != nil {
 		sklog.Debug(rs.logger, "login failed, user with such username does not exists", "username", r.Username)
 
@@ -61,7 +61,7 @@ func (rs *rpcServer) Login(ctx context.Context, r *charon.LoginRequest) (*charon
 		return nil, err
 	}
 
-	err = rs.userRepository.UpdateLastLoginAt(user.ID)
+	err = rs.repository.user.UpdateLastLoginAt(user.ID)
 	if err != nil {
 		sklog.Error(rs.logger, err, "username", r.Username)
 
@@ -130,7 +130,7 @@ func (rs *rpcServer) Subject(ctx context.Context, req *charon.SubjectRequest) (*
 		return nil, fmt.Errorf("charond: invalid session subject id: %s", ses.SubjectId)
 	}
 
-	user, err := rs.userRepository.FindOneByID(id)
+	user, err := rs.repository.user.FindOneByID(id)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, grpc.Errorf(codes.NotFound, "charond: user does not exists with id: %d", id)
@@ -139,7 +139,7 @@ func (rs *rpcServer) Subject(ctx context.Context, req *charon.SubjectRequest) (*
 		return nil, err
 	}
 
-	permissionEntities, err := rs.permissionRepository.FindByUserID(id)
+	permissionEntities, err := rs.repository.permission.FindByUserID(id)
 	if err != nil && err != sql.ErrNoRows {
 		return nil, err
 	}

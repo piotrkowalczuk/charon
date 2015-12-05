@@ -52,7 +52,7 @@ func (rs *rpcServer) CreateUser(ctx context.Context, req *charon.CreateUserReque
 		}
 	}
 
-	entity, err := rs.userRepository.Create(
+	entity, err := rs.repository.user.Create(
 		req.Username,
 		req.SecurePassword,
 		req.FirstName,
@@ -88,7 +88,7 @@ func (rs *rpcServer) ModifyUser(ctx context.Context, req *charon.ModifyUserReque
 		return nil, err
 	}
 
-	entity, err := rs.userRepository.FindOneByID(req.Id)
+	entity, err := rs.repository.user.FindOneByID(req.Id)
 	if err != nil {
 		return nil, err
 	}
@@ -97,7 +97,7 @@ func (rs *rpcServer) ModifyUser(ctx context.Context, req *charon.ModifyUserReque
 		return nil, grpc.Errorf(codes.PermissionDenied, "charond: "+hint)
 	}
 
-	entity, err = rs.userRepository.UpdateOneByID(
+	entity, err = rs.repository.user.UpdateOneByID(
 		req.Id,
 		req.Username,
 		req.SecurePassword,
@@ -142,7 +142,7 @@ func modifyUserFirewall(req *charon.ModifyUserRequest, entity *userEntity, actor
 
 // GetUser ...
 func (rs *rpcServer) GetUser(ctx context.Context, req *charon.GetUserRequest) (*charon.GetUserResponse, error) {
-	user, err := rs.userRepository.FindOneByID(req.Id)
+	user, err := rs.repository.user.FindOneByID(req.Id)
 	if err != nil {
 		return nil, err
 	}
@@ -156,7 +156,7 @@ func (rs *rpcServer) GetUser(ctx context.Context, req *charon.GetUserRequest) (*
 
 // ListUsers ...
 func (rs *rpcServer) ListUsers(ctx context.Context, req *charon.ListUsersRequest) (*charon.ListUsersResponse, error) {
-	users, err := rs.userRepository.Find(req.Offset, req.Limit)
+	users, err := rs.repository.user.Find(req.Offset, req.Limit)
 	if err != nil {
 		return nil, err
 	}
@@ -179,7 +179,7 @@ func (rs *rpcServer) DeleteUser(ctx context.Context, req *charon.DeleteUserReque
 	if req.Id <= 0 {
 		return nil, grpc.Errorf(codes.InvalidArgument, "charond: user cannot be deleted, invalid id: %d", req.Id)
 	}
-	affected, err := rs.userRepository.DeleteOneByID(req.Id)
+	affected, err := rs.repository.user.DeleteOneByID(req.Id)
 	if err != nil {
 		return nil, err
 	}

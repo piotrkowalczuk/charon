@@ -13,13 +13,16 @@ import (
 )
 
 type rpcServer struct {
-	meta                 metadata.MD
-	logger               log.Logger
-	monitor              *monitoring
-	session              mnemosyne.Mnemosyne
-	passwordHasher       charon.PasswordHasher
-	userRepository       UserRepository
-	permissionRepository PermissionRepository
+	meta           metadata.MD
+	logger         log.Logger
+	monitor        *monitoring
+	session        mnemosyne.Mnemosyne
+	passwordHasher charon.PasswordHasher
+	repository     struct {
+		user       UserRepository
+		permission PermissionRepository
+		group      GroupRepository
+	}
 }
 
 func (rs *rpcServer) retrieveActor(ctx context.Context, token mnemosyne.Token) (user *userEntity, session *mnemosyne.Session, permissions charon.Permissions, err error) {
@@ -39,12 +42,12 @@ func (rs *rpcServer) retrieveActor(ctx context.Context, token mnemosyne.Token) (
 	if err != nil {
 		return
 	}
-	user, err = rs.userRepository.FindOneByID(userID)
+	user, err = rs.repository.user.FindOneByID(userID)
 	if err != nil {
 		return
 	}
 
-	entities, err = rs.permissionRepository.FindByUserID(userID)
+	entities, err = rs.repository.permission.FindByUserID(userID)
 
 	permissions = make(charon.Permissions, 0, len(entities))
 	for _, e := range entities {
