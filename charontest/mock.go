@@ -12,29 +12,47 @@ type Charon struct {
 }
 
 // IsGranted implements Charon interface.
-func (c *Charon) IsGranted(ctx context.Context, perm charon.Permission, args ...interface{}) (bool, error) {
-	a := c.Called(append([]interface{}{ctx, perm}, args...)...)
+func (c *Charon) IsGranted(ctx context.Context, token mnemosyne.Token, perm charon.Permission) (bool, error) {
+	a := c.Called(ctx, token, perm)
 
 	return a.Bool(0), a.Error(1)
 }
 
 // IsAuthenticated implements Charon interface.
-func (c *Charon) IsAuthenticated(ctx context.Context) (bool, error) {
-	a := c.Called(ctx)
+func (c *Charon) IsAuthenticated(ctx context.Context, token mnemosyne.Token) (bool, error) {
+	a := c.Called(ctx, token)
 
 	return a.Bool(0), a.Error(1)
 }
 
-// Login implements Charon interface.
-func (c *Charon) Login(username, password string) (*mnemosyne.Session, error) {
-	a := c.Called(username, password)
+// Subject implements Charon interface.
+func (c *Charon) Subject(ctx context.Context, token mnemosyne.Token) (*charon.Subject, error) {
+	a := c.Called(ctx, token)
 
-	return a.Get(0).(*mnemosyne.Session), a.Error(1)
+	subj, err := a.Get(0), a.Error(1)
+	if err != nil {
+		return nil, err
+	}
+
+	return subj.(*charon.Subject), nil
+}
+
+// Login implements Charon interface.
+func (c *Charon) Login(ctx context.Context, username, password string) (*mnemosyne.Token, error) {
+	a := c.Called(ctx, username, password)
+
+	ses, err := a.Get(0), a.Error(1)
+	if err != nil {
+		return nil, err
+	}
+
+	return ses.(*mnemosyne.Token), nil
 }
 
 // Logout implements Charon interface.
-func (c *Charon) Logout(token *mnemosyne.Token) error {
-	a := c.Called(token)
+func (c *Charon) Logout(ctx context.Context, token mnemosyne.Token) error {
+	a := c.Called(ctx, token)
 
 	return a.Error(0)
 }
+
