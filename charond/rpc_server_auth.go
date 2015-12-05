@@ -1,6 +1,10 @@
 package main
 
 import (
+	"fmt"
+
+	"database/sql"
+
 	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/sklog"
 	"golang.org/x/net/context"
@@ -106,6 +110,59 @@ func (rs *rpcServer) IsAuthenticated(ctx context.Context, r *charon.IsAuthentica
 	}
 
 	return &charon.IsAuthenticatedResponse{
-		IsAuthenticated: ok,
+		Authenticated: ok,
+	}, nil
+}
+
+// Subject implements charon.RPCServer interface.
+func (rs *rpcServer) Subject(ctx context.Context, req *charon.SubjectRequest) (*charon.SubjectResponse, error) {
+	token, err := rs.token(ctx)
+	if err != nil {
+		return nil, err
+	}
+	ses, err := rs.session.Get(ctx, token)
+	if err != nil {
+		return nil, err
+	}
+
+	id, err := charon.SessionSubjectID(ses.SubjectId).UserID()
+	if err != nil {
+		return nil, fmt.Errorf("charond: invalid session subject id: %s", ses.SubjectId)
+	}
+
+	user, err := rs.userRepository.FindOneByID(id)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, grpc.Errorf(codes.NotFound, "charond: user does not exists with id: %d", id)
+		}
+
+		return nil, err
+	}
+
+	permissionEntities, err := rs.permissionRepository.FindByUserID(id)
+	if err != nil && err != sql.ErrNoRows {
+		return nil, err
+	}
+
+	//	subject := &charon.Subject{
+	//		ID:          user.ID,
+	//		FirstName:   user.FirstName,
+	//		LastName:    user.LastName,
+	//		Permissions: make(charon.Permissions, 0, len(permissions)),
+	//	}
+	//
+
+	permissions := make([]string, 0, len(permissionEntities))
+	for _, e := range permissionEntities {
+		permissions = append(permissions, e.Permission().String())
+	}
+
+	sklog.Debug(rs.logger, "subject retrieved", "subject_id", ses.SubjectId)
+
+	return &charon.SubjectResponse{
+		Id:          user.ID,
+		FirstName:   user.FirstName,
+		LastName:    user.LastName,
+		Permissions: permissions,
 	}, nil
 }

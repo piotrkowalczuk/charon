@@ -9,7 +9,6 @@ It is generated from these files:
 	charon.proto
 
 It has these top-level messages:
-	User
 	LoginRequest
 	LoginResponse
 	LogoutRequest
@@ -20,18 +19,46 @@ It has these top-level messages:
 	IsGrantedResponse
 	BelongsToRequest
 	BelongsToResponse
+	SubjectRequest
+	SubjectResponse
+	User
 	CreateUserRequest
 	CreateUserResponse
 	GetUserRequest
 	GetUserResponse
-	GetUsersRequest
-	GetUsersResponse
+	ListUsersRequest
+	ListUsersResponse
 	DeleteUserRequest
 	DeleteUserResponse
 	ModifyUserRequest
 	ModifyUserResponse
-	GetUserPermissionsRequest
-	GetUserPermissionsResponse
+	ListUserPermissionsRequest
+	ListUserPermissionsResponse
+	SetUserPermissionsRequest
+	SetUserPermissionsResponse
+	ListUserGroupsRequest
+	ListUserGroupsResponse
+	SetUserGroupsRequest
+	SetUserGroupsResponse
+	RegisterPermissionsRequest
+	RegisterPermissionsResponse
+	ListPermissionsRequest
+	ListPermissionsResponse
+	Group
+	CreateGroupRequest
+	CreateGroupResponse
+	GetGroupRequest
+	GetGroupResponse
+	ListGroupsRequest
+	ListGroupsResponse
+	DeleteGroupRequest
+	DeleteGroupResponse
+	ModifyGroupRequest
+	ModifyGroupResponse
+	SetGroupPermissionsRequest
+	SetGroupPermissionsResponse
+	ListGroupPermissionsRequest
+	ListGroupPermissionsResponse
 */
 package charon
 
@@ -40,6 +67,7 @@ import fmt "fmt"
 import math "math"
 import mnemosyne "github.com/piotrkowalczuk/mnemosyne"
 import protot "github.com/piotrkowalczuk/protot"
+import nilt "github.com/piotrkowalczuk/nilt"
 
 import (
 	context "golang.org/x/net/context"
@@ -51,41 +79,6 @@ var _ = proto.Marshal
 var _ = fmt.Errorf
 var _ = math.Inf
 
-type User struct {
-	Id          int64             `protobuf:"varint,1,opt,name=id" json:"id,omitempty"`
-	Username    string            `protobuf:"bytes,2,opt,name=username" json:"username,omitempty"`
-	FirstName   string            `protobuf:"bytes,3,opt,name=first_name" json:"first_name,omitempty"`
-	LastName    string            `protobuf:"bytes,4,opt,name=last_name" json:"last_name,omitempty"`
-	IsSuperuser bool              `protobuf:"varint,5,opt,name=is_superuser" json:"is_superuser,omitempty"`
-	IsActive    bool              `protobuf:"varint,6,opt,name=is_active" json:"is_active,omitempty"`
-	IsStaff     bool              `protobuf:"varint,7,opt,name=is_staff" json:"is_staff,omitempty"`
-	IsConfirmed bool              `protobuf:"varint,8,opt,name=is_confirmed" json:"is_confirmed,omitempty"`
-	CreatedAt   *protot.Timestamp `protobuf:"bytes,9,opt,name=created_at" json:"created_at,omitempty"`
-	CreatedBy   int64             `protobuf:"varint,10,opt,name=created_by" json:"created_by,omitempty"`
-	UpdatedAt   *protot.Timestamp `protobuf:"bytes,11,opt,name=updated_at" json:"updated_at,omitempty"`
-	UpdatedBy   int64             `protobuf:"varint,12,opt,name=updated_by" json:"updated_by,omitempty"`
-	Permissions []string          `protobuf:"bytes,13,rep,name=permissions" json:"permissions,omitempty"`
-}
-
-func (m *User) Reset()                    { *m = User{} }
-func (m *User) String() string            { return proto.CompactTextString(m) }
-func (*User) ProtoMessage()               {}
-func (*User) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{0} }
-
-func (m *User) GetCreatedAt() *protot.Timestamp {
-	if m != nil {
-		return m.CreatedAt
-	}
-	return nil
-}
-
-func (m *User) GetUpdatedAt() *protot.Timestamp {
-	if m != nil {
-		return m.UpdatedAt
-	}
-	return nil
-}
-
 type LoginRequest struct {
 	Username string `protobuf:"bytes,1,opt,name=username" json:"username,omitempty"`
 	Password string `protobuf:"bytes,2,opt,name=password" json:"password,omitempty"`
@@ -94,7 +87,7 @@ type LoginRequest struct {
 func (m *LoginRequest) Reset()                    { *m = LoginRequest{} }
 func (m *LoginRequest) String() string            { return proto.CompactTextString(m) }
 func (*LoginRequest) ProtoMessage()               {}
-func (*LoginRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{1} }
+func (*LoginRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{0} }
 
 type LoginResponse struct {
 	Token *mnemosyne.Token `protobuf:"bytes,1,opt,name=token" json:"token,omitempty"`
@@ -103,7 +96,7 @@ type LoginResponse struct {
 func (m *LoginResponse) Reset()                    { *m = LoginResponse{} }
 func (m *LoginResponse) String() string            { return proto.CompactTextString(m) }
 func (*LoginResponse) ProtoMessage()               {}
-func (*LoginResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{2} }
+func (*LoginResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{1} }
 
 func (m *LoginResponse) GetToken() *mnemosyne.Token {
 	if m != nil {
@@ -119,7 +112,7 @@ type LogoutRequest struct {
 func (m *LogoutRequest) Reset()                    { *m = LogoutRequest{} }
 func (m *LogoutRequest) String() string            { return proto.CompactTextString(m) }
 func (*LogoutRequest) ProtoMessage()               {}
-func (*LogoutRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{3} }
+func (*LogoutRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{2} }
 
 func (m *LogoutRequest) GetToken() *mnemosyne.Token {
 	if m != nil {
@@ -134,7 +127,7 @@ type LogoutResponse struct {
 func (m *LogoutResponse) Reset()                    { *m = LogoutResponse{} }
 func (m *LogoutResponse) String() string            { return proto.CompactTextString(m) }
 func (*LogoutResponse) ProtoMessage()               {}
-func (*LogoutResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{4} }
+func (*LogoutResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{3} }
 
 type IsAuthenticatedRequest struct {
 	Token *mnemosyne.Token `protobuf:"bytes,1,opt,name=token" json:"token,omitempty"`
@@ -143,7 +136,7 @@ type IsAuthenticatedRequest struct {
 func (m *IsAuthenticatedRequest) Reset()                    { *m = IsAuthenticatedRequest{} }
 func (m *IsAuthenticatedRequest) String() string            { return proto.CompactTextString(m) }
 func (*IsAuthenticatedRequest) ProtoMessage()               {}
-func (*IsAuthenticatedRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{5} }
+func (*IsAuthenticatedRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{4} }
 
 func (m *IsAuthenticatedRequest) GetToken() *mnemosyne.Token {
 	if m != nil {
@@ -153,24 +146,23 @@ func (m *IsAuthenticatedRequest) GetToken() *mnemosyne.Token {
 }
 
 type IsAuthenticatedResponse struct {
-	IsAuthenticated bool `protobuf:"varint,1,opt,name=is_authenticated" json:"is_authenticated,omitempty"`
+	Authenticated bool `protobuf:"varint,1,opt,name=authenticated" json:"authenticated,omitempty"`
 }
 
 func (m *IsAuthenticatedResponse) Reset()                    { *m = IsAuthenticatedResponse{} }
 func (m *IsAuthenticatedResponse) String() string            { return proto.CompactTextString(m) }
 func (*IsAuthenticatedResponse) ProtoMessage()               {}
-func (*IsAuthenticatedResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{6} }
+func (*IsAuthenticatedResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{5} }
 
 type IsGrantedRequest struct {
 	Token      *mnemosyne.Token `protobuf:"bytes,1,opt,name=token" json:"token,omitempty"`
-	UserId     int64            `protobuf:"varint,2,opt,name=user_id" json:"user_id,omitempty"`
-	Permission string           `protobuf:"bytes,3,opt,name=permission" json:"permission,omitempty"`
+	Permission string           `protobuf:"bytes,2,opt,name=permission" json:"permission,omitempty"`
 }
 
 func (m *IsGrantedRequest) Reset()                    { *m = IsGrantedRequest{} }
 func (m *IsGrantedRequest) String() string            { return proto.CompactTextString(m) }
 func (*IsGrantedRequest) ProtoMessage()               {}
-func (*IsGrantedRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{7} }
+func (*IsGrantedRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{6} }
 
 func (m *IsGrantedRequest) GetToken() *mnemosyne.Token {
 	if m != nil {
@@ -180,69 +172,142 @@ func (m *IsGrantedRequest) GetToken() *mnemosyne.Token {
 }
 
 type IsGrantedResponse struct {
-	IsGranted bool `protobuf:"varint,1,opt,name=is_granted" json:"is_granted,omitempty"`
+	Granted bool `protobuf:"varint,1,opt,name=granted" json:"granted,omitempty"`
 }
 
 func (m *IsGrantedResponse) Reset()                    { *m = IsGrantedResponse{} }
 func (m *IsGrantedResponse) String() string            { return proto.CompactTextString(m) }
 func (*IsGrantedResponse) ProtoMessage()               {}
-func (*IsGrantedResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{8} }
+func (*IsGrantedResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{7} }
 
 type BelongsToRequest struct {
+	Token *mnemosyne.Token `protobuf:"bytes,1,opt,name=token" json:"token,omitempty"`
+	Group string           `protobuf:"bytes,2,opt,name=group" json:"group,omitempty"`
 }
 
 func (m *BelongsToRequest) Reset()                    { *m = BelongsToRequest{} }
 func (m *BelongsToRequest) String() string            { return proto.CompactTextString(m) }
 func (*BelongsToRequest) ProtoMessage()               {}
-func (*BelongsToRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{9} }
+func (*BelongsToRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{8} }
+
+func (m *BelongsToRequest) GetToken() *mnemosyne.Token {
+	if m != nil {
+		return m.Token
+	}
+	return nil
+}
 
 type BelongsToResponse struct {
+	Belongs bool `protobuf:"varint,1,opt,name=belongs" json:"belongs,omitempty"`
 }
 
 func (m *BelongsToResponse) Reset()                    { *m = BelongsToResponse{} }
 func (m *BelongsToResponse) String() string            { return proto.CompactTextString(m) }
 func (*BelongsToResponse) ProtoMessage()               {}
-func (*BelongsToResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{10} }
+func (*BelongsToResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{9} }
+
+type SubjectRequest struct {
+	Token *mnemosyne.Token `protobuf:"bytes,1,opt,name=token" json:"token,omitempty"`
+}
+
+func (m *SubjectRequest) Reset()                    { *m = SubjectRequest{} }
+func (m *SubjectRequest) String() string            { return proto.CompactTextString(m) }
+func (*SubjectRequest) ProtoMessage()               {}
+func (*SubjectRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{10} }
+
+func (m *SubjectRequest) GetToken() *mnemosyne.Token {
+	if m != nil {
+		return m.Token
+	}
+	return nil
+}
+
+type SubjectResponse struct {
+	Id          int64    `protobuf:"varint,1,opt,name=id" json:"id,omitempty"`
+	Username    string   `protobuf:"bytes,2,opt,name=username" json:"username,omitempty"`
+	FirstName   string   `protobuf:"bytes,3,opt,name=first_name" json:"first_name,omitempty"`
+	LastName    string   `protobuf:"bytes,4,opt,name=last_name" json:"last_name,omitempty"`
+	Permissions []string `protobuf:"bytes,5,rep,name=permissions" json:"permissions,omitempty"`
+}
+
+func (m *SubjectResponse) Reset()                    { *m = SubjectResponse{} }
+func (m *SubjectResponse) String() string            { return proto.CompactTextString(m) }
+func (*SubjectResponse) ProtoMessage()               {}
+func (*SubjectResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{11} }
+
+type User struct {
+	Id          int64             `protobuf:"varint,1,opt,name=id" json:"id,omitempty"`
+	Username    string            `protobuf:"bytes,2,opt,name=username" json:"username,omitempty"`
+	FirstName   string            `protobuf:"bytes,3,opt,name=first_name" json:"first_name,omitempty"`
+	LastName    string            `protobuf:"bytes,4,opt,name=last_name" json:"last_name,omitempty"`
+	IsSuperuser bool              `protobuf:"varint,5,opt,name=is_superuser" json:"is_superuser,omitempty"`
+	IsActive    bool              `protobuf:"varint,6,opt,name=is_active" json:"is_active,omitempty"`
+	IsStaff     bool              `protobuf:"varint,7,opt,name=is_staff" json:"is_staff,omitempty"`
+	IsConfirmed bool              `protobuf:"varint,8,opt,name=is_confirmed" json:"is_confirmed,omitempty"`
+	CreatedAt   *protot.Timestamp `protobuf:"bytes,9,opt,name=created_at" json:"created_at,omitempty"`
+	CreatedBy   int64             `protobuf:"varint,10,opt,name=created_by" json:"created_by,omitempty"`
+	UpdatedAt   *protot.Timestamp `protobuf:"bytes,11,opt,name=updated_at" json:"updated_at,omitempty"`
+	UpdatedBy   int64             `protobuf:"varint,12,opt,name=updated_by" json:"updated_by,omitempty"`
+}
+
+func (m *User) Reset()                    { *m = User{} }
+func (m *User) String() string            { return proto.CompactTextString(m) }
+func (*User) ProtoMessage()               {}
+func (*User) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{12} }
+
+func (m *User) GetCreatedAt() *protot.Timestamp {
+	if m != nil {
+		return m.CreatedAt
+	}
+	return nil
+}
+
+func (m *User) GetUpdatedAt() *protot.Timestamp {
+	if m != nil {
+		return m.UpdatedAt
+	}
+	return nil
+}
 
 type CreateUserRequest struct {
-	Username       string          `protobuf:"bytes,1,opt,name=username" json:"username,omitempty"`
-	PlainPassword  string          `protobuf:"bytes,2,opt,name=plain_password" json:"plain_password,omitempty"`
-	SecurePassword string          `protobuf:"bytes,3,opt,name=secure_password" json:"secure_password,omitempty"`
-	FirstName      string          `protobuf:"bytes,4,opt,name=first_name" json:"first_name,omitempty"`
-	LastName       string          `protobuf:"bytes,5,opt,name=last_name" json:"last_name,omitempty"`
-	IsSuperuser    *protot.NilBool `protobuf:"bytes,6,opt,name=is_superuser" json:"is_superuser,omitempty"`
-	IsActive       *protot.NilBool `protobuf:"bytes,7,opt,name=is_active" json:"is_active,omitempty"`
-	IsStaff        *protot.NilBool `protobuf:"bytes,8,opt,name=is_staff" json:"is_staff,omitempty"`
-	IsConfirmed    *protot.NilBool `protobuf:"bytes,9,opt,name=is_confirmed" json:"is_confirmed,omitempty"`
+	Username       string     `protobuf:"bytes,1,opt,name=username" json:"username,omitempty"`
+	PlainPassword  string     `protobuf:"bytes,2,opt,name=plain_password" json:"plain_password,omitempty"`
+	SecurePassword string     `protobuf:"bytes,3,opt,name=secure_password" json:"secure_password,omitempty"`
+	FirstName      string     `protobuf:"bytes,4,opt,name=first_name" json:"first_name,omitempty"`
+	LastName       string     `protobuf:"bytes,5,opt,name=last_name" json:"last_name,omitempty"`
+	IsSuperuser    *nilt.Bool `protobuf:"bytes,6,opt,name=is_superuser" json:"is_superuser,omitempty"`
+	IsActive       *nilt.Bool `protobuf:"bytes,7,opt,name=is_active" json:"is_active,omitempty"`
+	IsStaff        *nilt.Bool `protobuf:"bytes,8,opt,name=is_staff" json:"is_staff,omitempty"`
+	IsConfirmed    *nilt.Bool `protobuf:"bytes,9,opt,name=is_confirmed" json:"is_confirmed,omitempty"`
 }
 
 func (m *CreateUserRequest) Reset()                    { *m = CreateUserRequest{} }
 func (m *CreateUserRequest) String() string            { return proto.CompactTextString(m) }
 func (*CreateUserRequest) ProtoMessage()               {}
-func (*CreateUserRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{11} }
+func (*CreateUserRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{13} }
 
-func (m *CreateUserRequest) GetIsSuperuser() *protot.NilBool {
+func (m *CreateUserRequest) GetIsSuperuser() *nilt.Bool {
 	if m != nil {
 		return m.IsSuperuser
 	}
 	return nil
 }
 
-func (m *CreateUserRequest) GetIsActive() *protot.NilBool {
+func (m *CreateUserRequest) GetIsActive() *nilt.Bool {
 	if m != nil {
 		return m.IsActive
 	}
 	return nil
 }
 
-func (m *CreateUserRequest) GetIsStaff() *protot.NilBool {
+func (m *CreateUserRequest) GetIsStaff() *nilt.Bool {
 	if m != nil {
 		return m.IsStaff
 	}
 	return nil
 }
 
-func (m *CreateUserRequest) GetIsConfirmed() *protot.NilBool {
+func (m *CreateUserRequest) GetIsConfirmed() *nilt.Bool {
 	if m != nil {
 		return m.IsConfirmed
 	}
@@ -256,7 +321,7 @@ type CreateUserResponse struct {
 func (m *CreateUserResponse) Reset()                    { *m = CreateUserResponse{} }
 func (m *CreateUserResponse) String() string            { return proto.CompactTextString(m) }
 func (*CreateUserResponse) ProtoMessage()               {}
-func (*CreateUserResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{12} }
+func (*CreateUserResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{14} }
 
 func (m *CreateUserResponse) GetUser() *User {
 	if m != nil {
@@ -266,21 +331,13 @@ func (m *CreateUserResponse) GetUser() *User {
 }
 
 type GetUserRequest struct {
-	Token *mnemosyne.Token `protobuf:"bytes,1,opt,name=token" json:"token,omitempty"`
-	Id    int64            `protobuf:"varint,2,opt,name=id" json:"id,omitempty"`
+	Id int64 `protobuf:"varint,1,opt,name=id" json:"id,omitempty"`
 }
 
 func (m *GetUserRequest) Reset()                    { *m = GetUserRequest{} }
 func (m *GetUserRequest) String() string            { return proto.CompactTextString(m) }
 func (*GetUserRequest) ProtoMessage()               {}
-func (*GetUserRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{13} }
-
-func (m *GetUserRequest) GetToken() *mnemosyne.Token {
-	if m != nil {
-		return m.Token
-	}
-	return nil
-}
+func (*GetUserRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{15} }
 
 type GetUserResponse struct {
 	User *User `protobuf:"bytes,1,opt,name=user" json:"user,omitempty"`
@@ -289,7 +346,7 @@ type GetUserResponse struct {
 func (m *GetUserResponse) Reset()                    { *m = GetUserResponse{} }
 func (m *GetUserResponse) String() string            { return proto.CompactTextString(m) }
 func (*GetUserResponse) ProtoMessage()               {}
-func (*GetUserResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{14} }
+func (*GetUserResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{16} }
 
 func (m *GetUserResponse) GetUser() *User {
 	if m != nil {
@@ -298,40 +355,40 @@ func (m *GetUserResponse) GetUser() *User {
 	return nil
 }
 
-type GetUsersRequest struct {
-	Offset *protot.NilInt64 `protobuf:"bytes,100,opt,name=offset" json:"offset,omitempty"`
-	Limit  *protot.NilInt64 `protobuf:"bytes,101,opt,name=limit" json:"limit,omitempty"`
+type ListUsersRequest struct {
+	Offset *nilt.Int64 `protobuf:"bytes,100,opt,name=offset" json:"offset,omitempty"`
+	Limit  *nilt.Int64 `protobuf:"bytes,101,opt,name=limit" json:"limit,omitempty"`
 }
 
-func (m *GetUsersRequest) Reset()                    { *m = GetUsersRequest{} }
-func (m *GetUsersRequest) String() string            { return proto.CompactTextString(m) }
-func (*GetUsersRequest) ProtoMessage()               {}
-func (*GetUsersRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{15} }
+func (m *ListUsersRequest) Reset()                    { *m = ListUsersRequest{} }
+func (m *ListUsersRequest) String() string            { return proto.CompactTextString(m) }
+func (*ListUsersRequest) ProtoMessage()               {}
+func (*ListUsersRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{17} }
 
-func (m *GetUsersRequest) GetOffset() *protot.NilInt64 {
+func (m *ListUsersRequest) GetOffset() *nilt.Int64 {
 	if m != nil {
 		return m.Offset
 	}
 	return nil
 }
 
-func (m *GetUsersRequest) GetLimit() *protot.NilInt64 {
+func (m *ListUsersRequest) GetLimit() *nilt.Int64 {
 	if m != nil {
 		return m.Limit
 	}
 	return nil
 }
 
-type GetUsersResponse struct {
+type ListUsersResponse struct {
 	Users []*User `protobuf:"bytes,1,rep,name=users" json:"users,omitempty"`
 }
 
-func (m *GetUsersResponse) Reset()                    { *m = GetUsersResponse{} }
-func (m *GetUsersResponse) String() string            { return proto.CompactTextString(m) }
-func (*GetUsersResponse) ProtoMessage()               {}
-func (*GetUsersResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{16} }
+func (m *ListUsersResponse) Reset()                    { *m = ListUsersResponse{} }
+func (m *ListUsersResponse) String() string            { return proto.CompactTextString(m) }
+func (*ListUsersResponse) ProtoMessage()               {}
+func (*ListUsersResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{18} }
 
-func (m *GetUsersResponse) GetUsers() []*User {
+func (m *ListUsersResponse) GetUsers() []*User {
 	if m != nil {
 		return m.Users
 	}
@@ -345,7 +402,7 @@ type DeleteUserRequest struct {
 func (m *DeleteUserRequest) Reset()                    { *m = DeleteUserRequest{} }
 func (m *DeleteUserRequest) String() string            { return proto.CompactTextString(m) }
 func (*DeleteUserRequest) ProtoMessage()               {}
-func (*DeleteUserRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{17} }
+func (*DeleteUserRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{19} }
 
 type DeleteUserResponse struct {
 	Affected int64 `protobuf:"varint,1,opt,name=affected" json:"affected,omitempty"`
@@ -354,83 +411,83 @@ type DeleteUserResponse struct {
 func (m *DeleteUserResponse) Reset()                    { *m = DeleteUserResponse{} }
 func (m *DeleteUserResponse) String() string            { return proto.CompactTextString(m) }
 func (*DeleteUserResponse) ProtoMessage()               {}
-func (*DeleteUserResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{18} }
+func (*DeleteUserResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{20} }
 
 type ModifyUserRequest struct {
-	Id             int64             `protobuf:"varint,1,opt,name=id" json:"id,omitempty"`
-	Username       *protot.NilString `protobuf:"bytes,2,opt,name=username" json:"username,omitempty"`
-	PlainPassword  *protot.NilString `protobuf:"bytes,3,opt,name=plain_password" json:"plain_password,omitempty"`
-	SecurePassword *protot.NilString `protobuf:"bytes,4,opt,name=secure_password" json:"secure_password,omitempty"`
-	FirstName      *protot.NilString `protobuf:"bytes,5,opt,name=first_name" json:"first_name,omitempty"`
-	LastName       *protot.NilString `protobuf:"bytes,6,opt,name=last_name" json:"last_name,omitempty"`
-	IsSuperuser    *protot.NilBool   `protobuf:"bytes,7,opt,name=is_superuser" json:"is_superuser,omitempty"`
-	IsActive       *protot.NilBool   `protobuf:"bytes,8,opt,name=is_active" json:"is_active,omitempty"`
-	IsStaff        *protot.NilBool   `protobuf:"bytes,9,opt,name=is_staff" json:"is_staff,omitempty"`
-	IsConfirmed    *protot.NilBool   `protobuf:"bytes,10,opt,name=is_confirmed" json:"is_confirmed,omitempty"`
+	Id             int64        `protobuf:"varint,1,opt,name=id" json:"id,omitempty"`
+	Username       *nilt.String `protobuf:"bytes,2,opt,name=username" json:"username,omitempty"`
+	PlainPassword  *nilt.String `protobuf:"bytes,3,opt,name=plain_password" json:"plain_password,omitempty"`
+	SecurePassword *nilt.String `protobuf:"bytes,4,opt,name=secure_password" json:"secure_password,omitempty"`
+	FirstName      *nilt.String `protobuf:"bytes,5,opt,name=first_name" json:"first_name,omitempty"`
+	LastName       *nilt.String `protobuf:"bytes,6,opt,name=last_name" json:"last_name,omitempty"`
+	IsSuperuser    *nilt.Bool   `protobuf:"bytes,7,opt,name=is_superuser" json:"is_superuser,omitempty"`
+	IsActive       *nilt.Bool   `protobuf:"bytes,8,opt,name=is_active" json:"is_active,omitempty"`
+	IsStaff        *nilt.Bool   `protobuf:"bytes,9,opt,name=is_staff" json:"is_staff,omitempty"`
+	IsConfirmed    *nilt.Bool   `protobuf:"bytes,10,opt,name=is_confirmed" json:"is_confirmed,omitempty"`
 }
 
 func (m *ModifyUserRequest) Reset()                    { *m = ModifyUserRequest{} }
 func (m *ModifyUserRequest) String() string            { return proto.CompactTextString(m) }
 func (*ModifyUserRequest) ProtoMessage()               {}
-func (*ModifyUserRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{19} }
+func (*ModifyUserRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{21} }
 
-func (m *ModifyUserRequest) GetUsername() *protot.NilString {
+func (m *ModifyUserRequest) GetUsername() *nilt.String {
 	if m != nil {
 		return m.Username
 	}
 	return nil
 }
 
-func (m *ModifyUserRequest) GetPlainPassword() *protot.NilString {
+func (m *ModifyUserRequest) GetPlainPassword() *nilt.String {
 	if m != nil {
 		return m.PlainPassword
 	}
 	return nil
 }
 
-func (m *ModifyUserRequest) GetSecurePassword() *protot.NilString {
+func (m *ModifyUserRequest) GetSecurePassword() *nilt.String {
 	if m != nil {
 		return m.SecurePassword
 	}
 	return nil
 }
 
-func (m *ModifyUserRequest) GetFirstName() *protot.NilString {
+func (m *ModifyUserRequest) GetFirstName() *nilt.String {
 	if m != nil {
 		return m.FirstName
 	}
 	return nil
 }
 
-func (m *ModifyUserRequest) GetLastName() *protot.NilString {
+func (m *ModifyUserRequest) GetLastName() *nilt.String {
 	if m != nil {
 		return m.LastName
 	}
 	return nil
 }
 
-func (m *ModifyUserRequest) GetIsSuperuser() *protot.NilBool {
+func (m *ModifyUserRequest) GetIsSuperuser() *nilt.Bool {
 	if m != nil {
 		return m.IsSuperuser
 	}
 	return nil
 }
 
-func (m *ModifyUserRequest) GetIsActive() *protot.NilBool {
+func (m *ModifyUserRequest) GetIsActive() *nilt.Bool {
 	if m != nil {
 		return m.IsActive
 	}
 	return nil
 }
 
-func (m *ModifyUserRequest) GetIsStaff() *protot.NilBool {
+func (m *ModifyUserRequest) GetIsStaff() *nilt.Bool {
 	if m != nil {
 		return m.IsStaff
 	}
 	return nil
 }
 
-func (m *ModifyUserRequest) GetIsConfirmed() *protot.NilBool {
+func (m *ModifyUserRequest) GetIsConfirmed() *nilt.Bool {
 	if m != nil {
 		return m.IsConfirmed
 	}
@@ -444,7 +501,7 @@ type ModifyUserResponse struct {
 func (m *ModifyUserResponse) Reset()                    { *m = ModifyUserResponse{} }
 func (m *ModifyUserResponse) String() string            { return proto.CompactTextString(m) }
 func (*ModifyUserResponse) ProtoMessage()               {}
-func (*ModifyUserResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{20} }
+func (*ModifyUserResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{22} }
 
 func (m *ModifyUserResponse) GetUser() *User {
 	if m != nil {
@@ -453,34 +510,353 @@ func (m *ModifyUserResponse) GetUser() *User {
 	return nil
 }
 
-type GetUserPermissionsRequest struct {
-	Token  *mnemosyne.Token `protobuf:"bytes,1,opt,name=token" json:"token,omitempty"`
-	UserId int64            `protobuf:"varint,2,opt,name=user_id" json:"user_id,omitempty"`
+type ListUserPermissionsRequest struct {
+	Id int64 `protobuf:"varint,1,opt,name=id" json:"id,omitempty"`
 }
 
-func (m *GetUserPermissionsRequest) Reset()                    { *m = GetUserPermissionsRequest{} }
-func (m *GetUserPermissionsRequest) String() string            { return proto.CompactTextString(m) }
-func (*GetUserPermissionsRequest) ProtoMessage()               {}
-func (*GetUserPermissionsRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{21} }
+func (m *ListUserPermissionsRequest) Reset()                    { *m = ListUserPermissionsRequest{} }
+func (m *ListUserPermissionsRequest) String() string            { return proto.CompactTextString(m) }
+func (*ListUserPermissionsRequest) ProtoMessage()               {}
+func (*ListUserPermissionsRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{23} }
 
-func (m *GetUserPermissionsRequest) GetToken() *mnemosyne.Token {
+type ListUserPermissionsResponse struct {
+	Permissions []string `protobuf:"bytes,1,rep,name=permissions" json:"permissions,omitempty"`
+}
+
+func (m *ListUserPermissionsResponse) Reset()                    { *m = ListUserPermissionsResponse{} }
+func (m *ListUserPermissionsResponse) String() string            { return proto.CompactTextString(m) }
+func (*ListUserPermissionsResponse) ProtoMessage()               {}
+func (*ListUserPermissionsResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{24} }
+
+type SetUserPermissionsRequest struct {
+	Permissions []string `protobuf:"bytes,1,rep,name=permissions" json:"permissions,omitempty"`
+}
+
+func (m *SetUserPermissionsRequest) Reset()                    { *m = SetUserPermissionsRequest{} }
+func (m *SetUserPermissionsRequest) String() string            { return proto.CompactTextString(m) }
+func (*SetUserPermissionsRequest) ProtoMessage()               {}
+func (*SetUserPermissionsRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{25} }
+
+type SetUserPermissionsResponse struct {
+	Created   []string `protobuf:"bytes,1,rep,name=created" json:"created,omitempty"`
+	Removed   []string `protobuf:"bytes,2,rep,name=removed" json:"removed,omitempty"`
+	Untouched []string `protobuf:"bytes,3,rep,name=untouched" json:"untouched,omitempty"`
+}
+
+func (m *SetUserPermissionsResponse) Reset()                    { *m = SetUserPermissionsResponse{} }
+func (m *SetUserPermissionsResponse) String() string            { return proto.CompactTextString(m) }
+func (*SetUserPermissionsResponse) ProtoMessage()               {}
+func (*SetUserPermissionsResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{26} }
+
+type ListUserGroupsRequest struct {
+	Id int64 `protobuf:"varint,1,opt,name=id" json:"id,omitempty"`
+}
+
+func (m *ListUserGroupsRequest) Reset()                    { *m = ListUserGroupsRequest{} }
+func (m *ListUserGroupsRequest) String() string            { return proto.CompactTextString(m) }
+func (*ListUserGroupsRequest) ProtoMessage()               {}
+func (*ListUserGroupsRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{27} }
+
+type ListUserGroupsResponse struct {
+	Groups []string `protobuf:"bytes,1,rep,name=groups" json:"groups,omitempty"`
+}
+
+func (m *ListUserGroupsResponse) Reset()                    { *m = ListUserGroupsResponse{} }
+func (m *ListUserGroupsResponse) String() string            { return proto.CompactTextString(m) }
+func (*ListUserGroupsResponse) ProtoMessage()               {}
+func (*ListUserGroupsResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{28} }
+
+type SetUserGroupsRequest struct {
+	Groups []string `protobuf:"bytes,1,rep,name=groups" json:"groups,omitempty"`
+}
+
+func (m *SetUserGroupsRequest) Reset()                    { *m = SetUserGroupsRequest{} }
+func (m *SetUserGroupsRequest) String() string            { return proto.CompactTextString(m) }
+func (*SetUserGroupsRequest) ProtoMessage()               {}
+func (*SetUserGroupsRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{29} }
+
+type SetUserGroupsResponse struct {
+	Created   []string `protobuf:"bytes,1,rep,name=created" json:"created,omitempty"`
+	Removed   []string `protobuf:"bytes,2,rep,name=removed" json:"removed,omitempty"`
+	Untouched []string `protobuf:"bytes,3,rep,name=untouched" json:"untouched,omitempty"`
+}
+
+func (m *SetUserGroupsResponse) Reset()                    { *m = SetUserGroupsResponse{} }
+func (m *SetUserGroupsResponse) String() string            { return proto.CompactTextString(m) }
+func (*SetUserGroupsResponse) ProtoMessage()               {}
+func (*SetUserGroupsResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{30} }
+
+type RegisterPermissionsRequest struct {
+	Permissions []string `protobuf:"bytes,1,rep,name=permissions" json:"permissions,omitempty"`
+}
+
+func (m *RegisterPermissionsRequest) Reset()                    { *m = RegisterPermissionsRequest{} }
+func (m *RegisterPermissionsRequest) String() string            { return proto.CompactTextString(m) }
+func (*RegisterPermissionsRequest) ProtoMessage()               {}
+func (*RegisterPermissionsRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{31} }
+
+type RegisterPermissionsResponse struct {
+	Created   []string `protobuf:"bytes,1,rep,name=created" json:"created,omitempty"`
+	Removed   []string `protobuf:"bytes,2,rep,name=removed" json:"removed,omitempty"`
+	Untouched []string `protobuf:"bytes,3,rep,name=untouched" json:"untouched,omitempty"`
+}
+
+func (m *RegisterPermissionsResponse) Reset()                    { *m = RegisterPermissionsResponse{} }
+func (m *RegisterPermissionsResponse) String() string            { return proto.CompactTextString(m) }
+func (*RegisterPermissionsResponse) ProtoMessage()               {}
+func (*RegisterPermissionsResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{32} }
+
+type ListPermissionsRequest struct {
+	Offset *nilt.Int64 `protobuf:"bytes,100,opt,name=offset" json:"offset,omitempty"`
+	Limit  *nilt.Int64 `protobuf:"bytes,101,opt,name=limit" json:"limit,omitempty"`
+}
+
+func (m *ListPermissionsRequest) Reset()                    { *m = ListPermissionsRequest{} }
+func (m *ListPermissionsRequest) String() string            { return proto.CompactTextString(m) }
+func (*ListPermissionsRequest) ProtoMessage()               {}
+func (*ListPermissionsRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{33} }
+
+func (m *ListPermissionsRequest) GetOffset() *nilt.Int64 {
 	if m != nil {
-		return m.Token
+		return m.Offset
 	}
 	return nil
 }
 
-type GetUserPermissionsResponse struct {
+func (m *ListPermissionsRequest) GetLimit() *nilt.Int64 {
+	if m != nil {
+		return m.Limit
+	}
+	return nil
+}
+
+type ListPermissionsResponse struct {
 	Permissions []string `protobuf:"bytes,1,rep,name=permissions" json:"permissions,omitempty"`
 }
 
-func (m *GetUserPermissionsResponse) Reset()                    { *m = GetUserPermissionsResponse{} }
-func (m *GetUserPermissionsResponse) String() string            { return proto.CompactTextString(m) }
-func (*GetUserPermissionsResponse) ProtoMessage()               {}
-func (*GetUserPermissionsResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{22} }
+func (m *ListPermissionsResponse) Reset()                    { *m = ListPermissionsResponse{} }
+func (m *ListPermissionsResponse) String() string            { return proto.CompactTextString(m) }
+func (*ListPermissionsResponse) ProtoMessage()               {}
+func (*ListPermissionsResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{34} }
+
+type Group struct {
+	Id          int64             `protobuf:"varint,1,opt,name=id" json:"id,omitempty"`
+	Name        string            `protobuf:"bytes,2,opt,name=name" json:"name,omitempty"`
+	Description string            `protobuf:"bytes,3,opt,name=description" json:"description,omitempty"`
+	CreatedAt   *protot.Timestamp `protobuf:"bytes,4,opt,name=created_at" json:"created_at,omitempty"`
+	CreatedBy   int64             `protobuf:"varint,5,opt,name=created_by" json:"created_by,omitempty"`
+	UpdatedAt   *protot.Timestamp `protobuf:"bytes,6,opt,name=updated_at" json:"updated_at,omitempty"`
+	UpdatedBy   int64             `protobuf:"varint,7,opt,name=updated_by" json:"updated_by,omitempty"`
+}
+
+func (m *Group) Reset()                    { *m = Group{} }
+func (m *Group) String() string            { return proto.CompactTextString(m) }
+func (*Group) ProtoMessage()               {}
+func (*Group) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{35} }
+
+func (m *Group) GetCreatedAt() *protot.Timestamp {
+	if m != nil {
+		return m.CreatedAt
+	}
+	return nil
+}
+
+func (m *Group) GetUpdatedAt() *protot.Timestamp {
+	if m != nil {
+		return m.UpdatedAt
+	}
+	return nil
+}
+
+type CreateGroupRequest struct {
+	Name        string `protobuf:"bytes,1,opt,name=name" json:"name,omitempty"`
+	Description string `protobuf:"bytes,2,opt,name=description" json:"description,omitempty"`
+}
+
+func (m *CreateGroupRequest) Reset()                    { *m = CreateGroupRequest{} }
+func (m *CreateGroupRequest) String() string            { return proto.CompactTextString(m) }
+func (*CreateGroupRequest) ProtoMessage()               {}
+func (*CreateGroupRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{36} }
+
+type CreateGroupResponse struct {
+	Group *Group `protobuf:"bytes,1,opt,name=group" json:"group,omitempty"`
+}
+
+func (m *CreateGroupResponse) Reset()                    { *m = CreateGroupResponse{} }
+func (m *CreateGroupResponse) String() string            { return proto.CompactTextString(m) }
+func (*CreateGroupResponse) ProtoMessage()               {}
+func (*CreateGroupResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{37} }
+
+func (m *CreateGroupResponse) GetGroup() *Group {
+	if m != nil {
+		return m.Group
+	}
+	return nil
+}
+
+type GetGroupRequest struct {
+	Id int64 `protobuf:"varint,1,opt,name=id" json:"id,omitempty"`
+}
+
+func (m *GetGroupRequest) Reset()                    { *m = GetGroupRequest{} }
+func (m *GetGroupRequest) String() string            { return proto.CompactTextString(m) }
+func (*GetGroupRequest) ProtoMessage()               {}
+func (*GetGroupRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{38} }
+
+type GetGroupResponse struct {
+	Group *Group `protobuf:"bytes,1,opt,name=group" json:"group,omitempty"`
+}
+
+func (m *GetGroupResponse) Reset()                    { *m = GetGroupResponse{} }
+func (m *GetGroupResponse) String() string            { return proto.CompactTextString(m) }
+func (*GetGroupResponse) ProtoMessage()               {}
+func (*GetGroupResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{39} }
+
+func (m *GetGroupResponse) GetGroup() *Group {
+	if m != nil {
+		return m.Group
+	}
+	return nil
+}
+
+type ListGroupsRequest struct {
+	Offset *nilt.Int64 `protobuf:"bytes,100,opt,name=offset" json:"offset,omitempty"`
+	Limit  *nilt.Int64 `protobuf:"bytes,101,opt,name=limit" json:"limit,omitempty"`
+}
+
+func (m *ListGroupsRequest) Reset()                    { *m = ListGroupsRequest{} }
+func (m *ListGroupsRequest) String() string            { return proto.CompactTextString(m) }
+func (*ListGroupsRequest) ProtoMessage()               {}
+func (*ListGroupsRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{40} }
+
+func (m *ListGroupsRequest) GetOffset() *nilt.Int64 {
+	if m != nil {
+		return m.Offset
+	}
+	return nil
+}
+
+func (m *ListGroupsRequest) GetLimit() *nilt.Int64 {
+	if m != nil {
+		return m.Limit
+	}
+	return nil
+}
+
+type ListGroupsResponse struct {
+	Groups []*Group `protobuf:"bytes,1,rep,name=groups" json:"groups,omitempty"`
+}
+
+func (m *ListGroupsResponse) Reset()                    { *m = ListGroupsResponse{} }
+func (m *ListGroupsResponse) String() string            { return proto.CompactTextString(m) }
+func (*ListGroupsResponse) ProtoMessage()               {}
+func (*ListGroupsResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{41} }
+
+func (m *ListGroupsResponse) GetGroups() []*Group {
+	if m != nil {
+		return m.Groups
+	}
+	return nil
+}
+
+type DeleteGroupRequest struct {
+	Id int64 `protobuf:"varint,1,opt,name=id" json:"id,omitempty"`
+}
+
+func (m *DeleteGroupRequest) Reset()                    { *m = DeleteGroupRequest{} }
+func (m *DeleteGroupRequest) String() string            { return proto.CompactTextString(m) }
+func (*DeleteGroupRequest) ProtoMessage()               {}
+func (*DeleteGroupRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{42} }
+
+type DeleteGroupResponse struct {
+	Affected int64 `protobuf:"varint,1,opt,name=affected" json:"affected,omitempty"`
+}
+
+func (m *DeleteGroupResponse) Reset()                    { *m = DeleteGroupResponse{} }
+func (m *DeleteGroupResponse) String() string            { return proto.CompactTextString(m) }
+func (*DeleteGroupResponse) ProtoMessage()               {}
+func (*DeleteGroupResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{43} }
+
+type ModifyGroupRequest struct {
+	Id          int64        `protobuf:"varint,1,opt,name=id" json:"id,omitempty"`
+	Name        *nilt.String `protobuf:"bytes,2,opt,name=name" json:"name,omitempty"`
+	Description *nilt.String `protobuf:"bytes,3,opt,name=description" json:"description,omitempty"`
+}
+
+func (m *ModifyGroupRequest) Reset()                    { *m = ModifyGroupRequest{} }
+func (m *ModifyGroupRequest) String() string            { return proto.CompactTextString(m) }
+func (*ModifyGroupRequest) ProtoMessage()               {}
+func (*ModifyGroupRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{44} }
+
+func (m *ModifyGroupRequest) GetName() *nilt.String {
+	if m != nil {
+		return m.Name
+	}
+	return nil
+}
+
+func (m *ModifyGroupRequest) GetDescription() *nilt.String {
+	if m != nil {
+		return m.Description
+	}
+	return nil
+}
+
+type ModifyGroupResponse struct {
+	Group *Group `protobuf:"bytes,1,opt,name=group" json:"group,omitempty"`
+}
+
+func (m *ModifyGroupResponse) Reset()                    { *m = ModifyGroupResponse{} }
+func (m *ModifyGroupResponse) String() string            { return proto.CompactTextString(m) }
+func (*ModifyGroupResponse) ProtoMessage()               {}
+func (*ModifyGroupResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{45} }
+
+func (m *ModifyGroupResponse) GetGroup() *Group {
+	if m != nil {
+		return m.Group
+	}
+	return nil
+}
+
+type SetGroupPermissionsRequest struct {
+	Permissions []string `protobuf:"bytes,1,rep,name=permissions" json:"permissions,omitempty"`
+}
+
+func (m *SetGroupPermissionsRequest) Reset()                    { *m = SetGroupPermissionsRequest{} }
+func (m *SetGroupPermissionsRequest) String() string            { return proto.CompactTextString(m) }
+func (*SetGroupPermissionsRequest) ProtoMessage()               {}
+func (*SetGroupPermissionsRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{46} }
+
+type SetGroupPermissionsResponse struct {
+	Created   []string `protobuf:"bytes,1,rep,name=created" json:"created,omitempty"`
+	Removed   []string `protobuf:"bytes,2,rep,name=removed" json:"removed,omitempty"`
+	Untouched []string `protobuf:"bytes,3,rep,name=untouched" json:"untouched,omitempty"`
+}
+
+func (m *SetGroupPermissionsResponse) Reset()                    { *m = SetGroupPermissionsResponse{} }
+func (m *SetGroupPermissionsResponse) String() string            { return proto.CompactTextString(m) }
+func (*SetGroupPermissionsResponse) ProtoMessage()               {}
+func (*SetGroupPermissionsResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{47} }
+
+type ListGroupPermissionsRequest struct {
+	Id int64 `protobuf:"varint,1,opt,name=id" json:"id,omitempty"`
+}
+
+func (m *ListGroupPermissionsRequest) Reset()                    { *m = ListGroupPermissionsRequest{} }
+func (m *ListGroupPermissionsRequest) String() string            { return proto.CompactTextString(m) }
+func (*ListGroupPermissionsRequest) ProtoMessage()               {}
+func (*ListGroupPermissionsRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{48} }
+
+type ListGroupPermissionsResponse struct {
+	Permissions []string `protobuf:"bytes,1,rep,name=permissions" json:"permissions,omitempty"`
+}
+
+func (m *ListGroupPermissionsResponse) Reset()                    { *m = ListGroupPermissionsResponse{} }
+func (m *ListGroupPermissionsResponse) String() string            { return proto.CompactTextString(m) }
+func (*ListGroupPermissionsResponse) ProtoMessage()               {}
+func (*ListGroupPermissionsResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{49} }
 
 func init() {
-	proto.RegisterType((*User)(nil), "charon.User")
 	proto.RegisterType((*LoginRequest)(nil), "charon.LoginRequest")
 	proto.RegisterType((*LoginResponse)(nil), "charon.LoginResponse")
 	proto.RegisterType((*LogoutRequest)(nil), "charon.LogoutRequest")
@@ -491,18 +867,46 @@ func init() {
 	proto.RegisterType((*IsGrantedResponse)(nil), "charon.IsGrantedResponse")
 	proto.RegisterType((*BelongsToRequest)(nil), "charon.BelongsToRequest")
 	proto.RegisterType((*BelongsToResponse)(nil), "charon.BelongsToResponse")
+	proto.RegisterType((*SubjectRequest)(nil), "charon.SubjectRequest")
+	proto.RegisterType((*SubjectResponse)(nil), "charon.SubjectResponse")
+	proto.RegisterType((*User)(nil), "charon.User")
 	proto.RegisterType((*CreateUserRequest)(nil), "charon.CreateUserRequest")
 	proto.RegisterType((*CreateUserResponse)(nil), "charon.CreateUserResponse")
 	proto.RegisterType((*GetUserRequest)(nil), "charon.GetUserRequest")
 	proto.RegisterType((*GetUserResponse)(nil), "charon.GetUserResponse")
-	proto.RegisterType((*GetUsersRequest)(nil), "charon.GetUsersRequest")
-	proto.RegisterType((*GetUsersResponse)(nil), "charon.GetUsersResponse")
+	proto.RegisterType((*ListUsersRequest)(nil), "charon.ListUsersRequest")
+	proto.RegisterType((*ListUsersResponse)(nil), "charon.ListUsersResponse")
 	proto.RegisterType((*DeleteUserRequest)(nil), "charon.DeleteUserRequest")
 	proto.RegisterType((*DeleteUserResponse)(nil), "charon.DeleteUserResponse")
 	proto.RegisterType((*ModifyUserRequest)(nil), "charon.ModifyUserRequest")
 	proto.RegisterType((*ModifyUserResponse)(nil), "charon.ModifyUserResponse")
-	proto.RegisterType((*GetUserPermissionsRequest)(nil), "charon.GetUserPermissionsRequest")
-	proto.RegisterType((*GetUserPermissionsResponse)(nil), "charon.GetUserPermissionsResponse")
+	proto.RegisterType((*ListUserPermissionsRequest)(nil), "charon.ListUserPermissionsRequest")
+	proto.RegisterType((*ListUserPermissionsResponse)(nil), "charon.ListUserPermissionsResponse")
+	proto.RegisterType((*SetUserPermissionsRequest)(nil), "charon.SetUserPermissionsRequest")
+	proto.RegisterType((*SetUserPermissionsResponse)(nil), "charon.SetUserPermissionsResponse")
+	proto.RegisterType((*ListUserGroupsRequest)(nil), "charon.ListUserGroupsRequest")
+	proto.RegisterType((*ListUserGroupsResponse)(nil), "charon.ListUserGroupsResponse")
+	proto.RegisterType((*SetUserGroupsRequest)(nil), "charon.SetUserGroupsRequest")
+	proto.RegisterType((*SetUserGroupsResponse)(nil), "charon.SetUserGroupsResponse")
+	proto.RegisterType((*RegisterPermissionsRequest)(nil), "charon.RegisterPermissionsRequest")
+	proto.RegisterType((*RegisterPermissionsResponse)(nil), "charon.RegisterPermissionsResponse")
+	proto.RegisterType((*ListPermissionsRequest)(nil), "charon.ListPermissionsRequest")
+	proto.RegisterType((*ListPermissionsResponse)(nil), "charon.ListPermissionsResponse")
+	proto.RegisterType((*Group)(nil), "charon.Group")
+	proto.RegisterType((*CreateGroupRequest)(nil), "charon.CreateGroupRequest")
+	proto.RegisterType((*CreateGroupResponse)(nil), "charon.CreateGroupResponse")
+	proto.RegisterType((*GetGroupRequest)(nil), "charon.GetGroupRequest")
+	proto.RegisterType((*GetGroupResponse)(nil), "charon.GetGroupResponse")
+	proto.RegisterType((*ListGroupsRequest)(nil), "charon.ListGroupsRequest")
+	proto.RegisterType((*ListGroupsResponse)(nil), "charon.ListGroupsResponse")
+	proto.RegisterType((*DeleteGroupRequest)(nil), "charon.DeleteGroupRequest")
+	proto.RegisterType((*DeleteGroupResponse)(nil), "charon.DeleteGroupResponse")
+	proto.RegisterType((*ModifyGroupRequest)(nil), "charon.ModifyGroupRequest")
+	proto.RegisterType((*ModifyGroupResponse)(nil), "charon.ModifyGroupResponse")
+	proto.RegisterType((*SetGroupPermissionsRequest)(nil), "charon.SetGroupPermissionsRequest")
+	proto.RegisterType((*SetGroupPermissionsResponse)(nil), "charon.SetGroupPermissionsResponse")
+	proto.RegisterType((*ListGroupPermissionsRequest)(nil), "charon.ListGroupPermissionsRequest")
+	proto.RegisterType((*ListGroupPermissionsResponse)(nil), "charon.ListGroupPermissionsResponse")
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -515,14 +919,27 @@ type RPCClient interface {
 	Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error)
 	Logout(ctx context.Context, in *LogoutRequest, opts ...grpc.CallOption) (*LogoutResponse, error)
 	IsAuthenticated(ctx context.Context, in *IsAuthenticatedRequest, opts ...grpc.CallOption) (*IsAuthenticatedResponse, error)
+	Subject(ctx context.Context, in *SubjectRequest, opts ...grpc.CallOption) (*SubjectResponse, error)
 	IsGranted(ctx context.Context, in *IsGrantedRequest, opts ...grpc.CallOption) (*IsGrantedResponse, error)
 	BelongsTo(ctx context.Context, in *BelongsToRequest, opts ...grpc.CallOption) (*BelongsToResponse, error)
 	CreateUser(ctx context.Context, in *CreateUserRequest, opts ...grpc.CallOption) (*CreateUserResponse, error)
 	ModifyUser(ctx context.Context, in *ModifyUserRequest, opts ...grpc.CallOption) (*ModifyUserResponse, error)
 	GetUser(ctx context.Context, in *GetUserRequest, opts ...grpc.CallOption) (*GetUserResponse, error)
-	GetUsers(ctx context.Context, in *GetUsersRequest, opts ...grpc.CallOption) (*GetUsersResponse, error)
+	ListUsers(ctx context.Context, in *ListUsersRequest, opts ...grpc.CallOption) (*ListUsersResponse, error)
 	DeleteUser(ctx context.Context, in *DeleteUserRequest, opts ...grpc.CallOption) (*DeleteUserResponse, error)
-	GetUserPermissions(ctx context.Context, in *GetUserPermissionsRequest, opts ...grpc.CallOption) (*GetUserPermissionsResponse, error)
+	ListUserPermissions(ctx context.Context, in *ListUserPermissionsRequest, opts ...grpc.CallOption) (*ListUserPermissionsResponse, error)
+	SetUserPermissions(ctx context.Context, in *SetUserPermissionsRequest, opts ...grpc.CallOption) (*SetUserPermissionsResponse, error)
+	ListUserGroups(ctx context.Context, in *ListUserGroupsRequest, opts ...grpc.CallOption) (*ListUserGroupsResponse, error)
+	SetUserGroups(ctx context.Context, in *SetUserGroupsRequest, opts ...grpc.CallOption) (*SetUserGroupsResponse, error)
+	RegisterPermissions(ctx context.Context, in *RegisterPermissionsRequest, opts ...grpc.CallOption) (*RegisterPermissionsResponse, error)
+	ListPermissions(ctx context.Context, in *ListPermissionsRequest, opts ...grpc.CallOption) (*ListPermissionsResponse, error)
+	CreateGroup(ctx context.Context, in *CreateGroupRequest, opts ...grpc.CallOption) (*CreateGroupResponse, error)
+	ModifyGroup(ctx context.Context, in *ModifyGroupRequest, opts ...grpc.CallOption) (*ModifyGroupResponse, error)
+	GetGroup(ctx context.Context, in *GetGroupRequest, opts ...grpc.CallOption) (*GetGroupResponse, error)
+	ListGroups(ctx context.Context, in *ListGroupsRequest, opts ...grpc.CallOption) (*ListGroupsResponse, error)
+	DeleteGroup(ctx context.Context, in *DeleteGroupRequest, opts ...grpc.CallOption) (*DeleteGroupResponse, error)
+	ListGroupPermissions(ctx context.Context, in *ListGroupPermissionsRequest, opts ...grpc.CallOption) (*ListGroupPermissionsResponse, error)
+	SetGroupPermissions(ctx context.Context, in *SetGroupPermissionsRequest, opts ...grpc.CallOption) (*SetGroupPermissionsResponse, error)
 }
 
 type rPCClient struct {
@@ -554,6 +971,15 @@ func (c *rPCClient) Logout(ctx context.Context, in *LogoutRequest, opts ...grpc.
 func (c *rPCClient) IsAuthenticated(ctx context.Context, in *IsAuthenticatedRequest, opts ...grpc.CallOption) (*IsAuthenticatedResponse, error) {
 	out := new(IsAuthenticatedResponse)
 	err := grpc.Invoke(ctx, "/charon.RPC/IsAuthenticated", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *rPCClient) Subject(ctx context.Context, in *SubjectRequest, opts ...grpc.CallOption) (*SubjectResponse, error) {
+	out := new(SubjectResponse)
+	err := grpc.Invoke(ctx, "/charon.RPC/Subject", in, out, c.cc, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -605,9 +1031,9 @@ func (c *rPCClient) GetUser(ctx context.Context, in *GetUserRequest, opts ...grp
 	return out, nil
 }
 
-func (c *rPCClient) GetUsers(ctx context.Context, in *GetUsersRequest, opts ...grpc.CallOption) (*GetUsersResponse, error) {
-	out := new(GetUsersResponse)
-	err := grpc.Invoke(ctx, "/charon.RPC/GetUsers", in, out, c.cc, opts...)
+func (c *rPCClient) ListUsers(ctx context.Context, in *ListUsersRequest, opts ...grpc.CallOption) (*ListUsersResponse, error) {
+	out := new(ListUsersResponse)
+	err := grpc.Invoke(ctx, "/charon.RPC/ListUsers", in, out, c.cc, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -623,9 +1049,117 @@ func (c *rPCClient) DeleteUser(ctx context.Context, in *DeleteUserRequest, opts 
 	return out, nil
 }
 
-func (c *rPCClient) GetUserPermissions(ctx context.Context, in *GetUserPermissionsRequest, opts ...grpc.CallOption) (*GetUserPermissionsResponse, error) {
-	out := new(GetUserPermissionsResponse)
-	err := grpc.Invoke(ctx, "/charon.RPC/GetUserPermissions", in, out, c.cc, opts...)
+func (c *rPCClient) ListUserPermissions(ctx context.Context, in *ListUserPermissionsRequest, opts ...grpc.CallOption) (*ListUserPermissionsResponse, error) {
+	out := new(ListUserPermissionsResponse)
+	err := grpc.Invoke(ctx, "/charon.RPC/ListUserPermissions", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *rPCClient) SetUserPermissions(ctx context.Context, in *SetUserPermissionsRequest, opts ...grpc.CallOption) (*SetUserPermissionsResponse, error) {
+	out := new(SetUserPermissionsResponse)
+	err := grpc.Invoke(ctx, "/charon.RPC/SetUserPermissions", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *rPCClient) ListUserGroups(ctx context.Context, in *ListUserGroupsRequest, opts ...grpc.CallOption) (*ListUserGroupsResponse, error) {
+	out := new(ListUserGroupsResponse)
+	err := grpc.Invoke(ctx, "/charon.RPC/ListUserGroups", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *rPCClient) SetUserGroups(ctx context.Context, in *SetUserGroupsRequest, opts ...grpc.CallOption) (*SetUserGroupsResponse, error) {
+	out := new(SetUserGroupsResponse)
+	err := grpc.Invoke(ctx, "/charon.RPC/SetUserGroups", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *rPCClient) RegisterPermissions(ctx context.Context, in *RegisterPermissionsRequest, opts ...grpc.CallOption) (*RegisterPermissionsResponse, error) {
+	out := new(RegisterPermissionsResponse)
+	err := grpc.Invoke(ctx, "/charon.RPC/RegisterPermissions", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *rPCClient) ListPermissions(ctx context.Context, in *ListPermissionsRequest, opts ...grpc.CallOption) (*ListPermissionsResponse, error) {
+	out := new(ListPermissionsResponse)
+	err := grpc.Invoke(ctx, "/charon.RPC/ListPermissions", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *rPCClient) CreateGroup(ctx context.Context, in *CreateGroupRequest, opts ...grpc.CallOption) (*CreateGroupResponse, error) {
+	out := new(CreateGroupResponse)
+	err := grpc.Invoke(ctx, "/charon.RPC/CreateGroup", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *rPCClient) ModifyGroup(ctx context.Context, in *ModifyGroupRequest, opts ...grpc.CallOption) (*ModifyGroupResponse, error) {
+	out := new(ModifyGroupResponse)
+	err := grpc.Invoke(ctx, "/charon.RPC/ModifyGroup", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *rPCClient) GetGroup(ctx context.Context, in *GetGroupRequest, opts ...grpc.CallOption) (*GetGroupResponse, error) {
+	out := new(GetGroupResponse)
+	err := grpc.Invoke(ctx, "/charon.RPC/GetGroup", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *rPCClient) ListGroups(ctx context.Context, in *ListGroupsRequest, opts ...grpc.CallOption) (*ListGroupsResponse, error) {
+	out := new(ListGroupsResponse)
+	err := grpc.Invoke(ctx, "/charon.RPC/ListGroups", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *rPCClient) DeleteGroup(ctx context.Context, in *DeleteGroupRequest, opts ...grpc.CallOption) (*DeleteGroupResponse, error) {
+	out := new(DeleteGroupResponse)
+	err := grpc.Invoke(ctx, "/charon.RPC/DeleteGroup", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *rPCClient) ListGroupPermissions(ctx context.Context, in *ListGroupPermissionsRequest, opts ...grpc.CallOption) (*ListGroupPermissionsResponse, error) {
+	out := new(ListGroupPermissionsResponse)
+	err := grpc.Invoke(ctx, "/charon.RPC/ListGroupPermissions", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *rPCClient) SetGroupPermissions(ctx context.Context, in *SetGroupPermissionsRequest, opts ...grpc.CallOption) (*SetGroupPermissionsResponse, error) {
+	out := new(SetGroupPermissionsResponse)
+	err := grpc.Invoke(ctx, "/charon.RPC/SetGroupPermissions", in, out, c.cc, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -638,14 +1172,27 @@ type RPCServer interface {
 	Login(context.Context, *LoginRequest) (*LoginResponse, error)
 	Logout(context.Context, *LogoutRequest) (*LogoutResponse, error)
 	IsAuthenticated(context.Context, *IsAuthenticatedRequest) (*IsAuthenticatedResponse, error)
+	Subject(context.Context, *SubjectRequest) (*SubjectResponse, error)
 	IsGranted(context.Context, *IsGrantedRequest) (*IsGrantedResponse, error)
 	BelongsTo(context.Context, *BelongsToRequest) (*BelongsToResponse, error)
 	CreateUser(context.Context, *CreateUserRequest) (*CreateUserResponse, error)
 	ModifyUser(context.Context, *ModifyUserRequest) (*ModifyUserResponse, error)
 	GetUser(context.Context, *GetUserRequest) (*GetUserResponse, error)
-	GetUsers(context.Context, *GetUsersRequest) (*GetUsersResponse, error)
+	ListUsers(context.Context, *ListUsersRequest) (*ListUsersResponse, error)
 	DeleteUser(context.Context, *DeleteUserRequest) (*DeleteUserResponse, error)
-	GetUserPermissions(context.Context, *GetUserPermissionsRequest) (*GetUserPermissionsResponse, error)
+	ListUserPermissions(context.Context, *ListUserPermissionsRequest) (*ListUserPermissionsResponse, error)
+	SetUserPermissions(context.Context, *SetUserPermissionsRequest) (*SetUserPermissionsResponse, error)
+	ListUserGroups(context.Context, *ListUserGroupsRequest) (*ListUserGroupsResponse, error)
+	SetUserGroups(context.Context, *SetUserGroupsRequest) (*SetUserGroupsResponse, error)
+	RegisterPermissions(context.Context, *RegisterPermissionsRequest) (*RegisterPermissionsResponse, error)
+	ListPermissions(context.Context, *ListPermissionsRequest) (*ListPermissionsResponse, error)
+	CreateGroup(context.Context, *CreateGroupRequest) (*CreateGroupResponse, error)
+	ModifyGroup(context.Context, *ModifyGroupRequest) (*ModifyGroupResponse, error)
+	GetGroup(context.Context, *GetGroupRequest) (*GetGroupResponse, error)
+	ListGroups(context.Context, *ListGroupsRequest) (*ListGroupsResponse, error)
+	DeleteGroup(context.Context, *DeleteGroupRequest) (*DeleteGroupResponse, error)
+	ListGroupPermissions(context.Context, *ListGroupPermissionsRequest) (*ListGroupPermissionsResponse, error)
+	SetGroupPermissions(context.Context, *SetGroupPermissionsRequest) (*SetGroupPermissionsResponse, error)
 }
 
 func RegisterRPCServer(s *grpc.Server, srv RPCServer) {
@@ -682,6 +1229,18 @@ func _RPC_IsAuthenticated_Handler(srv interface{}, ctx context.Context, dec func
 		return nil, err
 	}
 	out, err := srv.(RPCServer).IsAuthenticated(ctx, in)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func _RPC_Subject_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error) (interface{}, error) {
+	in := new(SubjectRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	out, err := srv.(RPCServer).Subject(ctx, in)
 	if err != nil {
 		return nil, err
 	}
@@ -748,12 +1307,12 @@ func _RPC_GetUser_Handler(srv interface{}, ctx context.Context, dec func(interfa
 	return out, nil
 }
 
-func _RPC_GetUsers_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error) (interface{}, error) {
-	in := new(GetUsersRequest)
+func _RPC_ListUsers_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error) (interface{}, error) {
+	in := new(ListUsersRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
-	out, err := srv.(RPCServer).GetUsers(ctx, in)
+	out, err := srv.(RPCServer).ListUsers(ctx, in)
 	if err != nil {
 		return nil, err
 	}
@@ -772,12 +1331,156 @@ func _RPC_DeleteUser_Handler(srv interface{}, ctx context.Context, dec func(inte
 	return out, nil
 }
 
-func _RPC_GetUserPermissions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error) (interface{}, error) {
-	in := new(GetUserPermissionsRequest)
+func _RPC_ListUserPermissions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error) (interface{}, error) {
+	in := new(ListUserPermissionsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
-	out, err := srv.(RPCServer).GetUserPermissions(ctx, in)
+	out, err := srv.(RPCServer).ListUserPermissions(ctx, in)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func _RPC_SetUserPermissions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error) (interface{}, error) {
+	in := new(SetUserPermissionsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	out, err := srv.(RPCServer).SetUserPermissions(ctx, in)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func _RPC_ListUserGroups_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error) (interface{}, error) {
+	in := new(ListUserGroupsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	out, err := srv.(RPCServer).ListUserGroups(ctx, in)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func _RPC_SetUserGroups_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error) (interface{}, error) {
+	in := new(SetUserGroupsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	out, err := srv.(RPCServer).SetUserGroups(ctx, in)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func _RPC_RegisterPermissions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error) (interface{}, error) {
+	in := new(RegisterPermissionsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	out, err := srv.(RPCServer).RegisterPermissions(ctx, in)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func _RPC_ListPermissions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error) (interface{}, error) {
+	in := new(ListPermissionsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	out, err := srv.(RPCServer).ListPermissions(ctx, in)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func _RPC_CreateGroup_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error) (interface{}, error) {
+	in := new(CreateGroupRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	out, err := srv.(RPCServer).CreateGroup(ctx, in)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func _RPC_ModifyGroup_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error) (interface{}, error) {
+	in := new(ModifyGroupRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	out, err := srv.(RPCServer).ModifyGroup(ctx, in)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func _RPC_GetGroup_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error) (interface{}, error) {
+	in := new(GetGroupRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	out, err := srv.(RPCServer).GetGroup(ctx, in)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func _RPC_ListGroups_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error) (interface{}, error) {
+	in := new(ListGroupsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	out, err := srv.(RPCServer).ListGroups(ctx, in)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func _RPC_DeleteGroup_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error) (interface{}, error) {
+	in := new(DeleteGroupRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	out, err := srv.(RPCServer).DeleteGroup(ctx, in)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func _RPC_ListGroupPermissions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error) (interface{}, error) {
+	in := new(ListGroupPermissionsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	out, err := srv.(RPCServer).ListGroupPermissions(ctx, in)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func _RPC_SetGroupPermissions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error) (interface{}, error) {
+	in := new(SetGroupPermissionsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	out, err := srv.(RPCServer).SetGroupPermissions(ctx, in)
 	if err != nil {
 		return nil, err
 	}
@@ -801,6 +1504,10 @@ var _RPC_serviceDesc = grpc.ServiceDesc{
 			Handler:    _RPC_IsAuthenticated_Handler,
 		},
 		{
+			MethodName: "Subject",
+			Handler:    _RPC_Subject_Handler,
+		},
+		{
 			MethodName: "IsGranted",
 			Handler:    _RPC_IsGranted_Handler,
 		},
@@ -821,79 +1528,157 @@ var _RPC_serviceDesc = grpc.ServiceDesc{
 			Handler:    _RPC_GetUser_Handler,
 		},
 		{
-			MethodName: "GetUsers",
-			Handler:    _RPC_GetUsers_Handler,
+			MethodName: "ListUsers",
+			Handler:    _RPC_ListUsers_Handler,
 		},
 		{
 			MethodName: "DeleteUser",
 			Handler:    _RPC_DeleteUser_Handler,
 		},
 		{
-			MethodName: "GetUserPermissions",
-			Handler:    _RPC_GetUserPermissions_Handler,
+			MethodName: "ListUserPermissions",
+			Handler:    _RPC_ListUserPermissions_Handler,
+		},
+		{
+			MethodName: "SetUserPermissions",
+			Handler:    _RPC_SetUserPermissions_Handler,
+		},
+		{
+			MethodName: "ListUserGroups",
+			Handler:    _RPC_ListUserGroups_Handler,
+		},
+		{
+			MethodName: "SetUserGroups",
+			Handler:    _RPC_SetUserGroups_Handler,
+		},
+		{
+			MethodName: "RegisterPermissions",
+			Handler:    _RPC_RegisterPermissions_Handler,
+		},
+		{
+			MethodName: "ListPermissions",
+			Handler:    _RPC_ListPermissions_Handler,
+		},
+		{
+			MethodName: "CreateGroup",
+			Handler:    _RPC_CreateGroup_Handler,
+		},
+		{
+			MethodName: "ModifyGroup",
+			Handler:    _RPC_ModifyGroup_Handler,
+		},
+		{
+			MethodName: "GetGroup",
+			Handler:    _RPC_GetGroup_Handler,
+		},
+		{
+			MethodName: "ListGroups",
+			Handler:    _RPC_ListGroups_Handler,
+		},
+		{
+			MethodName: "DeleteGroup",
+			Handler:    _RPC_DeleteGroup_Handler,
+		},
+		{
+			MethodName: "ListGroupPermissions",
+			Handler:    _RPC_ListGroupPermissions_Handler,
+		},
+		{
+			MethodName: "SetGroupPermissions",
+			Handler:    _RPC_SetGroupPermissions_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{},
 }
 
 var fileDescriptor0 = []byte{
-	// 914 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x09, 0x6e, 0x88, 0x02, 0xff, 0x9c, 0x55, 0xed, 0x8e, 0xdb, 0x44,
-	0x14, 0x6d, 0xd6, 0x89, 0x63, 0xdf, 0x4d, 0x37, 0xce, 0xb4, 0xec, 0xba, 0x46, 0x62, 0xb7, 0x86,
-	0x85, 0x82, 0xc4, 0x02, 0x29, 0xaa, 0x54, 0x09, 0x84, 0xd8, 0x82, 0xaa, 0xad, 0x28, 0xaa, 0x4a,
-	0x90, 0xf8, 0x83, 0x22, 0x37, 0x9e, 0xa4, 0x23, 0x62, 0x4f, 0xf0, 0x4c, 0x40, 0xfb, 0x08, 0xfc,
-	0xe5, 0x25, 0x78, 0x16, 0x1e, 0x0a, 0x89, 0xf1, 0x78, 0xec, 0x99, 0xf8, 0xa3, 0x1b, 0xf8, 0x65,
-	0xf9, 0xcc, 0xb9, 0x67, 0xee, 0xdc, 0x39, 0x73, 0x2f, 0x8c, 0x16, 0xaf, 0xa3, 0x8c, 0xa6, 0x17,
-	0x9b, 0x8c, 0x72, 0x8a, 0xec, 0xe2, 0x2f, 0x18, 0x27, 0x29, 0x4e, 0x28, 0xbb, 0x4e, 0x71, 0xb1,
-	0x10, 0x8c, 0xe4, 0x87, 0x17, 0x7f, 0xe1, 0x5f, 0x07, 0xd0, 0xff, 0x91, 0xe1, 0x0c, 0x01, 0x1c,
-	0x90, 0xd8, 0xef, 0x9d, 0xf5, 0x1e, 0x58, 0xc8, 0x03, 0x67, 0x2b, 0xb0, 0x34, 0x4a, 0xb0, 0x7f,
-	0x20, 0x10, 0x17, 0x89, 0xe5, 0x25, 0xc9, 0x18, 0x9f, 0x4b, 0xcc, 0x92, 0xd8, 0x04, 0xdc, 0x75,
-	0x54, 0x42, 0x7d, 0x09, 0xdd, 0x85, 0x11, 0x61, 0x73, 0xb6, 0xdd, 0xe0, 0x2c, 0x17, 0xf0, 0x07,
-	0x02, 0x75, 0x72, 0xa2, 0x40, 0xa3, 0x05, 0x27, 0xbf, 0x61, 0xdf, 0x96, 0x90, 0xd8, 0x21, 0x27,
-	0xf2, 0x68, 0xb9, 0xf4, 0x87, 0x12, 0x29, 0x42, 0x17, 0x34, 0x15, 0xfb, 0x24, 0x38, 0xf6, 0x1d,
-	0x89, 0x9e, 0x03, 0x2c, 0x32, 0x1c, 0x71, 0x1c, 0xcf, 0x23, 0xee, 0xbb, 0x02, 0x3b, 0x9c, 0x4e,
-	0x2e, 0xd4, 0x09, 0x66, 0x24, 0xc1, 0x42, 0x22, 0xd9, 0xe4, 0xe9, 0x95, 0xb4, 0x57, 0xd7, 0x3e,
-	0xc8, 0x43, 0x88, 0xd0, 0xed, 0x26, 0x2e, 0x43, 0x0f, 0xdf, 0x10, 0x5a, 0xd2, 0x44, 0xe8, 0x48,
-	0x86, 0xde, 0x81, 0x43, 0x71, 0x82, 0x84, 0x30, 0x46, 0x68, 0xca, 0xfc, 0xdb, 0x67, 0xd6, 0x03,
-	0x37, 0x9c, 0xc2, 0xe8, 0x3b, 0xba, 0x22, 0xe9, 0x4b, 0xfc, 0xeb, 0x56, 0xc4, 0xee, 0x14, 0xa9,
-	0x27, 0x4f, 0x2f, 0x90, 0x4d, 0xc4, 0xd8, 0xef, 0x34, 0x8b, 0x8b, 0xb2, 0x85, 0x9f, 0xc2, 0x6d,
-	0x15, 0xc3, 0x36, 0x42, 0x09, 0xa3, 0x53, 0x18, 0x70, 0xfa, 0x0b, 0x4e, 0x65, 0xc4, 0xe1, 0xd4,
-	0xbb, 0xd0, 0xb7, 0x33, 0xcb, 0x71, 0x15, 0x41, 0xb7, 0xbc, 0xdc, 0xe6, 0xc6, 0x08, 0x0f, 0x8e,
-	0xca, 0x88, 0x62, 0x93, 0xf0, 0x31, 0x1c, 0x5f, 0xb1, 0xaf, 0xb7, 0xfc, 0x35, 0x4e, 0x39, 0x59,
-	0xe4, 0x47, 0xdb, 0x5b, 0xec, 0x21, 0x9c, 0x34, 0x42, 0x55, 0xea, 0x3e, 0x78, 0xf9, 0x2d, 0x9a,
-	0x6b, 0x52, 0xc6, 0x09, 0x7f, 0x02, 0xef, 0x8a, 0x3d, 0xcd, 0xa2, 0xf4, 0x3f, 0xec, 0x84, 0xc6,
-	0x30, 0xcc, 0xcb, 0x37, 0x27, 0x45, 0xad, 0xac, 0xfc, 0x22, 0x74, 0xd1, 0x0b, 0x8b, 0x85, 0x1f,
-	0xc0, 0xc4, 0x50, 0x56, 0x89, 0x08, 0xa2, 0x48, 0x64, 0x55, 0xa0, 0x2a, 0x05, 0x04, 0xde, 0x25,
-	0x5e, 0xd3, 0x74, 0xc5, 0x66, 0x54, 0xa5, 0x10, 0xde, 0x81, 0x89, 0x81, 0xa9, 0xda, 0xfc, 0x79,
-	0x00, 0x93, 0x27, 0xd2, 0x2a, 0xb9, 0xeb, 0xbb, 0xef, 0xf2, 0x18, 0x8e, 0x36, 0xeb, 0x88, 0xa4,
-	0xf3, 0xdd, 0x1b, 0x45, 0x27, 0x30, 0x66, 0x78, 0xb1, 0xcd, 0xb0, 0x5e, 0xb0, 0x5a, 0x5e, 0x48,
-	0xbf, 0xf9, 0x42, 0x06, 0x12, 0x3a, 0xaf, 0xbd, 0x10, 0x5b, 0x96, 0x67, 0x5c, 0xfa, 0xf2, 0x7b,
-	0xb2, 0xbe, 0xa4, 0x74, 0x8d, 0x42, 0xf3, 0xc9, 0x0c, 0xdb, 0x39, 0xf7, 0x8d, 0x37, 0xe4, 0xb4,
-	0x53, 0xce, 0x6b, 0x8f, 0xca, 0x6d, 0xa5, 0x09, 0xd3, 0x21, 0xb3, 0x26, 0xaa, 0xce, 0x01, 0xf4,
-	0x65, 0x8a, 0xc5, 0x0d, 0x8e, 0x2e, 0x54, 0x7b, 0xc9, 0x39, 0xe1, 0x97, 0x70, 0xf4, 0x14, 0x73,
-	0xb3, 0x84, 0x37, 0x5e, 0x78, 0xd1, 0x60, 0xe4, 0x5d, 0x87, 0x1f, 0xc3, 0xb8, 0x0a, 0xdf, 0x63,
-	0xb7, 0xa8, 0xa2, 0xb3, 0x72, 0xbb, 0x33, 0xb0, 0xe9, 0x72, 0xc9, 0x30, 0xf7, 0x63, 0xb5, 0x9f,
-	0x3e, 0xd3, 0x55, 0xca, 0x1f, 0x7d, 0x9e, 0x27, 0xb4, 0x26, 0x09, 0xe1, 0x3e, 0x6e, 0x27, 0x3c,
-	0xeb, 0x3b, 0x3d, 0x2f, 0x7e, 0x36, 0x70, 0x96, 0xde, 0xdf, 0xbd, 0xf0, 0x13, 0xf0, 0xf4, 0x16,
-	0x2a, 0xa5, 0xb7, 0x61, 0x90, 0xa7, 0xc4, 0x44, 0x4e, 0x56, 0x23, 0xa7, 0x53, 0x98, 0x7c, 0x83,
-	0xd7, 0x78, 0xd7, 0x47, 0x46, 0x13, 0x0d, 0xdf, 0x07, 0x64, 0x12, 0x94, 0xa6, 0x70, 0x9a, 0xb8,
-	0x2f, 0xbc, 0x28, 0xad, 0x6b, 0x85, 0xff, 0x08, 0x47, 0x3e, 0xa7, 0x31, 0x59, 0x5e, 0x77, 0x28,
-	0xa1, 0x77, 0x6b, 0xed, 0xd8, 0xe8, 0x63, 0xe2, 0x30, 0x3f, 0xf0, 0x8c, 0xa4, 0x2b, 0xf4, 0x61,
-	0xc3, 0xb0, 0x56, 0x17, 0xf5, 0xa3, 0xa6, 0x87, 0xfb, 0x5d, 0xdc, 0xf3, 0x1d, 0x5b, 0x0f, 0xba,
-	0x68, 0xef, 0x99, 0x4e, 0xb7, 0xbb, 0xc5, 0x76, 0xcd, 0x3f, 0xdc, 0xc3, 0xfc, 0xce, 0xcd, 0xe6,
-	0x77, 0xf7, 0x33, 0x3f, 0x74, 0x9a, 0xdf, 0x2c, 0xff, 0x1e, 0x76, 0x7c, 0x0e, 0xf7, 0x94, 0x57,
-	0x5e, 0xe8, 0x29, 0xf1, 0xbf, 0x1b, 0x5f, 0xf8, 0x19, 0x04, 0x6d, 0x72, 0x2a, 0x91, 0xda, 0x2c,
-	0xca, 0xad, 0xe8, 0x4e, 0xff, 0xb0, 0xc1, 0x7a, 0xf9, 0xe2, 0x09, 0x7a, 0x04, 0x03, 0x39, 0x5f,
-	0xd0, 0xdd, 0x32, 0x41, 0x73, 0x44, 0x05, 0x6f, 0xd5, 0x50, 0xd5, 0x03, 0x6f, 0xa1, 0xc7, 0x60,
-	0x17, 0x33, 0x03, 0x99, 0x14, 0x3d, 0x75, 0x82, 0xe3, 0x3a, 0x5c, 0x85, 0xce, 0x60, 0x5c, 0x9b,
-	0x10, 0xe8, 0x9d, 0x92, 0xdc, 0x3e, 0x75, 0x82, 0xd3, 0xce, 0xf5, 0x4a, 0xf5, 0x12, 0xdc, 0xaa,
-	0xd1, 0x23, 0x5f, 0xf3, 0x77, 0xa7, 0x4a, 0x70, 0xaf, 0x65, 0xc5, 0xd4, 0xa8, 0xfa, 0xbd, 0xd6,
-	0xa8, 0x8f, 0x05, 0xad, 0xd1, 0x1c, 0x0e, 0xb7, 0xd0, 0xb7, 0x00, 0xba, 0x13, 0xa2, 0x8a, 0xda,
-	0x98, 0x18, 0x41, 0xd0, 0xb6, 0x64, 0xca, 0x68, 0x4f, 0x69, 0x99, 0xc6, 0x33, 0xd7, 0x32, 0x4d,
-	0x0b, 0x0a, 0x99, 0x2f, 0x60, 0xa8, 0x9c, 0x81, 0xaa, 0x0b, 0xd9, 0x6d, 0xbb, 0xc1, 0x49, 0x03,
-	0xaf, 0xa2, 0xbf, 0x02, 0xa7, 0x6c, 0x69, 0xa8, 0x4e, 0x2b, 0xed, 0x1a, 0xf8, 0xcd, 0x05, 0xf3,
-	0x14, 0xba, 0x83, 0xe9, 0x53, 0x34, 0xda, 0x9e, 0x3e, 0x45, 0xb3, 0xe1, 0x09, 0x99, 0x9f, 0x01,
-	0x35, 0xfd, 0x8d, 0xee, 0xd7, 0x36, 0x6e, 0x3e, 0xa5, 0x20, 0x7c, 0x13, 0xa5, 0x94, 0x7f, 0x65,
-	0xcb, 0xf7, 0xfc, 0xf0, 0xdf, 0x00, 0x00, 0x00, 0xff, 0xff, 0x39, 0x9f, 0x88, 0x66, 0xff, 0x0a,
-	0x00, 0x00,
+	// 1393 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x09, 0x6e, 0x88, 0x02, 0xff, 0xac, 0x57, 0xdb, 0x6e, 0xe3, 0x36,
+	0x13, 0xfe, 0x1d, 0x9f, 0x27, 0x8e, 0x0f, 0xcc, 0xc9, 0xab, 0x9c, 0xbc, 0x4e, 0x76, 0xff, 0xf4,
+	0xa2, 0x46, 0x0e, 0xc5, 0x16, 0x0b, 0x14, 0x28, 0x9a, 0x6d, 0x91, 0xa6, 0x48, 0x8b, 0xcd, 0xa1,
+	0xe8, 0x55, 0x91, 0x2a, 0x36, 0xed, 0xa8, 0x6b, 0x4b, 0xae, 0x24, 0x6f, 0x91, 0xd7, 0xe8, 0x73,
+	0xf4, 0xb2, 0x0f, 0xd2, 0x27, 0x2a, 0x4a, 0x52, 0x94, 0x48, 0x8a, 0x94, 0xd7, 0x8b, 0xf4, 0x2a,
+	0xf1, 0x1c, 0xbe, 0x19, 0x7e, 0x9a, 0xe1, 0x0c, 0xa1, 0xd6, 0x7f, 0xb0, 0x7d, 0xcf, 0xed, 0x4d,
+	0x7d, 0x2f, 0xf4, 0x50, 0x29, 0xfa, 0x65, 0x35, 0x26, 0x2e, 0x9e, 0x78, 0xc1, 0xa3, 0x8b, 0x23,
+	0x85, 0x55, 0x63, 0x7f, 0x42, 0xfe, 0x0b, 0x5c, 0x67, 0xcc, 0xff, 0xef, 0x9e, 0x40, 0xed, 0xd2,
+	0x1b, 0x39, 0xee, 0x35, 0xfe, 0x6d, 0x86, 0x83, 0x10, 0x35, 0xa1, 0x32, 0x0b, 0xb0, 0xef, 0xda,
+	0x13, 0xdc, 0xce, 0x75, 0x72, 0x87, 0x55, 0x2a, 0x99, 0xda, 0x41, 0xf0, 0xbb, 0xe7, 0x0f, 0xda,
+	0x4b, 0x54, 0xd2, 0x3d, 0x82, 0x15, 0xee, 0x13, 0x4c, 0x3d, 0x37, 0xc0, 0x68, 0x0f, 0x8a, 0xa1,
+	0xf7, 0x0e, 0xbb, 0xcc, 0x63, 0xf9, 0xa4, 0xd9, 0x13, 0xf1, 0x6f, 0xa9, 0x9c, 0x7b, 0x78, 0xb3,
+	0x30, 0x0e, 0xf3, 0x41, 0x8f, 0x26, 0xd4, 0x63, 0x8f, 0x28, 0x48, 0xf7, 0x35, 0x6c, 0x5c, 0x04,
+	0x5f, 0xcd, 0xc2, 0x07, 0xec, 0x86, 0x4e, 0xdf, 0x0e, 0xf1, 0x60, 0x61, 0xb0, 0x23, 0xd8, 0xd4,
+	0x5c, 0x79, 0xea, 0xeb, 0xb0, 0x62, 0xcb, 0x0a, 0x86, 0x51, 0xe9, 0x9e, 0x43, 0xf3, 0x22, 0x38,
+	0xf7, 0x6d, 0xf7, 0x23, 0xc2, 0x20, 0x04, 0x30, 0xc5, 0xfe, 0xc4, 0x09, 0x02, 0xc7, 0x73, 0x39,
+	0x57, 0x07, 0xd0, 0x92, 0x80, 0x78, 0xd0, 0x06, 0x94, 0x47, 0x91, 0x88, 0x87, 0x3b, 0x83, 0xe6,
+	0x19, 0x1e, 0x7b, 0xee, 0x28, 0xb8, 0xf5, 0x16, 0x0e, 0xb7, 0x02, 0xc5, 0x91, 0xef, 0xcd, 0xa6,
+	0x22, 0x92, 0x84, 0x21, 0x22, 0xdd, 0x47, 0x42, 0x1e, 0xe9, 0x18, 0xea, 0x37, 0xb3, 0xfb, 0x5f,
+	0x71, 0x7f, 0xf1, 0x4f, 0xf1, 0x0e, 0x1a, 0x89, 0x0b, 0x87, 0x05, 0x58, 0x72, 0xa2, 0xdc, 0xf3,
+	0x4a, 0xc5, 0xb0, 0x4c, 0x28, 0x0f, 0x43, 0xc7, 0x0f, 0xc2, 0x3b, 0x26, 0xcb, 0x33, 0x59, 0x0b,
+	0xaa, 0x63, 0x3b, 0x16, 0x15, 0x98, 0x68, 0x15, 0x96, 0x05, 0x5d, 0x41, 0xbb, 0xd8, 0xc9, 0x93,
+	0x53, 0xfc, 0xb1, 0x04, 0x85, 0x1f, 0x09, 0xdc, 0x7f, 0x13, 0x62, 0x0d, 0x6a, 0x4e, 0x70, 0x17,
+	0xcc, 0x48, 0x1c, 0x0a, 0x40, 0x62, 0x10, 0x0e, 0xa8, 0x21, 0x91, 0xda, 0xfd, 0xd0, 0x79, 0x8f,
+	0xdb, 0x25, 0x26, 0x22, 0x11, 0xa8, 0x61, 0x68, 0x0f, 0x87, 0xed, 0x32, 0x93, 0x44, 0xae, 0x7d,
+	0xcf, 0x25, 0x71, 0x26, 0xe4, 0x43, 0x55, 0x98, 0xf4, 0x05, 0x40, 0xdf, 0xc7, 0xb4, 0x50, 0xee,
+	0xec, 0xb0, 0x5d, 0x65, 0x8c, 0xb5, 0x7a, 0xbc, 0xbb, 0x6e, 0x9d, 0x09, 0x21, 0xd4, 0x9e, 0x4c,
+	0x69, 0x7a, 0xb1, 0xd9, 0xfd, 0x63, 0x1b, 0xd8, 0x21, 0x88, 0xeb, 0x6c, 0x3a, 0x88, 0x5d, 0x97,
+	0xe7, 0xb8, 0xc6, 0x66, 0xc4, 0xb5, 0x46, 0x5d, 0xbb, 0xff, 0xe4, 0xa0, 0xf5, 0x86, 0xe1, 0x51,
+	0x6a, 0xb2, 0x5b, 0x75, 0x03, 0xea, 0xd3, 0xb1, 0xed, 0xb8, 0x77, 0x6a, 0xc3, 0xa2, 0x4d, 0x68,
+	0x04, 0xb8, 0x3f, 0xf3, 0xb1, 0x50, 0xe4, 0x0d, 0x34, 0x16, 0x74, 0x1a, 0x8b, 0x4c, 0xd4, 0x49,
+	0xd1, 0x58, 0x62, 0xc9, 0x43, 0x8f, 0xdd, 0x23, 0x67, 0x9e, 0x37, 0x46, 0x3b, 0x32, 0xa5, 0x65,
+	0x4d, 0xbd, 0x2d, 0xd1, 0x5b, 0xd1, 0xb4, 0x9d, 0x14, 0xd5, 0xd5, 0xb4, 0x05, 0x69, 0x60, 0x24,
+	0x9f, 0x9f, 0x57, 0xa1, 0x05, 0x05, 0x96, 0x4e, 0x54, 0xb8, 0xb5, 0x1e, 0xbf, 0x0b, 0xa9, 0x4d,
+	0x77, 0x1b, 0xea, 0xe7, 0x38, 0x94, 0xe9, 0x92, 0x0a, 0xaa, 0xfb, 0x29, 0x34, 0x12, 0xed, 0x02,
+	0x60, 0x57, 0xd0, 0xbc, 0x74, 0x02, 0x66, 0x1f, 0xc4, 0x70, 0x5b, 0x50, 0xf2, 0x86, 0xc3, 0x00,
+	0x87, 0xed, 0x01, 0xf3, 0x58, 0x8e, 0xd2, 0xbd, 0x70, 0xc3, 0x57, 0x9f, 0x11, 0xb0, 0xe2, 0xd8,
+	0x99, 0x38, 0x61, 0x1b, 0x6b, 0xba, 0xef, 0x0a, 0x95, 0x5c, 0x73, 0x40, 0x4e, 0xd4, 0x92, 0x20,
+	0x79, 0x0e, 0x5b, 0x50, 0xa4, 0x39, 0xd0, 0x5e, 0xcd, 0x6b, 0x49, 0xec, 0x41, 0xeb, 0x6b, 0x3c,
+	0xc6, 0x6a, 0x0d, 0xc8, 0x87, 0x7a, 0x09, 0x48, 0x36, 0xe0, 0x98, 0xa4, 0x4a, 0x08, 0xeb, 0xa4,
+	0x79, 0x71, 0x6c, 0xf7, 0xf7, 0x12, 0xb4, 0xbe, 0xf7, 0x06, 0xce, 0xf0, 0x31, 0x03, 0x09, 0xed,
+	0xa6, 0xfa, 0x8d, 0xa6, 0xc2, 0x4e, 0x70, 0x13, 0xfa, 0x8e, 0x3b, 0x42, 0x07, 0x5a, 0x9d, 0xe5,
+	0x0d, 0x56, 0x2f, 0xf4, 0xaa, 0x2b, 0x18, 0xcc, 0x3a, 0x4a, 0x0d, 0x16, 0x0d, 0x16, 0x7b, 0x72,
+	0x45, 0x96, 0x8c, 0x10, 0x6a, 0x7d, 0x96, 0xe7, 0xd7, 0x67, 0x65, 0x6e, 0x7d, 0x56, 0x3f, 0x58,
+	0x9f, 0x60, 0xaa, 0x4f, 0x99, 0xd1, 0x05, 0x4a, 0xea, 0x10, 0xac, 0xf8, 0xfb, 0xbf, 0x15, 0x97,
+	0xa0, 0xe9, 0xb3, 0x9e, 0xc0, 0x96, 0xd1, 0x92, 0x07, 0x49, 0xdd, 0xa2, 0x39, 0x76, 0x8b, 0x1e,
+	0xc1, 0xb3, 0x1b, 0x9c, 0x05, 0x6e, 0xf4, 0xb8, 0x02, 0xcb, 0xe4, 0x21, 0xc6, 0x08, 0xbf, 0xcf,
+	0x22, 0x73, 0x2a, 0xf0, 0xc9, 0x94, 0x78, 0x8f, 0xe9, 0x15, 0x93, 0x8f, 0x6e, 0x8d, 0x99, 0x1b,
+	0x7a, 0xb3, 0xfe, 0x03, 0xa6, 0xd5, 0x40, 0x21, 0xf7, 0x61, 0x3d, 0x4e, 0xfc, 0x9c, 0xce, 0x29,
+	0xe3, 0xe9, 0x0e, 0x61, 0x23, 0x6d, 0xc4, 0x63, 0xd6, 0xa1, 0xc4, 0xc6, 0x5b, 0x9c, 0xe1, 0x4b,
+	0x58, 0xe3, 0x19, 0xaa, 0x68, 0x69, 0xbb, 0x4b, 0x58, 0x4f, 0xd9, 0x3d, 0xe5, 0x10, 0xc7, 0x60,
+	0x5d, 0xe3, 0x11, 0xc9, 0x70, 0x71, 0x2a, 0xaf, 0x61, 0xcb, 0xe8, 0xf2, 0x94, 0x34, 0x7e, 0x8a,
+	0x68, 0x32, 0xa4, 0xf0, 0xc4, 0x7b, 0xa8, 0x07, 0x9b, 0x1a, 0xf0, 0xbc, 0xca, 0xfa, 0x33, 0x07,
+	0x45, 0xc6, 0xab, 0x72, 0x61, 0xd4, 0xa0, 0x20, 0x0d, 0x67, 0xe2, 0x38, 0xc0, 0x41, 0xdf, 0x77,
+	0xa6, 0x21, 0x5d, 0x84, 0xa2, 0x51, 0xa3, 0x4e, 0xce, 0xc2, 0x62, 0x93, 0xb3, 0x68, 0x98, 0x9c,
+	0xa5, 0xc5, 0x26, 0x67, 0x99, 0x95, 0xd7, 0xe7, 0xf1, 0xe0, 0x60, 0x39, 0xc7, 0x9c, 0xc5, 0xe9,
+	0xe6, 0x4c, 0xe9, 0x46, 0xdb, 0xd4, 0x29, 0xac, 0x2a, 0x8e, 0x9c, 0x93, 0xed, 0x78, 0xe7, 0x8a,
+	0x7a, 0x7a, 0x25, 0xee, 0x69, 0x66, 0xd5, 0xdd, 0x61, 0x63, 0x45, 0x09, 0x25, 0xd7, 0xfa, 0x11,
+	0x34, 0x85, 0x7a, 0x21, 0xc0, 0xeb, 0x68, 0x4a, 0xa8, 0x05, 0xff, 0xc4, 0x2f, 0x7e, 0x0a, 0x48,
+	0xc6, 0xe4, 0x79, 0xec, 0x28, 0x5d, 0xa4, 0x25, 0xd2, 0x89, 0x67, 0x4b, 0xe6, 0xe1, 0xfe, 0x0f,
+	0xab, 0x8a, 0x45, 0xe6, 0xf8, 0xb9, 0x8b, 0xef, 0xca, 0x2c, 0x28, 0x7a, 0x6f, 0x66, 0x8e, 0x9e,
+	0xe7, 0x7a, 0x6d, 0xa5, 0x4c, 0xe8, 0xa7, 0x53, 0x02, 0x2c, 0xc4, 0xf4, 0x31, 0xbb, 0xff, 0xd8,
+	0xff, 0x1f, 0xd1, 0xe7, 0x46, 0x97, 0xa7, 0xf4, 0xf9, 0x27, 0xd1, 0x65, 0x9f, 0x95, 0x87, 0x4c,
+	0xf8, 0x29, 0x6c, 0x9b, 0x4d, 0xe7, 0xb4, 0xef, 0xc9, 0x5f, 0x75, 0xc8, 0x5f, 0xbf, 0x7d, 0x83,
+	0x5e, 0x41, 0x91, 0x3d, 0xe1, 0xd0, 0x5a, 0x4c, 0x83, 0xfc, 0x0a, 0xb4, 0xd6, 0x53, 0x52, 0xfe,
+	0x04, 0xfb, 0x1f, 0x7a, 0x0d, 0xa5, 0xe8, 0x59, 0x86, 0x64, 0x13, 0xf1, 0xb0, 0xb3, 0x36, 0xd2,
+	0xe2, 0xc4, 0xf5, 0x16, 0x1a, 0xa9, 0x47, 0x18, 0xda, 0x8d, 0x8d, 0xcd, 0x0f, 0x3b, 0x6b, 0x2f,
+	0x53, 0x9f, 0xa0, 0x7e, 0x01, 0x65, 0xfe, 0x38, 0x41, 0x49, 0x68, 0xf5, 0x81, 0x63, 0x6d, 0x6a,
+	0xf2, 0xc4, 0xfb, 0x0c, 0xaa, 0xc9, 0xeb, 0x0c, 0xb5, 0x45, 0x34, 0xf5, 0xe5, 0x67, 0x3d, 0x33,
+	0x68, 0x64, 0x8c, 0xe4, 0xdd, 0x25, 0x30, 0xd2, 0xcf, 0x39, 0x81, 0xa1, 0x3d, 0xd2, 0x08, 0xc6,
+	0x37, 0x00, 0x62, 0xbf, 0x45, 0x89, 0xa9, 0xb6, 0xf3, 0x5b, 0x96, 0x49, 0x25, 0xc3, 0x88, 0x35,
+	0x44, 0xc0, 0x68, 0xcb, 0x9e, 0x80, 0xd1, 0xb7, 0x96, 0x88, 0x53, 0xbe, 0x1d, 0x0b, 0x4e, 0xd5,
+	0x65, 0x5a, 0x70, 0x9a, 0x5a, 0xa3, 0x23, 0x3e, 0x92, 0xcd, 0x56, 0xf0, 0x91, 0xde, 0x9f, 0x05,
+	0x1f, 0xda, 0x1a, 0x1c, 0x1d, 0x44, 0xac, 0xb2, 0xe2, 0x20, 0xda, 0xfe, 0x2b, 0x0e, 0xa2, 0x6f,
+	0xbe, 0x04, 0xe6, 0x17, 0x58, 0x35, 0xac, 0x4e, 0xa8, 0x9b, 0x0e, 0xad, 0x77, 0x9a, 0xb5, 0x3f,
+	0xd7, 0x26, 0x89, 0xf0, 0x33, 0x20, 0x7d, 0x6d, 0x42, 0xcf, 0x93, 0x8a, 0xcb, 0x5a, 0xc2, 0xac,
+	0xee, 0x3c, 0x93, 0x04, 0xfe, 0x0a, 0xea, 0xea, 0x76, 0x84, 0x76, 0xd2, 0x79, 0x29, 0xb3, 0xc1,
+	0xda, 0xcd, 0x52, 0x27, 0x90, 0x3f, 0xc0, 0x8a, 0xb2, 0x1e, 0xa1, 0xed, 0x54, 0x26, 0x2a, 0xe0,
+	0x4e, 0x86, 0x56, 0xe6, 0xd8, 0xb0, 0xed, 0x08, 0x8e, 0xb3, 0xb7, 0x27, 0xc1, 0xf1, 0x9c, 0x75,
+	0x29, 0xba, 0x38, 0x52, 0x2b, 0x0a, 0x52, 0x8e, 0x69, 0x40, 0xde, 0xcb, 0xd4, 0x27, 0xa8, 0xdf,
+	0xc2, 0xb2, 0x34, 0xe0, 0x51, 0xaa, 0xb1, 0xe4, 0xd9, 0x64, 0x6d, 0x19, 0x75, 0x32, 0x92, 0x34,
+	0x6f, 0x50, 0xaa, 0xb7, 0xcc, 0x48, 0x86, 0x01, 0x45, 0x90, 0xbe, 0x84, 0x4a, 0xbc, 0x20, 0x20,
+	0xb9, 0xc3, 0x14, 0x8c, 0xb6, 0xae, 0x90, 0xfb, 0x46, 0xcc, 0x76, 0xa4, 0xb4, 0x98, 0xfa, 0x59,
+	0x2d, 0x93, 0x4a, 0x3e, 0x91, 0x34, 0xcb, 0x51, 0xaa, 0xc9, 0xcc, 0x27, 0x32, 0x0c, 0x7f, 0x82,
+	0xd4, 0x87, 0x35, 0xd3, 0x90, 0x42, 0xfb, 0x5a, 0x7c, 0xc3, 0x57, 0x3c, 0x98, 0x6f, 0x24, 0x97,
+	0xa0, 0x61, 0x10, 0x23, 0xb9, 0xc5, 0xb2, 0x42, 0xec, 0xcf, 0xb5, 0x89, 0x23, 0xdc, 0x97, 0xd8,
+	0xb2, 0x79, 0xfa, 0x6f, 0x00, 0x00, 0x00, 0xff, 0xff, 0xf3, 0x38, 0x35, 0x64, 0x6f, 0x15, 0x00,
+	0x00,
 }

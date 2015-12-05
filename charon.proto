@@ -4,6 +4,7 @@ package charon;
 
 import "mnemosyne.proto";
 import "protot.proto";
+import "nilt.proto";
 
 service RPC {
     // Authentication
@@ -11,22 +12,104 @@ service RPC {
     rpc Login(LoginRequest) returns (LoginResponse) {};
     rpc Logout(LogoutRequest) returns (LogoutResponse) {};
     rpc IsAuthenticated(IsAuthenticatedRequest) returns (IsAuthenticatedResponse) {};
+    rpc Subject(SubjectRequest) returns (SubjectResponse) {};
 
     // Authorization
 
     rpc IsGranted(IsGrantedRequest) returns (IsGrantedResponse) {};
     rpc BelongsTo(BelongsToRequest) returns (BelongsToResponse) {};
 
-    // CRUD
+    // User
 
     rpc CreateUser(CreateUserRequest) returns (CreateUserResponse) {};
     rpc ModifyUser(ModifyUserRequest) returns (ModifyUserResponse) {};
     rpc GetUser(GetUserRequest) returns (GetUserResponse) {};
-    rpc GetUsers(GetUsersRequest) returns (GetUsersResponse) {};
+    rpc ListUsers(ListUsersRequest) returns (ListUsersResponse) {};
     rpc DeleteUser(DeleteUserRequest) returns (DeleteUserResponse) {};
 
-    rpc GetUserPermissions(GetUserPermissionsRequest) returns (GetUserPermissionsResponse) {};
+    rpc ListUserPermissions(ListUserPermissionsRequest) returns (ListUserPermissionsResponse) {};
+    rpc SetUserPermissions(SetUserPermissionsRequest) returns (SetUserPermissionsResponse) {};
+    
+    rpc ListUserGroups(ListUserGroupsRequest) returns (ListUserGroupsResponse) {};
+    rpc SetUserGroups(SetUserGroupsRequest) returns (SetUserGroupsResponse) {};
+
+    // Permissions
+
+    rpc RegisterPermissions(RegisterPermissionsRequest) returns (RegisterPermissionsResponse) {};
+    rpc ListPermissions(ListPermissionsRequest) returns (ListPermissionsResponse) {};
+    
+    // Group
+
+    rpc CreateGroup(CreateGroupRequest) returns (CreateGroupResponse) {};
+    rpc ModifyGroup(ModifyGroupRequest) returns (ModifyGroupResponse) {};
+    rpc GetGroup(GetGroupRequest) returns (GetGroupResponse) {};
+    rpc ListGroups(ListGroupsRequest) returns (ListGroupsResponse) {};
+    rpc DeleteGroup(DeleteGroupRequest) returns (DeleteGroupResponse) {};
+
+    rpc ListGroupPermissions(ListGroupPermissionsRequest) returns (ListGroupPermissionsResponse) {};
+    rpc SetGroupPermissions(SetGroupPermissionsRequest) returns (SetGroupPermissionsResponse) {};
 }
+
+// --------------
+// ---- AUTH ----
+// --------------
+
+message LoginRequest {
+    string username = 1;
+    string password = 2;
+}
+
+message LoginResponse {
+    mnemosyne.Token token = 1;
+}
+
+message LogoutRequest {
+    mnemosyne.Token token = 1;
+}
+
+message LogoutResponse {}
+
+message IsAuthenticatedRequest {
+    mnemosyne.Token token = 1;
+}
+
+message IsAuthenticatedResponse {
+    bool authenticated = 1;
+}
+
+message IsGrantedRequest {
+    mnemosyne.Token token = 1;
+    string permission = 2;
+}
+
+message IsGrantedResponse {
+    bool granted = 1;
+}
+
+message BelongsToRequest {
+    mnemosyne.Token token = 1;
+    string group = 2;
+}
+
+message BelongsToResponse {
+    bool belongs = 1;
+}
+
+message SubjectRequest {
+    mnemosyne.Token token = 1;
+}
+
+message SubjectResponse {
+    int64 id = 1;
+    string username = 2;
+    string first_name = 3;
+    string last_name = 4;
+    repeated string permissions = 5;
+}
+
+// --------------
+// ---- USER ----
+// --------------
 
 message User {
     int64 id = 1;
@@ -41,52 +124,7 @@ message User {
     int64 created_by = 10;
     protot.Timestamp updated_at = 11;
     int64 updated_by = 12;
-    repeated string permissions = 13;
 }
-
-// Login
-
-message LoginRequest {
-    string username = 1;
-    string password = 2;
-}
-message LoginResponse {
-    mnemosyne.Token token = 1;
-}
-
-// Logout
-
-message LogoutRequest {
-    mnemosyne.Token token = 1;
-}
-message LogoutResponse {}
-
-// IsAuthenticated
-
-message IsAuthenticatedRequest {
-    mnemosyne.Token token = 1;
-}
-message IsAuthenticatedResponse {
-    bool is_authenticated = 1;
-}
-
-// IsGranted
-
-message IsGrantedRequest {
-    mnemosyne.Token token = 1;
-    int64 user_id = 2;
-    string permission = 3;
-}
-message IsGrantedResponse {
-    bool is_granted = 1;
-}
-
-// BelongsTo
-
-message BelongsToRequest {}
-message BelongsToResponse {}
-
-// CreateUser
 
 message CreateUserRequest {
     string username = 1;
@@ -94,74 +132,195 @@ message CreateUserRequest {
     string secure_password = 3;
     string first_name = 4;
     string last_name = 5;
-    protot.NilBool is_superuser = 6;
-    protot.NilBool is_active = 7;
-    protot.NilBool is_staff = 8;
-    protot.NilBool is_confirmed = 9;
+    nilt.Bool is_superuser = 6;
+    nilt.Bool is_active = 7;
+    nilt.Bool is_staff = 8;
+    nilt.Bool is_confirmed = 9;
 }
+
 message CreateUserResponse {
     User user = 1;
 }
 
-// GetUser
-
 message GetUserRequest {
-    mnemosyne.Token token = 1;
-    int64 id = 2;
+    int64 id = 1;
 }
+
 message GetUserResponse {
     User user = 1;
 }
 
-// GetUsers
-
-message GetUsersRequest {
-    reserved 1 to 99, 102 to 200;
-//    protot.NilString username = 1;
-//    protot.NilString first_name = 2;
-//    protot.NilString last_name = 3;
-//    protot.TimestampRange created_at = 98;
-//    protot.TimestampRange updated_at = 99;
-
-    protot.NilInt64 offset = 100;
-    protot.NilInt64 limit = 101;
-//    repeated string sort = 102;
+message ListUsersRequest {
+    reserved 1 to 99;
+    nilt.Int64 offset = 100;
+    nilt.Int64 limit = 101;
 }
-message GetUsersResponse {
+
+message ListUsersResponse {
     repeated User users = 1;
 }
-
-// DeleteUser
 
 message DeleteUserRequest {
     int64 id = 1;
 }
+
 message DeleteUserResponse {
     int64 affected = 1;
 }
 
-// ModifyUser
-
 message ModifyUserRequest {
     int64 id = 1;
-    protot.NilString username = 2;
-    protot.NilString plain_password = 3;
-    protot.NilString secure_password = 4;
-    protot.NilString first_name = 5;
-    protot.NilString last_name = 6;
-    protot.NilBool is_superuser = 7;
-    protot.NilBool is_active = 8;
-    protot.NilBool is_staff = 9;
-    protot.NilBool is_confirmed = 10;
+    nilt.String username = 2;
+    nilt.String plain_password = 3;
+    nilt.String secure_password = 4;
+    nilt.String first_name = 5;
+    nilt.String last_name = 6;
+    nilt.Bool is_superuser = 7;
+    nilt.Bool is_active = 8;
+    nilt.Bool is_staff = 9;
+    nilt.Bool is_confirmed = 10;
 }
+
 message ModifyUserResponse {
     User user = 1;
 }
 
-message GetUserPermissionsRequest {
-    mnemosyne.Token token = 1;
-    int64 user_id = 2;
+message ListUserPermissionsRequest {
+    int64 id = 1;
 }
-message GetUserPermissionsResponse {
+
+message ListUserPermissionsResponse {
+    repeated string permissions = 1;
+}
+
+message SetUserPermissionsRequest {
+    repeated string permissions = 1;
+}
+
+message SetUserPermissionsResponse {
+    repeated string created = 1;
+    repeated string removed = 2;
+    repeated string untouched = 3;
+}
+
+message ListUserGroupsRequest {
+    int64 id = 1;
+}
+
+message ListUserGroupsResponse {
+    repeated string groups = 1;
+}
+
+message SetUserGroupsRequest {
+    repeated string groups = 1;
+}
+
+message SetUserGroupsResponse {
+    repeated string created = 1;
+    repeated string removed = 2;
+    repeated string untouched = 3;
+}
+
+
+// ---------------------
+// ---- PERMISSIONS ----
+// ---------------------
+
+
+message RegisterPermissionsRequest {
+    repeated string permissions = 1;
+}
+
+message RegisterPermissionsResponse {
+    repeated string created = 1;
+    repeated string removed = 2;
+    repeated string untouched = 3;
+}
+
+message ListPermissionsRequest {
+    reserved 1 to 99;
+    nilt.Int64 offset = 100;
+    nilt.Int64 limit = 101;
+}
+
+message ListPermissionsResponse {
+    repeated string permissions = 1;
+}
+
+// ----------------
+// ---- GROUPS ----
+// ----------------
+
+
+message Group {
+    int64 id = 1;
+    string name = 2;
+    string description = 3;
+    protot.Timestamp created_at = 4;
+    int64 created_by = 5;
+    protot.Timestamp updated_at = 6;
+    int64 updated_by = 7;
+}
+
+message CreateGroupRequest {
+    string name = 1;
+    string description = 2;
+}
+
+message CreateGroupResponse {
+    Group group = 1;
+}
+
+message GetGroupRequest {
+    int64 id = 1;
+}
+
+message GetGroupResponse {
+    Group group = 1;
+}
+
+message ListGroupsRequest {
+    reserved 1 to 99;
+    nilt.Int64 offset = 100;
+    nilt.Int64 limit = 101;
+}
+
+message ListGroupsResponse {
+    repeated Group groups = 1;
+}
+
+message DeleteGroupRequest {
+    int64 id = 1;
+}
+
+message DeleteGroupResponse {
+    int64 affected = 1;
+}
+
+message ModifyGroupRequest {
+    int64 id = 1;
+    nilt.String name = 2;
+    nilt.String description = 3;
+}
+
+message ModifyGroupResponse {
+    Group group = 1;
+}
+
+message SetGroupPermissionsRequest {
+    repeated string permissions = 1;
+}
+
+message SetGroupPermissionsResponse {
+    repeated string created = 1;
+    repeated string removed = 2;
+    repeated string untouched = 3;
+}
+
+message ListGroupPermissionsRequest {
+    int64 id = 1;
+}
+
+message ListGroupPermissionsResponse {
     repeated string permissions = 1;
 }

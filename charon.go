@@ -97,25 +97,22 @@ func (c *charon) IsGranted(ctx context.Context, token mnemosyne.Token, perm Perm
 		return false, err
 	}
 
-	return res.IsGranted, nil
+	return res.Granted, nil
 }
 
 // Subject implements Charon interface.
 func (c *charon) Subject(ctx context.Context, token mnemosyne.Token) (*Subject, error) {
-	resp1, err := c.client.GetUser(ctx, &GetUserRequest{Token: &token})
-	if err != nil {
-		return nil, err
-	}
-	resp2, err := c.client.GetUserPermissions(ctx, &GetUserPermissionsRequest{Token: &token})
+	resp, err := c.client.Subject(ctx, &SubjectRequest{Token: &token})
 	if err != nil {
 		return nil, err
 	}
 
 	return &Subject{
-		ID:          resp1.User.Id,
-		Name:        resp1.User.Name(),
-		Email:       resp1.User.Username,
-		Permissions: NewPermissions(resp2.Permissions...),
+		ID:          resp.Id,
+		Username:    resp.Username,
+		FirstName:   resp.FirstName,
+		LastName:    resp.LastName,
+		Permissions: NewPermissions(resp.Permissions...),
 	}, nil
 }
 
@@ -128,7 +125,7 @@ func (c *charon) IsAuthenticated(ctx context.Context, token mnemosyne.Token) (bo
 		return false, err
 	}
 
-	return res.IsAuthenticated, nil
+	return res.Authenticated, nil
 }
 
 // Login implements Charon interface.
@@ -155,8 +152,9 @@ func (c *charon) Logout(ctx context.Context, token mnemosyne.Token) error {
 // Subject is a generic object that represent anything that can be under control of charon.
 type Subject struct {
 	ID          int64       `json:"id"`
-	Name        string      `json:"name"`
-	Email       string      `json:"email"`
+	Username    string      `json:"username"`
+	FirstName   string      `json:"firstName"`
+	LastName    string      `json:"lastName"`
 	Permissions Permissions `json:"permissions"`
 }
 
