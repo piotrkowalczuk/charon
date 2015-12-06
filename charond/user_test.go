@@ -132,6 +132,38 @@ func TestUserRepository_UpdateLastLoginAt(t *testing.T) {
 	}
 }
 
+func TestUserRepository_Find(t *testing.T) {
+	var (
+		err      error
+		entities []*userEntity
+		all      int64
+	)
+	suite := &postgresSuite{}
+	suite.setup(t)
+	defer suite.teardown(t)
+
+	for _ = range generateUserRepositoryData(t, suite) {
+		all++
+	}
+
+	entities, err = suite.user.Find(nil, &nilt.Int64{Int64: all, Valid: true})
+	if err != nil {
+		t.Errorf("users can not be retrieved, unexpected error: %s", err.Error())
+	} else {
+		assertf(t, int64(len(entities)) == all, "number of users retrived do not match, expected %d got %d", all, len(entities))
+	}
+
+	entities, err = suite.user.Find(
+		&nilt.Int64{Int64: all, Valid: true},
+		&nilt.Int64{Int64: all, Valid: true},
+	)
+	if err != nil {
+		t.Errorf("users can not be retrieved, unexpected error: %s", err.Error())
+	} else {
+		assertf(t, len(entities) == 0, "number of users retrived do not match, expected %d got %d", 0, len(entities))
+	}
+}
+
 type userRepositoryFixture struct {
 	got   userEntity
 	given struct {

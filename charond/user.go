@@ -283,7 +283,7 @@ func (ur *userRepository) Find(offset, limit *nilt.Int64) ([]*userEntity, error)
 		LIMIT $2
 	`
 
-	if offset == nil && !offset.Valid {
+	if offset == nil || !offset.Valid {
 		offset = &nilt.Int64{Int64: 0, Valid: true}
 	}
 
