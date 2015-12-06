@@ -5,6 +5,8 @@ package main
 import (
 	"testing"
 
+	"reflect"
+
 	"github.com/piotrkowalczuk/nilt"
 )
 
@@ -85,6 +87,27 @@ func TestUserRepository_DeleteOneByID(t *testing.T) {
 
 	}
 }
+
+func TestUserRepository_FindOneByID(t *testing.T) {
+	suite := &postgresSuite{}
+	suite.setup(t)
+	defer suite.teardown(t)
+
+	for res := range generateUserRepositoryData(t, suite) {
+		user := res.got
+		found, err := suite.user.FindOneByID(user.ID)
+
+		if err != nil {
+			t.Errorf("user cannot be deleted, unexpected error: %s", err.Error())
+			continue
+		}
+
+		if assert(t, found != nil, "user was not found, nil object returned") {
+			assertf(t, reflect.DeepEqual(res.got, *found), "created and retrieved entity should be equal, but its not\ncreated: %#v\nfounded: %#v", res.got, found)
+		}
+	}
+}
+
 type userRepositoryFixture struct {
 	got   userEntity
 	given struct {
