@@ -13,6 +13,13 @@ type postgresSuite struct {
 	group      GroupRepository
 }
 
+func setupPostgresSuite(t *testing.T) *postgresSuite {
+	ps := postgresSuite{}
+	ps.setup(t)
+
+	return ps
+}
+
 func (ps *postgresSuite) setup(t *testing.T) {
 	config.parse()
 	var err error

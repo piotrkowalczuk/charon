@@ -11,8 +11,7 @@ import (
 )
 
 func TestUserRepository_Create(t *testing.T) {
-	suite := &postgresSuite{}
-	suite.setup(t)
+	suite := setupPostgresSuite(t)
 	defer suite.teardown(t)
 
 	for res := range generateUserRepositoryData(t, suite) {
@@ -30,8 +29,7 @@ func TestUserRepository_Create(t *testing.T) {
 
 func TestUserRepository_UpdateOneByID(t *testing.T) {
 	suffix := "_modified"
-	suite := &postgresSuite{}
-	suite.setup(t)
+	suite := setupPostgresSuite(t)
 	defer suite.teardown(t)
 
 	for res := range generateUserRepositoryData(t, suite) {
@@ -70,8 +68,7 @@ func TestUserRepository_UpdateOneByID(t *testing.T) {
 }
 
 func TestUserRepository_DeleteOneByID(t *testing.T) {
-	suite := &postgresSuite{}
-	suite.setup(t)
+	suite := setupPostgresSuite(t)
 	defer suite.teardown(t)
 
 	for res := range generateUserRepositoryData(t, suite) {
@@ -88,8 +85,7 @@ func TestUserRepository_DeleteOneByID(t *testing.T) {
 }
 
 func TestUserRepository_FindOneByID(t *testing.T) {
-	suite := &postgresSuite{}
-	suite.setup(t)
+	suite := setupPostgresSuite(t)
 	defer suite.teardown(t)
 
 	for res := range generateUserRepositoryData(t, suite) {
@@ -108,8 +104,7 @@ func TestUserRepository_FindOneByID(t *testing.T) {
 }
 
 func TestUserRepository_UpdateLastLoginAt(t *testing.T) {
-	suite := &postgresSuite{}
-	suite.setup(t)
+	suite := setupPostgresSuite(t)
 	defer suite.teardown(t)
 
 	for res := range generateUserRepositoryData(t, suite) {
@@ -138,8 +133,7 @@ func TestUserRepository_Find(t *testing.T) {
 		entities []*userEntity
 		all      int64
 	)
-	suite := &postgresSuite{}
-	suite.setup(t)
+	suite := setupPostgresSuite(t)
 	defer suite.teardown(t)
 
 	for _ = range generateUserRepositoryData(t, suite) {
