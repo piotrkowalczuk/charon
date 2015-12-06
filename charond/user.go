@@ -404,6 +404,7 @@ func (ur *userRepository) UpdateOneByID(id int64, username, securePassword, firs
 	}
 
 	query += `
+		, updated_at = NOW()
 		WHERE id = $1
 		RETURNING ` + tableUserColumns + `
 	`

@@ -12,7 +12,7 @@ type postgresSuite struct {
 	group      GroupRepository
 }
 
-func (ps *postgresSuite) Setup(t *testing.T) {
+func (ps *postgresSuite) setup(t *testing.T) {
 	config.parse()
 	var err error
 
@@ -27,10 +27,26 @@ func (ps *postgresSuite) Setup(t *testing.T) {
 	ps.user = newUserRepository(ps.postgres)
 }
 
-func (ps *postgresSuite) Teardown(t *testing.T) {
+func (ps *postgresSuite) teardown(t *testing.T) {
 	if err := tearDownDatabase(ps.postgres); err != nil {
 		t.Errorf("unexpected error during database teardown: %s", err.Error())
 	}
 
 	ps.postgres.Close()
+}
+
+func assert(t *testing.T, is bool, msg string) bool {
+	if !is {
+		t.Errorf(msg)
+	}
+
+	return is
+}
+
+func assertf(t *testing.T, is bool, msg string, args ...interface{}) bool {
+	if !is {
+		t.Errorf(msg, args...)
+	}
+
+	return is
 }
