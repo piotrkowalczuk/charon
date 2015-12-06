@@ -17,7 +17,7 @@ func setupPostgresSuite(t *testing.T) *postgresSuite {
 	ps := postgresSuite{}
 	ps.setup(t)
 
-	return ps
+	return &ps
 }
 
 func (ps *postgresSuite) setup(t *testing.T) {
