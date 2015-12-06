@@ -50,7 +50,7 @@ func TestUserRepository_UpdateOneByID(t *testing.T) {
 			t.Errorf("user cannot be modified, unexpected error: %s", err.Error())
 			continue
 		} else {
-			t.Logf("user has been modified with id: %d", modified.ID)
+			t.Logf("user with id %d has been modified", modified.ID)
 		}
 
 		if assertf(t, modified.UpdatedAt != nil && !modified.UpdatedAt.IsZero(), "invalid updated at field, expected valid time but got %v", modified.UpdatedAt) {
@@ -67,6 +67,24 @@ func TestUserRepository_UpdateOneByID(t *testing.T) {
 	}
 }
 
+func TestUserRepository_DeleteOneByID(t *testing.T) {
+	suite := &postgresSuite{}
+	suite.setup(t)
+	defer suite.teardown(t)
+
+	for res := range generateUserRepositoryData(t, suite) {
+		user := res.got
+		affected, err := suite.user.DeleteOneByID(user.ID)
+
+		if err != nil {
+			t.Errorf("user cannot be deleted, unexpected error: %s", err.Error())
+			continue
+		}
+
+		assert(t, affected == 1, "user was not deleted, no rows affected")
+
+	}
+}
 type userRepositoryFixture struct {
 	got   userEntity
 	given struct {
@@ -114,7 +132,7 @@ func generateUserRepositoryData(t *testing.T, suite *postgresSuite) chan userRep
 				t.Errorf("user cannot be created, unexpected error: %s", err.Error())
 				continue
 			} else {
-				t.Logf("user has been created with id: %d", entity.ID)
+				t.Logf("user has been created, got id %d", entity.ID)
 			}
 
 			data <- userRepositoryFixture{
