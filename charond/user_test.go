@@ -5,10 +5,9 @@ package main
 import "testing"
 
 func TestUserRepository_Create(t *testing.T) {
-	config.parse()
-
-	postgres := initPostgres(config.postgres.connectionString, 0, &testLogger{T: t})
-	repo := newUserRepository(postgres)
+	suite := postgresSuite{}
+	suite.Setup(t)
+	defer suite.Teardown(t)
 
 	success := []struct {
 		username, password, firstName, lastName, confirmationToken string
@@ -32,7 +31,7 @@ func TestUserRepository_Create(t *testing.T) {
 
 TestLoop:
 	for _, data := range success {
-		entity, err := repo.Create(
+		entity, err := suite.user.Create(
 			data.username,
 			data.password,
 			data.firstName,
@@ -52,7 +51,7 @@ TestLoop:
 		if entity.CreatedAt == nil || entity.CreatedAt.IsZero() {
 			t.Errorf("invalid created at field, expected valid time but got %v", entity.CreatedAt)
 		} else {
-			t.Logf("user has been properly created at %v", entity.CreatedAt)
+			t.Logf("user has been properly created properly with date %v", entity.CreatedAt)
 		}
 
 		if entity.Username != data.username {
@@ -60,19 +59,4 @@ TestLoop:
 		}
 	}
 
-	if err := tearDownDatabase(postgres); err != nil {
-		t.Errorf("unexpected error during database teardown: %s", err.Error())
-	}
-
-	postgres.Close()
-}
-
-type testLogger struct {
-	*testing.T
-}
-
-func (tl *testLogger) Log(args ...interface{}) error {
-	tl.T.Log(args...)
-
-	return nil
 }
