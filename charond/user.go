@@ -111,7 +111,7 @@ type UserRepository interface {
 	CreateSuperuser(username, password, firstName, lastName string) (*userEntity, error)
 	// Count retrieves number of all users.
 	Count() (int64, error)
-	UpdateLastLoginAt(id int64) error
+	UpdateLastLoginAt(id int64) (int64, error)
 	ChangePassword(id int64, password string) error
 	Find(offset, limit *nilt.Int64) ([]*userEntity, error)
 	FindOneByID(id int64) (*userEntity, error)
@@ -328,11 +328,11 @@ func (ur *userRepository) Find(offset, limit *nilt.Int64) ([]*userEntity, error)
 }
 
 // UpdateLastLoginAt implements UserRepository interface.
-func (ur *userRepository) UpdateLastLoginAt(userID int64) error {
+func (ur *userRepository) UpdateLastLoginAt(userID int64) (int64, error) {
 	query := `
 		UPDATE charon.user
 		SET last_login_at = NOW()
-		WHERE id = $1;
+		WHERE id = $1
 	`
 
 	result, err := ur.db.Exec(
@@ -340,11 +340,10 @@ func (ur *userRepository) UpdateLastLoginAt(userID int64) error {
 		userID,
 	)
 	if err != nil {
-		return err
+		return 0, err
 	}
-	_, err = result.RowsAffected()
 
-	return err
+	return result.RowsAffected()
 }
 
 func (ur *userRepository) DeleteOneByID(id int64) (int64, error) {

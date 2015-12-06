@@ -61,7 +61,7 @@ func (rs *rpcServer) Login(ctx context.Context, r *charon.LoginRequest) (*charon
 		return nil, err
 	}
 
-	err = rs.repository.user.UpdateLastLoginAt(user.ID)
+	_, err = rs.repository.user.UpdateLastLoginAt(user.ID)
 	if err != nil {
 		sklog.Error(rs.logger, err, "username", r.Username)
 

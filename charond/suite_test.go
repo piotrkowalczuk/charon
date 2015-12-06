@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"testing"
+	"time"
 )
 
 type postgresSuite struct {
@@ -35,6 +36,14 @@ func (ps *postgresSuite) teardown(t *testing.T) {
 	ps.postgres.Close()
 }
 
+func assertf(t *testing.T, is bool, msg string, args ...interface{}) bool {
+	if !is {
+		t.Errorf(msg, args...)
+	}
+
+	return is
+}
+
 func assert(t *testing.T, is bool, msg string) bool {
 	if !is {
 		t.Errorf(msg)
@@ -43,10 +52,11 @@ func assert(t *testing.T, is bool, msg string) bool {
 	return is
 }
 
-func assertf(t *testing.T, is bool, msg string, args ...interface{}) bool {
-	if !is {
+func assertfTime(t *testing.T, tm *time.Time, msg string, args ...interface{}) bool {
+	if tm == nil || tm.IsZero() {
 		t.Errorf(msg, args...)
+		return false
 	}
 
-	return is
+	return true
 }

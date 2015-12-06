@@ -55,7 +55,7 @@ func TestUserRepository_UpdateOneByID(t *testing.T) {
 			t.Logf("user with id %d has been modified", modified.ID)
 		}
 
-		if assertf(t, modified.UpdatedAt != nil && !modified.UpdatedAt.IsZero(), "invalid updated at field, expected valid time but got %v", modified.UpdatedAt) {
+		if assertfTime(t, modified.UpdatedAt, "invalid updated at field, expected valid time but got %v", modified.UpdatedAt) {
 			t.Logf("user has been properly modified at %v", modified.UpdatedAt)
 		}
 		assertf(t, modified.Username == user.Username+suffix, "wrong username, expected %s but got %s", user.Username+suffix, modified.Username)
@@ -75,8 +75,7 @@ func TestUserRepository_DeleteOneByID(t *testing.T) {
 	defer suite.teardown(t)
 
 	for res := range generateUserRepositoryData(t, suite) {
-		user := res.got
-		affected, err := suite.user.DeleteOneByID(user.ID)
+		affected, err := suite.user.DeleteOneByID(res.got.ID)
 
 		if err != nil {
 			t.Errorf("user cannot be deleted, unexpected error: %s", err.Error())
@@ -104,6 +103,31 @@ func TestUserRepository_FindOneByID(t *testing.T) {
 
 		if assert(t, found != nil, "user was not found, nil object returned") {
 			assertf(t, reflect.DeepEqual(res.got, *found), "created and retrieved entity should be equal, but its not\ncreated: %#v\nfounded: %#v", res.got, found)
+		}
+	}
+}
+
+func TestUserRepository_UpdateLastLoginAt(t *testing.T) {
+	suite := &postgresSuite{}
+	suite.setup(t)
+	defer suite.teardown(t)
+
+	for res := range generateUserRepositoryData(t, suite) {
+		affected, err := suite.user.UpdateLastLoginAt(res.got.ID)
+
+		if err != nil {
+			t.Errorf("user cannot be updated, unexpected error: %s", err.Error())
+			continue
+		}
+
+		if assert(t, affected == 1, "user was not updated, no rows affected") {
+			entity, err := suite.user.FindOneByID(res.got.ID)
+			if err != nil {
+				t.Errorf("user cannot be found, unexpected error: %s", err.Error())
+				continue
+			}
+
+			assertfTime(t, entity.LastLoginAt, "user last login at property was not properly updated, got %v", entity.LastLoginAt)
 		}
 	}
 }
