@@ -1,6 +1,8 @@
 package main
 
 import (
+	"database/sql"
+
 	"github.com/piotrkowalczuk/charon"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
@@ -9,7 +11,28 @@ import (
 
 // CreateGroup implements charon.RPCServer interface.
 func (rs *rpcServer) CreateGroup(ctx context.Context, req *charon.CreateGroupRequest) (*charon.CreateGroupResponse, error) {
-	return nil, grpc.Errorf(codes.Unimplemented, "charond: create group endpoint is not implemented yet")
+	token, err := rs.token(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	actor, _, permissions, err := rs.retrieveActor(ctx, token)
+	if err != nil {
+		return nil, err
+	}
+
+	if !permissions.Contains(charon.GroupCanCreate) {
+		return nil, grpc.Errorf(codes.PermissionDenied, "charond: actor do not have permission: %s", charon.GroupCanCreate.String())
+	}
+
+	entity, err := rs.repository.group.Create(actor.ID, req.Name, req.Description)
+	if err != nil {
+		return nil, err
+	}
+
+	return &charon.CreateGroupResponse{
+		Group: entity.Message(),
+	}, nil
 }
 
 // ModifyGroup implements charon.RPCServer interface.
@@ -24,7 +47,16 @@ func (rs *rpcServer) DeleteGroup(ctx context.Context, req *charon.DeleteGroupReq
 
 // GetGroup implements charon.RPCServer interface.
 func (rs *rpcServer) GetGroup(ctx context.Context, req *charon.GetGroupRequest) (*charon.GetGroupResponse, error) {
-	return nil, grpc.Errorf(codes.Unimplemented, "charond: get group endpoint is not implemented yet")
+	entity, err := rs.repository.group.FindOneByID(req.Id)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, grpc.Errorf(codes.NotFound, "charond: group with id %d does not exists", req.Id)
+		}
+		return nil, grpc.Errorf(codes.Internal, err.Error())
+	}
+	return &charon.GetGroupResponse{
+		Group: entity.Message(),
+	}, nil
 }
 
 // ListGroups implements charon.RPCServer interface.

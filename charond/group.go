@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/piotrkowalczuk/charon"
+	"github.com/piotrkowalczuk/nilt"
 	"github.com/piotrkowalczuk/pqcnstr"
 	"github.com/piotrkowalczuk/protot"
 )
@@ -43,7 +44,7 @@ type groupEntity struct {
 	CreatedAt   *time.Time
 	CreatedBy   int64
 	UpdatedAt   *time.Time
-	UpdatedBy   int64
+	UpdatedBy   nilt.Int64
 }
 
 func (ge *groupEntity) Message() *charon.Group {
@@ -64,12 +65,16 @@ func (ge *groupEntity) Message() *charon.Group {
 		CreatedAt:   createdAt,
 		CreatedBy:   ge.CreatedBy,
 		UpdatedAt:   updatedAt,
-		UpdatedBy:   ge.UpdatedBy,
+		UpdatedBy:   ge.UpdatedBy.Int64Or(0),
 	}
 }
 
 type GroupRepository interface {
+	Create(createdBy int64, name, description string) (*groupEntity, error)
+	// FindByUserID retrieves all groups for user represented by given id.
 	FindByUserID(int64) ([]*groupEntity, error)
+	// FindOneByID retrieves group for given id.
+	FindOneByID(int64) (*groupEntity, error)
 }
 
 type groupRepository struct {
@@ -82,7 +87,25 @@ func newGroupRepository(dbPool *sql.DB) GroupRepository {
 	}
 }
 
-// FindOneByID retrieves all permissions for user represented by given id.
+func (gr *groupRepository) queryRow(query string, args ...interface{}) (*groupEntity, error) {
+	var entity groupEntity
+	err := gr.db.QueryRow(query, args...).Scan(
+		&entity.ID,
+		&entity.Name,
+		&entity.Description,
+		&entity.CreatedAt,
+		&entity.CreatedBy,
+		&entity.UpdatedAt,
+		&entity.UpdatedBy,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return &entity, nil
+}
+
+// FindByUserID implements GroupRepository interface.
 func (gr *groupRepository) FindByUserID(userID int64) ([]*groupEntity, error) {
 	query := `
 		SELECT  ` + tableGroupColumns + `
@@ -118,4 +141,22 @@ func (gr *groupRepository) FindByUserID(userID int64) ([]*groupEntity, error) {
 	}
 
 	return groups, nil
+}
+
+// FindOneByID implements GroupRepository interface.
+func (gr *groupRepository) FindOneByID(id int64) (*groupEntity, error) {
+	query := `
+		SELECT  ` + tableGroupColumns + `
+		FROM ` + tableGroup + ` AS g
+		WHERE g.id = $1 LIMIT 1
+	`
+
+	return gr.queryRow(query, id)
+}
+
+// Create implements GroupRepository interface.
+func (gr *groupRepository) Create(createdBy int64, name, description string) (*groupEntity, error) {
+	query := "INSERT INTO " + tableGroup + " (created_by, name, description) VALUES($1, $2, $3) RETURNING " + tableGroupColumns
+
+	return gr.queryRow(query, createdBy, name, description)
 }

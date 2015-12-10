@@ -26,8 +26,10 @@ type rpcServer struct {
 }
 
 func (rs *rpcServer) retrieveActor(ctx context.Context, token mnemosyne.Token) (user *userEntity, session *mnemosyne.Session, permissions charon.Permissions, err error) {
-	var userID int64
-	var entities []*permissionEntity
+	var (
+		userID   int64
+		entities []*permissionEntity
+	)
 
 	session, err = rs.session.Get(ctx, token)
 	if err != nil {
@@ -48,6 +50,9 @@ func (rs *rpcServer) retrieveActor(ctx context.Context, token mnemosyne.Token) (
 	}
 
 	entities, err = rs.repository.permission.FindByUserID(userID)
+	if err != nil {
+		return
+	}
 
 	permissions = make(charon.Permissions, 0, len(entities))
 	for _, e := range entities {

@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/piotrkowalczuk/charon"
+	"github.com/piotrkowalczuk/nilt"
 	"github.com/piotrkowalczuk/pqcnstr"
 )
 
@@ -39,6 +40,7 @@ type permissionEntity struct {
 	Module      string
 	Action      string
 	CreatedAt   *time.Time
+	CreatedBy   nilt.Int64
 }
 
 // Permission returns Permission value that is concatenated
@@ -84,11 +86,11 @@ func (pr *permissionRepository) FindByUserID(userID int64) ([]*permissionEntity,
 		var p permissionEntity
 		err = rows.Scan(
 			&p.ID,
-			&p.SubsystemID,
 			&p.Subsystem,
 			&p.Module,
 			&p.Action,
 			&p.CreatedAt,
+			&p.CreatedBy,
 		)
 		if err != nil {
 			return nil, err

@@ -26,12 +26,12 @@ func (rs *rpcServer) CreateUser(ctx context.Context, req *charon.CreateUserReque
 		return nil, err
 	}
 
-	user, _, permissions, err := rs.retrieveActor(ctx, token)
+	actor, _, permissions, err := rs.retrieveActor(ctx, token)
 	if err != nil {
 		return nil, err
 	}
 
-	if !user.IsSuperuser {
+	if !actor.IsSuperuser {
 		if req.IsSuperuser != nil && req.IsSuperuser.Valid {
 			return nil, grpc.Errorf(codes.PermissionDenied, "charond: user is not allowed to create superuser")
 		}
@@ -47,7 +47,7 @@ func (rs *rpcServer) CreateUser(ctx context.Context, req *charon.CreateUserReque
 			return nil, err
 		}
 	} else {
-		if !user.IsSuperuser {
+		if !actor.IsSuperuser {
 			return nil, grpc.Errorf(codes.PermissionDenied, "charond: only superuser can create an user with manualy defined secure password")
 		}
 	}
