@@ -55,4 +55,3 @@ func (c *Charon) Logout(ctx context.Context, token mnemosyne.Token) error {
 
 	return a.Error(0)
 }
-

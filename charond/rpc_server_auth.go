@@ -144,14 +144,6 @@ func (rs *rpcServer) Subject(ctx context.Context, req *charon.SubjectRequest) (*
 		return nil, err
 	}
 
-	//	subject := &charon.Subject{
-	//		ID:          user.ID,
-	//		FirstName:   user.FirstName,
-	//		LastName:    user.LastName,
-	//		Permissions: make(charon.Permissions, 0, len(permissions)),
-	//	}
-	//
-
 	permissions := make([]string, 0, len(permissionEntities))
 	for _, e := range permissionEntities {
 		permissions = append(permissions, e.Permission().String())

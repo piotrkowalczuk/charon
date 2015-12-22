@@ -9,17 +9,48 @@ import (
 
 // CreateGroup implements charon.RPCServer interface.
 func (rs *rpcServer) CreateGroup(ctx context.Context, req *charon.CreateGroupRequest) (*charon.CreateGroupResponse, error) {
-	return nil, grpc.Errorf(codes.Unimplemented, "charond: create group endpoint is not implemented yet")
+	actor, err := rs.retrieveActor(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	group, err := rs.repository.group.Create(req.Name, req.Description, actor.user.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &charon.CreateGroupResponse{
+		Group: group.Message(),
+	}, nil
 }
 
 // ModifyGroup implements charon.RPCServer interface.
 func (rs *rpcServer) ModifyGroup(ctx context.Context, req *charon.ModifyGroupRequest) (*charon.ModifyGroupResponse, error) {
-	return nil, grpc.Errorf(codes.Unimplemented, "charond: modify group endpoint is not implemented yet")
+	actor, err := rs.retrieveActor(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	group, err := rs.repository.group.UpdateOneByID(req.Id, actor.user.ID, req.Name, req.Description)
+	if err != nil {
+		return nil, err
+	}
+
+	return &charon.ModifyGroupResponse{
+		Group: group.Message(),
+	}, nil
 }
 
 // DeleteGroup implements charon.RPCServer interface.
 func (rs *rpcServer) DeleteGroup(ctx context.Context, req *charon.DeleteGroupRequest) (*charon.DeleteGroupResponse, error) {
-	return nil, grpc.Errorf(codes.Unimplemented, "charond: delete group endpoint is not implemented yet")
+	affected, err := rs.repository.group.DeleteOneByID(req.Id)
+	if err != nil {
+		return nil, err
+	}
+
+	return &charon.DeleteGroupResponse{
+		Affected: affected,
+	}, nil
 }
 
 // GetGroup implements charon.RPCServer interface.

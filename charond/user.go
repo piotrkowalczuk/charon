@@ -346,6 +346,7 @@ func (ur *userRepository) UpdateLastLoginAt(userID int64) (int64, error) {
 	return result.RowsAffected()
 }
 
+// DeleteOneByID implements UserRepository interface.
 func (ur *userRepository) DeleteOneByID(id int64) (int64, error) {
 	query := `
 		DELETE FROM charon.user

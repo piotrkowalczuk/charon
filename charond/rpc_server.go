@@ -25,11 +25,25 @@ type rpcServer struct {
 	}
 }
 
-func (rs *rpcServer) retrieveActor(ctx context.Context, token mnemosyne.Token) (user *userEntity, session *mnemosyne.Session, permissions charon.Permissions, err error) {
-	var userID int64
-	var entities []*permissionEntity
+type actor struct {
+	user        *userEntity
+	session     *mnemosyne.Session
+	permissions charon.Permissions
+}
 
-	session, err = rs.session.Get(ctx, token)
+func (rs *rpcServer) retrieveActor(ctx context.Context) (a *actor, err error) {
+	var (
+		userID   int64
+		entities []*permissionEntity
+		token    mnemosyne.Token
+	)
+
+	token, err = rs.token(ctx)
+	if err != nil {
+		return nil, err
+	}
+	a = &actor{}
+	a.session, err = rs.session.Get(ctx, token)
 	if err != nil {
 		if err == mnemosyne.ErrSessionNotFound {
 			err = grpc.Errorf(codes.Unauthenticated, "charond: action cannot be performed: %s", grpc.ErrorDesc(err))
@@ -38,20 +52,20 @@ func (rs *rpcServer) retrieveActor(ctx context.Context, token mnemosyne.Token) (
 		return
 	}
 
-	userID, err = charon.SessionSubjectID(session.SubjectId).UserID()
+	userID, err = charon.SessionSubjectID(a.session.SubjectId).UserID()
 	if err != nil {
 		return
 	}
-	user, err = rs.repository.user.FindOneByID(userID)
+	a.user, err = rs.repository.user.FindOneByID(userID)
 	if err != nil {
 		return
 	}
 
 	entities, err = rs.repository.permission.FindByUserID(userID)
 
-	permissions = make(charon.Permissions, 0, len(entities))
+	a.permissions = make(charon.Permissions, 0, len(entities))
 	for _, e := range entities {
-		permissions = append(permissions, e.Permission())
+		a.permissions = append(a.permissions, e.Permission())
 	}
 
 	return

@@ -2,10 +2,14 @@ package main
 
 import (
 	"database/sql"
+	"errors"
+	"fmt"
 	"time"
 
 	"github.com/piotrkowalczuk/charon"
+	"github.com/piotrkowalczuk/nilt"
 	"github.com/piotrkowalczuk/pqcnstr"
+	"github.com/piotrkowalczuk/pqcomp"
 	"github.com/piotrkowalczuk/protot"
 )
 
@@ -68,8 +72,16 @@ func (ge *groupEntity) Message() *charon.Group {
 	}
 }
 
+// GroupRepository ...
 type GroupRepository interface {
+	// FindOneByUserID retrieves all permissions for user represented by given id.
 	FindByUserID(int64) ([]*groupEntity, error)
+	// Create ...
+	Create(name, description string, createdBy int64) (*groupEntity, error)
+	// UpdateOneByID ...
+	UpdateOneByID(id, updatedBy int64, name, description *nilt.String) (*groupEntity, error)
+	// DeleteOneByID ...
+	DeleteOneByID(id int64) (int64, error)
 }
 
 type groupRepository struct {
@@ -82,7 +94,7 @@ func newGroupRepository(dbPool *sql.DB) GroupRepository {
 	}
 }
 
-// FindOneByID retrieves all permissions for user represented by given id.
+// FindOneByUserID implements GroupRepository interface.
 func (gr *groupRepository) FindByUserID(userID int64) ([]*groupEntity, error) {
 	query := `
 		SELECT  ` + tableGroupColumns + `
@@ -118,4 +130,99 @@ func (gr *groupRepository) FindByUserID(userID int64) ([]*groupEntity, error) {
 	}
 
 	return groups, nil
+}
+
+// Create ...
+func (gr *groupRepository) Create(name, description string, createdBy int64) (*groupEntity, error) {
+	entity := groupEntity{
+		Name:        name,
+		Description: description,
+		CreatedBy:   createdBy,
+	}
+
+	err := gr.insert(&entity)
+	if err != nil {
+		return nil, err
+	}
+
+	return &entity, nil
+}
+
+func (gr *groupRepository) insert(e *groupEntity) error {
+	query := `
+		INSERT INTO charon.user (
+			name, description, created_at, created_by
+		)
+		VALUES ($1, $2, NOW(), $3)
+		RETURNING id, created_at
+	`
+	return gr.db.QueryRow(
+		query,
+		e.Name,
+		e.Description,
+		e.CreatedBy,
+	).Scan(&e.ID, &e.CreatedAt)
+}
+
+// UpdateOneByID implements GroupRepository interface.
+func (gr *groupRepository) UpdateOneByID(id, updatedBy int64, name, description *nilt.String) (*groupEntity, error) {
+	var (
+		err    error
+		entity groupEntity
+		query  string
+	)
+
+	comp := pqcomp.New(2, 2)
+	comp.AddArg(id)
+	comp.AddArg(updatedBy)
+	comp.AddExpr("g.name", pqcomp.E, name)
+	comp.AddExpr("g.description", pqcomp.E, description)
+
+	if comp.Len() == 0 {
+		return nil, errors.New("charond: nothing to update")
+	}
+
+	query = `UPDATE ` + tableGroup + ` SET `
+	for comp.Next() {
+		if !comp.First() {
+			query += ", "
+		}
+
+		query += fmt.Sprintf("%s %s %s", comp.Key(), comp.Oper(), comp.PlaceHolder())
+	}
+
+	query += `
+		, updated_by = $2, updated_at = NOW()
+		WHERE id = $1
+		RETURNING ` + tableGroupColumns + `
+	`
+
+	err = gr.db.QueryRow(query, comp.Args()).Scan(
+		&entity.ID,
+		&entity.Name,
+		&entity.Description,
+		&entity.CreatedAt,
+		&entity.CreatedBy,
+		&entity.UpdatedAt,
+		&entity.UpdatedBy,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return &entity, nil
+}
+
+func (gr *groupRepository) DeleteOneByID(id int64) (int64, error) {
+	query := `
+		DELETE FROM ` + tableGroup + `
+		WHERE id = $1
+	`
+
+	res, err := gr.db.Exec(query, id)
+	if err != nil {
+		return 0, err
+	}
+
+	return res.RowsAffected()
 }

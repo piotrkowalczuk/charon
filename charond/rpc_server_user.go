@@ -21,22 +21,17 @@ func (rs *rpcServer) CreateUser(ctx context.Context, req *charon.CreateUserReque
 		}
 	}()
 
-	token, err := rs.token(ctx)
+	actor, err := rs.retrieveActor(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	user, _, permissions, err := rs.retrieveActor(ctx, token)
-	if err != nil {
-		return nil, err
-	}
-
-	if !user.IsSuperuser {
+	if !actor.user.IsSuperuser {
 		if req.IsSuperuser != nil && req.IsSuperuser.Valid {
 			return nil, grpc.Errorf(codes.PermissionDenied, "charond: user is not allowed to create superuser")
 		}
 
-		if req.IsStaff != nil && req.IsStaff.Valid && !permissions.Contains(charon.UserCanCreateStaff) {
+		if req.IsStaff != nil && req.IsStaff.Valid && !actor.permissions.Contains(charon.UserCanCreateStaff) {
 			return nil, grpc.Errorf(codes.PermissionDenied, "charond: user is not allowed to create staff user")
 		}
 	}
@@ -47,7 +42,7 @@ func (rs *rpcServer) CreateUser(ctx context.Context, req *charon.CreateUserReque
 			return nil, err
 		}
 	} else {
-		if !user.IsSuperuser {
+		if !actor.user.IsSuperuser {
 			return nil, grpc.Errorf(codes.PermissionDenied, "charond: only superuser can create an user with manualy defined secure password")
 		}
 	}
@@ -78,12 +73,7 @@ func (rs *rpcServer) ModifyUser(ctx context.Context, req *charon.ModifyUserReque
 		return nil, grpc.Errorf(codes.InvalidArgument, "charond: user cannot be modified, invalid id: %d", req.Id)
 	}
 
-	token, err := rs.token(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	actor, _, permissions, err := rs.retrieveActor(ctx, token)
+	actor, err := rs.retrieveActor(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -93,7 +83,7 @@ func (rs *rpcServer) ModifyUser(ctx context.Context, req *charon.ModifyUserReque
 		return nil, err
 	}
 
-	if hint, ok := modifyUserFirewall(req, entity, actor, permissions); !ok {
+	if hint, ok := modifyUserFirewall(req, entity, actor); !ok {
 		return nil, grpc.Errorf(codes.PermissionDenied, "charond: "+hint)
 	}
 
@@ -119,20 +109,20 @@ func (rs *rpcServer) ModifyUser(ctx context.Context, req *charon.ModifyUserReque
 	}, nil
 }
 
-func modifyUserFirewall(req *charon.ModifyUserRequest, entity *userEntity, actor *userEntity, perms charon.Permissions) (string, bool) {
-	isOwner := actor.ID == entity.ID
+func modifyUserFirewall(req *charon.ModifyUserRequest, entity *userEntity, actor *actor) (string, bool) {
+	isOwner := actor.user.ID == entity.ID
 
-	if !actor.IsSuperuser {
+	if !actor.user.IsSuperuser {
 		switch {
 		case entity.IsSuperuser:
 			return "only superuser can modify a superuser account", false
-		case entity.IsStaff && !isOwner && perms.Contains(charon.UserCanModifyStaffAsStranger):
+		case entity.IsStaff && !isOwner && actor.permissions.Contains(charon.UserCanModifyStaffAsStranger):
 			return "missing permission to modify an account as a stranger", false
-		case entity.IsStaff && isOwner && perms.Contains(charon.UserCanModifyStaffAsOwner):
+		case entity.IsStaff && isOwner && actor.permissions.Contains(charon.UserCanModifyStaffAsOwner):
 			return "missing permission to modify an account as an owner", false
 		case req.IsSuperuser != nil && req.IsSuperuser.Valid:
 			return "only superuser can change existing account to superuser", false
-		case req.IsStaff != nil && req.IsStaff.Valid && !perms.Contains(charon.UserCanCreateStaff):
+		case req.IsStaff != nil && req.IsStaff.Valid && !actor.permissions.Contains(charon.UserCanCreateStaff):
 			return "user is not allowed to create user with is_staff property that has custom value", false
 		}
 	}
