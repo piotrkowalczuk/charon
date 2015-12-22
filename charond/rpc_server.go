@@ -62,6 +62,9 @@ func (rs *rpcServer) retrieveActor(ctx context.Context) (a *actor, err error) {
 	}
 
 	entities, err = rs.repository.permission.FindByUserID(userID)
+	if err != nil {
+		return
+	}
 
 	a.permissions = make(charon.Permissions, 0, len(entities))
 	for _, e := range entities {

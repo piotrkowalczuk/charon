@@ -47,7 +47,7 @@ type groupEntity struct {
 	CreatedAt   *time.Time
 	CreatedBy   int64
 	UpdatedAt   *time.Time
-	UpdatedBy   int64
+	UpdatedBy   nilt.Int64
 }
 
 func (ge *groupEntity) Message() *charon.Group {
@@ -68,16 +68,18 @@ func (ge *groupEntity) Message() *charon.Group {
 		CreatedAt:   createdAt,
 		CreatedBy:   ge.CreatedBy,
 		UpdatedAt:   updatedAt,
-		UpdatedBy:   ge.UpdatedBy,
+		UpdatedBy:   ge.UpdatedBy.Int64Or(0),
 	}
 }
 
 // GroupRepository ...
 type GroupRepository interface {
-	// FindOneByUserID retrieves all permissions for user represented by given id.
+	// FindByUserID retrieves all groups for user represented by given id.
 	FindByUserID(int64) ([]*groupEntity, error)
+	// FindOneByID retrieves group for given id.
+	FindOneByID(int64) (*groupEntity, error)
 	// Create ...
-	Create(name, description string, createdBy int64) (*groupEntity, error)
+	Create(createdBy int64, name, description string) (*groupEntity, error)
 	// UpdateOneByID ...
 	UpdateOneByID(id, updatedBy int64, name, description *nilt.String) (*groupEntity, error)
 	// DeleteOneByID ...
@@ -94,7 +96,25 @@ func newGroupRepository(dbPool *sql.DB) GroupRepository {
 	}
 }
 
-// FindOneByUserID implements GroupRepository interface.
+func (gr *groupRepository) queryRow(query string, args ...interface{}) (*groupEntity, error) {
+	var entity groupEntity
+	err := gr.db.QueryRow(query, args...).Scan(
+		&entity.ID,
+		&entity.Name,
+		&entity.Description,
+		&entity.CreatedAt,
+		&entity.CreatedBy,
+		&entity.UpdatedAt,
+		&entity.UpdatedBy,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return &entity, nil
+}
+
+// FindByUserID implements GroupRepository interface.
 func (gr *groupRepository) FindByUserID(userID int64) ([]*groupEntity, error) {
 	query := `
 		SELECT  ` + tableGroupColumns + `
@@ -132,8 +152,8 @@ func (gr *groupRepository) FindByUserID(userID int64) ([]*groupEntity, error) {
 	return groups, nil
 }
 
-// Create ...
-func (gr *groupRepository) Create(name, description string, createdBy int64) (*groupEntity, error) {
+// Create implements GroupRepository interface.
+func (gr *groupRepository) Create(createdBy int64, name, description string) (*groupEntity, error) {
 	entity := groupEntity{
 		Name:        name,
 		Description: description,
@@ -213,6 +233,7 @@ func (gr *groupRepository) UpdateOneByID(id, updatedBy int64, name, description 
 	return &entity, nil
 }
 
+// DeleteByUserID implements GroupRepository interface.
 func (gr *groupRepository) DeleteOneByID(id int64) (int64, error) {
 	query := `
 		DELETE FROM ` + tableGroup + `
@@ -225,4 +246,15 @@ func (gr *groupRepository) DeleteOneByID(id int64) (int64, error) {
 	}
 
 	return res.RowsAffected()
+}
+
+// FindOneByID implements GroupRepository interface.
+func (gr *groupRepository) FindOneByID(id int64) (*groupEntity, error) {
+	query := `
+		SELECT  ` + tableGroupColumns + `
+		FROM ` + tableGroup + ` AS g
+		WHERE g.id = $1 LIMIT 1
+	`
+
+	return gr.queryRow(query, id)
 }
