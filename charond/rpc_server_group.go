@@ -75,15 +75,6 @@ func (rs *rpcServer) GetGroup(ctx context.Context, req *charon.GetGroupRequest) 
 
 // ListGroups implements charon.RPCServer interface.
 func (rs *rpcServer) ListGroups(ctx context.Context, req *charon.ListGroupsRequest) (*charon.ListGroupsResponse, error) {
+
 	return nil, grpc.Errorf(codes.Unimplemented, "charond: list groups endpoint is not implemented yet")
-}
-
-// ListGroupPermissions implements charon.RPCServer interface.
-func (rs *rpcServer) ListGroupPermissions(ctx context.Context, req *charon.ListGroupPermissionsRequest) (*charon.ListGroupPermissionsResponse, error) {
-	return nil, grpc.Errorf(codes.Unimplemented, "charond: list group permissions endpoint is not implemented yet")
-}
-
-// SetGroupPermissions implements charon.RPCServer interface.
-func (rs *rpcServer) SetGroupPermissions(ctx context.Context, req *charon.SetGroupPermissionsRequest) (*charon.SetGroupPermissionsResponse, error) {
-	return nil, grpc.Errorf(codes.Unimplemented, "charond: set group permissions endpoint is not implemented yet")
 }

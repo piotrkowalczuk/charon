@@ -10,7 +10,7 @@ import (
 	"google.golang.org/grpc/codes"
 )
 
-// CreateUser ...
+// CreateUser implements charon.RPCServer interface.
 func (rs *rpcServer) CreateUser(ctx context.Context, req *charon.CreateUserRequest) (*charon.CreateUserResponse, error) {
 	var err error
 	defer func() {
@@ -67,7 +67,7 @@ func (rs *rpcServer) CreateUser(ctx context.Context, req *charon.CreateUserReque
 	}, nil
 }
 
-// ModifyUser ...
+// ModifyUser implements charon.RPCServer interface.
 func (rs *rpcServer) ModifyUser(ctx context.Context, req *charon.ModifyUserRequest) (*charon.ModifyUserResponse, error) {
 	if req.Id <= 0 {
 		return nil, grpc.Errorf(codes.InvalidArgument, "charond: user cannot be modified, invalid id: %d", req.Id)
@@ -130,7 +130,7 @@ func modifyUserFirewall(req *charon.ModifyUserRequest, entity *userEntity, actor
 	return "", true
 }
 
-// GetUser ...
+// GetUser implements charon.RPCServer interface.
 func (rs *rpcServer) GetUser(ctx context.Context, req *charon.GetUserRequest) (*charon.GetUserResponse, error) {
 	user, err := rs.repository.user.FindOneByID(req.Id)
 	if err != nil {
@@ -144,7 +144,7 @@ func (rs *rpcServer) GetUser(ctx context.Context, req *charon.GetUserRequest) (*
 	}, nil
 }
 
-// ListUsers ...
+// ListUsers implements charon.RPCServer interface.
 func (rs *rpcServer) ListUsers(ctx context.Context, req *charon.ListUsersRequest) (*charon.ListUsersResponse, error) {
 	users, err := rs.repository.user.Find(req.Offset, req.Limit)
 	if err != nil {
@@ -164,7 +164,7 @@ func (rs *rpcServer) ListUsers(ctx context.Context, req *charon.ListUsersRequest
 	return resp, nil
 }
 
-// DeleteUser ...
+// DeleteUser implements charon.RPCServer interface.
 func (rs *rpcServer) DeleteUser(ctx context.Context, req *charon.DeleteUserRequest) (*charon.DeleteUserResponse, error) {
 	if req.Id <= 0 {
 		return nil, grpc.Errorf(codes.InvalidArgument, "charond: user cannot be deleted, invalid id: %d", req.Id)

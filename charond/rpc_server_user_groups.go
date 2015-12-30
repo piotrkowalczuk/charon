@@ -8,6 +8,11 @@ import (
 	"golang.org/x/net/context"
 )
 
+// SetUserGroups implements charon.RPCServer interface.
+func (rs *rpcServer) SetUserGroups(ctx context.Context, req *charon.SetUserGroupsRequest) (*charon.SetUserGroupsResponse, error) {
+	return nil, grpc.Errorf(codes.Unimplemented, "charond: set user groups endpoint is not implemented yet")
+}
+
 // ListUserGroups implements charon.RPCServer interface.
 func (rs *rpcServer) ListUserGroups(ctx context.Context, req *charon.ListUserGroupsRequest) (*charon.ListUserGroupsResponse, error) {
 	entities, err := rs.repository.group.FindByUserID(req.Id)
@@ -23,9 +28,4 @@ func (rs *rpcServer) ListUserGroups(ctx context.Context, req *charon.ListUserGro
 	return &charon.ListUserGroupsResponse{
 		Groups: groups,
 	}, nil
-}
-
-// SetUserGroups implements charon.RPCServer interface.
-func (rs *rpcServer) SetUserGroups(ctx context.Context, req *charon.SetUserGroupsRequest) (*charon.SetUserGroupsResponse, error) {
-	return nil, grpc.Errorf(codes.Unimplemented, "charond: set user groups endpoint is not implemented yet")
 }
