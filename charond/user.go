@@ -159,14 +159,14 @@ func (ur *userRepository) CreateSuperuser(username, password, firstName, lastNam
 
 // Count implements UserRepository interface.
 func (ur *userRepository) Count() (n int64, err error) {
-	err = ur.db.QueryRow("SELECT COUNT(*) FROM charon.user").Scan(&n)
+	err = ur.db.QueryRow("SELECT COUNT(*) FROM " + tableUser).Scan(&n)
 
 	return
 }
 
 func (ur *userRepository) insert(e *userEntity) error {
 	query := `
-		INSERT INTO charon.user (
+		INSERT INTO ` + tableUser + ` (
 			password, username, first_name, last_name, is_active, is_staff,
 			is_superuser, is_confirmed, confirmation_token,
 			created_at, created_by
@@ -191,7 +191,7 @@ func (ur *userRepository) insert(e *userEntity) error {
 
 func (ur *userRepository) RegistrationConfirmation(userID int64, confirmationToken string) error {
 	query := `
-		UPDATE charon.user
+		UPDATE ` + tableUser + `
 		SET is_confirmed = true, is_active = true, updated_at = NOW(), confirmation_token = $1
 		WHERE is_confirmed = false AND id = $2 AND confirmation_token = $3;
 	`
@@ -214,7 +214,7 @@ func (ur *userRepository) RegistrationConfirmation(userID int64, confirmationTok
 // ChangePassword ...
 func (ur *userRepository) ChangePassword(userID int64, password string) error {
 	query := `
-		UPDATE charon.user
+		UPDATE ` + tableUser + `
 		SET password = $2, updated_at = NOW()
 		WHERE id = $1;
 	`
@@ -245,7 +245,7 @@ func (ur *userRepository) FindOneByID(id int64) (*userEntity, error) {
 func (ur *userRepository) findOneBy(fieldName string, value interface{}) (*userEntity, error) {
 	query := `
 		SELECT ` + tableUserColumns + `
-		FROM charon.user
+		FROM ` + tableUser + `
 		WHERE ` + fieldName + ` = $1
 		LIMIT 1
 	`
@@ -278,7 +278,7 @@ func (ur *userRepository) findOneBy(fieldName string, value interface{}) (*userE
 func (ur *userRepository) Find(offset, limit *nilt.Int64) ([]*userEntity, error) {
 	query := `
 		SELECT ` + tableUserColumns + `
-		FROM charon.user
+		FROM ` + tableUser + `
 		OFFSET $1
 		LIMIT $2
 	`
@@ -330,7 +330,7 @@ func (ur *userRepository) Find(offset, limit *nilt.Int64) ([]*userEntity, error)
 // UpdateLastLoginAt implements UserRepository interface.
 func (ur *userRepository) UpdateLastLoginAt(userID int64) (int64, error) {
 	query := `
-		UPDATE charon.user
+		UPDATE ` + tableUser + `
 		SET last_login_at = NOW()
 		WHERE id = $1
 	`
@@ -349,7 +349,7 @@ func (ur *userRepository) UpdateLastLoginAt(userID int64) (int64, error) {
 // DeleteOneByID implements UserRepository interface.
 func (ur *userRepository) DeleteOneByID(id int64) (int64, error) {
 	query := `
-		DELETE FROM charon.user
+		DELETE FROM ` + tableUser + `
 		WHERE id = $1
 	`
 
@@ -394,7 +394,7 @@ func (ur *userRepository) UpdateOneByID(id int64, username, securePassword, firs
 		return nil, errors.New("charond: nothing to update")
 	}
 
-	query := `UPDATE charon.user SET `
+	query := `UPDATE ` + tableUser + ` SET `
 	for j, key := range keys {
 		if j != 0 {
 			query += ", "

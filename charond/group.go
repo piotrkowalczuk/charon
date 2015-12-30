@@ -170,7 +170,7 @@ func (gr *groupRepository) Create(createdBy int64, name, description string) (*g
 
 func (gr *groupRepository) insert(e *groupEntity) error {
 	query := `
-		INSERT INTO charon.user (
+		INSERT INTO ` + tableGroup + ` (
 			name, description, created_at, created_by
 		)
 		VALUES ($1, $2, NOW(), $3)
