@@ -48,6 +48,39 @@ const (
 var (
 	// EmptyPermission is a shorthand
 	EmptyPermission = Permission("")
+	// AllPermissions ...
+	AllPermissions = Permissions{
+		UserCanCreate,
+		UserCanCreateStaff,
+		UserCanDeleteAsStranger,
+		UserCanDeleteAsOwner,
+		UserCanDeleteStaffAsStranger,
+		UserCanDeleteStaffAsOwner,
+		UserCanModifyAsStranger,
+		UserCanModifyAsOwner,
+		UserCanModifyStaffAsStranger,
+		UserCanModifyStaffAsOwner,
+		UserCanRetrieveAsOwner,
+		UserCanRetrieveAsStranger,
+		UserCanRetrieveStaffAsOwner,
+		UserCanRetrieveStaffAsStranger,
+		UserPermissionCanCreate,
+		UserPermissionCanDelete,
+		UserPermissionCanModify,
+		UserPermissionCanRetrieve,
+		PermissionCanCreate,
+		PermissionCanDelete,
+		PermissionCanModify,
+		PermissionCanRetrieve,
+		GroupCanCreate,
+		GroupCanDelete,
+		GroupCanModify,
+		GroupCanRetrieve,
+		GroupPermissionCanCreate,
+		GroupPermissionCanDelete,
+		GroupPermissionCanModify,
+		GroupPermissionCanRetrieve,
+	}
 )
 
 // Permission is a string that consist of subsystem, module/content type and an action.
@@ -79,6 +112,13 @@ func (p Permission) Split() (string, string, string) {
 	default:
 		return string(parts[0]), string(parts[1]), string(parts[2])
 	}
+}
+
+// Subsystem is a handy wrapper for Split method, that just returns sybsystem.
+func (p Permission) Subsystem() (subsystem string) {
+	subsystem, _, _ = p.Split()
+
+	return
 }
 
 // Permission implements Permission interface.
@@ -127,4 +167,14 @@ func (p Permissions) Contains(permission Permission) bool {
 	}
 
 	return false
+}
+
+// Strings maps Permissions into slice of strings.
+func (p Permissions) Strings() (strs []string) {
+	strs = make([]string, 0, len(p))
+	for _, pp := range p {
+		strs = append(strs, pp.String())
+	}
+
+	return strs
 }
