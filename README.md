@@ -17,14 +17,15 @@ Documentation is available on [charon.readme.io](http://charon.readme.io).
     - [ ] is granted
     - [ ] belongs to
 - [ ] Permission
+	- [ ] get
     - [ ] list
-    - [ ] register
+    - [x] register
 - [ ] Group
-    - [ ] get
+    - [x] get
     - [ ] list
-    - [ ] modify
-    - [ ] delete
-    - [ ] create
+    - [x] modify
+    - [x] delete
+    - [x] create
     - [ ] set permissions
     - [ ] list permissions
 - [ ] User
