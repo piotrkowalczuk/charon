@@ -37,7 +37,8 @@ service RPC {
 
     rpc RegisterPermissions(RegisterPermissionsRequest) returns (RegisterPermissionsResponse) {};
     rpc ListPermissions(ListPermissionsRequest) returns (ListPermissionsResponse) {};
-    
+    rpc GetPermission(GetPermissionRequest) returns (GetPermissionResponse) {};
+
     // Group
 
     rpc CreateGroup(CreateGroupRequest) returns (CreateGroupResponse) {};
@@ -212,7 +213,7 @@ message ListUserGroupsResponse {
 }
 
 message SetUserGroupsRequest {
-    repeated string groups = 1;
+    repeated int64 groups = 1;
 }
 
 message SetUserGroupsResponse {
@@ -221,36 +222,48 @@ message SetUserGroupsResponse {
     repeated string untouched = 3;
 }
 
-
 // ---------------------
 // ---- PERMISSIONS ----
 // ---------------------
-
 
 message RegisterPermissionsRequest {
     repeated string permissions = 1;
 }
 
 message RegisterPermissionsResponse {
-    repeated string created = 1;
-    repeated string removed = 2;
-    repeated string untouched = 3;
+    int32 created = 1;
+    int32 removed = 2;
+    int32 untouched = 3;
 }
 
 message ListPermissionsRequest {
-    reserved 1 to 99;
+    reserved 6 to 99;
+    nilt.String subsystem = 1;
+    nilt.String module = 2;
+    nilt.String action = 3;
+    protot.TimestampRange created_at = 4;
+    nilt.Int64 created_by = 5;
+
     nilt.Int64 offset = 100;
     nilt.Int64 limit = 101;
+    repeated string sort = 102;
 }
 
 message ListPermissionsResponse {
     repeated string permissions = 1;
 }
 
+message GetPermissionRequest {
+    int64 id = 1;
+}
+
+message GetPermissionResponse {
+    string permission = 1;
+}
+
 // ----------------
 // ---- GROUPS ----
 // ----------------
-
 
 message Group {
     int64 id = 1;
