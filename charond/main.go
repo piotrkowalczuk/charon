@@ -51,6 +51,8 @@ func main() {
 	permissionRepo := newPermissionRepository(postgres)
 	groupRepo := newGroupRepository(postgres)
 
+	permissionReg := initPermissionRegistry(permissionRepo, charon.AllPermissions, logger)
+
 	// If any of this flags are set, try to create superuser. Will fail if data is wrong, or any user already exists.
 	superuser := config.superuser
 	if superuser.username != "" || superuser.password != "" || superuser.firstName != "" || superuser.lastName != "" {
@@ -80,9 +82,10 @@ func main() {
 	gRPCServer := grpc.NewServer(opts...)
 
 	charonServer := &rpcServer{
-		logger:         logger,
-		session:        mnemosyneClient,
-		passwordHasher: passwordHasher,
+		logger:             logger,
+		session:            mnemosyneClient,
+		passwordHasher:     passwordHasher,
+		permissionRegistry: permissionReg,
 		repository: struct {
 			user       UserRepository
 			permission PermissionRepository

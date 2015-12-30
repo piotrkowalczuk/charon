@@ -101,3 +101,15 @@ func initPasswordHasher(cost int, logger log.Logger) charon.PasswordHasher {
 
 	return bh
 }
+
+func initPermissionRegistry(r PermissionRepository, permissions charon.Permissions, logger log.Logger) (pr PermissionRegistry) {
+	pr = newPermissionRegistry(r)
+	created, untouched, removed, err := pr.Register(permissions)
+	if err != nil {
+		sklog.Fatal(logger, err)
+	}
+
+	sklog.Info(logger, "charon permissions has been registered", "created", created, "untouched", untouched, "removed", removed)
+
+	return
+}

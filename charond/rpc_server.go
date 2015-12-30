@@ -13,12 +13,13 @@ import (
 )
 
 type rpcServer struct {
-	meta           metadata.MD
-	logger         log.Logger
-	monitor        *monitoring
-	session        mnemosyne.Mnemosyne
-	passwordHasher charon.PasswordHasher
-	repository     struct {
+	meta               metadata.MD
+	logger             log.Logger
+	monitor            *monitoring
+	session            mnemosyne.Mnemosyne
+	passwordHasher     charon.PasswordHasher
+	permissionRegistry PermissionRegistry
+	repository         struct {
 		user       UserRepository
 		permission PermissionRepository
 		group      GroupRepository

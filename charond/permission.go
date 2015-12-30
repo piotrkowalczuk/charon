@@ -4,6 +4,10 @@ import (
 	"database/sql"
 	"time"
 
+	"sync"
+
+	"errors"
+
 	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/nilt"
 	"github.com/piotrkowalczuk/pqcnstr"
@@ -13,7 +17,6 @@ const (
 	tablePermission                                                         = "charon.permission"
 	tablePermissionConstraintPrimaryKey                  pqcnstr.Constraint = tablePermission + "_pkey"
 	tablePermissionConstraintUniqueSubsystemModuleAction pqcnstr.Constraint = tablePermission + "_subsystem_module_action_key"
-	tablePermissionConstraintForeignKeyUpdatedBy         pqcnstr.Constraint = tablePermission + "_created_by_fkey"
 	tablePermissionCreate                                                   = `
 		CREATE TABLE IF NOT EXISTS ` + tablePermission + ` (
 			id           SERIAL,
@@ -21,26 +24,23 @@ const (
 			module       TEXT                      NOT NULL,
 			action       TEXT                      NOT NULL,
 			created_at   TIMESTAMPTZ DEFAULT NOW() NOT NULL,
-			created_by   INTEGER,
 
 			CONSTRAINT "` + tablePermissionConstraintPrimaryKey + `" PRIMARY KEY (id),
-			CONSTRAINT "` + tablePermissionConstraintUniqueSubsystemModuleAction + `" UNIQUE (subsystem, module, action),
-			CONSTRAINT "` + tablePermissionConstraintForeignKeyUpdatedBy + `" FOREIGN KEY (created_by) REFERENCES ` + tableUser + ` (id)
+			CONSTRAINT "` + tablePermissionConstraintUniqueSubsystemModuleAction + `" UNIQUE (subsystem, module, action)
 		)
 	`
 	tablePermissionColumns = `
-		p.id, p.subsystem, p.module, p.action, p.created_at, p.created_by
+		p.id, p.subsystem, p.module, p.action, p.created_at
 	`
 )
 
 type permissionEntity struct {
-	ID          int64
-	SubsystemID int64
-	Subsystem   string
-	Module      string
-	Action      string
-	CreatedAt   *time.Time
-	CreatedBy   nilt.Int64
+	ID        int64
+	Subsystem string
+	Module    string
+	Action    string
+	CreatedAt *time.Time
+	CreatedBy nilt.Int64
 }
 
 // Permission returns Permission value that is concatenated
@@ -51,7 +51,8 @@ func (pe *permissionEntity) Permission() charon.Permission {
 
 // PermissionRepository ...
 type PermissionRepository interface {
-	FindByUserID(int64) ([]*permissionEntity, error)
+	FindByUserID(userID int64) (entities []*permissionEntity, err error)
+	Register(permissions charon.Permissions) (created, untouched, removed int, err error)
 }
 
 type permissionRepository struct {
@@ -90,7 +91,6 @@ func (pr *permissionRepository) FindByUserID(userID int64) ([]*permissionEntity,
 			&p.Module,
 			&p.Action,
 			&p.CreatedAt,
-			&p.CreatedBy,
 		)
 		if err != nil {
 			return nil, err
@@ -103,4 +103,167 @@ func (pr *permissionRepository) FindByUserID(userID int64) ([]*permissionEntity,
 	}
 
 	return permissions, nil
+}
+
+func (pr *permissionRepository) findOneStmt() (*sql.Stmt, error) {
+	return pr.db.Prepare(
+		"SELECT " + tablePermissionColumns + " " +
+			"FROM " + tablePermission + " AS p " +
+			"WHERE p.subsystem = $1 AND p.module = $2 AND p.action = $3",
+	)
+}
+
+func (pr *permissionRepository) Register(permissions charon.Permissions) (created, untouched, removed int, err error) {
+	var (
+		tx             *sql.Tx
+		insert, delete *sql.Stmt
+		rows           *sql.Rows
+		subsystem      string
+		entities       []*permissionEntity
+	)
+	if len(permissions) == 0 {
+		return 0, 0, 0, errors.New("charond: empty slice, permissions cannot be registered")
+	}
+
+	subsystem = permissions[0].Subsystem()
+	if subsystem == "" {
+		return 0, 0, 0, errors.New("charond: subsystem name is empty string, permissions cannot be registered")
+	}
+
+	for _, p := range permissions {
+		if p.Subsystem() != subsystem {
+			return 0, 0, 0, errors.New("charond: provided permissions do not belong to one subsystem, permissions cannot be registered")
+		}
+	}
+
+	tx, err = pr.db.Begin()
+	if err != nil {
+		return
+	}
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		} else {
+			tx.Commit()
+			untouched = len(permissions) - removed - created
+		}
+	}()
+
+	rows, err = tx.Query("SELECT "+tablePermissionColumns+" FROM "+tablePermission+" AS p WHERE p.subsystem = $1", subsystem)
+	if err != nil {
+		return
+	}
+
+	entities = []*permissionEntity{}
+	for rows.Next() {
+		var entity permissionEntity
+		err = rows.Scan(
+			&entity.ID,
+			&entity.Subsystem,
+			&entity.Module,
+			&entity.Action,
+			&entity.CreatedAt,
+		)
+		if err != nil {
+			return
+		}
+		entities = append(entities, &entity)
+	}
+	if rows.Err() != nil {
+		return 0, 0, 0, rows.Err()
+	}
+
+	insert, err = tx.Prepare("INSERT INTO " + tablePermission + " (subsystem, module, action) VALUES ($1, $2, $3)")
+	if err != nil {
+		return
+	}
+
+MissingPermissionsLoop:
+	for _, p := range permissions {
+		for _, e := range entities {
+			if p == e.Permission() {
+				break MissingPermissionsLoop
+			}
+		}
+
+		if _, err = insert.Exec(p.Split()); err != nil {
+			return
+		}
+		created++
+	}
+
+	delete, err = tx.Prepare("DELETE FROM " + tablePermission + " AS p WHERE p.id = $1")
+	if err != nil {
+		return
+	}
+
+RedundantPermissionsLoop:
+	for _, e := range entities {
+		for _, p := range permissions {
+			if e.Permission() == p {
+				break RedundantPermissionsLoop
+			}
+		}
+
+		if _, err = delete.Exec(e.ID); err != nil {
+			return
+		}
+		removed++
+	}
+
+	return
+}
+
+// PermissionRegistry is an interface that describes in memory storage that holds information
+// about permissions that was registered by 3rd party services.
+// Should be only used as a proxy for registration process to avoid multiple sql hits.
+type PermissionRegistry interface {
+	// Exists returns true if given Permission was already registered.
+	Exists(permission charon.Permission) (exists bool)
+	// Register checks if given collection is valid and
+	// calls PermissionRepository to store provided permissions
+	// in persistent way.
+	Register(permissions charon.Permissions) (created, untouched, removed int, err error)
+}
+
+type permissionRegistry struct {
+	sync.RWMutex
+	repository  PermissionRepository
+	permissions map[charon.Permission]struct{}
+}
+
+func newPermissionRegistry(r PermissionRepository) PermissionRegistry {
+	return &permissionRegistry{
+		repository:  r,
+		permissions: make(map[charon.Permission]struct{}),
+	}
+}
+
+// Exists implements PermissionRegistry interface.
+func (pr *permissionRegistry) Exists(permission charon.Permission) (ok bool) {
+	pr.RLock()
+	pr.RUnlock()
+
+	_, ok = pr.permissions[permission]
+	return
+}
+
+// Register implements PermissionRegistry interface.
+func (pr *permissionRegistry) Register(permissions charon.Permissions) (created, untouched, removed int, err error) {
+	pr.Lock()
+	defer pr.Unlock()
+
+	nb := 0
+	for _, p := range permissions {
+		if _, ok := pr.permissions[p]; !ok {
+			pr.permissions[p] = struct{}{}
+			nb++
+		}
+	}
+
+	if nb > 0 {
+		return pr.repository.Register(permissions)
+	}
+
+	return 0, 0, 0, nil
 }
