@@ -69,8 +69,8 @@ func (rs *rpcServer) CreateUser(ctx context.Context, req *charon.CreateUserReque
 
 // ModifyUser implements charon.RPCServer interface.
 func (rs *rpcServer) ModifyUser(ctx context.Context, req *charon.ModifyUserRequest) (*charon.ModifyUserResponse, error) {
-	if req.Id <= 0 {
-		return nil, grpc.Errorf(codes.InvalidArgument, "charond: user cannot be modified, invalid id: %d", req.Id)
+	if int64(req.Id) <= 0 {
+		return nil, grpc.Errorf(codes.InvalidArgument, "charond: user cannot be modified, invalid id: %d", int64(req.Id))
 	}
 
 	actor, err := rs.retrieveActor(ctx)
@@ -78,7 +78,7 @@ func (rs *rpcServer) ModifyUser(ctx context.Context, req *charon.ModifyUserReque
 		return nil, err
 	}
 
-	entity, err := rs.repository.user.FindOneByID(req.Id)
+	entity, err := rs.repository.user.FindOneByID(int64(req.Id))
 	if err != nil {
 		return nil, err
 	}
@@ -88,7 +88,7 @@ func (rs *rpcServer) ModifyUser(ctx context.Context, req *charon.ModifyUserReque
 	}
 
 	entity, err = rs.repository.user.UpdateOneByID(
-		req.Id,
+		int64(req.Id),
 		req.Username,
 		req.SecurePassword,
 		req.FirstName,
@@ -102,7 +102,7 @@ func (rs *rpcServer) ModifyUser(ctx context.Context, req *charon.ModifyUserReque
 		return nil, mapUserError(err)
 	}
 
-	sklog.Debug(rs.logger, "user modified", "id", req.Id)
+	sklog.Debug(rs.logger, "user modified", "id", int64(req.Id))
 
 	return &charon.ModifyUserResponse{
 		User: entity.Message(),
@@ -132,12 +132,12 @@ func modifyUserFirewall(req *charon.ModifyUserRequest, entity *userEntity, actor
 
 // GetUser implements charon.RPCServer interface.
 func (rs *rpcServer) GetUser(ctx context.Context, req *charon.GetUserRequest) (*charon.GetUserResponse, error) {
-	user, err := rs.repository.user.FindOneByID(req.Id)
+	user, err := rs.repository.user.FindOneByID(int64(req.Id))
 	if err != nil {
 		return nil, err
 	}
 
-	sklog.Debug(rs.logger, "user retrieved", "id", req.Id)
+	sklog.Debug(rs.logger, "user retrieved", "id", int64(req.Id))
 
 	return &charon.GetUserResponse{
 		User: user.Message(),
@@ -166,15 +166,15 @@ func (rs *rpcServer) ListUsers(ctx context.Context, req *charon.ListUsersRequest
 
 // DeleteUser implements charon.RPCServer interface.
 func (rs *rpcServer) DeleteUser(ctx context.Context, req *charon.DeleteUserRequest) (*charon.DeleteUserResponse, error) {
-	if req.Id <= 0 {
-		return nil, grpc.Errorf(codes.InvalidArgument, "charond: user cannot be deleted, invalid id: %d", req.Id)
+	if int64(req.Id) <= 0 {
+		return nil, grpc.Errorf(codes.InvalidArgument, "charond: user cannot be deleted, invalid id: %d", int64(req.Id))
 	}
-	affected, err := rs.repository.user.DeleteOneByID(req.Id)
+	affected, err := rs.repository.user.DeleteOneByID(int64(req.Id))
 	if err != nil {
 		return nil, err
 	}
 
-	sklog.Debug(rs.logger, "users deleted", "id", req.Id)
+	sklog.Debug(rs.logger, "users deleted", "id", int64(req.Id))
 
 	return &charon.DeleteUserResponse{
 		Affected: affected,

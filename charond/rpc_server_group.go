@@ -37,7 +37,7 @@ func (rs *rpcServer) ModifyGroup(ctx context.Context, req *charon.ModifyGroupReq
 		return nil, err
 	}
 
-	group, err := rs.repository.group.UpdateOneByID(req.Id, actor.user.ID, req.Name, req.Description)
+	group, err := rs.repository.group.UpdateOneByID(int64(req.Id), actor.user.ID, req.Name, req.Description)
 	if err != nil {
 		return nil, err
 	}
@@ -49,7 +49,7 @@ func (rs *rpcServer) ModifyGroup(ctx context.Context, req *charon.ModifyGroupReq
 
 // DeleteGroup implements charon.RPCServer interface.
 func (rs *rpcServer) DeleteGroup(ctx context.Context, req *charon.DeleteGroupRequest) (*charon.DeleteGroupResponse, error) {
-	affected, err := rs.repository.group.DeleteOneByID(req.Id)
+	affected, err := rs.repository.group.DeleteOneByID(int64(req.Id))
 	if err != nil {
 		return nil, err
 	}
@@ -61,10 +61,10 @@ func (rs *rpcServer) DeleteGroup(ctx context.Context, req *charon.DeleteGroupReq
 
 // GetGroup implements charon.RPCServer interface.
 func (rs *rpcServer) GetGroup(ctx context.Context, req *charon.GetGroupRequest) (*charon.GetGroupResponse, error) {
-	entity, err := rs.repository.group.FindOneByID(req.Id)
+	entity, err := rs.repository.group.FindOneByID(int64(req.Id))
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, grpc.Errorf(codes.NotFound, "charond: group with id %d does not exists", req.Id)
+			return nil, grpc.Errorf(codes.NotFound, "charond: group with id %d does not exists", int64(req.Id))
 		}
 		return nil, grpc.Errorf(codes.Internal, err.Error())
 	}

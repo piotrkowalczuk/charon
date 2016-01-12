@@ -62,13 +62,13 @@ func (ge *groupEntity) Message() *charon.Group {
 	}
 
 	return &charon.Group{
-		Id:          ge.ID,
+		Id:          uint32(ge.ID),
 		Name:        ge.Name,
 		Description: ge.Description,
 		CreatedAt:   createdAt,
-		CreatedBy:   ge.CreatedBy,
+		CreatedBy:   uint32(ge.CreatedBy),
 		UpdatedAt:   updatedAt,
-		UpdatedBy:   ge.UpdatedBy.Int64Or(0),
+		UpdatedBy:   &nilt.Uint32{Uint32: uint32(ge.UpdatedBy.Int64), Valid: ge.UpdatedBy.Valid},
 	}
 }
 

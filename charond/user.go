@@ -90,7 +90,7 @@ func (ue *userEntity) Message() *charon.User {
 		createdAt = protot.TimeToTimestamp(*ue.UpdatedAt)
 	}
 	return &charon.User{
-		Id:          ue.ID,
+		Id:          uint32(ue.ID),
 		Username:    ue.Username,
 		FirstName:   ue.FirstName,
 		LastName:    ue.LastName,
@@ -99,9 +99,9 @@ func (ue *userEntity) Message() *charon.User {
 		IsStaff:     ue.IsStaff,
 		IsConfirmed: ue.IsConfirmed,
 		CreatedAt:   createdAt,
-		CreatedBy:   ue.CreatedBy.Int64,
+		CreatedBy:   uint32(ue.CreatedBy.Int64),
 		UpdatedAt:   updatedAt,
-		UpdatedBy:   ue.UpdatedBy.Int64,
+		UpdatedBy:   &nilt.Uint32{Uint32: uint32(ue.UpdatedBy.Int64), Valid: ue.UpdatedBy.Valid},
 	}
 }
 

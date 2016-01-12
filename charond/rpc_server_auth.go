@@ -152,9 +152,13 @@ func (rs *rpcServer) Subject(ctx context.Context, req *charon.SubjectRequest) (*
 	sklog.Debug(rs.logger, "subject retrieved", "subject_id", ses.SubjectId)
 
 	return &charon.SubjectResponse{
-		Id:          user.ID,
+		Id:          uint32(user.ID),
 		FirstName:   user.FirstName,
 		LastName:    user.LastName,
 		Permissions: permissions,
+		IsActive:    user.IsActive,
+		IsConfirmed: user.IsConfirmed,
+		IsStuff:     user.IsStaff,
+		IsSuperuser: user.IsSuperuser,
 	}, nil
 }
