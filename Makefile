@@ -2,8 +2,10 @@ PROTOC=/usr/local/bin/protoc
 SERVICE=charon
 PACKAGE=github.com/piotrkowalczuk/charon
 PACKAGE_DAEMON=$(PACKAGE)/$(SERVICE)d
+PACKAGE_CONTROLL=$(PACKAGE)/$(SERVICE)ctl
 PACKAGE_TEST=$(PACKAGE)/$(SERVICE)test
-BINARY=${SERVICE}d/${SERVICE}d
+BINARY_DAEMON=${SERVICE}d/${SERVICE}d
+BINARY_CONTROLL=${SERVICE}d/${SERVICE}ctl
 
 FLAGS=-host=$(CHARON_HOST) \
       	    -port=$(CHARON_PORT) \
@@ -32,13 +34,16 @@ proto:
 		${SERVICE}.proto
 	@ls -al | grep pb.go
 
-build: build-daemon
+build: build-daemon build-controll
 
 build-daemon:
-	@go build -o ${BINARY} ${PACKAGE_DAEMON}
+	@go build -o ${BINARY_DAEMON} ${PACKAGE_DAEMON}
+
+build-controll:
+	@go build -o ${BINARY_CONTROLL} ${PACKAGE_CONTROLL}
 
 run:
-	@${BINARY} ${FLAGS}
+	@${BINARY_DAEMON} ${FLAGS}
 
 test: test-unit test-postgres
 
