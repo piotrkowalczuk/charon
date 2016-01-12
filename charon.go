@@ -112,6 +112,10 @@ func (c *charon) Subject(ctx context.Context, token mnemosyne.Token) (*Subject, 
 		Username:    resp.Username,
 		FirstName:   resp.FirstName,
 		LastName:    resp.LastName,
+		IsSuperuser: resp.IsSuperuser,
+		IsStaff:     resp.IsStuff,
+		IsConfirmed: resp.IsConfirmed,
+		IsActive:    resp.IsActive,
 		Permissions: NewPermissions(resp.Permissions...),
 	}, nil
 }
@@ -151,10 +155,14 @@ func (c *charon) Logout(ctx context.Context, token mnemosyne.Token) error {
 
 // Subject is a generic object that represent anything that can be under control of charon.
 type Subject struct {
-	ID          int64       `json:"id"`
+	ID          uint32      `json:"id"`
 	Username    string      `json:"username"`
 	FirstName   string      `json:"firstName"`
 	LastName    string      `json:"lastName"`
+	IsSuperuser bool        `json:"isSuperuser"`
+	IsActive    bool        `json:"isActive"`
+	IsStaff     bool        `json:"isStaff"`
+	IsConfirmed bool        `json:"isConfirmed"`
 	Permissions Permissions `json:"permissions"`
 }
 
