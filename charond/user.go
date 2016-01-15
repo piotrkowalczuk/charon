@@ -90,7 +90,7 @@ func (ue *userEntity) Message() *charon.User {
 		createdAt = protot.TimeToTimestamp(*ue.UpdatedAt)
 	}
 	return &charon.User{
-		Id:          uint32(ue.ID),
+		Id:          int64(ue.ID),
 		Username:    ue.Username,
 		FirstName:   ue.FirstName,
 		LastName:    ue.LastName,
@@ -99,9 +99,9 @@ func (ue *userEntity) Message() *charon.User {
 		IsStaff:     ue.IsStaff,
 		IsConfirmed: ue.IsConfirmed,
 		CreatedAt:   createdAt,
-		CreatedBy:   uint32(ue.CreatedBy.Int64),
+		CreatedBy:   int64(ue.CreatedBy.Int64),
 		UpdatedAt:   updatedAt,
-		UpdatedBy:   &nilt.Uint32{Uint32: uint32(ue.UpdatedBy.Int64), Valid: ue.UpdatedBy.Valid},
+		UpdatedBy:   &ue.UpdatedBy,
 	}
 }
 
@@ -295,6 +295,7 @@ func (ur *userRepository) Find(offset, limit *nilt.Int64) ([]*userEntity, error)
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 
 	users := []*userEntity{}
 	for rows.Next() {

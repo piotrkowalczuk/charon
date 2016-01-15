@@ -101,7 +101,7 @@ message SubjectRequest {
 }
 
 message SubjectResponse {
-    uint32 id = 1;
+    int64 id = 1;
     string username = 2;
     string first_name = 3;
     string last_name = 4;
@@ -117,7 +117,7 @@ message SubjectResponse {
 // --------------
 
 message User {
-    uint32 id = 1;
+    int64 id = 1;
     string username = 2;
     string first_name = 3;
     string last_name = 4;
@@ -126,9 +126,9 @@ message User {
     bool is_staff = 7;
     bool is_confirmed = 8;
     protot.Timestamp created_at = 9;
-    uint32 created_by = 10;
+    int64 created_by = 10;
     protot.Timestamp updated_at = 11;
-    nilt.Uint32 updated_by = 12;
+    nilt.Int64 updated_by = 12;
 }
 
 message CreateUserRequest {
@@ -148,7 +148,7 @@ message CreateUserResponse {
 }
 
 message GetUserRequest {
-    uint32 id = 1;
+    int64 id = 1;
 }
 
 message GetUserResponse {
@@ -166,7 +166,7 @@ message ListUsersResponse {
 }
 
 message DeleteUserRequest {
-    uint32 id = 1;
+    int64 id = 1;
 }
 
 message DeleteUserResponse {
@@ -174,7 +174,7 @@ message DeleteUserResponse {
 }
 
 message ModifyUserRequest {
-    uint32 id = 1;
+    int64 id = 1;
     nilt.String username = 2;
     nilt.String plain_password = 3;
     nilt.String secure_password = 4;
@@ -191,7 +191,7 @@ message ModifyUserResponse {
 }
 
 message ListUserPermissionsRequest {
-    uint32 id = 1;
+    int64 id = 1;
 }
 
 message ListUserPermissionsResponse {
@@ -209,7 +209,7 @@ message SetUserPermissionsResponse {
 }
 
 message ListUserGroupsRequest {
-    uint32 id = 1;
+    int64 id = 1;
 }
 
 message ListUserGroupsResponse {
@@ -246,7 +246,7 @@ message ListPermissionsRequest {
     nilt.String module = 2;
     nilt.String action = 3;
     protot.TimestampRange created_at = 4;
-    nilt.Uint32 created_by = 5;
+    nilt.Int64 created_by = 5;
 
     nilt.Int64 offset = 100;
     nilt.Int64 limit = 101;
@@ -258,7 +258,7 @@ message ListPermissionsResponse {
 }
 
 message GetPermissionRequest {
-    uint32 id = 1;
+    int64 id = 1;
 }
 
 message GetPermissionResponse {
@@ -270,13 +270,13 @@ message GetPermissionResponse {
 // ----------------
 
 message Group {
-    uint32 id = 1;
+    int64 id = 1;
     string name = 2;
     string description = 3;
     protot.Timestamp created_at = 4;
-    uint32 created_by = 5;
+    int64 created_by = 5;
     protot.Timestamp updated_at = 6;
-    nilt.Uint32 updated_by = 7;
+    nilt.Int64 updated_by = 7;
 }
 
 message CreateGroupRequest {
@@ -289,7 +289,7 @@ message CreateGroupResponse {
 }
 
 message GetGroupRequest {
-    uint32 id = 1;
+    int64 id = 1;
 }
 
 message GetGroupResponse {
@@ -307,7 +307,7 @@ message ListGroupsResponse {
 }
 
 message DeleteGroupRequest {
-    uint32 id = 1;
+    int64 id = 1;
 }
 
 message DeleteGroupResponse {
@@ -315,7 +315,7 @@ message DeleteGroupResponse {
 }
 
 message ModifyGroupRequest {
-    uint32 id = 1;
+    int64 id = 1;
     nilt.String name = 2;
     nilt.String description = 3;
 }
@@ -335,7 +335,7 @@ message SetGroupPermissionsResponse {
 }
 
 message ListGroupPermissionsRequest {
-    uint32 id = 1;
+    int64 id = 1;
 }
 
 message ListGroupPermissionsResponse {

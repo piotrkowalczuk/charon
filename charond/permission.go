@@ -81,6 +81,7 @@ func (pr *permissionRepository) FindByUserID(userID int64) ([]*permissionEntity,
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 
 	permissions := []*permissionEntity{}
 	for rows.Next() {
@@ -153,6 +154,7 @@ func (pr *permissionRepository) Register(permissions charon.Permissions) (create
 	if err != nil {
 		return
 	}
+	defer rows.Close()
 
 	entities = []*permissionEntity{}
 	for rows.Next() {

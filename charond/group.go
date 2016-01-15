@@ -62,13 +62,13 @@ func (ge *groupEntity) Message() *charon.Group {
 	}
 
 	return &charon.Group{
-		Id:          uint32(ge.ID),
+		Id:          int64(ge.ID),
 		Name:        ge.Name,
 		Description: ge.Description,
 		CreatedAt:   createdAt,
-		CreatedBy:   uint32(ge.CreatedBy),
+		CreatedBy:   int64(ge.CreatedBy),
 		UpdatedAt:   updatedAt,
-		UpdatedBy:   &nilt.Uint32{Uint32: uint32(ge.UpdatedBy.Int64), Valid: ge.UpdatedBy.Valid},
+		UpdatedBy:   &ge.UpdatedBy,
 	}
 }
 
@@ -126,6 +126,7 @@ func (gr *groupRepository) FindByUserID(userID int64) ([]*groupEntity, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 
 	groups := []*groupEntity{}
 	for rows.Next() {
