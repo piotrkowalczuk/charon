@@ -26,7 +26,6 @@ type configuration struct {
 	}
 	postgres struct {
 		connectionString string
-		retry            int
 	}
 	superuser struct {
 		username  string
@@ -53,7 +52,6 @@ func (c *configuration) init() {
 	flag.IntVar(&c.password.bcrypt.cost, "pwd.bcryptcost", 10, "bcrypt cost, bigget than safer (and longer to create)")
 	flag.StringVar(&c.monitoring.engine, "m.engine", monitoringEnginePrometheus, "monitoring engine")
 	flag.StringVar(&c.postgres.connectionString, "ps.connectionstring", "postgres://localhost:5432?sslmode=disable", "storage postgres connection string")
-	flag.IntVar(&c.postgres.retry, "ps.retry", 10, "storage postgres possible attempts")
 
 	// Superuser configuration
 	flag.StringVar(&c.superuser.username, "su.username", "", "superuser username")

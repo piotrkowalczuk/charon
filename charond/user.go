@@ -4,11 +4,10 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"time"
+	"strings"
 
 	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/nilt"
-	"github.com/piotrkowalczuk/pqcnstr"
 	"github.com/piotrkowalczuk/protot"
 )
 
@@ -16,59 +15,45 @@ const (
 	// UserConfirmationTokenUsed is a value that is used when confirmation token was already used.
 	UserConfirmationTokenUsed = "!"
 
-	tableUser                                                 = "charon.user"
-	tableUserConstraintPrimaryKey          pqcnstr.Constraint = tableUser + "_pkey"
-	tableUserConstraintUniqueUsername      pqcnstr.Constraint = tableUser + "_username_key"
-	tableUserConstraintForeignKeyCreatedBy pqcnstr.Constraint = tableUser + "_created_by_fkey"
-	tableUserConstraintForeignKeyUpdatedBy pqcnstr.Constraint = tableUser + "_updated_by_fkey"
-	tableUserCreate                                           = `
-		CREATE TABLE IF NOT EXISTS ` + tableUser + ` (
-			id                 SERIAL,
-			password           TEXT                      NOT NULL,
-			username           TEXT                      NOT NULL,
-			first_name         TEXT                      NOT NULL,
-			last_name          TEXT                      NOT NULL,
-			is_superuser       BOOLEAN                   NOT NULL,
-			is_active          BOOLEAN                   NOT NULL,
-			is_staff           BOOLEAN                   NOT NULL,
-			is_confirmed       BOOLEAN                   NOT NULL,
-			confirmation_token TEXT                      NOT NULL,
-			last_login_at      TIMESTAMPTZ,
-			created_at         TIMESTAMPTZ DEFAULT NOW() NOT NULL,
-			created_by         INTEGER,
-			updated_at         TIMESTAMPTZ,
-			updated_by         INTEGER,
+	//
+	//	tableUser                                                 = "charon.user"
+	//	tableUserConstraintPrimaryKey          pqcnstr.Constraint = tableUser + "_pkey"
+	//	tableUserConstraintUniqueUsername      pqcnstr.Constraint = tableUser + "_username_key"
+	//	tableUserConstraintForeignKeyCreatedBy pqcnstr.Constraint = tableUser + "_created_by_fkey"
+	//	tableUserConstraintForeignKeyUpdatedBy pqcnstr.Constraint = tableUser + "_updated_by_fkey"
+	tableUserCreate = `
+	CREATE TABLE charon.user (
+	id BIGSERIAL,
+	password BYTEA NOT NULL,
+	username TEXT NOT NULL,
+	first_name TEXT NOT NULL,
+	last_name TEXT NOT NULL,
+	is_superuser BOOL DEFAULT FALSE NOT NULL,
+	is_active BOOL DEFAULT FALSE NOT NULL,
+	is_staff BOOL DEFAULT FALSE NOT NULL,
+	is_confirmed BOOL DEFAULT FALSE NOT NULL,
+	confirmation_token BYTEA,
+	last_login_at TIMESTAMPTZ,
+	created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
+	updated_at TIMESTAMPTZ,
+	created_by BIGINT NOT NULL,
+	updated_by BIGINT,
 
-			CONSTRAINT "` + tableUserConstraintPrimaryKey + `" PRIMARY KEY (id),
-			CONSTRAINT "` + tableUserConstraintUniqueUsername + `" UNIQUE (username),
-			CONSTRAINT "` + tableUserConstraintForeignKeyCreatedBy + `" FOREIGN KEY (created_by) REFERENCES ` + tableUser + ` (id),
-			CONSTRAINT "` + tableUserConstraintForeignKeyUpdatedBy + `" FOREIGN KEY (updated_by) REFERENCES ` + tableUser + ` (id)
-		)
+	CONSTRAINT "charon.user_id_pkey" PRIMARY KEY (id),
+	CONSTRAINT "charon.user_username_key" UNIQUE (username),
+	CONSTRAINT "charon.user_created_by_key" UNIQUE (created_by),
+	CONSTRAINT "charon.user_created_by_fkey" FOREIGN KEY (created_by) REFERENCES charon.user (id),
+	CONSTRAINT "charon.user_updated_by_key" UNIQUE (updated_by),
+	CONSTRAINT "charon.user_updated_by_fkey" FOREIGN KEY (updated_by) REFERENCES charon.user (id)
+);
 	`
-	tableUserColumns = `
-		id, password, username, first_name, last_name, is_active, is_staff,
-		is_superuser, is_confirmed, confirmation_token, last_login_at,
-		created_at, updated_at
-	`
+
+//	tableUserColumns = `
+//		id, password, username, first_name, last_name, is_active, is_staff,
+//		is_superuser, is_confirmed, confirmation_token, last_login_at,
+//		created_at, updated_at
+//	`
 )
-
-type userEntity struct {
-	ID                int64
-	Password          string
-	Username          string
-	FirstName         string
-	LastName          string
-	IsActive          bool
-	IsStaff           bool
-	IsSuperuser       bool
-	IsConfirmed       bool
-	ConfirmationToken string
-	LastLoginAt       *time.Time
-	CreatedAt         *time.Time
-	CreatedBy         nilt.Int64
-	UpdatedAt         *time.Time
-	UpdatedBy         nilt.Int64
-}
 
 // String return concatenated first and last name of the user.
 func (ue *userEntity) String() string {
@@ -82,15 +67,13 @@ func (ue *userEntity) Message() *charon.User {
 		updatedAt *protot.Timestamp
 	)
 
-	if ue.CreatedAt != nil {
-		createdAt = protot.TimeToTimestamp(*ue.CreatedAt)
-	}
-
+	createdAt = protot.TimeToTimestamp(ue.CreatedAt)
 	if ue.UpdatedAt != nil {
 		createdAt = protot.TimeToTimestamp(*ue.UpdatedAt)
 	}
+
 	return &charon.User{
-		Id:          int64(ue.ID),
+		Id:          ue.ID,
 		Username:    ue.Username,
 		FirstName:   ue.FirstName,
 		LastName:    ue.LastName,
@@ -99,7 +82,7 @@ func (ue *userEntity) Message() *charon.User {
 		IsStaff:     ue.IsStaff,
 		IsConfirmed: ue.IsConfirmed,
 		CreatedAt:   createdAt,
-		CreatedBy:   int64(ue.CreatedBy.Int64),
+		CreatedBy:   &ue.CreatedBy,
 		UpdatedAt:   updatedAt,
 		UpdatedBy:   &ue.UpdatedBy,
 	}
@@ -107,8 +90,8 @@ func (ue *userEntity) Message() *charon.User {
 
 // UserRepository ...
 type UserRepository interface {
-	Create(username, password, firstName, lastName, confirmationToken string, isSuperuser, isStaff, isActive, isConfirmed bool) (*userEntity, error)
-	CreateSuperuser(username, password, firstName, lastName string) (*userEntity, error)
+	Create(username string, password []byte, firstName, lastName string, confirmationToken []byte, isSuperuser, isStaff, isActive, isConfirmed bool) (*userEntity, error)
+	CreateSuperuser(username string, password []byte, firstName, lastName string) (*userEntity, error)
 	// Count retrieves number of all users.
 	Count() (int64, error)
 	UpdateLastLoginAt(id int64) (int64, error)
@@ -117,7 +100,7 @@ type UserRepository interface {
 	FindOneByID(id int64) (*userEntity, error)
 	FindOneByUsername(username string) (*userEntity, error)
 	DeleteOneByID(id int64) (int64, error)
-	UpdateOneByID(id int64, username, securePassword, firstName, lastName *nilt.String, isSuperuser, isActive, isStaff, isConfirmed *nilt.Bool) (*userEntity, error)
+	UpdateOneByID(id int64, username *nilt.String, password []byte, firstName, lastName *nilt.String, isSuperuser, isActive, isStaff, isConfirmed *nilt.Bool) (*userEntity, error)
 	RegistrationConfirmation(id int64, confirmationToken string) error
 }
 
@@ -132,7 +115,13 @@ func newUserRepository(dbPool *sql.DB) *userRepository {
 }
 
 // Create implements UserRepository interface.
-func (ur *userRepository) Create(username, password, firstName, lastName, confirmationToken string, isSuperuser, isStaff, isActive, isConfirmed bool) (*userEntity, error) {
+func (ur *userRepository) Create(username string, password []byte, firstName, lastName string, confirmationToken []byte, isSuperuser, isStaff, isActive, isConfirmed bool) (*userEntity, error) {
+	if isSuperuser {
+		isStaff = true
+		isActive = true
+		isConfirmed = true
+	}
+
 	entity := &userEntity{
 		Username:          username,
 		Password:          password,
@@ -153,8 +142,8 @@ func (ur *userRepository) Create(username, password, firstName, lastName, confir
 }
 
 // CreateSuperuser implements UserRepository interface.
-func (ur *userRepository) CreateSuperuser(username, password, firstName, lastName string) (*userEntity, error) {
-	return ur.Create(username, password, firstName, lastName, UserConfirmationTokenUsed, true, false, true, true)
+func (ur *userRepository) CreateSuperuser(username string, password []byte, firstName, lastName string) (*userEntity, error) {
+	return ur.Create(username, password, firstName, lastName, []byte(UserConfirmationTokenUsed), true, false, true, true)
 }
 
 // Count implements UserRepository interface.
@@ -244,7 +233,7 @@ func (ur *userRepository) FindOneByID(id int64) (*userEntity, error) {
 
 func (ur *userRepository) findOneBy(fieldName string, value interface{}) (*userEntity, error) {
 	query := `
-		SELECT ` + tableUserColumns + `
+		SELECT ` + strings.Join(tableUserColumns, ",") + `
 		FROM ` + tableUser + `
 		WHERE ` + fieldName + ` = $1
 		LIMIT 1
@@ -252,19 +241,21 @@ func (ur *userRepository) findOneBy(fieldName string, value interface{}) (*userE
 
 	var user userEntity
 	err := ur.db.QueryRow(query, value).Scan(
-		&user.ID,
-		&user.Password,
-		&user.Username,
+		&user.ConfirmationToken,
+		&user.CreatedAt,
+		&user.CreatedBy,
 		&user.FirstName,
-		&user.LastName,
+		&user.ID,
 		&user.IsActive,
+		&user.IsConfirmed,
 		&user.IsStaff,
 		&user.IsSuperuser,
-		&user.IsConfirmed,
-		&user.ConfirmationToken,
 		&user.LastLoginAt,
-		&user.CreatedAt,
+		&user.LastName,
+		&user.Password,
 		&user.UpdatedAt,
+		&user.UpdatedBy,
+		&user.Username,
 	)
 
 	if err != nil {
@@ -277,7 +268,7 @@ func (ur *userRepository) findOneBy(fieldName string, value interface{}) (*userE
 // Find implements UserRepository interface.
 func (ur *userRepository) Find(offset, limit *nilt.Int64) ([]*userEntity, error) {
 	query := `
-		SELECT ` + tableUserColumns + `
+		SELECT ` + strings.Join(tableUserColumns, ",") + `
 		FROM ` + tableUser + `
 		OFFSET $1
 		LIMIT $2
@@ -301,19 +292,21 @@ func (ur *userRepository) Find(offset, limit *nilt.Int64) ([]*userEntity, error)
 	for rows.Next() {
 		var user userEntity
 		err = rows.Scan(
-			&user.ID,
-			&user.Password,
-			&user.Username,
+			&user.ConfirmationToken,
+			&user.CreatedAt,
+			&user.CreatedBy,
 			&user.FirstName,
-			&user.LastName,
+			&user.ID,
 			&user.IsActive,
+			&user.IsConfirmed,
 			&user.IsStaff,
 			&user.IsSuperuser,
-			&user.IsConfirmed,
-			&user.ConfirmationToken,
 			&user.LastLoginAt,
-			&user.CreatedAt,
+			&user.LastName,
+			&user.Password,
 			&user.UpdatedAt,
+			&user.UpdatedBy,
+			&user.Username,
 		)
 		if err != nil {
 			return nil, err
@@ -362,18 +355,23 @@ func (ur *userRepository) DeleteOneByID(id int64) (int64, error) {
 	return res.RowsAffected()
 }
 
-func (ur *userRepository) UpdateOneByID(id int64, username, securePassword, firstName, lastName *nilt.String, isSuperuser, isActive, isStaff, isConfirmed *nilt.Bool) (*userEntity, error) {
+func (ur *userRepository) UpdateOneByID(id int64, username *nilt.String, password []byte, firstName, lastName *nilt.String, isSuperuser, isActive, isStaff, isConfirmed *nilt.Bool) (*userEntity, error) {
 	keys := make([]string, 0, 8)
 	values := make([]interface{}, 0, 9)
 	values = append(values, id)
 
+	addBytes := func(key string, b []byte) {
+		if b != nil && len(b) != 0 {
+			keys = append(keys, key)
+			values = append(values, b)
+		}
+	}
 	addString := func(key string, s *nilt.String) {
 		if s != nil && s.Valid {
 			keys = append(keys, key)
 			values = append(values, s.String)
 		}
 	}
-
 	addBool := func(key string, s *nilt.Bool) {
 		if s != nil && s.Valid {
 			keys = append(keys, key)
@@ -382,7 +380,8 @@ func (ur *userRepository) UpdateOneByID(id int64, username, securePassword, firs
 	}
 
 	addString("username", username)
-	addString("password", securePassword)
+	addBytes("password", password)
+
 	addString("first_name", firstName)
 	addString("last_name", lastName)
 
@@ -407,24 +406,26 @@ func (ur *userRepository) UpdateOneByID(id int64, username, securePassword, firs
 	query += `
 		, updated_at = NOW()
 		WHERE id = $1
-		RETURNING ` + tableUserColumns + `
+		RETURNING ` + strings.Join(tableUserColumns, ",") + `
 	`
 
 	var user userEntity
 	err := ur.db.QueryRow(query, values...).Scan(
-		&user.ID,
-		&user.Password,
-		&user.Username,
+		&user.ConfirmationToken,
+		&user.CreatedAt,
+		&user.CreatedBy,
 		&user.FirstName,
-		&user.LastName,
+		&user.ID,
 		&user.IsActive,
+		&user.IsConfirmed,
 		&user.IsStaff,
 		&user.IsSuperuser,
-		&user.IsConfirmed,
-		&user.ConfirmationToken,
 		&user.LastLoginAt,
-		&user.CreatedAt,
+		&user.LastName,
+		&user.Password,
 		&user.UpdatedAt,
+		&user.UpdatedBy,
+		&user.Username,
 	)
 	if err != nil {
 		return nil, err

@@ -15,7 +15,7 @@ func (rs *rpcServer) SetUserGroups(ctx context.Context, req *charon.SetUserGroup
 
 // ListUserGroups implements charon.RPCServer interface.
 func (rs *rpcServer) ListUserGroups(ctx context.Context, req *charon.ListUserGroupsRequest) (*charon.ListUserGroupsResponse, error) {
-	entities, err := rs.repository.group.FindByUserID(int64(req.Id))
+	entities, err := rs.repository.group.FindByUserID(req.Id)
 	if err != nil {
 		return nil, err
 	}

@@ -126,7 +126,7 @@ message User {
     bool is_staff = 7;
     bool is_confirmed = 8;
     protot.Timestamp created_at = 9;
-    int64 created_by = 10;
+    nilt.Int64 created_by = 10;
     protot.Timestamp updated_at = 11;
     nilt.Int64 updated_by = 12;
 }
@@ -134,7 +134,7 @@ message User {
 message CreateUserRequest {
     string username = 1;
     string plain_password = 2;
-    string secure_password = 3;
+    bytes secure_password = 3;
     string first_name = 4;
     string last_name = 5;
     nilt.Bool is_superuser = 6;
@@ -177,7 +177,7 @@ message ModifyUserRequest {
     int64 id = 1;
     nilt.String username = 2;
     nilt.String plain_password = 3;
-    nilt.String secure_password = 4;
+    bytes secure_password = 4;
     nilt.String first_name = 5;
     nilt.String last_name = 6;
     nilt.Bool is_superuser = 7;
@@ -274,14 +274,14 @@ message Group {
     string name = 2;
     string description = 3;
     protot.Timestamp created_at = 4;
-    int64 created_by = 5;
+    nilt.Int64 created_by = 5;
     protot.Timestamp updated_at = 6;
     nilt.Int64 updated_by = 7;
 }
 
 message CreateGroupRequest {
     string name = 1;
-    string description = 2;
+    nilt.String description = 2;
 }
 
 message CreateGroupResponse {

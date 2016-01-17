@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/piotrkowalczuk/charon"
@@ -14,8 +15,8 @@ import (
 )
 
 const (
-	tableGroup                                                 = "charon.group"
-	tableGroupConstraintPrimaryKey          pqcnstr.Constraint = tableGroup + "_pkey"
+	//	tableGroup                                                 = "charon.group"
+
 	tableGroupConstraintUniqueName          pqcnstr.Constraint = tableGroup + "_name_key"
 	tableGroupConstraintForeignKeyCreatedBy pqcnstr.Constraint = tableGroup + "_created_by_fkey"
 	tableGroupConstraintForeignKeyUpdatedBy pqcnstr.Constraint = tableGroup + "_updated_by_fkey"
@@ -31,42 +32,26 @@ const (
 
 			CONSTRAINT "` + tableGroupConstraintPrimaryKey + `" PRIMARY KEY (id),
 			CONSTRAINT "` + tableGroupConstraintUniqueName + `" UNIQUE (name),
-			CONSTRAINT "` + tableUserConstraintForeignKeyCreatedBy + `" FOREIGN KEY (created_by) REFERENCES ` + tableUser + ` (id),
-			CONSTRAINT "` + tableUserConstraintForeignKeyUpdatedBy + `" FOREIGN KEY (updated_by) REFERENCES ` + tableUser + ` (id)
+			CONSTRAINT "` + tableGroupConstraintForeignKeyCreatedBy + `" FOREIGN KEY (created_by) REFERENCES ` + tableGroup + ` (id),
+			CONSTRAINT "` + tableGroupConstraintForeignKeyUpdatedBy + `" FOREIGN KEY (updated_by) REFERENCES ` + tableGroup + ` (id)
 		)
 	`
-	tableGroupColumns = `
-		id, name, description, created_at, created_by, updated_at, updated_by
-	`
 )
-
-type groupEntity struct {
-	ID          int64
-	Name        string
-	Description string
-	CreatedAt   *time.Time
-	CreatedBy   int64
-	UpdatedAt   *time.Time
-	UpdatedBy   nilt.Int64
-}
 
 func (ge *groupEntity) Message() *charon.Group {
 	var createdAt, updatedAt *protot.Timestamp
 
-	if ge.CreatedAt != nil {
-		createdAt = protot.TimeToTimestamp(*ge.CreatedAt)
-	}
-
+	createdAt = protot.TimeToTimestamp(ge.CreatedAt)
 	if ge.UpdatedAt != nil {
 		updatedAt = protot.TimeToTimestamp(*ge.UpdatedAt)
 	}
 
 	return &charon.Group{
-		Id:          int64(ge.ID),
+		Id:          ge.ID,
 		Name:        ge.Name,
-		Description: ge.Description,
+		Description: ge.Description.String,
 		CreatedAt:   createdAt,
-		CreatedBy:   int64(ge.CreatedBy),
+		CreatedBy:   &ge.CreatedBy,
 		UpdatedAt:   updatedAt,
 		UpdatedBy:   &ge.UpdatedBy,
 	}
@@ -78,8 +63,10 @@ type GroupRepository interface {
 	FindByUserID(int64) ([]*groupEntity, error)
 	// FindOneByID retrieves group for given id.
 	FindOneByID(int64) (*groupEntity, error)
+	// Find ...
+	Find(offset, limit int64, sort map[string]bool, createdBy, updatedBy *nilt.Int64, name string, description *nilt.String, createdAtFrom, createdAtTo, updatedAtFrom, updatedAtTo *time.Time) ([]*groupEntity, error)
 	// Create ...
-	Create(createdBy int64, name, description string) (*groupEntity, error)
+	Create(createdBy int64, name string, description *nilt.String) (*groupEntity, error)
 	// UpdateOneByID ...
 	UpdateOneByID(id, updatedBy int64, name, description *nilt.String) (*groupEntity, error)
 	// DeleteOneByID ...
@@ -99,11 +86,11 @@ func newGroupRepository(dbPool *sql.DB) GroupRepository {
 func (gr *groupRepository) queryRow(query string, args ...interface{}) (*groupEntity, error) {
 	var entity groupEntity
 	err := gr.db.QueryRow(query, args...).Scan(
-		&entity.ID,
-		&entity.Name,
-		&entity.Description,
 		&entity.CreatedAt,
 		&entity.CreatedBy,
+		&entity.Description,
+		&entity.ID,
+		&entity.Name,
 		&entity.UpdatedAt,
 		&entity.UpdatedBy,
 	)
@@ -117,7 +104,7 @@ func (gr *groupRepository) queryRow(query string, args ...interface{}) (*groupEn
 // FindByUserID implements GroupRepository interface.
 func (gr *groupRepository) FindByUserID(userID int64) ([]*groupEntity, error) {
 	query := `
-		SELECT  ` + tableGroupColumns + `
+		SELECT  ` + strings.Join(tableGroupColumns, ",") + `
 		FROM ` + tableGroup + ` AS g
 		JOIN ` + tableUserGroups + ` AS ug ON ug.group_id = g.id AND ug.user_id = $1
 	`
@@ -132,11 +119,11 @@ func (gr *groupRepository) FindByUserID(userID int64) ([]*groupEntity, error) {
 	for rows.Next() {
 		var g groupEntity
 		err = rows.Scan(
-			&g.ID,
-			&g.Name,
-			&g.Description,
 			&g.CreatedAt,
 			&g.CreatedBy,
+			&g.Description,
+			&g.ID,
+			&g.Name,
 			&g.UpdatedAt,
 			&g.UpdatedBy,
 		)
@@ -154,11 +141,14 @@ func (gr *groupRepository) FindByUserID(userID int64) ([]*groupEntity, error) {
 }
 
 // Create implements GroupRepository interface.
-func (gr *groupRepository) Create(createdBy int64, name, description string) (*groupEntity, error) {
+func (gr *groupRepository) Create(createdBy int64, name string, description *nilt.String) (*groupEntity, error) {
+	if description == nil {
+		description = &nilt.String{}
+	}
 	entity := groupEntity{
 		Name:        name,
-		Description: description,
-		CreatedBy:   createdBy,
+		Description: *description,
+		CreatedBy:   nilt.Int64{Int64: createdBy, Valid: createdBy > 0},
 	}
 
 	err := gr.insert(&entity)
@@ -172,16 +162,16 @@ func (gr *groupRepository) Create(createdBy int64, name, description string) (*g
 func (gr *groupRepository) insert(e *groupEntity) error {
 	query := `
 		INSERT INTO ` + tableGroup + ` (
-			name, description, created_at, created_by
+			name string, description, created_at, created_by
 		)
 		VALUES ($1, $2, NOW(), $3)
 		RETURNING id, created_at
 	`
 	return gr.db.QueryRow(
 		query,
-		e.Name,
-		e.Description,
 		e.CreatedBy,
+		e.Description,
+		e.Name,
 	).Scan(&e.ID, &e.CreatedAt)
 }
 
@@ -215,15 +205,15 @@ func (gr *groupRepository) UpdateOneByID(id, updatedBy int64, name, description 
 	query += `
 		, updated_by = $2, updated_at = NOW()
 		WHERE id = $1
-		RETURNING ` + tableGroupColumns + `
+		RETURNING ` + strings.Join(tableGroupColumns, ",") + `
 	`
 
 	err = gr.db.QueryRow(query, comp.Args()).Scan(
-		&entity.ID,
-		&entity.Name,
-		&entity.Description,
 		&entity.CreatedAt,
 		&entity.CreatedBy,
+		&entity.Description,
+		&entity.ID,
+		&entity.Name,
 		&entity.UpdatedAt,
 		&entity.UpdatedBy,
 	)
@@ -252,10 +242,93 @@ func (gr *groupRepository) DeleteOneByID(id int64) (int64, error) {
 // FindOneByID implements GroupRepository interface.
 func (gr *groupRepository) FindOneByID(id int64) (*groupEntity, error) {
 	query := `
-		SELECT  ` + tableGroupColumns + `
+		SELECT  ` + strings.Join(tableGroupColumns, ",") + `
 		FROM ` + tableGroup + ` AS g
 		WHERE g.id = $1 LIMIT 1
 	`
 
 	return gr.queryRow(query, id)
+}
+
+// Find implements UserRepository interface.
+func (ur *groupRepository) Find(offset, limit int64, sort map[string]bool, createdBy, updatedBy *nilt.Int64, name string, description *nilt.String, createdAtFrom, createdAtTo, updatedAtFrom, updatedAtTo *time.Time) ([]*groupEntity, error) {
+	var (
+		query string
+	)
+
+	comp := pqcomp.New(2, 8+len(sort))
+	comp.AddArg(offset)
+	comp.AddArg(limit)
+	comp.AddExpr("g.created_at", pqcomp.GT, createdAtFrom)
+	comp.AddExpr("g.created_at", pqcomp.LTE, createdAtTo)
+	comp.AddExpr("g.created_by", pqcomp.E, createdBy)
+	comp.AddExpr("g.description", pqcomp.E, description)
+	comp.AddExpr("g.name", pqcomp.E, name)
+	comp.AddExpr("g.updated_at", pqcomp.GT, updatedAtFrom)
+	comp.AddExpr("g.updated_at", pqcomp.LTE, updatedAtTo)
+	comp.AddExpr("g.updated_by", pqcomp.E, updatedBy)
+
+	switch {
+	case comp.Len() == 0:
+		query = `SELECT ` + strings.Join(tableGroupColumns, ",") + ` FROM ` + tableUser
+	default:
+		query = `SELECT ` + strings.Join(tableGroupColumns, ",") + ` FROM ` + tableUser + ` WHERE `
+	}
+
+	for comp.Next() {
+		if !comp.First() {
+			query += ", "
+		}
+
+		query += fmt.Sprintf("%s %s %s", comp.Key(), comp.Oper(), comp.PlaceHolder())
+	}
+
+	i := 0
+SortLoop:
+	for column, asc := range sort {
+		if i != 0 {
+			query += ", "
+		} else {
+			query += " ORDER BY "
+		}
+		i++
+		if asc {
+			query += fmt.Sprintf("%s ASC", column)
+			continue SortLoop
+		}
+
+		query += fmt.Sprintf("%s DESC ", column)
+	}
+
+	query += "LIMIT $1 OFFSET $2"
+
+	rows, err := ur.db.Query(query, offset, limit)
+	if err != nil {
+		return nil, err
+	}
+
+	groups := []*groupEntity{}
+	for rows.Next() {
+		var group groupEntity
+		err = rows.Scan(
+			&group.CreatedAt,
+			&group.CreatedBy,
+			&group.Description,
+			&group.ID,
+			&group.Name,
+			&group.UpdatedAt,
+			&group.UpdatedBy,
+			&group.UpdatedBy,
+		)
+		if err != nil {
+			return nil, err
+		}
+		groups = append(groups, &group)
+	}
+
+	if rows.Err() != nil {
+		return nil, rows.Err()
+	}
+
+	return groups, nil
 }

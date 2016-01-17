@@ -11,7 +11,6 @@ type Charon struct {
 	mock.Mock
 }
 
-// IsGranted implements Charon interface.
 func (c *Charon) IsGranted(ctx context.Context, token mnemosyne.Token, perm charon.Permission) (bool, error) {
 	a := c.Called(ctx, token, perm)
 

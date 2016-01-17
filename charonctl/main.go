@@ -30,28 +30,33 @@ func main() {
 	}
 }
 
-func client() (charon.RPCClient, context.Context) {
+func client() (client charon.RPCClient, ctx context.Context) {
 	conn, err := grpc.Dial("localhost:8010", grpc.WithInsecure())
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	client := charon.NewRPCClient(conn)
-	resp, err := client.Login(context.Background(), &charon.LoginRequest{
-		Username: config.username,
-		Password: config.password,
-	})
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+	client = charon.NewRPCClient(conn)
+	ctx = context.Background()
+	if !config.noauth {
+		resp, err := client.Login(context.Background(), &charon.LoginRequest{
+			Username: config.username,
+			Password: config.password,
+		})
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+
+		ctx = metadata.NewContext(ctx, metadata.Pairs(mnemosyne.TokenMetadataKey, string(resp.Token.Encode())))
 	}
 
-	return client, metadata.NewContext(context.TODO(), metadata.Pairs(mnemosyne.TokenMetadataKey, resp.Token.Encode()))
+	return
 }
 
 func registerUser(config configuration) {
 	c, ctx := client()
-	user, err := c.CreateUser(ctx, &charon.CreateUserRequest{
+	resp, err := c.CreateUser(ctx, &charon.CreateUserRequest{
 		Username:      config.register.username,
 		PlainPassword: config.register.password,
 		FirstName:     config.register.firstName,
@@ -63,5 +68,5 @@ func registerUser(config configuration) {
 		os.Exit(1)
 	}
 
-	fmt.Printf("%T: %#v", user, user)
+	fmt.Printf(`user with username "%s" has been created successfully`, resp.User.Username)
 }

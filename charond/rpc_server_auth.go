@@ -10,6 +10,7 @@ import (
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/metadata"
 )
 
 // Login implements charon.RPCServer interface.
@@ -19,7 +20,7 @@ func (rs *rpcServer) Login(ctx context.Context, r *charon.LoginRequest) (*charon
 
 		return nil, grpc.Errorf(codes.Unauthenticated, "charond: empty username")
 	}
-	if r.Password == "" {
+	if len(r.Password) == 0 {
 		sklog.Debug(rs.logger, "login failed, empty password", "username", r.Username)
 
 		return nil, grpc.Errorf(codes.Unauthenticated, "charond: empty password")
@@ -32,7 +33,7 @@ func (rs *rpcServer) Login(ctx context.Context, r *charon.LoginRequest) (*charon
 		return nil, grpc.Errorf(codes.Unauthenticated, "charond: the username and password do not match")
 	}
 
-	if matches := rs.passwordHasher.Compare(user.Password, r.Password); !matches {
+	if matches := rs.passwordHasher.Compare(user.Password, []byte(r.Password)); !matches {
 		sklog.Debug(rs.logger, "login failed, wrong password", "username", r.Username)
 
 		return nil, grpc.Errorf(codes.Unauthenticated, "charond: the username and password do not match")
@@ -73,7 +74,7 @@ func (rs *rpcServer) Login(ctx context.Context, r *charon.LoginRequest) (*charon
 
 // Logout implements charon.RPCServer interface.
 func (rs *rpcServer) Logout(ctx context.Context, r *charon.LogoutRequest) (*charon.LogoutResponse, error) {
-	if r.Token.Encode() == "" { // TODO: probably wrong, implement IsEmpty method for ID
+	if r.Token.IsEmpty() { // TODO: probably wrong, implement IsEmpty method for ID
 		return nil, grpc.Errorf(codes.InvalidArgument, "charond: empty session id, logout aborted")
 	}
 
@@ -116,15 +117,17 @@ func (rs *rpcServer) IsAuthenticated(ctx context.Context, r *charon.IsAuthentica
 
 // Subject implements charon.RPCServer interface.
 func (rs *rpcServer) Subject(ctx context.Context, req *charon.SubjectRequest) (*charon.SubjectResponse, error) {
-	token, err := rs.token(ctx)
-	if err != nil {
-		return nil, err
-	}
-	ses, err := rs.session.Get(ctx, token)
-	if err != nil {
-		return nil, err
+	var (
+		ok bool
+		md metadata.MD
+	)
+	if md, ok = metadata.FromContext(ctx); ok {
+		grpc.Header(&md)
 	}
 
+	fmt.Println(md)
+
+	ses, err := rs.session.FromContext(ctx)
 	id, err := charon.SessionSubjectID(ses.SubjectId).UserID()
 	if err != nil {
 		return nil, fmt.Errorf("charond: invalid session subject id: %s", ses.SubjectId)

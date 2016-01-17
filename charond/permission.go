@@ -2,46 +2,14 @@ package main
 
 import (
 	"database/sql"
-	"time"
+	"strings"
 
 	"sync"
 
 	"errors"
 
 	"github.com/piotrkowalczuk/charon"
-	"github.com/piotrkowalczuk/nilt"
-	"github.com/piotrkowalczuk/pqcnstr"
 )
-
-const (
-	tablePermission                                                         = "charon.permission"
-	tablePermissionConstraintPrimaryKey                  pqcnstr.Constraint = tablePermission + "_pkey"
-	tablePermissionConstraintUniqueSubsystemModuleAction pqcnstr.Constraint = tablePermission + "_subsystem_module_action_key"
-	tablePermissionCreate                                                   = `
-		CREATE TABLE IF NOT EXISTS ` + tablePermission + ` (
-			id           SERIAL,
-			subsystem    TEXT                      NOT NULL,
-			module       TEXT                      NOT NULL,
-			action       TEXT                      NOT NULL,
-			created_at   TIMESTAMPTZ DEFAULT NOW() NOT NULL,
-
-			CONSTRAINT "` + tablePermissionConstraintPrimaryKey + `" PRIMARY KEY (id),
-			CONSTRAINT "` + tablePermissionConstraintUniqueSubsystemModuleAction + `" UNIQUE (subsystem, module, action)
-		)
-	`
-	tablePermissionColumns = `
-		p.id, p.subsystem, p.module, p.action, p.created_at
-	`
-)
-
-type permissionEntity struct {
-	ID        int64
-	Subsystem string
-	Module    string
-	Action    string
-	CreatedAt *time.Time
-	CreatedBy nilt.Int64
-}
 
 // Permission returns Permission value that is concatenated
 // using entity properties like subsystem, module and action.
@@ -69,7 +37,7 @@ func newPermissionRepository(dbPool *sql.DB) *permissionRepository {
 func (pr *permissionRepository) FindByUserID(userID int64) ([]*permissionEntity, error) {
 	query := `
 		SELECT DISTINCT ON (p.id)
-			` + tablePermissionColumns + `
+			` + strings.Join(tablePermissionColumns, ",") + `
 		FROM ` + tablePermission + ` AS p
 		LEFT JOIN ` + tableUserPermissions + ` AS up ON up.permission_id = p.id AND up.user_id = $1
 		LEFT JOIN ` + tableUserGroups + ` AS ug ON ug.user_id = $1
@@ -87,11 +55,11 @@ func (pr *permissionRepository) FindByUserID(userID int64) ([]*permissionEntity,
 	for rows.Next() {
 		var p permissionEntity
 		err = rows.Scan(
-			&p.ID,
-			&p.Subsystem,
-			&p.Module,
 			&p.Action,
 			&p.CreatedAt,
+			&p.ID,
+			&p.Module,
+			&p.Subsystem,
 		)
 		if err != nil {
 			return nil, err
@@ -108,7 +76,7 @@ func (pr *permissionRepository) FindByUserID(userID int64) ([]*permissionEntity,
 
 func (pr *permissionRepository) findOneStmt() (*sql.Stmt, error) {
 	return pr.db.Prepare(
-		"SELECT " + tablePermissionColumns + " " +
+		"SELECT " + strings.Join(tablePermissionColumns, ",") + " " +
 			"FROM " + tablePermission + " AS p " +
 			"WHERE p.subsystem = $1 AND p.module = $2 AND p.action = $3",
 	)
@@ -150,7 +118,7 @@ func (pr *permissionRepository) Register(permissions charon.Permissions) (create
 		}
 	}()
 
-	rows, err = tx.Query("SELECT "+tablePermissionColumns+" FROM "+tablePermission+" AS p WHERE p.subsystem = $1", subsystem)
+	rows, err = tx.Query("SELECT "+strings.Join(tablePermissionColumns, ",")+" FROM "+tablePermission+" AS p WHERE p.subsystem = $1", subsystem)
 	if err != nil {
 		return
 	}
@@ -160,11 +128,12 @@ func (pr *permissionRepository) Register(permissions charon.Permissions) (create
 	for rows.Next() {
 		var entity permissionEntity
 		err = rows.Scan(
-			&entity.ID,
-			&entity.Subsystem,
-			&entity.Module,
 			&entity.Action,
 			&entity.CreatedAt,
+			&entity.ID,
+			&entity.Module,
+			&entity.Subsystem,
+			&entity.UpdatedAt,
 		)
 		if err != nil {
 			return

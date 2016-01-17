@@ -1,7 +1,8 @@
 charond/conf/development.xml
 charond/charond
+charonctl/charonctl
+charong/charong
 .idea
 charon.iml
 run.sh
 test.sh
-schema.sql

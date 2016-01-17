@@ -14,11 +14,11 @@ var (
 )
 
 type Hasher interface {
-	Hash(string) (string, error)
+	Hash([]byte) ([]byte, error)
 }
 
 type Comparator interface {
-	Compare(string, string) bool
+	Compare([]byte, []byte) bool
 }
 
 // PasswordHasher ...
@@ -46,15 +46,13 @@ func NewBcryptPasswordHasher(cost int, logger log.Logger) (PasswordHasher, error
 }
 
 // Hash implements PasswordHasher interface.
-func (bph BcryptPasswordHasher) Hash(plainPassword string) (string, error) {
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(plainPassword), bph.cost)
-
-	return string(hashedPassword), err
+func (bph BcryptPasswordHasher) Hash(plainPassword []byte) ([]byte, error) {
+	return bcrypt.GenerateFromPassword(plainPassword, bph.cost)
 }
 
 // Compare implements PasswordHasher interface.
-func (bph BcryptPasswordHasher) Compare(hashedPassword, plainPassword string) bool {
-	err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(plainPassword))
+func (bph BcryptPasswordHasher) Compare(hashedPassword, plainPassword []byte) bool {
+	err := bcrypt.CompareHashAndPassword(hashedPassword, plainPassword)
 	if err != nil {
 		if bph.logger != nil {
 			sklog.Error(bph.logger, err)

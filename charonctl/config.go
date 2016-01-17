@@ -9,6 +9,7 @@ type configuration struct {
 	cl       *flag.FlagSet
 	username string
 	password string
+	noauth   bool
 	register struct {
 		username  string
 		password  string
@@ -23,6 +24,7 @@ func (c *configuration) init() {
 		cl: flag.NewFlagSet(os.Args[0], flag.ExitOnError),
 	}
 
+	c.cl.BoolVar(&c.noauth, "noauth", false, "noauth")
 	c.cl.StringVar(&c.username, "username", "", "username")
 	c.cl.StringVar(&c.password, "password", "", "password")
 	c.cl.StringVar(&c.register.username, "r.username", "", "username")

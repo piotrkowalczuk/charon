@@ -17,7 +17,7 @@ func (rs *rpcServer) CreateUser(ctx context.Context, req *charon.CreateUserReque
 		if err != nil {
 			sklog.Error(rs.logger, err)
 		} else {
-			sklog.Debug(rs.logger, "user created")
+			sklog.Debug(rs.logger, "user created", "username", req.Username, "superuser", req.IsSuperuser.BoolOr(false))
 		}
 	}()
 
@@ -26,18 +26,18 @@ func (rs *rpcServer) CreateUser(ctx context.Context, req *charon.CreateUserReque
 		return nil, err
 	}
 
-	if !actor.user.IsSuperuser {
-		if req.IsSuperuser != nil && req.IsSuperuser.Valid {
+	if !actor.isLocalhost() && !actor.user.IsSuperuser {
+		if req.IsSuperuser.BoolOr(false) {
 			return nil, grpc.Errorf(codes.PermissionDenied, "charond: user is not allowed to create superuser")
 		}
 
-		if req.IsStaff != nil && req.IsStaff.Valid && !actor.permissions.Contains(charon.UserCanCreateStaff) {
+		if req.IsStaff.BoolOr(false) && !actor.permissions.Contains(charon.UserCanCreateStaff) {
 			return nil, grpc.Errorf(codes.PermissionDenied, "charond: user is not allowed to create staff user")
 		}
 	}
 
-	if req.SecurePassword == "" {
-		req.SecurePassword, err = rs.passwordHasher.Hash(req.PlainPassword)
+	if len(req.SecurePassword) == 0 {
+		req.SecurePassword, err = rs.passwordHasher.Hash([]byte(req.PlainPassword))
 		if err != nil {
 			return nil, err
 		}
@@ -52,7 +52,7 @@ func (rs *rpcServer) CreateUser(ctx context.Context, req *charon.CreateUserReque
 		req.SecurePassword,
 		req.FirstName,
 		req.LastName,
-		uuid.New(),
+		uuid.NewRandom(),
 		req.IsSuperuser.BoolOr(false),
 		req.IsStaff.BoolOr(false),
 		req.IsActive.BoolOr(false),
@@ -69,8 +69,8 @@ func (rs *rpcServer) CreateUser(ctx context.Context, req *charon.CreateUserReque
 
 // ModifyUser implements charon.RPCServer interface.
 func (rs *rpcServer) ModifyUser(ctx context.Context, req *charon.ModifyUserRequest) (*charon.ModifyUserResponse, error) {
-	if int64(req.Id) <= 0 {
-		return nil, grpc.Errorf(codes.InvalidArgument, "charond: user cannot be modified, invalid id: %d", int64(req.Id))
+	if req.Id <= 0 {
+		return nil, grpc.Errorf(codes.InvalidArgument, "charond: user cannot be modified, invalid id: %d", req.Id)
 	}
 
 	actor, err := rs.retrieveActor(ctx)
@@ -78,7 +78,7 @@ func (rs *rpcServer) ModifyUser(ctx context.Context, req *charon.ModifyUserReque
 		return nil, err
 	}
 
-	entity, err := rs.repository.user.FindOneByID(int64(req.Id))
+	entity, err := rs.repository.user.FindOneByID(req.Id)
 	if err != nil {
 		return nil, err
 	}
@@ -88,7 +88,7 @@ func (rs *rpcServer) ModifyUser(ctx context.Context, req *charon.ModifyUserReque
 	}
 
 	entity, err = rs.repository.user.UpdateOneByID(
-		int64(req.Id),
+		req.Id,
 		req.Username,
 		req.SecurePassword,
 		req.FirstName,
@@ -102,7 +102,7 @@ func (rs *rpcServer) ModifyUser(ctx context.Context, req *charon.ModifyUserReque
 		return nil, mapUserError(err)
 	}
 
-	sklog.Debug(rs.logger, "user modified", "id", int64(req.Id))
+	sklog.Debug(rs.logger, "user modified", "id", req.Id)
 
 	return &charon.ModifyUserResponse{
 		User: entity.Message(),
@@ -132,12 +132,12 @@ func modifyUserFirewall(req *charon.ModifyUserRequest, entity *userEntity, actor
 
 // GetUser implements charon.RPCServer interface.
 func (rs *rpcServer) GetUser(ctx context.Context, req *charon.GetUserRequest) (*charon.GetUserResponse, error) {
-	user, err := rs.repository.user.FindOneByID(int64(req.Id))
+	user, err := rs.repository.user.FindOneByID(req.Id)
 	if err != nil {
 		return nil, err
 	}
 
-	sklog.Debug(rs.logger, "user retrieved", "id", int64(req.Id))
+	sklog.Debug(rs.logger, "user retrieved", "id", req.Id)
 
 	return &charon.GetUserResponse{
 		User: user.Message(),
@@ -166,15 +166,15 @@ func (rs *rpcServer) ListUsers(ctx context.Context, req *charon.ListUsersRequest
 
 // DeleteUser implements charon.RPCServer interface.
 func (rs *rpcServer) DeleteUser(ctx context.Context, req *charon.DeleteUserRequest) (*charon.DeleteUserResponse, error) {
-	if int64(req.Id) <= 0 {
-		return nil, grpc.Errorf(codes.InvalidArgument, "charond: user cannot be deleted, invalid id: %d", int64(req.Id))
+	if req.Id <= 0 {
+		return nil, grpc.Errorf(codes.InvalidArgument, "charond: user cannot be deleted, invalid id: %d", req.Id)
 	}
-	affected, err := rs.repository.user.DeleteOneByID(int64(req.Id))
+	affected, err := rs.repository.user.DeleteOneByID(req.Id)
 	if err != nil {
 		return nil, err
 	}
 
-	sklog.Debug(rs.logger, "users deleted", "id", int64(req.Id))
+	sklog.Debug(rs.logger, "users deleted", "id", req.Id)
 
 	return &charon.DeleteUserResponse{
 		Affected: affected,
@@ -185,7 +185,7 @@ func mapUserError(err error) error {
 	switch pqcnstr.FromError(err) {
 	case tableUserConstraintPrimaryKey:
 		return grpc.Errorf(codes.AlreadyExists, charon.ErrDescUserWithIDExists)
-	case tableUserConstraintUniqueUsername:
+	case tableUserConstraintUsernameUnique:
 		return grpc.Errorf(codes.AlreadyExists, charon.ErrDescUserWithUsernameExists)
 	default:
 		return err

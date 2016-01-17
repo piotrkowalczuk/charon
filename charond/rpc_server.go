@@ -1,15 +1,14 @@
 package main
 
 import (
-	"errors"
+	"strings"
 
 	"github.com/go-kit/kit/log"
 	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/mnemosyne"
 	"golang.org/x/net/context"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/peer"
 )
 
 type rpcServer struct {
@@ -32,28 +31,27 @@ type actor struct {
 	permissions charon.Permissions
 }
 
+func (a *actor) isLocalhost() bool {
+	return a.user == nil && a.session == nil && a.permissions == nil
+}
+
 func (rs *rpcServer) retrieveActor(ctx context.Context) (a *actor, err error) {
 	var (
 		userID   int64
 		entities []*permissionEntity
-		token    mnemosyne.Token
+		ses      *mnemosyne.Session
 	)
 
-	token, err = rs.token(ctx)
+	ses, err = rs.session.FromContext(ctx)
 	if err != nil {
-		return nil, err
-	}
-	a = &actor{}
-	a.session, err = rs.session.Get(ctx, token)
-	if err != nil {
-		if err == mnemosyne.ErrSessionNotFound {
-			err = grpc.Errorf(codes.Unauthenticated, "charond: action cannot be performed: %s", grpc.ErrorDesc(err))
-			return
+		if peer, ok := peer.FromContext(ctx); ok {
+			if strings.HasPrefix(peer.Addr.String(), "127.0.0.1") {
+				return &actor{}, nil
+			}
 		}
 		return
 	}
-
-	userID, err = charon.SessionSubjectID(a.session.SubjectId).UserID()
+	userID, err = charon.SessionSubjectID(ses.SubjectId).UserID()
 	if err != nil {
 		return
 	}
@@ -73,19 +71,6 @@ func (rs *rpcServer) retrieveActor(ctx context.Context) (a *actor, err error) {
 	}
 
 	return
-}
-
-func (rs *rpcServer) token(ctx context.Context) (mnemosyne.Token, error) {
-	md, ok := metadata.FromContext(ctx)
-	if !ok {
-		return mnemosyne.Token{}, errors.New("charond: missing metadata in context, session token cannot be retrieved")
-	}
-
-	if len(md[mnemosyne.TokenMetadataKey]) == 0 {
-		return mnemosyne.Token{}, errors.New("charond: missing sesion token in metadata")
-	}
-
-	return mnemosyne.DecodeToken(md[mnemosyne.TokenMetadataKey][0]), nil
 }
 
 // Context create new context based on given metadata and instance metadata.

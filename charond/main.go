@@ -1,5 +1,7 @@
 package main
 
+//go:generate charong
+
 import (
 	"errors"
 	"net"
@@ -25,7 +27,6 @@ func main() {
 	logger := initLogger(config.logger.adapter, config.logger.format, config.logger.level, sklog.KeySubsystem, config.subsystem)
 	postgres := initPostgres(
 		config.postgres.connectionString,
-		config.postgres.retry,
 		logger,
 	)
 	passwordHasher := initPasswordHasher(config.password.bcrypt.cost, logger)
@@ -112,7 +113,7 @@ func createSuperuser(userRepo *userRepository, hasher charon.PasswordHasher, use
 		return nil, errors.New("charond: superuser cannot be created, database is full of users")
 	}
 
-	securePassword, err := hasher.Hash(plainPassword)
+	securePassword, err := hasher.Hash([]byte(plainPassword))
 	if err != nil {
 		return nil, err
 	}

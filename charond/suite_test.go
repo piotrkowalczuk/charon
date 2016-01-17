@@ -30,7 +30,10 @@ func (ps *postgresSuite) setup(t *testing.T) {
 		t.FailNow()
 	}
 
-	setupDatabase(ps.postgres)
+	if err = setupDatabase(ps.postgres); err != nil {
+		t.Errorf("postgres schema setup failed with error: %s", err.Error())
+		t.FailNow()
+	}
 
 	ps.user = newUserRepository(ps.postgres)
 }

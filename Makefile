@@ -3,9 +3,11 @@ SERVICE=charon
 PACKAGE=github.com/piotrkowalczuk/charon
 PACKAGE_DAEMON=$(PACKAGE)/$(SERVICE)d
 PACKAGE_CONTROLL=$(PACKAGE)/$(SERVICE)ctl
+PACKAGE_GENERATOR=$(PACKAGE)/$(SERVICE)g
 PACKAGE_TEST=$(PACKAGE)/$(SERVICE)test
 BINARY_DAEMON=${SERVICE}d/${SERVICE}d
-BINARY_CONTROLL=${SERVICE}d/${SERVICE}ctl
+BINARY_CONTROLL=${SERVICE}ctl/${SERVICE}ctl
+BINARY_GENERATOR=${SERVICE}g/${SERVICE}g
 
 FLAGS=-host=$(CHARON_HOST) \
       	    -port=$(CHARON_PORT) \
@@ -16,21 +18,21 @@ FLAGS=-host=$(CHARON_HOST) \
       	    -l.level=$(CHARON_LOGGER_LEVEL) \
       	    -m.engine=$(CHARON_MONITORING_ENGINE) \
       	    -ps.connectionstring=$(CHARON_POSTGRES_CONNECTION_STRING) \
-      	    -ps.retry=$(CHARON_POSTGRES_RETRY) \
       	    -pwd.strategy=$(CHARON_PASSWORD_STRATEGY) \
       	    -pwd.bcryptcost=$(CHARON_PASSWORD_BCRYPT_COST) \
       	    -mnemo.address=$(CHARON_MNEMOSYNE_ADDRESS)
+
+PROTO_PATH=--proto_path=. \
+          	    --proto_path=${GOPATH}/src/github.com/piotrkowalczuk/mnemosyne \
+          	    --proto_path=${GOPATH}/src/github.com/piotrkowalczuk/protot \
+          	    --proto_path=${GOPATH}/src/github.com/piotrkowalczuk/nilt \
 
 .PHONY:	all proto build build-daemon run test test-unit test-postgres
 
 all: proto build test run
 
 proto:
-	@${PROTOC} --proto_path=. \
-	    --proto_path=${GOPATH}/src/github.com/piotrkowalczuk/mnemosyne \
-	    --proto_path=${GOPATH}/src/github.com/piotrkowalczuk/protot \
-	    --proto_path=${GOPATH}/src/github.com/piotrkowalczuk/nilt \
-	    --go_out=Mmnemosyne.proto=github.com/piotrkowalczuk/mnemosyne,Mprotot.proto=github.com/piotrkowalczuk/protot,Mnilt.proto=github.com/piotrkowalczuk/nilt,plugins=grpc:. \
+	@${PROTOC} ${PROTO_PATH}--go_out=Mmnemosyne.proto=github.com/piotrkowalczuk/mnemosyne,Mprotot.proto=github.com/piotrkowalczuk/protot,Mnilt.proto=github.com/piotrkowalczuk/nilt,plugins=grpc:. \
 		${SERVICE}.proto
 	@ls -al | grep pb.go
 
@@ -41,6 +43,15 @@ build-daemon:
 
 build-controll:
 	@go build -o ${BINARY_CONTROLL} ${PACKAGE_CONTROLL}
+
+rebuild: install-generator proto generate build-daemon build-controll
+
+install-generator:
+	@go install ${PACKAGE_GENERATOR}
+
+generate:
+	@go generate ./...
+	@goimports -w ./charond/schema.go
 
 run:
 	@${BINARY_DAEMON} ${FLAGS}

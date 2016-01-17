@@ -15,7 +15,7 @@ func TestUserRepository_Create(t *testing.T) {
 	defer suite.teardown(t)
 
 	for res := range generateUserRepositoryData(t, suite) {
-		if res.got.CreatedAt == nil || res.got.CreatedAt.IsZero() {
+		if res.got.CreatedAt.IsZero() {
 			t.Errorf("invalid created at field, expected valid time but got %v", res.got.CreatedAt)
 		} else {
 			t.Logf("user has been properly created at %v", res.got.CreatedAt)
@@ -57,7 +57,7 @@ func TestUserRepository_UpdateOneByID(t *testing.T) {
 			t.Logf("user has been properly modified at %v", modified.UpdatedAt)
 		}
 		assertf(t, modified.Username == user.Username+suffix, "wrong username, expected %s but got %s", user.Username+suffix, modified.Username)
-		assertf(t, modified.Password == user.Password, "wrong password, expected %s but got %s", user.Password, modified.Password)
+		assertf(t, reflect.DeepEqual(modified.Password, user.Password), "wrong password, expected %s but got %s", user.Password, modified.Password)
 		assertf(t, modified.FirstName == user.FirstName+suffix, "wrong first name, expected %s but got %s", user.FirstName+suffix, modified.FirstName)
 		assertf(t, modified.LastName == user.LastName+suffix, "wrong last name, expected %s but got %s", user.LastName+suffix, modified.LastName)
 		assert(t, modified.IsSuperuser, "user should become a superuser")
@@ -192,10 +192,10 @@ func generateUserRepositoryData(t *testing.T, suite *postgresSuite) chan userRep
 		for _, g := range given {
 			entity, err := suite.user.Create(
 				g.username,
-				g.password,
+				[]byte(g.password),
 				g.firstName,
 				g.lastName,
-				g.confirmationToken,
+				[]byte(g.confirmationToken),
 				g.isSuperuser,
 				g.isStaff,
 				g.isActive,
