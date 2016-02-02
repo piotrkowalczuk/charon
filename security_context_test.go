@@ -25,8 +25,7 @@ func ExampleSecurityContext() {
 		ok bool
 	)
 	if t, ok = sctx.Token(); ok {
-		fmt.Println(t.Key)
-		fmt.Println(t.Hash)
+		fmt.Println(t.Encode())
 	}
 	if s, ok = sctx.Subject(); ok {
 		fmt.Println(s.ID)
@@ -34,8 +33,7 @@ func ExampleSecurityContext() {
 	}
 
 	// Output:
-	// 0000000001
-	// some hash
+	// 0000000001some hash
 	// 1
 	// j.kowalski@gmail.com
 }
