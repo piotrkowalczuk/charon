@@ -6,7 +6,39 @@ import (
 	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/mnemosyne"
 	"golang.org/x/net/context"
+	"fmt"
 )
+
+func ExampleSecurityContext() {
+	token := mnemosyne.NewToken([]byte("0000000001"), []byte("some hash"))
+	subject:= charon.Subject{
+		ID: 1,
+		Username: "j.kowalski@gmail.com",
+	}
+	ctx := charon.NewSubjectContext(context.Background(), subject)
+	ctx = mnemosyne.NewTokenContext(ctx, token)
+	sctx := charon.NewSecurityContext(ctx)
+
+	var (
+		t mnemosyne.Token
+		s charon.Subject
+		ok bool
+	)
+	if t, ok = sctx.Token(); ok {
+		fmt.Println(t.Key)
+		fmt.Println(t.Hash)
+	}
+	if s, ok = sctx.Subject(); ok {
+		fmt.Println(s.ID)
+		fmt.Println(s.Username)
+	}
+
+	// Output:
+	// 0000000001
+	// some hash
+	// 1
+	// j.kowalski@gmail.com
+}
 
 func TestNewSecurityContext(t *testing.T) {
 	sctx := charon.NewSecurityContext(context.Background())
