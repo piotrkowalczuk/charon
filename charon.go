@@ -10,7 +10,6 @@ import (
 )
 
 const (
-	contextKeyUser  = "context_key_charon_user"
 	DecisionUnknown = 0
 	DecisionGranted = 1
 )
@@ -20,17 +19,6 @@ var (
 	// that are using arbitrary token taken from a context if it missing.
 	ErrMissingTokenInContext = errors.New("charon: missing token in context")
 )
-
-// NewContext returns a new Context that carries User value.
-func NewContext(ctx context.Context, u User) context.Context {
-	return context.WithValue(ctx, contextKeyUser, u)
-}
-
-// FromContext returns the User value stored in context, if any.
-func FromContext(ctx context.Context) (User, bool) {
-	u, ok := ctx.Value(contextKeyUser).(User)
-	return u, ok
-}
 
 // Error ...
 type Error struct {
@@ -169,4 +157,15 @@ type Subject struct {
 // Name return concatenated first and last name.
 func (u *User) Name() string {
 	return u.FirstName + " " + u.LastName
+}
+
+// NewSubjectContext returns a new Context that carries Subject value.
+func NewSubjectContext(ctx context.Context, s Subject) context.Context {
+	return context.WithValue(ctx, contextKeySubject, s)
+}
+
+// SubjectFromContext returns the Subject value stored in context, if any.
+func SubjectFromContext(ctx context.Context) (Subject, bool) {
+	s, ok := ctx.Value(contextKeySubject).(Subject)
+	return s, ok
 }

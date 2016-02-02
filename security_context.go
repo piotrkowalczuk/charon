@@ -2,7 +2,7 @@ package charon
 
 import (
 	"github.com/piotrkowalczuk/mnemosyne"
-	"code.google.com/p/go.net/context"
+	"golang.org/x/net/context"
 )
 
 const (
