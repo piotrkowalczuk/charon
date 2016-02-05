@@ -22,6 +22,8 @@ FLAGS=-host=$(CHARON_HOST) \
       	    -pwd.bcryptcost=$(CHARON_PASSWORD_BCRYPT_COST) \
       	    -mnemo.address=$(CHARON_MNEMOSYNE_ADDRESS)
 
+CMD_TEST=go test -v -coverprofile=profile.out -covermode=atomic
+
 PROTO_PATH=--proto_path=. \
           	    --proto_path=${GOPATH}/src/github.com/piotrkowalczuk/mnemosyne \
           	    --proto_path=${GOPATH}/src/github.com/piotrkowalczuk/protot \
@@ -59,12 +61,16 @@ run:
 test: test-unit test-postgres
 
 test-unit:
-	@go test -v ${PACKAGE}
-	@go test -v ${PACKAGE_TEST}
-	@go test -v -tags=unit ${PACKAGE_DAEMON}
+	@${CMD_TEST} ${PACKAGE}
+	@cat profile.out >> coverage.txt && rm profile.out
+	@${CMD_TEST} ${PACKAGE_TEST}
+	@cat profile.out >> coverage.txt && rm profile.out
+	@${CMD_TEST} -tags=unit ${PACKAGE_DAEMON}
+	@cat profile.out >> coverage.txt && rm profile.out
 
 test-postgres:
-	@go test -v -tags=postgres ${PACKAGE_DAEMON} ${FLAGS}
+	@${CMD_TEST} -tags=postgres ${PACKAGE_DAEMON} ${FLAGS}
+	@cat profile.out >> coverage.txt && rm profile.out
 
 get:
 	@go get ${PACKAGE}

@@ -1,13 +1,8 @@
 package main
 
-import (
-	"github.com/go-kit/kit/log"
-	"github.com/go-kit/kit/metrics"
-	"github.com/piotrkowalczuk/sklog"
-)
+import "github.com/go-kit/kit/metrics"
 
 var (
-	monitor             *monitoring
 	monitoringRPCLabels = []string{
 		"method",
 	}
@@ -17,21 +12,23 @@ var (
 )
 
 type monitoring struct {
-	rpc struct {
-		requests metrics.Counter
-		errors   metrics.Counter
-	}
-	postgres struct {
-		queries metrics.Counter
-		errors  metrics.Counter
+	rpc      monitoringRPC
+	postgres monitoringPostgres
+}
+
+type monitoringRPC struct {
+	requests metrics.Counter
+	errors   metrics.Counter
+}
+
+func (mr monitoringRPC) with(f metrics.Field) monitoringRPC {
+	return monitoringRPC{
+		errors:   mr.errors.With(f),
+		requests: mr.requests.With(f),
 	}
 }
 
-func initMonitoring(fn func() (*monitoring, error), logger log.Logger) {
-	m, err := fn()
-	if err != nil {
-		sklog.Fatal(logger, err)
-	}
-
-	monitor = m
+type monitoringPostgres struct {
+	queries metrics.Counter
+	errors  metrics.Counter
 }

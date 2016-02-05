@@ -4,5 +4,7 @@ charonctl/charonctl
 charong/charong
 .idea
 charon.iml
-run.sh
 test.sh
+run.sh
+coverage.txt
+profile.out

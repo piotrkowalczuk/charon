@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/nilt"
@@ -64,7 +63,7 @@ type GroupRepository interface {
 	// FindOneByID retrieves group for given id.
 	FindOneByID(int64) (*groupEntity, error)
 	// Find ...
-	Find(offset, limit int64, sort map[string]bool, createdBy, updatedBy *nilt.Int64, name string, description *nilt.String, createdAtFrom, createdAtTo, updatedAtFrom, updatedAtTo *time.Time) ([]*groupEntity, error)
+	Find(c *groupCriteria) ([]*groupEntity, error)
 	// Create ...
 	Create(createdBy int64, name string, description *nilt.String) (*groupEntity, error)
 	// UpdateOneByID ...
@@ -73,13 +72,11 @@ type GroupRepository interface {
 	DeleteOneByID(id int64) (int64, error)
 }
 
-type groupRepository struct {
-	db *sql.DB
-}
-
 func newGroupRepository(dbPool *sql.DB) GroupRepository {
 	return &groupRepository{
-		db: dbPool,
+		db:      dbPool,
+		table:   tableGroup,
+		columns: tableGroupColumns,
 	}
 }
 
@@ -237,98 +234,4 @@ func (gr *groupRepository) DeleteOneByID(id int64) (int64, error) {
 	}
 
 	return res.RowsAffected()
-}
-
-// FindOneByID implements GroupRepository interface.
-func (gr *groupRepository) FindOneByID(id int64) (*groupEntity, error) {
-	query := `
-		SELECT  ` + strings.Join(tableGroupColumns, ",") + `
-		FROM ` + tableGroup + ` AS g
-		WHERE g.id = $1 LIMIT 1
-	`
-
-	return gr.queryRow(query, id)
-}
-
-// Find implements UserRepository interface.
-func (ur *groupRepository) Find(offset, limit int64, sort map[string]bool, createdBy, updatedBy *nilt.Int64, name string, description *nilt.String, createdAtFrom, createdAtTo, updatedAtFrom, updatedAtTo *time.Time) ([]*groupEntity, error) {
-	var (
-		query string
-	)
-
-	comp := pqcomp.New(2, 8+len(sort))
-	comp.AddArg(offset)
-	comp.AddArg(limit)
-	comp.AddExpr("g.created_at", pqcomp.GT, createdAtFrom)
-	comp.AddExpr("g.created_at", pqcomp.LTE, createdAtTo)
-	comp.AddExpr("g.created_by", pqcomp.E, createdBy)
-	comp.AddExpr("g.description", pqcomp.E, description)
-	comp.AddExpr("g.name", pqcomp.E, name)
-	comp.AddExpr("g.updated_at", pqcomp.GT, updatedAtFrom)
-	comp.AddExpr("g.updated_at", pqcomp.LTE, updatedAtTo)
-	comp.AddExpr("g.updated_by", pqcomp.E, updatedBy)
-
-	switch {
-	case comp.Len() == 0:
-		query = `SELECT ` + strings.Join(tableGroupColumns, ",") + ` FROM ` + tableUser
-	default:
-		query = `SELECT ` + strings.Join(tableGroupColumns, ",") + ` FROM ` + tableUser + ` WHERE `
-	}
-
-	for comp.Next() {
-		if !comp.First() {
-			query += ", "
-		}
-
-		query += fmt.Sprintf("%s %s %s", comp.Key(), comp.Oper(), comp.PlaceHolder())
-	}
-
-	i := 0
-SortLoop:
-	for column, asc := range sort {
-		if i != 0 {
-			query += ", "
-		} else {
-			query += " ORDER BY "
-		}
-		i++
-		if asc {
-			query += fmt.Sprintf("%s ASC", column)
-			continue SortLoop
-		}
-
-		query += fmt.Sprintf("%s DESC ", column)
-	}
-
-	query += "LIMIT $1 OFFSET $2"
-
-	rows, err := ur.db.Query(query, offset, limit)
-	if err != nil {
-		return nil, err
-	}
-
-	groups := []*groupEntity{}
-	for rows.Next() {
-		var group groupEntity
-		err = rows.Scan(
-			&group.CreatedAt,
-			&group.CreatedBy,
-			&group.Description,
-			&group.ID,
-			&group.Name,
-			&group.UpdatedAt,
-			&group.UpdatedBy,
-			&group.UpdatedBy,
-		)
-		if err != nil {
-			return nil, err
-		}
-		groups = append(groups, &group)
-	}
-
-	if rows.Err() != nil {
-		return nil, rows.Err()
-	}
-
-	return groups, nil
 }

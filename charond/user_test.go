@@ -3,6 +3,7 @@
 package main
 
 import (
+	"fmt"
 	"testing"
 
 	"reflect"
@@ -27,29 +28,36 @@ func TestUserRepository_Create(t *testing.T) {
 	}
 }
 
-func TestUserRepository_UpdateOneByID(t *testing.T) {
+func TestUserRepository_UpdateByID(t *testing.T) {
 	suffix := "_modified"
 	suite := setupPostgresSuite(t)
 	defer suite.teardown(t)
 
 	for res := range generateUserRepositoryData(t, suite) {
 		user := res.got
-		modified, err := suite.user.UpdateOneByID(
+		modified, err := suite.user.UpdateByID(
 			user.ID,
-			&nilt.String{String: user.Username + suffix, Valid: true},
 			nil,
-			&nilt.String{String: user.FirstName + suffix, Valid: true},
-			&nilt.String{String: user.LastName + suffix, Valid: true},
-			&nilt.Bool{Bool: true, Valid: true},
-			&nilt.Bool{Bool: true, Valid: true},
-			&nilt.Bool{Bool: true, Valid: true},
-			&nilt.Bool{Bool: true, Valid: true},
+			nil,
+			nilt.Int64{},
+			nilt.String{String: user.FirstName + suffix, Valid: true},
+			nilt.Bool{Bool: true, Valid: true},
+			nilt.Bool{Bool: true, Valid: true},
+			nilt.Bool{Bool: true, Valid: true},
+			nilt.Bool{Bool: true, Valid: true},
+			nil,
+			nilt.String{String: user.LastName + suffix, Valid: true},
+			nil,
+			nil,
+			nilt.Int64{},
+			nilt.String{String: user.Username + suffix, Valid: true},
 		)
 
 		if err != nil {
 			t.Errorf("user cannot be modified, unexpected error: %s", err.Error())
 			continue
 		} else {
+			fmt.Println(modified)
 			t.Logf("user with id %d has been modified", modified.ID)
 		}
 
@@ -72,7 +80,7 @@ func TestUserRepository_DeleteOneByID(t *testing.T) {
 	defer suite.teardown(t)
 
 	for res := range generateUserRepositoryData(t, suite) {
-		affected, err := suite.user.DeleteOneByID(res.got.ID)
+		affected, err := suite.user.DeleteByID(res.got.ID)
 
 		if err != nil {
 			t.Errorf("user cannot be deleted, unexpected error: %s", err.Error())
@@ -140,17 +148,17 @@ func TestUserRepository_Find(t *testing.T) {
 		all++
 	}
 
-	entities, err = suite.user.Find(nil, &nilt.Int64{Int64: all, Valid: true})
+	entities, err = suite.user.Find(&userCriteria{limit: all})
 	if err != nil {
 		t.Errorf("users can not be retrieved, unexpected error: %s", err.Error())
 	} else {
 		assertf(t, int64(len(entities)) == all, "number of users retrived do not match, expected %d got %d", all, len(entities))
 	}
 
-	entities, err = suite.user.Find(
-		&nilt.Int64{Int64: all, Valid: true},
-		&nilt.Int64{Int64: all, Valid: true},
-	)
+	entities, err = suite.user.Find(&userCriteria{
+		offset: all,
+		limit:  all,
+	})
 	if err != nil {
 		t.Errorf("users can not be retrieved, unexpected error: %s", err.Error())
 	} else {

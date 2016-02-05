@@ -104,7 +104,7 @@ func main() {
 	gRPCServer.Serve(listen)
 }
 
-func createSuperuser(userRepo *userRepository, hasher charon.PasswordHasher, username, plainPassword, firstName, lastName string) (*userEntity, error) {
+func createSuperuser(userRepo UserRepository, hasher charon.PasswordHasher, username, plainPassword, firstName, lastName string) (*userEntity, error) {
 	count, err := userRepo.Count()
 	if err != nil {
 		return nil, err

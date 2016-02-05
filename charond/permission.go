@@ -23,21 +23,18 @@ type PermissionRepository interface {
 	Register(permissions charon.Permissions) (created, untouched, removed int, err error)
 }
 
-type permissionRepository struct {
-	db *sql.DB
-}
-
 func newPermissionRepository(dbPool *sql.DB) *permissionRepository {
 	return &permissionRepository{
 		db: dbPool,
 	}
 }
 
-// FindOneByID retrieves all permissions for user represented by given id.
+// FindByUserID retrieves all permissions for user represented by given id.
 func (pr *permissionRepository) FindByUserID(userID int64) ([]*permissionEntity, error) {
+
 	query := `
 		SELECT DISTINCT ON (p.id)
-			` + strings.Join(tablePermissionColumns, ",") + `
+			` + columns(tablePermissionColumns, "p") + `
 		FROM ` + tablePermission + ` AS p
 		LEFT JOIN ` + tableUserPermissions + ` AS up ON up.permission_id = p.id AND up.user_id = $1
 		LEFT JOIN ` + tableUserGroups + ` AS ug ON ug.user_id = $1

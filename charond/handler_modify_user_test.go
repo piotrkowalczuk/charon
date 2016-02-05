@@ -9,7 +9,7 @@ import (
 	"github.com/piotrkowalczuk/nilt"
 )
 
-func TestUserModifyFirewall(t *testing.T) {
+func TestModifyUserHandler_Firewall(t *testing.T) {
 	success := []struct {
 		hint   string
 		req    charon.ModifyUserRequest
@@ -57,8 +57,9 @@ func TestUserModifyFirewall(t *testing.T) {
 		},
 	}
 
+	handler := &modifyUserHandler{}
 	for _, args := range success {
-		msg, ok := modifyUserFirewall(&args.req, &args.entity, &actor{
+		msg, ok := handler.firewall(&args.req, &args.entity, &actor{
 			user:        &args.user,
 			permissions: args.perm,
 		})

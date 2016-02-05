@@ -6,10 +6,12 @@ import (
 	"os"
 
 	"github.com/go-kit/kit/log"
+	"github.com/go-kit/kit/metrics/prometheus"
 	_ "github.com/lib/pq"
 	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/mnemosyne"
 	"github.com/piotrkowalczuk/sklog"
+	stdprometheus "github.com/prometheus/client_golang/prometheus"
 	"google.golang.org/grpc"
 )
 
@@ -90,4 +92,74 @@ func initPermissionRegistry(r PermissionRepository, permissions charon.Permissio
 	sklog.Info(logger, "charon permissions has been registered", "created", created, "untouched", untouched, "removed", removed)
 
 	return
+}
+
+const (
+	monitoringEnginePrometheus = "prometheus"
+)
+
+func initMonitoring(fn func() (*monitoring, error), logger log.Logger) *monitoring {
+	m, err := fn()
+	if err != nil {
+		sklog.Fatal(logger, err)
+	}
+
+	return m
+}
+
+func initPrometheus(namespace, subsystem string, constLabels stdprometheus.Labels) func() (*monitoring, error) {
+	return func() (*monitoring, error) {
+		rpcRequests := prometheus.NewCounter(
+			stdprometheus.CounterOpts{
+				Namespace:   namespace,
+				Subsystem:   subsystem,
+				Name:        "rpc_requests_total",
+				Help:        "Total number of RPC requests made.",
+				ConstLabels: constLabels,
+			},
+			monitoringRPCLabels,
+		)
+		rpcErrors := prometheus.NewCounter(
+			stdprometheus.CounterOpts{
+				Namespace:   namespace,
+				Subsystem:   subsystem,
+				Name:        "rpc_errors_total",
+				Help:        "Total number of errors that happen during RPC calles.",
+				ConstLabels: constLabels,
+			},
+			monitoringRPCLabels,
+		)
+
+		postgresQueries := prometheus.NewCounter(
+			stdprometheus.CounterOpts{
+				Namespace:   namespace,
+				Subsystem:   subsystem,
+				Name:        "postgres_queries_total",
+				Help:        "Total number of SQL queries made.",
+				ConstLabels: constLabels,
+			},
+			monitoringPostgresLabels,
+		)
+		postgresErrors := prometheus.NewCounter(
+			stdprometheus.CounterOpts{
+				Namespace:   namespace,
+				Subsystem:   subsystem,
+				Name:        "postgres_errors_total",
+				Help:        "Total number of errors that happen during SQL queries.",
+				ConstLabels: constLabels,
+			},
+			monitoringPostgresLabels,
+		)
+
+		return &monitoring{
+			rpc: monitoringRPC{
+				requests: rpcRequests,
+				errors:   rpcErrors,
+			},
+			postgres: monitoringPostgres{
+				queries: postgresQueries,
+				errors:  postgresErrors,
+			},
+		}, nil
+	}
 }

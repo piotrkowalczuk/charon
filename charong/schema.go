@@ -33,7 +33,7 @@ func databaseTableUser() *pqt.Table {
 		AddColumn(pqt.NewColumn("last_login_at", pqt.TypeTimestampTZ()))
 
 	identifierable(t)
-	ownerable(t, pqt.SelfRefference())
+	ownerable(t, pqt.SelfReference())
 	timestampable(t)
 
 	return t
@@ -42,9 +42,9 @@ func databaseTableUser() *pqt.Table {
 func databaseTableGroup(user *pqt.Table) *pqt.Table {
 	t := pqt.NewTable("group", pqt.WithIfNotExists()).
 		AddColumn(pqt.NewColumn("name", pqt.TypeText(), pqt.WithNotNull(), pqt.WithUnique())).
-		AddColumn(pqt.NewColumn("description", pqt.TypeText())).
-		AddRelationship(pqt.ManyToOne(pqt.SelfRefference(), pqt.WithColumnName("created_by"), pqt.WithOwnerName("Author")), pqt.WithNotNull()).
-		AddRelationship(pqt.ManyToOne(pqt.SelfRefference(), pqt.WithColumnName("updated_by"), pqt.WithOwnerName("Modifier")))
+		AddColumn(pqt.NewColumn("description", pqt.TypeText()))
+	//		AddRelationship(pqt.ManyToOne(pqt.SelfReference(), pqt.WithColumnName("created_by"), pqt.WithOwnerName("Author")), pqt.WithNotNull()).
+	//		AddRelationship(pqt.ManyToOne(pqt.SelfReference(), pqt.WithColumnName("updated_by"), pqt.WithOwnerName("Modifier")))
 
 	identifierable(t)
 	ownerable(t, user)
@@ -62,8 +62,8 @@ func databaseTablePermission() *pqt.Table {
 		AddColumn(subsystem).
 		AddColumn(module).
 		AddColumn(action).
-		AddRelationship(pqt.ManyToOne(pqt.SelfRefference(), pqt.WithColumnName("created_by"), pqt.WithOwnerName("Author")), pqt.WithNotNull()).
-		AddRelationship(pqt.ManyToOne(pqt.SelfRefference(), pqt.WithColumnName("updated_by"), pqt.WithOwnerName("Modifier"))).
+		AddRelationship(pqt.ManyToOne(pqt.SelfReference(), pqt.WithColumnName("created_by"), pqt.WithOwnerName("Author")), pqt.WithNotNull()).
+		AddRelationship(pqt.ManyToOne(pqt.SelfReference(), pqt.WithColumnName("updated_by"), pqt.WithOwnerName("Modifier"))).
 		AddUnique(subsystem, module, action)
 
 	identifierable(t)
@@ -107,8 +107,8 @@ func identifierable(t *pqt.Table) {
 }
 
 func ownerable(owner, inversed *pqt.Table) {
-	owner.AddRelationship(pqt.ManyToOne(inversed, pqt.WithColumnName("created_by"), pqt.WithOwnerName("Author"))).
-		AddRelationship(pqt.ManyToOne(inversed, pqt.WithColumnName("updated_by"), pqt.WithOwnerName("Modifier")))
+	owner.AddRelationship(pqt.ManyToOne(inversed, pqt.WithColumnName("created_by"), pqt.WithInversedName("Author"))).
+		AddRelationship(pqt.ManyToOne(inversed, pqt.WithColumnName("updated_by"), pqt.WithInversedName("Modifier")))
 }
 
 func timestampable(t *pqt.Table) {
