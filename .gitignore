@@ -1,7 +1,7 @@
-charond/conf/development.xml
 charond/charond
 charonctl/charonctl
 charong/charong
+example/client/client
 .idea
 charon.iml
 test.sh
