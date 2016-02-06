@@ -98,7 +98,7 @@ const (
 	monitoringEnginePrometheus = "prometheus"
 )
 
-func initMonitoring(fn func() (*monitoring, error), logger log.Logger) *monitoring {
+func initMonitoring(fn func() (monitoring, error), logger log.Logger) monitoring {
 	m, err := fn()
 	if err != nil {
 		sklog.Fatal(logger, err)
@@ -107,8 +107,8 @@ func initMonitoring(fn func() (*monitoring, error), logger log.Logger) *monitori
 	return m
 }
 
-func initPrometheus(namespace, subsystem string, constLabels stdprometheus.Labels) func() (*monitoring, error) {
-	return func() (*monitoring, error) {
+func initPrometheus(namespace, subsystem string, constLabels stdprometheus.Labels) func() (monitoring, error) {
+	return func() (monitoring, error) {
 		rpcRequests := prometheus.NewCounter(
 			stdprometheus.CounterOpts{
 				Namespace:   namespace,
@@ -151,12 +151,15 @@ func initPrometheus(namespace, subsystem string, constLabels stdprometheus.Label
 			monitoringPostgresLabels,
 		)
 
-		return &monitoring{
+		return monitoring{
+			enabled: true,
 			rpc: monitoringRPC{
+				enabled:  true,
 				requests: rpcRequests,
 				errors:   rpcErrors,
 			},
 			postgres: monitoringPostgres{
+				enabled: true,
 				queries: postgresQueries,
 				errors:  postgresErrors,
 			},

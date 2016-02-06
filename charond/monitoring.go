@@ -12,11 +12,13 @@ var (
 )
 
 type monitoring struct {
+	enabled  bool
 	rpc      monitoringRPC
 	postgres monitoringPostgres
 }
 
 type monitoringRPC struct {
+	enabled  bool
 	requests metrics.Counter
 	errors   metrics.Counter
 }
@@ -29,6 +31,7 @@ func (mr monitoringRPC) with(f metrics.Field) monitoringRPC {
 }
 
 type monitoringPostgres struct {
+	enabled bool
 	queries metrics.Counter
 	errors  metrics.Counter
 }

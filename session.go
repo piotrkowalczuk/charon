@@ -7,29 +7,29 @@ import (
 )
 
 const (
-	sessionSubjectIDPrefix = "charon:user:"
+	subjectIDPrefix = "charon:user:"
 )
 
-// SessionSubjectID is globally unique identifier that in format "charon:user:<user_id>".
-type SessionSubjectID string
+// SubjectID is globally unique identifier that in format "charon:user:<user_id>".
+type SubjectID string
 
-// NewSessionSubjectID allocate SessionSubjectID using given user id.
-func NewSessionSubjectID(userID int64) SessionSubjectID {
-	return SessionSubjectID(sessionSubjectIDPrefix + strconv.FormatInt(userID, 10))
+// SubjectIDFromInt64 allocate SessionSubjectID using given user id.
+func SubjectIDFromInt64(userID int64) SubjectID {
+	return SubjectID(subjectIDPrefix + strconv.FormatInt(userID, 10))
 }
 
 // String implements fmt.Stringer interface.
-func (ssi SessionSubjectID) String() string {
+func (ssi SubjectID) String() string {
 	return string(ssi)
 }
 
 // UserID returns user id if possible, otherwise an error.
-func (ssi SessionSubjectID) UserID() (int64, error) {
+func (ssi SubjectID) UserID() (int64, error) {
 	if len(ssi) < 13 {
 		return 0, errors.New("charon: session subject id to short, min length 13 characters")
 	}
-	if ssi[:12] != sessionSubjectIDPrefix {
-		return 0, fmt.Errorf("charon: session subject id wrong prefix expected %s, got %s", sessionSubjectIDPrefix, ssi[:12])
+	if ssi[:12] != subjectIDPrefix {
+		return 0, fmt.Errorf("charon: session subject id wrong prefix expected %s, got %s", subjectIDPrefix, ssi[:12])
 	}
 
 	return strconv.ParseInt(string(ssi)[12:], 10, 64)

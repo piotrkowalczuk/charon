@@ -51,6 +51,7 @@ func (ue *userEntity) Message() *charon.User {
 // UserRepository ...
 type UserRepository interface {
 	Create(username string, password []byte, firstName, lastName string, confirmationToken []byte, isSuperuser, isStaff, isActive, isConfirmed bool) (*userEntity, error)
+	Insert(*userEntity) (*userEntity, error)
 	CreateSuperuser(username string, password []byte, firstName, lastName string) (*userEntity, error)
 	// Count retrieves number of all users.
 	Count() (int64, error)

@@ -42,35 +42,46 @@ func (e *Error) AddValidation(key, value string) {
 	e.Validation[key] = append(e.Validation[key], value)
 }
 
-// AuthorizationChecker ..
-// TODO: unstable
-type AuthorizationChecker func(context.Context, Permission, ...interface{}) (bool, error)
+type charonOptions struct {
+	metadata metadata.MD
+}
+
+// CharonOption configures how we set up the client.
+type CharonOption func(*charonOptions)
+
+// WithMetadata sets metadata that will be attachacked to every request.
+func WithMetadata(kv ...string) CharonOption {
+	return func(co *charonOptions) {
+		co.metadata = metadata.Pairs(kv...)
+	}
+}
 
 // Charon ...
 type Charon interface {
 	IsGranted(context.Context, mnemosyne.Token, Permission) (bool, error)
 	IsAuthenticated(context.Context, mnemosyne.Token) (bool, error)
 	Subject(context.Context, mnemosyne.Token) (*Subject, error)
+	FromContext(context.Context) (*Subject, error)
 	Login(context.Context, string, string) (*mnemosyne.Token, error)
 	Logout(context.Context, mnemosyne.Token) error
 }
 
 type charon struct {
-	meta   metadata.MD
-	client RPCClient
+	options charonOptions
+	client  RPCClient
 }
 
-// CharonOpts ...
-type CharonOpts struct {
-	Metadata []string
-}
-
-// New allocates new Charon instance.
-func New(conn *grpc.ClientConn, options CharonOpts) Charon {
-	return &charon{
-		meta:   metadata.Pairs(options.Metadata...),
+// New allocates new Charon instance with given options.
+func New(conn *grpc.ClientConn, options ...CharonOption) Charon {
+	ch := &charon{
 		client: NewRPCClient(conn),
 	}
+
+	for _, o := range options {
+		o(&ch.options)
+	}
+
+	return ch
 }
 
 // IsGranted implements Charon interface.
@@ -95,6 +106,20 @@ func (c *charon) Subject(ctx context.Context, token mnemosyne.Token) (*Subject, 
 		return nil, err
 	}
 
+	return c.mapSubject(resp), nil
+}
+
+// FromContext implements Charon interface.
+func (c *charon) FromContext(ctx context.Context) (*Subject, error) {
+	resp, err := c.client.Subject(ctx, &SubjectRequest{})
+	if err != nil {
+		return nil, err
+	}
+
+	return c.mapSubject(resp), nil
+}
+
+func (c *charon) mapSubject(resp *SubjectResponse) *Subject {
 	return &Subject{
 		ID:          resp.Id,
 		Username:    resp.Username,
@@ -105,7 +130,7 @@ func (c *charon) Subject(ctx context.Context, token mnemosyne.Token) (*Subject, 
 		IsConfirmed: resp.IsConfirmed,
 		IsActive:    resp.IsActive,
 		Permissions: NewPermissions(resp.Permissions...),
-	}, nil
+	}
 }
 
 // IsAuthenticated implements Charon interface.

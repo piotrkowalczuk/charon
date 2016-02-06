@@ -57,6 +57,7 @@ func (pr *permissionRepository) FindByUserID(userID int64) ([]*permissionEntity,
 			&p.ID,
 			&p.Module,
 			&p.Subsystem,
+			&p.UpdatedAt,
 		)
 		if err != nil {
 			return nil, err

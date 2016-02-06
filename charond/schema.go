@@ -3,7 +3,6 @@ package main
 import (
 	"database/sql"
 	"errors"
-	"fmt"
 	"strings"
 	"time"
 
@@ -83,7 +82,7 @@ type userCriteria struct {
 	createdAt         protot.TimestampRange
 	createdBy         nilt.Int64
 	firstName         nilt.String
-	id                int64
+	id                nilt.Int64
 	isActive          nilt.Bool
 	isConfirmed       nilt.Bool
 	isStaff           nilt.Bool
@@ -109,7 +108,13 @@ func (r *userRepository) Find(c *userCriteria) ([]*userEntity, error) {
 
 	where := comp.Compose(15)
 	where.AddExpr(tableUserColumnConfirmationToken, pqcomp.E, c.confirmationToken)
-	where.AddExpr(tableUserColumnCreatedAt, pqcomp.E, c.createdAt)
+	if c.createdAt.From != nil {
+		where.AddExpr(tableUserColumnCreatedAt, pqcomp.GT, c.createdAt.From.Time())
+	}
+	if c.createdAt.To != nil {
+		where.AddExpr(tableUserColumnCreatedAt, pqcomp.LT, c.createdAt.To.Time())
+	}
+
 	where.AddExpr(tableUserColumnCreatedBy, pqcomp.E, c.createdBy)
 	where.AddExpr(tableUserColumnFirstName, pqcomp.E, c.firstName)
 	where.AddExpr(tableUserColumnID, pqcomp.E, c.id)
@@ -117,10 +122,22 @@ func (r *userRepository) Find(c *userCriteria) ([]*userEntity, error) {
 	where.AddExpr(tableUserColumnIsConfirmed, pqcomp.E, c.isConfirmed)
 	where.AddExpr(tableUserColumnIsStaff, pqcomp.E, c.isStaff)
 	where.AddExpr(tableUserColumnIsSuperuser, pqcomp.E, c.isSuperuser)
-	where.AddExpr(tableUserColumnLastLoginAt, pqcomp.E, c.lastLoginAt)
+	if c.lastLoginAt.From != nil {
+		where.AddExpr(tableUserColumnLastLoginAt, pqcomp.GT, c.lastLoginAt.From.Time())
+	}
+	if c.lastLoginAt.To != nil {
+		where.AddExpr(tableUserColumnLastLoginAt, pqcomp.LT, c.lastLoginAt.To.Time())
+	}
+
 	where.AddExpr(tableUserColumnLastName, pqcomp.E, c.lastName)
 	where.AddExpr(tableUserColumnPassword, pqcomp.E, c.password)
-	where.AddExpr(tableUserColumnUpdatedAt, pqcomp.E, c.updatedAt)
+	if c.updatedAt.From != nil {
+		where.AddExpr(tableUserColumnUpdatedAt, pqcomp.GT, c.updatedAt.From.Time())
+	}
+	if c.updatedAt.To != nil {
+		where.AddExpr(tableUserColumnUpdatedAt, pqcomp.LT, c.updatedAt.To.Time())
+	}
+
 	where.AddExpr(tableUserColumnUpdatedBy, pqcomp.E, c.updatedBy)
 	where.AddExpr(tableUserColumnUsername, pqcomp.E, c.username)
 
@@ -209,13 +226,8 @@ username
 func (r *userRepository) Insert(e *userEntity) (*userEntity, error) {
 	insert := pqcomp.New(0, 15)
 	insert.AddExpr(tableUserColumnConfirmationToken, "", e.ConfirmationToken)
-	insert.AddExpr(tableUserColumnCreatedAt, "", e.CreatedAt)
 	insert.AddExpr(tableUserColumnCreatedBy, "", e.CreatedBy)
 	insert.AddExpr(tableUserColumnFirstName, "", e.FirstName)
-	insert.AddExpr(tableUserColumnIsActive, "", e.IsActive)
-	insert.AddExpr(tableUserColumnIsConfirmed, "", e.IsConfirmed)
-	insert.AddExpr(tableUserColumnIsStaff, "", e.IsStaff)
-	insert.AddExpr(tableUserColumnIsSuperuser, "", e.IsSuperuser)
 	insert.AddExpr(tableUserColumnLastLoginAt, "", e.LastLoginAt)
 	insert.AddExpr(tableUserColumnLastName, "", e.LastName)
 	insert.AddExpr(tableUserColumnPassword, "", e.Password)
@@ -266,22 +278,25 @@ func (r *userRepository) UpdateByID(
 	update.AddExpr(tableUserColumnConfirmationToken, pqcomp.E, confirmationToken)
 	if createdAt != nil {
 		update.AddExpr(tableUserColumnCreatedAt, pqcomp.E, createdAt)
-	} else {
-		update.AddExpr(tableUserColumnCreatedAt, pqcomp.E, "NOW()")
+
 	}
 	update.AddExpr(tableUserColumnCreatedBy, pqcomp.E, createdBy)
 	update.AddExpr(tableUserColumnFirstName, pqcomp.E, firstName)
+
 	update.AddExpr(tableUserColumnIsActive, pqcomp.E, isActive)
+
 	update.AddExpr(tableUserColumnIsConfirmed, pqcomp.E, isConfirmed)
+
 	update.AddExpr(tableUserColumnIsStaff, pqcomp.E, isStaff)
+
 	update.AddExpr(tableUserColumnIsSuperuser, pqcomp.E, isSuperuser)
-	if lastLoginAt != nil {
-		update.AddExpr(tableUserColumnLastLoginAt, pqcomp.E, lastLoginAt)
-	}
+	update.AddExpr(tableUserColumnLastLoginAt, pqcomp.E, lastLoginAt)
 	update.AddExpr(tableUserColumnLastName, pqcomp.E, lastName)
 	update.AddExpr(tableUserColumnPassword, pqcomp.E, password)
 	if updatedAt != nil {
 		update.AddExpr(tableUserColumnUpdatedAt, pqcomp.E, updatedAt)
+	} else {
+		update.AddExpr(tableUserColumnUpdatedAt, pqcomp.E, "NOW()")
 	}
 	update.AddExpr(tableUserColumnUpdatedBy, pqcomp.E, updatedBy)
 	update.AddExpr(tableUserColumnUsername, pqcomp.E, username)
@@ -299,7 +314,6 @@ func (r *userRepository) UpdateByID(
 	}
 	query += " WHERE id = $1 RETURNING " + strings.Join(r.columns, ", ")
 	var e userEntity
-	fmt.Println(query)
 	err := r.db.QueryRow(query, update.Args()...).Scan(
 		&e.ConfirmationToken,
 		&e.CreatedAt,
@@ -381,7 +395,7 @@ type groupCriteria struct {
 	createdAt     protot.TimestampRange
 	createdBy     nilt.Int64
 	description   nilt.String
-	id            int64
+	id            nilt.Int64
 	name          nilt.String
 	updatedAt     protot.TimestampRange
 	updatedBy     nilt.Int64
@@ -399,12 +413,24 @@ func (r *groupRepository) Find(c *groupCriteria) ([]*groupEntity, error) {
 	comp.AddArg(c.limit)
 
 	where := comp.Compose(7)
-	where.AddExpr(tableGroupColumnCreatedAt, pqcomp.E, c.createdAt)
+	if c.createdAt.From != nil {
+		where.AddExpr(tableGroupColumnCreatedAt, pqcomp.GT, c.createdAt.From.Time())
+	}
+	if c.createdAt.To != nil {
+		where.AddExpr(tableGroupColumnCreatedAt, pqcomp.LT, c.createdAt.To.Time())
+	}
+
 	where.AddExpr(tableGroupColumnCreatedBy, pqcomp.E, c.createdBy)
 	where.AddExpr(tableGroupColumnDescription, pqcomp.E, c.description)
 	where.AddExpr(tableGroupColumnID, pqcomp.E, c.id)
 	where.AddExpr(tableGroupColumnName, pqcomp.E, c.name)
-	where.AddExpr(tableGroupColumnUpdatedAt, pqcomp.E, c.updatedAt)
+	if c.updatedAt.From != nil {
+		where.AddExpr(tableGroupColumnUpdatedAt, pqcomp.GT, c.updatedAt.From.Time())
+	}
+	if c.updatedAt.To != nil {
+		where.AddExpr(tableGroupColumnUpdatedAt, pqcomp.LT, c.updatedAt.To.Time())
+	}
+
 	where.AddExpr(tableGroupColumnUpdatedBy, pqcomp.E, c.updatedBy)
 
 	rows, err := findQueryComp(r.db, r.table, comp, where, c.sort, r.columns)
@@ -467,7 +493,6 @@ updated_by
 }
 func (r *groupRepository) Insert(e *groupEntity) (*groupEntity, error) {
 	insert := pqcomp.New(0, 7)
-	insert.AddExpr(tableGroupColumnCreatedAt, "", e.CreatedAt)
 	insert.AddExpr(tableGroupColumnCreatedBy, "", e.CreatedBy)
 	insert.AddExpr(tableGroupColumnDescription, "", e.Description)
 	insert.AddExpr(tableGroupColumnName, "", e.Name)
@@ -500,14 +525,15 @@ func (r *groupRepository) UpdateByID(
 	update.AddExpr(tableGroupColumnID, pqcomp.E, id)
 	if createdAt != nil {
 		update.AddExpr(tableGroupColumnCreatedAt, pqcomp.E, createdAt)
-	} else {
-		update.AddExpr(tableGroupColumnCreatedAt, pqcomp.E, "NOW()")
+
 	}
 	update.AddExpr(tableGroupColumnCreatedBy, pqcomp.E, createdBy)
 	update.AddExpr(tableGroupColumnDescription, pqcomp.E, description)
 	update.AddExpr(tableGroupColumnName, pqcomp.E, name)
 	if updatedAt != nil {
 		update.AddExpr(tableGroupColumnUpdatedAt, pqcomp.E, updatedAt)
+	} else {
+		update.AddExpr(tableGroupColumnUpdatedAt, pqcomp.E, "NOW()")
 	}
 	update.AddExpr(tableGroupColumnUpdatedBy, pqcomp.E, updatedBy)
 
@@ -522,7 +548,7 @@ func (r *groupRepository) UpdateByID(
 
 		query += update.Key() + " " + update.Oper() + " " + update.PlaceHolder()
 	}
-	query += "WHERE id = $1 RETURNING " + strings.Join(r.columns, ", ")
+	query += " WHERE id = $1 RETURNING " + strings.Join(r.columns, ", ")
 	var e groupEntity
 	err := r.db.QueryRow(query, update.Args()...).Scan(
 		&e.CreatedAt,
@@ -589,7 +615,7 @@ type permissionCriteria struct {
 	sort          map[string]bool
 	action        nilt.String
 	createdAt     protot.TimestampRange
-	id            int64
+	id            nilt.Int64
 	module        nilt.String
 	subsystem     nilt.String
 	updatedAt     protot.TimestampRange
@@ -608,11 +634,22 @@ func (r *permissionRepository) Find(c *permissionCriteria) ([]*permissionEntity,
 
 	where := comp.Compose(6)
 	where.AddExpr(tablePermissionColumnAction, pqcomp.E, c.action)
-	where.AddExpr(tablePermissionColumnCreatedAt, pqcomp.E, c.createdAt)
+	if c.createdAt.From != nil {
+		where.AddExpr(tablePermissionColumnCreatedAt, pqcomp.GT, c.createdAt.From.Time())
+	}
+	if c.createdAt.To != nil {
+		where.AddExpr(tablePermissionColumnCreatedAt, pqcomp.LT, c.createdAt.To.Time())
+	}
+
 	where.AddExpr(tablePermissionColumnID, pqcomp.E, c.id)
 	where.AddExpr(tablePermissionColumnModule, pqcomp.E, c.module)
 	where.AddExpr(tablePermissionColumnSubsystem, pqcomp.E, c.subsystem)
-	where.AddExpr(tablePermissionColumnUpdatedAt, pqcomp.E, c.updatedAt)
+	if c.updatedAt.From != nil {
+		where.AddExpr(tablePermissionColumnUpdatedAt, pqcomp.GT, c.updatedAt.From.Time())
+	}
+	if c.updatedAt.To != nil {
+		where.AddExpr(tablePermissionColumnUpdatedAt, pqcomp.LT, c.updatedAt.To.Time())
+	}
 
 	rows, err := findQueryComp(r.db, r.table, comp, where, c.sort, r.columns)
 	if err != nil {
@@ -672,7 +709,6 @@ updated_at
 func (r *permissionRepository) Insert(e *permissionEntity) (*permissionEntity, error) {
 	insert := pqcomp.New(0, 6)
 	insert.AddExpr(tablePermissionColumnAction, "", e.Action)
-	insert.AddExpr(tablePermissionColumnCreatedAt, "", e.CreatedAt)
 	insert.AddExpr(tablePermissionColumnModule, "", e.Module)
 	insert.AddExpr(tablePermissionColumnSubsystem, "", e.Subsystem)
 	insert.AddExpr(tablePermissionColumnUpdatedAt, "", e.UpdatedAt)
@@ -702,13 +738,14 @@ func (r *permissionRepository) UpdateByID(
 	update.AddExpr(tablePermissionColumnAction, pqcomp.E, action)
 	if createdAt != nil {
 		update.AddExpr(tablePermissionColumnCreatedAt, pqcomp.E, createdAt)
-	} else {
-		update.AddExpr(tablePermissionColumnCreatedAt, pqcomp.E, "NOW()")
+
 	}
 	update.AddExpr(tablePermissionColumnModule, pqcomp.E, module)
 	update.AddExpr(tablePermissionColumnSubsystem, pqcomp.E, subsystem)
 	if updatedAt != nil {
 		update.AddExpr(tablePermissionColumnUpdatedAt, pqcomp.E, updatedAt)
+	} else {
+		update.AddExpr(tablePermissionColumnUpdatedAt, pqcomp.E, "NOW()")
 	}
 
 	if update.Len() == 0 {
@@ -722,7 +759,7 @@ func (r *permissionRepository) UpdateByID(
 
 		query += update.Key() + " " + update.Oper() + " " + update.PlaceHolder()
 	}
-	query += "WHERE id = $1 RETURNING " + strings.Join(r.columns, ", ")
+	query += " WHERE id = $1 RETURNING " + strings.Join(r.columns, ", ")
 	var e permissionEntity
 	err := r.db.QueryRow(query, update.Args()...).Scan(
 		&e.Action,
@@ -810,10 +847,22 @@ func (r *userGroupsRepository) Find(c *userGroupsCriteria) ([]*userGroupsEntity,
 	comp.AddArg(c.limit)
 
 	where := comp.Compose(6)
-	where.AddExpr(tableUserGroupsColumnCreatedAt, pqcomp.E, c.createdAt)
+	if c.createdAt.From != nil {
+		where.AddExpr(tableUserGroupsColumnCreatedAt, pqcomp.GT, c.createdAt.From.Time())
+	}
+	if c.createdAt.To != nil {
+		where.AddExpr(tableUserGroupsColumnCreatedAt, pqcomp.LT, c.createdAt.To.Time())
+	}
+
 	where.AddExpr(tableUserGroupsColumnCreatedBy, pqcomp.E, c.createdBy)
 	where.AddExpr(tableUserGroupsColumnGroupID, pqcomp.E, c.groupID)
-	where.AddExpr(tableUserGroupsColumnUpdatedAt, pqcomp.E, c.updatedAt)
+	if c.updatedAt.From != nil {
+		where.AddExpr(tableUserGroupsColumnUpdatedAt, pqcomp.GT, c.updatedAt.From.Time())
+	}
+	if c.updatedAt.To != nil {
+		where.AddExpr(tableUserGroupsColumnUpdatedAt, pqcomp.LT, c.updatedAt.To.Time())
+	}
+
 	where.AddExpr(tableUserGroupsColumnUpdatedBy, pqcomp.E, c.updatedBy)
 	where.AddExpr(tableUserGroupsColumnUserID, pqcomp.E, c.userID)
 
@@ -848,7 +897,6 @@ func (r *userGroupsRepository) Find(c *userGroupsCriteria) ([]*userGroupsEntity,
 }
 func (r *userGroupsRepository) Insert(e *userGroupsEntity) (*userGroupsEntity, error) {
 	insert := pqcomp.New(0, 6)
-	insert.AddExpr(tableUserGroupsColumnCreatedAt, "", e.CreatedAt)
 	insert.AddExpr(tableUserGroupsColumnCreatedBy, "", e.CreatedBy)
 	insert.AddExpr(tableUserGroupsColumnGroupID, "", e.GroupID)
 	insert.AddExpr(tableUserGroupsColumnUpdatedAt, "", e.UpdatedAt)
@@ -928,11 +976,23 @@ func (r *groupPermissionsRepository) Find(c *groupPermissionsCriteria) ([]*group
 	comp.AddArg(c.limit)
 
 	where := comp.Compose(6)
-	where.AddExpr(tableGroupPermissionsColumnCreatedAt, pqcomp.E, c.createdAt)
+	if c.createdAt.From != nil {
+		where.AddExpr(tableGroupPermissionsColumnCreatedAt, pqcomp.GT, c.createdAt.From.Time())
+	}
+	if c.createdAt.To != nil {
+		where.AddExpr(tableGroupPermissionsColumnCreatedAt, pqcomp.LT, c.createdAt.To.Time())
+	}
+
 	where.AddExpr(tableGroupPermissionsColumnCreatedBy, pqcomp.E, c.createdBy)
 	where.AddExpr(tableGroupPermissionsColumnGroupID, pqcomp.E, c.groupID)
 	where.AddExpr(tableGroupPermissionsColumnPermissionID, pqcomp.E, c.permissionID)
-	where.AddExpr(tableGroupPermissionsColumnUpdatedAt, pqcomp.E, c.updatedAt)
+	if c.updatedAt.From != nil {
+		where.AddExpr(tableGroupPermissionsColumnUpdatedAt, pqcomp.GT, c.updatedAt.From.Time())
+	}
+	if c.updatedAt.To != nil {
+		where.AddExpr(tableGroupPermissionsColumnUpdatedAt, pqcomp.LT, c.updatedAt.To.Time())
+	}
+
 	where.AddExpr(tableGroupPermissionsColumnUpdatedBy, pqcomp.E, c.updatedBy)
 
 	rows, err := findQueryComp(r.db, r.table, comp, where, c.sort, r.columns)
@@ -966,7 +1026,6 @@ func (r *groupPermissionsRepository) Find(c *groupPermissionsCriteria) ([]*group
 }
 func (r *groupPermissionsRepository) Insert(e *groupPermissionsEntity) (*groupPermissionsEntity, error) {
 	insert := pqcomp.New(0, 6)
-	insert.AddExpr(tableGroupPermissionsColumnCreatedAt, "", e.CreatedAt)
 	insert.AddExpr(tableGroupPermissionsColumnCreatedBy, "", e.CreatedBy)
 	insert.AddExpr(tableGroupPermissionsColumnGroupID, "", e.GroupID)
 	insert.AddExpr(tableGroupPermissionsColumnPermissionID, "", e.PermissionID)
@@ -1046,10 +1105,22 @@ func (r *userPermissionsRepository) Find(c *userPermissionsCriteria) ([]*userPer
 	comp.AddArg(c.limit)
 
 	where := comp.Compose(6)
-	where.AddExpr(tableUserPermissionsColumnCreatedAt, pqcomp.E, c.createdAt)
+	if c.createdAt.From != nil {
+		where.AddExpr(tableUserPermissionsColumnCreatedAt, pqcomp.GT, c.createdAt.From.Time())
+	}
+	if c.createdAt.To != nil {
+		where.AddExpr(tableUserPermissionsColumnCreatedAt, pqcomp.LT, c.createdAt.To.Time())
+	}
+
 	where.AddExpr(tableUserPermissionsColumnCreatedBy, pqcomp.E, c.createdBy)
 	where.AddExpr(tableUserPermissionsColumnPermissionID, pqcomp.E, c.permissionID)
-	where.AddExpr(tableUserPermissionsColumnUpdatedAt, pqcomp.E, c.updatedAt)
+	if c.updatedAt.From != nil {
+		where.AddExpr(tableUserPermissionsColumnUpdatedAt, pqcomp.GT, c.updatedAt.From.Time())
+	}
+	if c.updatedAt.To != nil {
+		where.AddExpr(tableUserPermissionsColumnUpdatedAt, pqcomp.LT, c.updatedAt.To.Time())
+	}
+
 	where.AddExpr(tableUserPermissionsColumnUpdatedBy, pqcomp.E, c.updatedBy)
 	where.AddExpr(tableUserPermissionsColumnUserID, pqcomp.E, c.userID)
 
@@ -1084,7 +1155,6 @@ func (r *userPermissionsRepository) Find(c *userPermissionsCriteria) ([]*userPer
 }
 func (r *userPermissionsRepository) Insert(e *userPermissionsEntity) (*userPermissionsEntity, error) {
 	insert := pqcomp.New(0, 6)
-	insert.AddExpr(tableUserPermissionsColumnCreatedAt, "", e.CreatedAt)
 	insert.AddExpr(tableUserPermissionsColumnCreatedBy, "", e.CreatedBy)
 	insert.AddExpr(tableUserPermissionsColumnPermissionID, "", e.PermissionID)
 	insert.AddExpr(tableUserPermissionsColumnUpdatedAt, "", e.UpdatedAt)

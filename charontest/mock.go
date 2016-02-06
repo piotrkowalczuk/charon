@@ -36,6 +36,18 @@ func (c *Charon) Subject(ctx context.Context, token mnemosyne.Token) (*charon.Su
 	return subj.(*charon.Subject), nil
 }
 
+// Context implements Charon interface.
+func (c *Charon) FromContext(ctx context.Context) (*charon.Subject, error) {
+	a := c.Called(ctx)
+
+	subj, err := a.Get(0), a.Error(1)
+	if err != nil {
+		return nil, err
+	}
+
+	return subj.(*charon.Subject), nil
+}
+
 // Login implements Charon interface.
 func (c *Charon) Login(ctx context.Context, username, password string) (*mnemosyne.Token, error) {
 	a := c.Called(ctx, username, password)

@@ -9,12 +9,13 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/peer"
 )
 
 type rpcServer struct {
 	meta               metadata.MD
 	logger             log.Logger
-	monitor            *monitoring
+	monitor            monitoring
 	session            mnemosyne.Mnemosyne
 	passwordHasher     charon.PasswordHasher
 	permissionRegistry PermissionRegistry
@@ -48,17 +49,18 @@ func mapUserError(err error) error {
 }
 
 func (rs *rpcServer) loggerBackground(ctx context.Context, keyval ...interface{}) log.Logger {
-	md, ok := metadata.FromContext(ctx)
-	if !ok {
-		return rs.logger
+	l := log.NewContext(rs.logger).With(keyval...)
+	if md, ok := metadata.FromContext(ctx); ok {
+		if rid, ok := md["request_id"]; ok && len(rid) < 1 {
+			l = l.With("request_id", rid[0])
+		}
 	}
 
-	rid, ok := md["request_id"]
-	if !ok {
-		return rs.logger
+	if p, ok := peer.FromContext(ctx); ok {
+		l = l.With("peer_address", p.Addr.String())
 	}
 
-	return log.NewContext(rs.logger).With(append(keyval, "request_id", rid)...)
+	return l
 }
 
 // Context create new context based on given metadata and instance metadata.
@@ -87,7 +89,7 @@ func (rs *rpcServer) Login(ctx context.Context, req *charon.LoginRequest) (*char
 	h := &loginHandler{
 		handler: newHandler(rs, ctx, "login"),
 	}
-	h.monitor.requests.Add(1)
+	h.addRequest(1)
 
 	resp, err := h.handle(ctx, req)
 	h.handler.handle(err, "subject has been logged in")
@@ -100,7 +102,7 @@ func (rs *rpcServer) Logout(ctx context.Context, req *charon.LogoutRequest) (*ch
 	h := &logoutHandler{
 		handler: newHandler(rs, ctx, "logout"),
 	}
-	h.monitor.requests.Add(1)
+	h.addRequest(1)
 
 	resp, err := h.handle(ctx, req)
 	h.handler.handle(err, "subject has been logged out")
@@ -113,7 +115,7 @@ func (rs *rpcServer) IsAuthenticated(ctx context.Context, req *charon.IsAuthenti
 	h := &isAuthenticatedHandler{
 		handler: newHandler(rs, ctx, "is_authenticated"),
 	}
-	h.monitor.requests.Add(1)
+	h.addRequest(1)
 
 	resp, err := h.handle(ctx, req)
 	h.handler.handle(err, "subject has been logged out")
@@ -126,7 +128,7 @@ func (rs *rpcServer) Subject(ctx context.Context, req *charon.SubjectRequest) (*
 	h := &subjectHandler{
 		handler: newHandler(rs, ctx, "subject"),
 	}
-	h.monitor.requests.Add(1)
+	h.addRequest(1)
 
 	resp, err := h.handle(ctx, req)
 	h.handler.handle(err, "subject has been retrieved")
@@ -139,7 +141,7 @@ func (rs *rpcServer) IsGranted(ctx context.Context, req *charon.IsGrantedRequest
 	h := &isGrantedHandler{
 		handler: newHandler(rs, ctx, "is_granted"),
 	}
-	h.monitor.requests.Add(1)
+	h.addRequest(1)
 
 	resp, err := h.handle(ctx, req)
 	h.handler.handle(err, "permission has been checked")
@@ -152,7 +154,7 @@ func (rs *rpcServer) BelongsTo(ctx context.Context, req *charon.BelongsToRequest
 	h := &belongsToHandler{
 		handler: newHandler(rs, ctx, "belongs_to"),
 	}
-	h.monitor.requests.Add(1)
+	h.addRequest(1)
 
 	resp, err := h.handle(ctx, req)
 	h.handler.handle(err, "belonging to the group has been checked")
@@ -165,7 +167,7 @@ func (rs *rpcServer) CreateGroup(ctx context.Context, req *charon.CreateGroupReq
 	h := &createGroupHandler{
 		handler: newHandler(rs, ctx, "create_group"),
 	}
-	h.monitor.requests.Add(1)
+	h.addRequest(1)
 
 	resp, err := h.handle(ctx, req)
 	h.handler.handle(err, "group has been created")
@@ -178,7 +180,7 @@ func (rs *rpcServer) ModifyGroup(ctx context.Context, req *charon.ModifyGroupReq
 	h := &modifyGroupHandler{
 		handler: newHandler(rs, ctx, "modify_group"),
 	}
-	h.monitor.requests.Add(1)
+	h.addRequest(1)
 
 	resp, err := h.handle(ctx, req)
 	h.handler.handle(err, "group has been created")
@@ -191,7 +193,7 @@ func (rs *rpcServer) DeleteGroup(ctx context.Context, req *charon.DeleteGroupReq
 	h := &deleteGroupHandler{
 		handler: newHandler(rs, ctx, "delete_group"),
 	}
-	h.monitor.requests.Add(1)
+	h.addRequest(1)
 
 	resp, err := h.handle(ctx, req)
 	h.handler.handle(err, "group has been deleted")
@@ -204,7 +206,7 @@ func (rs *rpcServer) GetGroup(ctx context.Context, req *charon.GetGroupRequest) 
 	h := &getGroupHandler{
 		handler: newHandler(rs, ctx, "get_group"),
 	}
-	h.monitor.requests.Add(1)
+	h.addRequest(1)
 
 	resp, err := h.handle(ctx, req)
 	h.handler.handle(err, "group has been retrieved")
@@ -217,7 +219,7 @@ func (rs *rpcServer) ListGroups(ctx context.Context, req *charon.ListGroupsReque
 	h := &listGroupsHandler{
 		handler: newHandler(rs, ctx, "list_groups"),
 	}
-	h.monitor.requests.Add(1)
+	h.addRequest(1)
 
 	resp, err := h.handle(ctx, req)
 	h.handler.handle(err, "list of groups has been retrieved")
@@ -230,7 +232,7 @@ func (rs *rpcServer) ListGroupPermissions(ctx context.Context, req *charon.ListG
 	h := &listGroupPermissionsHandler{
 		handler: newHandler(rs, ctx, "list_group_permissions"),
 	}
-	h.monitor.requests.Add(1)
+	h.addRequest(1)
 
 	resp, err := h.handle(ctx, req)
 	h.handler.handle(err, "list of group permissions has been retrieved")
@@ -243,7 +245,7 @@ func (rs *rpcServer) SetGroupPermissions(ctx context.Context, req *charon.SetGro
 	h := &setGroupPermissionsHandler{
 		handler: newHandler(rs, ctx, "set_group_permissions"),
 	}
-	h.monitor.requests.Add(1)
+	h.addRequest(1)
 
 	resp, err := h.handle(ctx, req)
 	h.handler.handle(err, "group permissions has been set")
@@ -256,7 +258,7 @@ func (rs *rpcServer) GetPermission(ctx context.Context, req *charon.GetPermissio
 	h := &getPermissionHandler{
 		handler: newHandler(rs, ctx, "get_permission"),
 	}
-	h.monitor.requests.Add(1)
+	h.addRequest(1)
 
 	resp, err := h.handle(ctx, req)
 	h.handler.handle(err, "permission has been retrieved")
@@ -270,7 +272,7 @@ func (rs *rpcServer) RegisterPermissions(ctx context.Context, req *charon.Regist
 		handler:  newHandler(rs, ctx, "register_permissions"),
 		registry: rs.permissionRegistry,
 	}
-	h.monitor.requests.Add(1)
+	h.addRequest(1)
 
 	resp, err := h.handle(ctx, req)
 	h.handler.handle(err, "permissions has been registered")
@@ -283,7 +285,7 @@ func (rs *rpcServer) ListPermissions(ctx context.Context, req *charon.ListPermis
 	h := &listPermissionsHandler{
 		handler: newHandler(rs, ctx, "list_permissions"),
 	}
-	h.monitor.requests.Add(1)
+	h.addRequest(1)
 
 	resp, err := h.handle(ctx, req)
 	h.handler.handle(err, "list of permissions has been retrieved")
@@ -297,7 +299,7 @@ func (rs *rpcServer) CreateUser(ctx context.Context, req *charon.CreateUserReque
 		handler: newHandler(rs, ctx, "create_user"),
 		hasher:  rs.passwordHasher,
 	}
-	h.monitor.requests.Add(1)
+	h.addRequest(1)
 
 	resp, err := h.handle(ctx, req)
 	h.handler.handle(err, "user has been created")
@@ -310,7 +312,7 @@ func (rs *rpcServer) ModifyUser(ctx context.Context, req *charon.ModifyUserReque
 	h := &modifyUserHandler{
 		handler: newHandler(rs, ctx, "modify_user"),
 	}
-	h.monitor.requests.Add(1)
+	h.addRequest(1)
 
 	resp, err := h.handle(ctx, req)
 	h.handler.handle(err, "user has been modified")
@@ -323,7 +325,7 @@ func (rs *rpcServer) GetUser(ctx context.Context, req *charon.GetUserRequest) (*
 	h := &getUserHandler{
 		handler: newHandler(rs, ctx, "get_user"),
 	}
-	h.monitor.requests.Add(1)
+	h.addRequest(1)
 
 	resp, err := h.handle(ctx, req)
 	h.handler.handle(err, "user has been retrieved")
@@ -336,7 +338,7 @@ func (rs *rpcServer) ListUsers(ctx context.Context, req *charon.ListUsersRequest
 	h := &listUsersHandler{
 		handler: newHandler(rs, ctx, "list_users"),
 	}
-	h.monitor.requests.Add(1)
+	h.addRequest(1)
 
 	resp, err := h.handle(ctx, req)
 	h.handler.handle(err, "list of users has been retrieved")
@@ -349,7 +351,7 @@ func (rs *rpcServer) DeleteUser(ctx context.Context, req *charon.DeleteUserReque
 	h := &deleteUserHandler{
 		handler: newHandler(rs, ctx, "delete_user"),
 	}
-	h.monitor.requests.Add(1)
+	h.addRequest(1)
 
 	resp, err := h.handle(ctx, req)
 	h.handler.handle(err, "user has been deleted")
@@ -362,7 +364,7 @@ func (rs *rpcServer) SetUserGroups(ctx context.Context, req *charon.SetUserGroup
 	h := &setUserGroupsHandler{
 		handler: newHandler(rs, ctx, "set_user_groups"),
 	}
-	h.monitor.requests.Add(1)
+	h.addRequest(1)
 
 	resp, err := h.handle(ctx, req)
 	h.handler.handle(err, "user groups has been set")
@@ -375,7 +377,7 @@ func (rs *rpcServer) ListUserGroups(ctx context.Context, req *charon.ListUserGro
 	h := &listUserGroupsHandler{
 		handler: newHandler(rs, ctx, "list_user_groups"),
 	}
-	h.monitor.requests.Add(1)
+	h.addRequest(1)
 
 	resp, err := h.handle(ctx, req)
 	h.handler.handle(err, "list of user groups has been retrieved")
@@ -388,7 +390,7 @@ func (rs *rpcServer) SetUserPermissions(ctx context.Context, req *charon.SetUser
 	h := &setUserPermissionsHandler{
 		handler: newHandler(rs, ctx, "set_user_permissions"),
 	}
-	h.monitor.requests.Add(1)
+	h.addRequest(1)
 
 	resp, err := h.handle(ctx, req)
 	h.handler.handle(err, "user permissions has been set")
@@ -401,7 +403,7 @@ func (rs *rpcServer) ListUserPermissions(ctx context.Context, req *charon.ListUs
 	h := &listUserPermissionsHandler{
 		handler: newHandler(rs, ctx, "list_user_permissions"),
 	}
-	h.monitor.requests.Add(1)
+	h.addRequest(1)
 
 	resp, err := h.handle(ctx, req)
 	h.handler.handle(err, "list of user permissions has been retrieved")

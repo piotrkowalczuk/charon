@@ -3,7 +3,6 @@
 package main
 
 import (
-	"fmt"
 	"testing"
 
 	"reflect"
@@ -22,8 +21,8 @@ func TestUserRepository_Create(t *testing.T) {
 			t.Logf("user has been properly created at %v", res.got.CreatedAt)
 		}
 
-		if res.got.Username != res.given.username {
-			t.Errorf("wrong username, expected %s but got %s", res.given.username, res.got.Username)
+		if res.got.Username != res.given.Username {
+			t.Errorf("wrong username, expected %s but got %s", res.given.Username, res.got.Username)
 		}
 	}
 }
@@ -47,7 +46,7 @@ func TestUserRepository_UpdateByID(t *testing.T) {
 			nilt.Bool{Bool: true, Valid: true},
 			nil,
 			nilt.String{String: user.LastName + suffix, Valid: true},
-			nil,
+			user.Password,
 			nil,
 			nilt.Int64{},
 			nilt.String{String: user.Username + suffix, Valid: true},
@@ -57,7 +56,6 @@ func TestUserRepository_UpdateByID(t *testing.T) {
 			t.Errorf("user cannot be modified, unexpected error: %s", err.Error())
 			continue
 		} else {
-			fmt.Println(modified)
 			t.Logf("user with id %d has been modified", modified.ID)
 		}
 
@@ -75,7 +73,7 @@ func TestUserRepository_UpdateByID(t *testing.T) {
 	}
 }
 
-func TestUserRepository_DeleteOneByID(t *testing.T) {
+func TestUserRepository_DeleteByID(t *testing.T) {
 	suite := setupPostgresSuite(t)
 	defer suite.teardown(t)
 
@@ -164,51 +162,48 @@ func TestUserRepository_Find(t *testing.T) {
 	} else {
 		assertf(t, len(entities) == 0, "number of users retrived do not match, expected %d got %d", 0, len(entities))
 	}
-}
-
-type userRepositoryFixture struct {
-	got   userEntity
-	given struct {
-		username, password, firstName, lastName, confirmationToken string
-		isSuperuser, isStaff, isActive, isConfirmed                bool
+	entities, err = suite.user.Find(&userCriteria{
+		limit:             all,
+		username:          nilt.String{String: "johnsnow@gmail.com", Valid: true},
+		password:          []byte("secret"),
+		firstName:         nilt.String{String: "John", Valid: true},
+		lastName:          nilt.String{String: "Snow", Valid: true},
+		confirmationToken: []byte("1234567890"),
+		isSuperuser:       nilt.Bool{Bool: true}, // Is not valid, should not affect results
+	})
+	if err != nil {
+		t.Errorf("users can not be retrieved, unexpected error: %s", err.Error())
+	} else {
+		assertf(t, len(entities) == 1, "number of users retrived do not match, expected %d got %d", 1, len(entities))
 	}
 }
 
+type userRepositoryFixture struct {
+	got, given userEntity
+}
+
 func generateUserRepositoryData(t *testing.T, suite *postgresSuite) chan userRepositoryFixture {
-	given := []struct {
-		username, password, firstName, lastName, confirmationToken string
-		isSuperuser, isStaff, isActive, isConfirmed                bool
-	}{
+	given := []userEntity{
 		{
-			username:          "johnsnow@gmail.com",
-			password:          "secret",
-			firstName:         "John",
-			lastName:          "Snow",
-			confirmationToken: "1234567890",
+			Username:          "johnsnow@gmail.com",
+			Password:          []byte("secret"),
+			FirstName:         "John",
+			LastName:          "Snow",
+			ConfirmationToken: []byte("1234567890"),
 		},
 		{
-			username:          "1",
-			password:          "2",
-			firstName:         "3",
-			lastName:          "4",
-			confirmationToken: "5",
+			Username:          "1",
+			Password:          []byte("2"),
+			FirstName:         "3",
+			LastName:          "4",
+			ConfirmationToken: []byte("5"),
 		},
 	}
 	data := make(chan userRepositoryFixture, 1)
 
 	go func() {
 		for _, g := range given {
-			entity, err := suite.user.Create(
-				g.username,
-				[]byte(g.password),
-				g.firstName,
-				g.lastName,
-				[]byte(g.confirmationToken),
-				g.isSuperuser,
-				g.isStaff,
-				g.isActive,
-				g.isConfirmed,
-			)
+			entity, err := suite.user.Insert(&g)
 			if err != nil {
 				t.Errorf("user cannot be created, unexpected error: %s", err.Error())
 				continue

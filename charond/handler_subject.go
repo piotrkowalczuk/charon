@@ -5,10 +5,10 @@ import (
 	"fmt"
 
 	"github.com/piotrkowalczuk/charon"
+	"github.com/piotrkowalczuk/mnemosyne"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/metadata"
 )
 
 type subjectHandler struct {
@@ -17,23 +17,25 @@ type subjectHandler struct {
 
 func (sh *subjectHandler) handle(ctx context.Context, r *charon.SubjectRequest) (*charon.SubjectResponse, error) {
 	var (
-		ok bool
-		md metadata.MD
+		ses *mnemosyne.Session
+		err error
 	)
-	if md, ok = metadata.FromContext(ctx); ok {
-		grpc.Header(&md)
+	if r.Token == nil {
+		if ses, err = sh.session.FromContext(ctx); err != nil {
+			return nil, err
+		}
+	} else {
+		if ses, err = sh.session.Get(ctx, *r.Token); err != nil {
+			return nil, err
+		}
 	}
 
-	ses, err := sh.session.FromContext(ctx)
-	if err != nil {
-		return nil, err
-	}
-	id, err := charon.SessionSubjectID(ses.SubjectId).UserID()
+	id, err := charon.SubjectID(ses.SubjectId).UserID()
 	if err != nil {
 		return nil, fmt.Errorf("charond: invalid session subject id: %s", ses.SubjectId)
 	}
 
-	user, err := sh.repository.user.FindOneByID(id)
+	userEntity, err := sh.repository.user.FindOneByID(id)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, grpc.Errorf(codes.NotFound, "charond: user does not exists with id: %d", id)
@@ -55,13 +57,14 @@ func (sh *subjectHandler) handle(ctx context.Context, r *charon.SubjectRequest) 
 	sh.loggerWith("subject_id", ses.SubjectId)
 
 	return &charon.SubjectResponse{
-		Id:          int64(user.ID),
-		FirstName:   user.FirstName,
-		LastName:    user.LastName,
+		Id:          int64(userEntity.ID),
+		Username:    userEntity.Username,
+		FirstName:   userEntity.FirstName,
+		LastName:    userEntity.LastName,
 		Permissions: permissions,
-		IsActive:    user.IsActive,
-		IsConfirmed: user.IsConfirmed,
-		IsStuff:     user.IsStaff,
-		IsSuperuser: user.IsSuperuser,
+		IsActive:    userEntity.IsActive,
+		IsConfirmed: userEntity.IsConfirmed,
+		IsStuff:     userEntity.IsStaff,
+		IsSuperuser: userEntity.IsSuperuser,
 	}, nil
 }

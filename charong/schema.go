@@ -113,5 +113,5 @@ func ownerable(owner, inversed *pqt.Table) {
 
 func timestampable(t *pqt.Table) {
 	t.AddColumn(pqt.NewColumn("created_at", pqt.TypeTimestampTZ(), pqt.WithNotNull(), pqt.WithDefault("NOW()"))).
-		AddColumn(pqt.NewColumn("updated_at", pqt.TypeTimestampTZ()))
+		AddColumn(pqt.NewColumn("updated_at", pqt.TypeTimestampTZ(), pqt.WithDefault("NOW()", pqt.EventUpdate)))
 }

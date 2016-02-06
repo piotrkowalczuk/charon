@@ -25,12 +25,16 @@ type handler struct {
 }
 
 func newHandler(rs *rpcServer, ctx context.Context, endpoint string) *handler {
-	return &handler{
+	h := &handler{
 		logger:     rs.loggerBackground(ctx, "endpoint", endpoint),
 		session:    rs.session,
-		monitor:    rs.monitor.rpc.with(metrics.Field{Key: "endpoint", Value: endpoint}),
 		repository: rs.repository,
 	}
+	if rs.monitor.enabled {
+		h.monitor = rs.monitor.rpc.with(metrics.Field{Key: "endpoint", Value: endpoint})
+	}
+
+	return h
 }
 
 func (h *handler) handle(err error, msg string) {
@@ -38,7 +42,9 @@ func (h *handler) handle(err error, msg string) {
 		code := grpc.Code(err)
 
 		h.loggerWith("code", code)
-		h.monitor.errors.With(metrics.Field{Key: "code", Value: code.String()}).Add(1)
+		if h.monitor.enabled {
+			h.monitor.errors.With(metrics.Field{Key: "code", Value: code.String()}).Add(1)
+		}
 		sklog.Error(h.logger, err)
 
 		return
@@ -67,7 +73,7 @@ func (h *handler) retrieveActor(ctx context.Context) (a *actor, err error) {
 		}
 		return
 	}
-	userID, err = charon.SessionSubjectID(ses.SubjectId).UserID()
+	userID, err = charon.SubjectID(ses.SubjectId).UserID()
 	if err != nil {
 		return
 	}
@@ -87,4 +93,10 @@ func (h *handler) retrieveActor(ctx context.Context) (a *actor, err error) {
 	}
 
 	return
+}
+
+func (h *handler) addRequest(i uint64) {
+	if h.monitor.enabled {
+		h.monitor.requests.Add(i)
+	}
 }

@@ -2,7 +2,7 @@ package charon
 
 import "testing"
 
-func TestSessionSubjectID_UserID(t *testing.T) {
+func TestUserIDFromSessionSubjectID(t *testing.T) {
 	success := map[string]int64{
 		"charon:user:1":              1,
 		"charon:user:0":              0,
@@ -10,9 +10,7 @@ func TestSessionSubjectID_UserID(t *testing.T) {
 	}
 
 	for given, expected := range success {
-		ssID := SessionSubjectID(given)
-
-		userID, err := ssID.UserID()
+		userID, err := SubjectID(given).UserID()
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 		} else if userID != expected {
@@ -37,9 +35,7 @@ func TestSessionSubjectID_UserID(t *testing.T) {
 	}
 
 	for _, given := range failures {
-		ssID := SessionSubjectID(given)
-
-		_, err := ssID.UserID()
+		_, err := SubjectID(given).UserID()
 		if err == nil {
 			t.Errorf("expected error %s", err.Error())
 		}
