@@ -22,7 +22,7 @@ Documentation is available on [charon.readme.io](http://charon.readme.io).
     - [x] register
 - [ ] Group
     - [x] get
-    - [ ] list
+    - [x] list
     - [x] modify
     - [x] delete
     - [x] create
