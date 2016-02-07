@@ -19,6 +19,7 @@ func (pe *permissionEntity) Permission() charon.Permission {
 
 // PermissionRepository ...
 type PermissionRepository interface {
+	FindOneByID(id int64) (entity *permissionEntity, err error)
 	FindByUserID(userID int64) (entities []*permissionEntity, err error)
 	Register(permissions charon.Permissions) (created, untouched, removed int, err error)
 	Insert(entity *permissionEntity) (*permissionEntity, error)
