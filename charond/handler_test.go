@@ -1,17 +1,16 @@
 package main
 
 import (
+	"database/sql"
 	"errors"
 	"testing"
 
-	"database/sql"
-
-	"code.google.com/p/go.net/context"
 	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/mnemosyne"
 	"github.com/piotrkowalczuk/mnemosyne/mnemosynetest"
 	. "github.com/smartystreets/goconvey/convey"
 	"github.com/stretchr/testify/mock"
+	"golang.org/x/net/context"
 )
 
 func TestHandler(t *testing.T) {
