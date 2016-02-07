@@ -49,6 +49,7 @@ func main() {
 	}
 
 	userRepo := newUserRepository(postgres)
+	userGroupsRepo := newUserGroupsRepository(postgres)
 	permissionRepo := newPermissionRepository(postgres)
 	groupRepo := newGroupRepository(postgres)
 
@@ -89,10 +90,12 @@ func main() {
 		permissionRegistry: permissionReg,
 		repository: struct {
 			user       UserRepository
+			userGroups UserGroupsRepository
 			permission PermissionRepository
 			group      GroupRepository
 		}{
 			user:       userRepo,
+			userGroups: userGroupsRepo,
 			permission: permissionRepo,
 			group:      groupRepo,
 		},

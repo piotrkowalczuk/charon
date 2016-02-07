@@ -21,6 +21,7 @@ type rpcServer struct {
 	permissionRegistry PermissionRegistry
 	repository         struct {
 		user       UserRepository
+		userGroups UserGroupsRepository
 		permission PermissionRepository
 		group      GroupRepository
 	}

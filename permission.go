@@ -29,6 +29,8 @@ const (
 	UserPermissionCanModify   Permission = "charon:user_permission:can modify"
 	UserPermissionCanRetrieve Permission = "charon:user_permission:can retrieve"
 
+	UserGroupCanCheckBelongingAsStranger Permission = "charon:user_group:can check belonging as a stranger"
+
 	PermissionCanCreate   Permission = "charon:permission:can create"
 	PermissionCanDelete   Permission = "charon:permission:can delete"
 	PermissionCanModify   Permission = "charon:permission:can modify"

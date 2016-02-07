@@ -9,6 +9,7 @@ import (
 type postgresSuite struct {
 	postgres   *sql.DB
 	user       UserRepository
+	userGroups UserGroupsRepository
 	permission PermissionRepository
 	group      GroupRepository
 }
@@ -36,6 +37,9 @@ func (ps *postgresSuite) setup(t *testing.T) {
 	}
 
 	ps.user = newUserRepository(ps.postgres)
+	ps.userGroups = newUserGroupsRepository(ps.postgres)
+	ps.group = newGroupRepository(ps.postgres)
+	ps.permission = newPermissionRepository(ps.postgres)
 }
 
 func (ps *postgresSuite) teardown(t *testing.T) {

@@ -8,33 +8,8 @@ import (
 
 	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/nilt"
-	"github.com/piotrkowalczuk/pqcnstr"
 	"github.com/piotrkowalczuk/pqcomp"
 	"github.com/piotrkowalczuk/protot"
-)
-
-const (
-	//	tableGroup                                                 = "charon.group"
-
-	tableGroupConstraintUniqueName          pqcnstr.Constraint = tableGroup + "_name_key"
-	tableGroupConstraintForeignKeyCreatedBy pqcnstr.Constraint = tableGroup + "_created_by_fkey"
-	tableGroupConstraintForeignKeyUpdatedBy pqcnstr.Constraint = tableGroup + "_updated_by_fkey"
-	tableGroupCreate                                           = `
-		CREATE TABLE IF NOT EXISTS ` + tableGroup + ` (
-			id          SERIAL,
-			name        TEXT                      NOT NULL,
-			description TEXT,
-			created_at  TIMESTAMPTZ DEFAULT NOW() NOT NULL,
-			created_by  INTEGER,
-			updated_at  TIMESTAMPTZ,
-			updated_by  INTEGER,
-
-			CONSTRAINT "` + tableGroupConstraintPrimaryKey + `" PRIMARY KEY (id),
-			CONSTRAINT "` + tableGroupConstraintUniqueName + `" UNIQUE (name),
-			CONSTRAINT "` + tableGroupConstraintForeignKeyCreatedBy + `" FOREIGN KEY (created_by) REFERENCES ` + tableGroup + ` (id),
-			CONSTRAINT "` + tableGroupConstraintForeignKeyUpdatedBy + `" FOREIGN KEY (updated_by) REFERENCES ` + tableGroup + ` (id)
-		)
-	`
 )
 
 func (ge *groupEntity) Message() *charon.Group {
@@ -58,6 +33,7 @@ func (ge *groupEntity) Message() *charon.Group {
 
 // GroupRepository ...
 type GroupRepository interface {
+	Insert(entity *groupEntity) (*groupEntity, error)
 	// FindByUserID retrieves all groups for user represented by given id.
 	FindByUserID(int64) ([]*groupEntity, error)
 	// FindOneByID retrieves group for given id.

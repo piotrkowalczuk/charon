@@ -19,6 +19,7 @@ type handler struct {
 	session    mnemosyne.Mnemosyne
 	repository struct {
 		user       UserRepository
+		userGroups UserGroupsRepository
 		permission PermissionRepository
 		group      GroupRepository
 	}
@@ -66,6 +67,7 @@ func (h *handler) retrieveActor(ctx context.Context) (a *actor, err error) {
 
 	ses, err = h.session.FromContext(ctx)
 	if err != nil {
+		// TODO: make it better ;(
 		if peer, ok := peer.FromContext(ctx); ok {
 			if strings.HasPrefix(peer.Addr.String(), "127.0.0.1") {
 				return &actor{}, nil

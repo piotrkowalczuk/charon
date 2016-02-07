@@ -10,11 +10,30 @@ import (
 	"github.com/piotrkowalczuk/nilt"
 )
 
+var (
+	userTestFixtures = []*userEntity{
+		{
+			Username:          "johnsnow@gmail.com",
+			Password:          []byte("secret"),
+			FirstName:         "John",
+			LastName:          "Snow",
+			ConfirmationToken: []byte("1234567890"),
+		},
+		{
+			Username:          "1",
+			Password:          []byte("2"),
+			FirstName:         "3",
+			LastName:          "4",
+			ConfirmationToken: []byte("5"),
+		},
+	}
+)
+
 func TestUserRepository_Create(t *testing.T) {
 	suite := setupPostgresSuite(t)
 	defer suite.teardown(t)
 
-	for res := range generateUserRepositoryData(t, suite) {
+	for res := range loadUserFixtures(t, suite.user, userTestFixtures) {
 		if res.got.CreatedAt.IsZero() {
 			t.Errorf("invalid created at field, expected valid time but got %v", res.got.CreatedAt)
 		} else {
@@ -32,7 +51,7 @@ func TestUserRepository_UpdateByID(t *testing.T) {
 	suite := setupPostgresSuite(t)
 	defer suite.teardown(t)
 
-	for res := range generateUserRepositoryData(t, suite) {
+	for res := range loadUserFixtures(t, suite.user, userTestFixtures) {
 		user := res.got
 		modified, err := suite.user.UpdateByID(
 			user.ID,
@@ -77,7 +96,7 @@ func TestUserRepository_DeleteByID(t *testing.T) {
 	suite := setupPostgresSuite(t)
 	defer suite.teardown(t)
 
-	for res := range generateUserRepositoryData(t, suite) {
+	for res := range loadUserFixtures(t, suite.user, userTestFixtures) {
 		affected, err := suite.user.DeleteByID(res.got.ID)
 
 		if err != nil {
@@ -94,12 +113,12 @@ func TestUserRepository_FindOneByID(t *testing.T) {
 	suite := setupPostgresSuite(t)
 	defer suite.teardown(t)
 
-	for res := range generateUserRepositoryData(t, suite) {
+	for res := range loadUserFixtures(t, suite.user, userTestFixtures) {
 		user := res.got
 		found, err := suite.user.FindOneByID(user.ID)
 
 		if err != nil {
-			t.Errorf("user cannot be deleted, unexpected error: %s", err.Error())
+			t.Errorf("user cannot be found, unexpected error: %s", err.Error())
 			continue
 		}
 
@@ -113,7 +132,7 @@ func TestUserRepository_UpdateLastLoginAt(t *testing.T) {
 	suite := setupPostgresSuite(t)
 	defer suite.teardown(t)
 
-	for res := range generateUserRepositoryData(t, suite) {
+	for res := range loadUserFixtures(t, suite.user, userTestFixtures) {
 		affected, err := suite.user.UpdateLastLoginAt(res.got.ID)
 
 		if err != nil {
@@ -142,7 +161,7 @@ func TestUserRepository_Find(t *testing.T) {
 	suite := setupPostgresSuite(t)
 	defer suite.teardown(t)
 
-	for _ = range generateUserRepositoryData(t, suite) {
+	for _ = range loadUserFixtures(t, suite.user, userTestFixtures) {
 		all++
 	}
 
@@ -178,32 +197,16 @@ func TestUserRepository_Find(t *testing.T) {
 	}
 }
 
-type userRepositoryFixture struct {
+type userFixtures struct {
 	got, given userEntity
 }
 
-func generateUserRepositoryData(t *testing.T, suite *postgresSuite) chan userRepositoryFixture {
-	given := []userEntity{
-		{
-			Username:          "johnsnow@gmail.com",
-			Password:          []byte("secret"),
-			FirstName:         "John",
-			LastName:          "Snow",
-			ConfirmationToken: []byte("1234567890"),
-		},
-		{
-			Username:          "1",
-			Password:          []byte("2"),
-			FirstName:         "3",
-			LastName:          "4",
-			ConfirmationToken: []byte("5"),
-		},
-	}
-	data := make(chan userRepositoryFixture, 1)
+func loadUserFixtures(t *testing.T, r UserRepository, f []*userEntity) chan userFixtures {
+	data := make(chan userFixtures, 1)
 
 	go func() {
-		for _, g := range given {
-			entity, err := suite.user.Insert(&g)
+		for _, given := range f {
+			entity, err := r.Insert(given)
 			if err != nil {
 				t.Errorf("user cannot be created, unexpected error: %s", err.Error())
 				continue
@@ -211,9 +214,9 @@ func generateUserRepositoryData(t *testing.T, suite *postgresSuite) chan userRep
 				t.Logf("user has been created, got id %d", entity.ID)
 			}
 
-			data <- userRepositoryFixture{
+			data <- userFixtures{
 				got:   *entity,
-				given: g,
+				given: *given,
 			}
 		}
 
