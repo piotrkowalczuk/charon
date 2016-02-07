@@ -3,6 +3,8 @@ package main
 import (
 	"strings"
 
+	"database/sql"
+
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/metrics"
 	"github.com/piotrkowalczuk/charon"
@@ -80,6 +82,8 @@ func (h *handler) retrieveActor(ctx context.Context) (a *actor, err error) {
 	if err != nil {
 		return
 	}
+
+	a = &actor{}
 	a.user, err = h.repository.user.FindOneByID(userID)
 	if err != nil {
 		return
@@ -87,6 +91,9 @@ func (h *handler) retrieveActor(ctx context.Context) (a *actor, err error) {
 
 	entities, err = h.repository.permission.FindByUserID(userID)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return a, nil
+		}
 		return
 	}
 
