@@ -9,7 +9,7 @@ Documentation is available on [charon.readme.io](http://charon.readme.io).
 ## Contribution
 
 ## TODO
-- [ ] Auth
+- [x] Auth
     - [x] login
     - [x] logout
     - [x] is authenticated
