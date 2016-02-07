@@ -16,7 +16,7 @@ Documentation is available on [charon.readme.io](http://charon.readme.io).
     - [x] subject
     - [x] is granted
     - [x] belongs to
-- [ ] Permission
+- [x] Permission
 	- [x] get
     - [x] list
     - [x] register
