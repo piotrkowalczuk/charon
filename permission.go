@@ -121,9 +121,23 @@ func (p Permission) Split() (string, string, string) {
 	}
 }
 
-// Subsystem is a handy wrapper for Split method, that just returns sybsystem.
+// Subsystem is a handy wrapper for Split method, that just returns subsystem.
 func (p Permission) Subsystem() (subsystem string) {
 	subsystem, _, _ = p.Split()
+
+	return
+}
+
+// Module is a handy wrapper for Split method, that just returns module.
+func (p Permission) Module() (module string) {
+	_, _, module = p.Split()
+
+	return
+}
+
+// Action is a handy wrapper for Split method, that just returns action.
+func (p Permission) Action() (action string) {
+	_, _, action = p.Split()
 
 	return
 }

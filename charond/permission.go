@@ -19,6 +19,7 @@ func (pe *permissionEntity) Permission() charon.Permission {
 
 // PermissionRepository ...
 type PermissionRepository interface {
+	Find(criteria *permissionCriteria) ([]*permissionEntity, error)
 	FindOneByID(id int64) (entity *permissionEntity, err error)
 	FindByUserID(userID int64) (entities []*permissionEntity, err error)
 	Register(permissions charon.Permissions) (created, untouched, removed int, err error)
@@ -35,7 +36,6 @@ func newPermissionRepository(dbPool *sql.DB) *permissionRepository {
 
 // FindByUserID retrieves all permissions for user represented by given id.
 func (pr *permissionRepository) FindByUserID(userID int64) ([]*permissionEntity, error) {
-
 	query := `
 		SELECT DISTINCT ON (p.id)
 			` + columns(tablePermissionColumns, "p") + `

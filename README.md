@@ -17,8 +17,8 @@ Documentation is available on [charon.readme.io](http://charon.readme.io).
     - [x] is granted
     - [x] belongs to
 - [ ] Permission
-	- [ ] get
-    - [ ] list
+	- [x] get
+    - [x] list
     - [x] register
 - [ ] Group
     - [x] get
