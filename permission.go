@@ -24,13 +24,17 @@ const (
 	UserCanRetrieveStaffAsOwner    Permission = "charon:user:can retrieve staff as owner"
 	UserCanRetrieveStaffAsStranger Permission = "charon:user:can retrieve staff as stranger"
 
-	UserPermissionCanCreate   Permission = "charon:user_permission:can create"
-	UserPermissionCanDelete   Permission = "charon:user_permission:can delete"
-	UserPermissionCanModify   Permission = "charon:user_permission:can modify"
-	UserPermissionCanRetrieve Permission = "charon:user_permission:can retrieve"
+	UserPermissionCanCreate                  Permission = "charon:user_permission:can create"
+	UserPermissionCanDelete                  Permission = "charon:user_permission:can delete"
+	UserPermissionCanModify                  Permission = "charon:user_permission:can modify"
+	UserPermissionCanRetrieve                Permission = "charon:user_permission:can retrieve"
+	UserPermissionCanCheckGrantingAsStranger Permission = "charon:user_permission:can check granting as a stranger"
 
+	UserGroupCanCreate                   Permission = "charon:user_group:can create"
+	UserGroupCanDelete                   Permission = "charon:user_group:can delete"
+	UserGroupCanModify                   Permission = "charon:user_group:can modify"
+	UserGroupCanRetrieve                 Permission = "charon:user_group:can retrieve"
 	UserGroupCanCheckBelongingAsStranger Permission = "charon:user_group:can check belonging as a stranger"
-	UserGroupCanCheckGrantingAsStranger  Permission = "charon:user_group:can check granting as a stranger"
 
 	PermissionCanCreate   Permission = "charon:permission:can create"
 	PermissionCanDelete   Permission = "charon:permission:can delete"
