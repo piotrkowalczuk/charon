@@ -46,7 +46,7 @@ func (ig *isGrantedHandler) firewall(req *charon.IsGrantedRequest, act *actor) e
 	if act.user.IsSuperuser {
 		return nil
 	}
-	if act.permissions.Contains(charon.UserGroupCanCheckGrantingAsStranger) {
+	if act.permissions.Contains(charon.UserPermissionCanCheckGrantingAsStranger) {
 		return nil
 	}
 
