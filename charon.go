@@ -58,7 +58,7 @@ func WithMetadata(kv ...string) CharonOption {
 
 // Charon ...
 type Charon interface {
-	IsGranted(context.Context, mnemosyne.Token, Permission) (bool, error)
+	IsGranted(context.Context, int64, Permission) (bool, error)
 	IsAuthenticated(context.Context, mnemosyne.Token) (bool, error)
 	Subject(context.Context, mnemosyne.Token) (*Subject, error)
 	FromContext(context.Context) (*Subject, error)
@@ -85,9 +85,9 @@ func New(conn *grpc.ClientConn, options ...CharonOption) Charon {
 }
 
 // IsGranted implements Charon interface.
-func (c *charon) IsGranted(ctx context.Context, token mnemosyne.Token, perm Permission) (bool, error) {
+func (c *charon) IsGranted(ctx context.Context, userID int64, perm Permission) (bool, error) {
 	req := &IsGrantedRequest{
-		Token:      &token,
+		UserId:     userID,
 		Permission: perm.String(),
 	}
 

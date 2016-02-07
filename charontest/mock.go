@@ -11,8 +11,8 @@ type Charon struct {
 	mock.Mock
 }
 
-func (c *Charon) IsGranted(ctx context.Context, token mnemosyne.Token, perm charon.Permission) (bool, error) {
-	a := c.Called(ctx, token, perm)
+func (c *Charon) IsGranted(ctx context.Context, userID int64, perm charon.Permission) (bool, error) {
+	a := c.Called(ctx, userID, perm)
 
 	return a.Bool(0), a.Error(1)
 }
