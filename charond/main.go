@@ -50,6 +50,7 @@ func main() {
 
 	userRepo := newUserRepository(postgres)
 	userGroupsRepo := newUserGroupsRepository(postgres)
+	userPermissionsRepo := newUserPermissionsRepository(postgres)
 	permissionRepo := newPermissionRepository(postgres)
 	groupRepo := newGroupRepository(postgres)
 
@@ -89,15 +90,17 @@ func main() {
 		passwordHasher:     passwordHasher,
 		permissionRegistry: permissionReg,
 		repository: struct {
-			user       UserRepository
-			userGroups UserGroupsRepository
-			permission PermissionRepository
-			group      GroupRepository
+			user            UserRepository
+			userGroups      UserGroupsRepository
+			userPermissions UserPermissionsRepository
+			permission      PermissionRepository
+			group           GroupRepository
 		}{
-			user:       userRepo,
-			userGroups: userGroupsRepo,
-			permission: permissionRepo,
-			group:      groupRepo,
+			user:            userRepo,
+			userGroups:      userGroupsRepo,
+			userPermissions: userPermissionsRepo,
+			permission:      permissionRepo,
+			group:           groupRepo,
 		},
 	}
 	charon.RegisterRPCServer(gRPCServer, charonServer)

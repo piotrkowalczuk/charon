@@ -18,10 +18,11 @@ type handler struct {
 	monitor    monitoringRPC
 	session    mnemosyne.Mnemosyne
 	repository struct {
-		user       UserRepository
-		userGroups UserGroupsRepository
-		permission PermissionRepository
-		group      GroupRepository
+		user            UserRepository
+		userGroups      UserGroupsRepository
+		userPermissions UserPermissionsRepository
+		permission      PermissionRepository
+		group           GroupRepository
 	}
 }
 

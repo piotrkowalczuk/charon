@@ -20,10 +20,11 @@ type rpcServer struct {
 	passwordHasher     charon.PasswordHasher
 	permissionRegistry PermissionRegistry
 	repository         struct {
-		user       UserRepository
-		userGroups UserGroupsRepository
-		permission PermissionRepository
-		group      GroupRepository
+		user            UserRepository
+		userGroups      UserGroupsRepository
+		userPermissions UserPermissionsRepository
+		permission      PermissionRepository
+		group           GroupRepository
 	}
 }
 

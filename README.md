@@ -14,7 +14,7 @@ Documentation is available on [charon.readme.io](http://charon.readme.io).
     - [x] logout
     - [x] is authenticated
     - [x] subject
-    - [ ] is granted
+    - [x] is granted
     - [x] belongs to
 - [ ] Permission
 	- [ ] get

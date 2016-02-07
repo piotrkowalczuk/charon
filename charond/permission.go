@@ -21,11 +21,14 @@ func (pe *permissionEntity) Permission() charon.Permission {
 type PermissionRepository interface {
 	FindByUserID(userID int64) (entities []*permissionEntity, err error)
 	Register(permissions charon.Permissions) (created, untouched, removed int, err error)
+	Insert(entity *permissionEntity) (*permissionEntity, error)
 }
 
 func newPermissionRepository(dbPool *sql.DB) *permissionRepository {
 	return &permissionRepository{
-		db: dbPool,
+		db:      dbPool,
+		table:   tablePermission,
+		columns: tablePermissionColumns,
 	}
 }
 

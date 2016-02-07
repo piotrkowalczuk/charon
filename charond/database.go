@@ -128,7 +128,7 @@ func insertQueryComp(db *sql.DB, table string, insert *pqcomp.Composer, col []st
 		}
 		b.WriteString(`)`)
 		if len(col) > 0 {
-			b.WriteString("RETURNING ")
+			b.WriteString(" RETURNING ")
 			b.WriteString(strings.Join(col, ","))
 		}
 	}
