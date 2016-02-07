@@ -77,6 +77,7 @@ test-postgres:
 	@cat profile.out >> coverage.txt && rm profile.out
 
 get:
+	@go get github.com/smartystreets/goconvey/convey
 	@go get ${PACKAGE}
 	@go get ${PACKAGE_TEST}
 	@go get ${PACKAGE_DAEMON}
