@@ -1,3 +1,5 @@
+// +build postgres !unit
+
 package main
 
 import "testing"

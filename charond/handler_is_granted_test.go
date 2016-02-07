@@ -1,3 +1,5 @@
+// +build unit !postgres
+
 package main
 
 import (
