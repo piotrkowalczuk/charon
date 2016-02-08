@@ -200,11 +200,11 @@ func (p Permissions) Contains(permissions ...Permission) bool {
 }
 
 // Strings maps Permissions into slice of strings.
-func (p Permissions) Strings() (strs []string) {
-	strs = make([]string, 0, len(p))
+func (p Permissions) Strings() (s []string) {
+	s = make([]string, 0, len(p))
 	for _, pp := range p {
-		strs = append(strs, pp.String())
+		s = append(s, pp.String())
 	}
 
-	return strs
+	return s
 }

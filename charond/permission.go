@@ -39,7 +39,7 @@ func (pr *permissionRepository) FindByUserID(userID int64) ([]*permissionEntity,
 	query := `
 		SELECT DISTINCT ON (p.id)
 			` + columns(tablePermissionColumns, "p") + `
-		FROM ` + tablePermission + ` AS p
+		FROM ` + pr.table + ` AS p
 		LEFT JOIN ` + tableUserPermissions + ` AS up ON up.permission_id = p.id AND up.user_id = $1
 		LEFT JOIN ` + tableUserGroups + ` AS ug ON ug.user_id = $1
 		LEFT JOIN ` + tableGroupPermissions + ` AS gp ON gp.permission_id = p.id AND gp.group_id = ug.group_id
@@ -79,7 +79,7 @@ func (pr *permissionRepository) FindByUserID(userID int64) ([]*permissionEntity,
 func (pr *permissionRepository) findOneStmt() (*sql.Stmt, error) {
 	return pr.db.Prepare(
 		"SELECT " + strings.Join(tablePermissionColumns, ",") + " " +
-			"FROM " + tablePermission + " AS p " +
+			"FROM " + pr.table + " AS p " +
 			"WHERE p.subsystem = $1 AND p.module = $2 AND p.action = $3",
 	)
 }
@@ -89,8 +89,10 @@ func (pr *permissionRepository) Register(permissions charon.Permissions) (create
 		tx             *sql.Tx
 		insert, delete *sql.Stmt
 		rows           *sql.Rows
+		res            sql.Result
 		subsystem      string
 		entities       []*permissionEntity
+		affected       int64
 	)
 	if len(permissions) == 0 {
 		return 0, 0, 0, errors.New("charond: empty slice, permissions cannot be registered")
@@ -115,12 +117,12 @@ func (pr *permissionRepository) Register(permissions charon.Permissions) (create
 		if err != nil {
 			tx.Rollback()
 		} else {
-			tx.Commit()
+			err = tx.Commit()
 			unt = untouched(int64(len(permissions)), created, removed)
 		}
 	}()
 
-	rows, err = tx.Query("SELECT "+strings.Join(tablePermissionColumns, ",")+" FROM "+tablePermission+" AS p WHERE p.subsystem = $1", subsystem)
+	rows, err = tx.Query("SELECT "+strings.Join(tablePermissionColumns, ",")+" FROM "+pr.table+" AS p WHERE p.subsystem = $1", subsystem)
 	if err != nil {
 		return
 	}
@@ -146,7 +148,7 @@ func (pr *permissionRepository) Register(permissions charon.Permissions) (create
 		return 0, 0, 0, rows.Err()
 	}
 
-	insert, err = tx.Prepare("INSERT INTO " + tablePermission + " (subsystem, module, action) VALUES ($1, $2, $3)")
+	insert, err = tx.Prepare("INSERT INTO " + pr.table + " (subsystem, module, action) VALUES ($1, $2, $3)")
 	if err != nil {
 		return
 	}
@@ -155,17 +157,20 @@ MissingPermissionsLoop:
 	for _, p := range permissions {
 		for _, e := range entities {
 			if p == e.Permission() {
-				break MissingPermissionsLoop
+				continue MissingPermissionsLoop
 			}
 		}
 
-		if _, err = insert.Exec(p.Split()); err != nil {
+		if res, err = insert.Exec(p.Split()); err != nil {
 			return
 		}
-		created++
+		if affected, err = res.RowsAffected(); err != nil {
+			return
+		}
+		created += affected
 	}
 
-	delete, err = tx.Prepare("DELETE FROM " + tablePermission + " AS p WHERE p.id = $1")
+	delete, err = tx.Prepare("DELETE FROM " + pr.table + " AS p WHERE p.id = $1")
 	if err != nil {
 		return
 	}
@@ -174,14 +179,18 @@ RedundantPermissionsLoop:
 	for _, e := range entities {
 		for _, p := range permissions {
 			if e.Permission() == p {
-				break RedundantPermissionsLoop
+				continue RedundantPermissionsLoop
 			}
 		}
 
-		if _, err = delete.Exec(e.ID); err != nil {
+		if res, err = delete.Exec(e.ID); err != nil {
 			return
 		}
-		removed++
+		if affected, err = res.RowsAffected(); err != nil {
+			return
+		}
+
+		removed += affected
 	}
 
 	return
