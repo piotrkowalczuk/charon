@@ -30,3 +30,14 @@ func (cgh *createGroupHandler) handle(ctx context.Context, req *charon.CreateGro
 		Group: entity.Message(),
 	}, nil
 }
+
+func (cgh *createGroupHandler) firewall(req *charon.CreateGroupRequest, act *actor) error {
+	if act.user.IsSuperuser {
+		return nil
+	}
+	if act.permissions.Contains(charon.GroupCanCreate) {
+		return nil
+	}
+
+	return grpc.Errorf(codes.PermissionDenied, "charond: group cannot be created, missing permission")
+}
