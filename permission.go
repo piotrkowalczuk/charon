@@ -125,7 +125,7 @@ func (p Permission) Subsystem() (subsystem string) {
 
 // Module is a handy wrapper for Split method, that just returns module.
 func (p Permission) Module() (module string) {
-	_, _, module = p.Split()
+	_, module, _ = p.Split()
 
 	return
 }
@@ -144,7 +144,14 @@ func (p Permission) Permission() string {
 
 // MarshalJSON implements json.Marshaller interface.
 func (p Permission) MarshalJSON() ([]byte, error) {
-	return []byte(p), nil
+	if len(p) == 0 {
+		return []byte(`""`), nil
+	}
+	b := make([]byte, 1, len(p))
+	b[0] = '"'
+	b = append(b, []byte(p)...)
+	b = append(b, '"')
+	return b, nil
 }
 
 // UnmarshalJSON implements json.Unmarshaler interface.

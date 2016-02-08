@@ -1,6 +1,7 @@
 package charon
 
 import (
+	"encoding/json"
 	"testing"
 )
 
@@ -34,6 +35,15 @@ func TestPermission_Split(t *testing.T) {
 			action:     "can check granting as a stranger",
 			permission: UserPermissionCanCheckGrantingAsStranger,
 		},
+		{
+			module:     "module",
+			action:     "action as someone",
+			permission: Permission("module:action as someone"),
+		},
+		{
+			action:     "action as somebody else",
+			permission: Permission("action as somebody else"),
+		},
 	}
 
 	for _, d := range data {
@@ -63,8 +73,52 @@ func TestPermission_Subsystem(t *testing.T) {
 	}
 }
 
-func TestPermissions_Contains(t *testing.T) {
-	positive := map[Permission]Permissions{
+func TestPermission_Module(t *testing.T) {
+	data := map[string]Permission{
+		"user_permission": UserPermissionCanCheckGrantingAsStranger,
+	}
+
+	for expected, d := range data {
+		if expected != d.Module() {
+			t.Errorf("wrong module, expected %s but got %s", expected, d.Module())
+		}
+	}
+}
+
+func TestPermission_Action(t *testing.T) {
+	data := map[string]Permission{
+		"can check granting as a stranger": UserPermissionCanCheckGrantingAsStranger,
+	}
+
+	for expected, d := range data {
+		if expected != d.Action() {
+			t.Errorf("wrong action, expected %s but got %s", expected, d.Action())
+		}
+	}
+}
+
+func TestPermission_MarshalJSON(t *testing.T) {
+	data := map[string]Permission{
+		`""`:                                                        Permission(""),
+		`"some action"`:                                             Permission("some action"),
+		`"module:some action"`:                                      Permission("module:some action"),
+		`"charon:user_permission:can check granting as a stranger"`: UserPermissionCanCheckGrantingAsStranger,
+	}
+
+	for expected, d := range data {
+		b, err := json.Marshal(d)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			continue
+		}
+		if expected != string(b) {
+			t.Errorf("wrong json output, expected %s but got %s", expected, string(b))
+		}
+	}
+}
+
+func TestPermissions_Contains_true(t *testing.T) {
+	data := map[Permission]Permissions{
 		UserCanCreate: {
 			UserCanCreate,
 			UserCanDeleteAsOwner,
@@ -74,13 +128,15 @@ func TestPermissions_Contains(t *testing.T) {
 		},
 	}
 
-	for expected, permissions := range positive {
+	for expected, permissions := range data {
 		if !permissions.Contains(expected) {
 			t.Errorf("expected permission (%s), is not present", expected)
 		}
 	}
+}
 
-	negative := map[Permission]Permissions{
+func TestPermissions_Contains_false(t *testing.T) {
+	data := map[Permission]Permissions{
 		PermissionCanCreate: {
 			UserCanCreate,
 			UserCanDeleteAsOwner,
@@ -91,7 +147,7 @@ func TestPermissions_Contains(t *testing.T) {
 		UserCanCreate: {},
 	}
 
-	for unexpected, permissions := range negative {
+	for unexpected, permissions := range data {
 		if permissions.Contains(unexpected) {
 			t.Errorf("unexpected permission (%s), should not be present", unexpected)
 		}
