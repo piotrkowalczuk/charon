@@ -10,7 +10,7 @@ import (
 
 type loginHandler struct {
 	*handler
-	passwordHasher charon.PasswordHasher
+	hasher charon.PasswordHasher
 }
 
 func (lh *loginHandler) handle(ctx context.Context, r *charon.LoginRequest) (*charon.LoginResponse, error) {
@@ -28,7 +28,7 @@ func (lh *loginHandler) handle(ctx context.Context, r *charon.LoginRequest) (*ch
 		return nil, grpc.Errorf(codes.Unauthenticated, "charond: the username and password do not match")
 	}
 
-	if matches := lh.passwordHasher.Compare(user.Password, []byte(r.Password)); !matches {
+	if matches := lh.hasher.Compare(user.Password, []byte(r.Password)); !matches {
 		return nil, grpc.Errorf(codes.Unauthenticated, "charond: the username and password do not match")
 	}
 
