@@ -90,6 +90,7 @@ func (rs *rpcServer) metadata(md metadata.MD) metadata.MD {
 func (rs *rpcServer) Login(ctx context.Context, req *charon.LoginRequest) (*charon.LoginResponse, error) {
 	h := &loginHandler{
 		handler: newHandler(rs, ctx, "login"),
+		hasher: rs.passwordHasher,
 	}
 	h.addRequest(1)
 
