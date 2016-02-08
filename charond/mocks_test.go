@@ -246,28 +246,28 @@ func (_m *MockPermissionRepository) FindByUserID(userID int64) ([]*permissionEnt
 }
 
 // Register provides a mock function with given fields: permissions
-func (_m *MockPermissionRepository) Register(permissions charon.Permissions) (int, int, int, error) {
+func (_m *MockPermissionRepository) Register(permissions charon.Permissions) (int64, int64, int64, error) {
 	ret := _m.Called(permissions)
 
-	var r0 int
-	if rf, ok := ret.Get(0).(func(charon.Permissions) int); ok {
+	var r0 int64
+	if rf, ok := ret.Get(0).(func(charon.Permissions) int64); ok {
 		r0 = rf(permissions)
 	} else {
-		r0 = ret.Get(0).(int)
+		r0 = ret.Get(0).(int64)
 	}
 
-	var r1 int
-	if rf, ok := ret.Get(1).(func(charon.Permissions) int); ok {
+	var r1 int64
+	if rf, ok := ret.Get(1).(func(charon.Permissions) int64); ok {
 		r1 = rf(permissions)
 	} else {
-		r1 = ret.Get(1).(int)
+		r1 = ret.Get(1).(int64)
 	}
 
-	var r2 int
-	if rf, ok := ret.Get(2).(func(charon.Permissions) int); ok {
+	var r2 int64
+	if rf, ok := ret.Get(2).(func(charon.Permissions) int64); ok {
 		r2 = rf(permissions)
 	} else {
-		r2 = ret.Get(2).(int)
+		r2 = ret.Get(2).(int64)
 	}
 
 	var r3 error
@@ -322,28 +322,28 @@ func (_m *MockPermissionRegistry) Exists(permission charon.Permission) bool {
 }
 
 // Register provides a mock function with given fields: permissions
-func (_m *MockPermissionRegistry) Register(permissions charon.Permissions) (int, int, int, error) {
+func (_m *MockPermissionRegistry) Register(permissions charon.Permissions) (int64, int64, int64, error) {
 	ret := _m.Called(permissions)
 
-	var r0 int
-	if rf, ok := ret.Get(0).(func(charon.Permissions) int); ok {
+	var r0 int64
+	if rf, ok := ret.Get(0).(func(charon.Permissions) int64); ok {
 		r0 = rf(permissions)
 	} else {
-		r0 = ret.Get(0).(int)
+		r0 = ret.Get(0).(int64)
 	}
 
-	var r1 int
-	if rf, ok := ret.Get(1).(func(charon.Permissions) int); ok {
+	var r1 int64
+	if rf, ok := ret.Get(1).(func(charon.Permissions) int64); ok {
 		r1 = rf(permissions)
 	} else {
-		r1 = ret.Get(1).(int)
+		r1 = ret.Get(1).(int64)
 	}
 
-	var r2 int
-	if rf, ok := ret.Get(2).(func(charon.Permissions) int); ok {
+	var r2 int64
+	if rf, ok := ret.Get(2).(func(charon.Permissions) int64); ok {
 		r2 = rf(permissions)
 	} else {
-		r2 = ret.Get(2).(int)
+		r2 = ret.Get(2).(int64)
 	}
 
 	var r3 error
@@ -658,6 +658,57 @@ func (_m *MockUserGroupsRepository) Exists(userID int64, groupID int64) (bool, e
 	}
 
 	return r0, r1
+}
+
+// Find provides a mock function with given fields: criteria
+func (_m *MockUserGroupsRepository) Find(criteria *userGroupsCriteria) ([]*userGroupsEntity, error) {
+	ret := _m.Called(criteria)
+
+	var r0 []*userGroupsEntity
+	if rf, ok := ret.Get(0).(func(*userGroupsCriteria) []*userGroupsEntity); ok {
+		r0 = rf(criteria)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*userGroupsEntity)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(*userGroupsCriteria) error); ok {
+		r1 = rf(criteria)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// Set provides a mock function with given fields: userID, groupIDs
+func (_m *MockUserGroupsRepository) Set(userID int64, groupIDs []int64) (int64, int64, error) {
+	ret := _m.Called(userID, groupIDs)
+
+	var r0 int64
+	if rf, ok := ret.Get(0).(func(int64, []int64) int64); ok {
+		r0 = rf(userID, groupIDs)
+	} else {
+		r0 = ret.Get(0).(int64)
+	}
+
+	var r1 int64
+	if rf, ok := ret.Get(1).(func(int64, []int64) int64); ok {
+		r1 = rf(userID, groupIDs)
+	} else {
+		r1 = ret.Get(1).(int64)
+	}
+
+	var r2 error
+	if rf, ok := ret.Get(2).(func(int64, []int64) error); ok {
+		r2 = rf(userID, groupIDs)
+	} else {
+		r2 = ret.Error(2)
+	}
+
+	return r0, r1, r2
 }
 
 type MockUserPermissionsRepository struct {

@@ -12,5 +12,34 @@ type setUserGroupsHandler struct {
 }
 
 func (sugh *setUserGroupsHandler) handle(ctx context.Context, req *charon.SetUserGroupsRequest) (*charon.SetUserGroupsResponse, error) {
-	return nil, grpc.Errorf(codes.Unimplemented, "charond: set user groups endpoint is not implemented yet")
+	act, err := sugh.retrieveActor(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = sugh.firewall(req, act); err != nil {
+		return nil, err
+	}
+
+	created, removed, err := sugh.repository.userGroups.Set(req.UserId, req.Groups)
+	if err != nil {
+		return nil, err
+	}
+
+	return &charon.SetUserGroupsResponse{
+		Created:   created,
+		Removed:   removed,
+		Untouched: untouched(int64(len(req.Groups)), created, removed),
+	}, nil
+}
+
+func (sugh *setUserGroupsHandler) firewall(req *charon.SetUserGroupsRequest, act *actor) error {
+	if act.user.IsSuperuser {
+		return nil
+	}
+	if act.permissions.Contains(charon.UserGroupCanCreate, charon.UserGroupCanDelete) {
+		return nil
+	}
+
+	return grpc.Errorf(codes.PermissionDenied, "charond: list of groups cannot be retrieved, missing permission")
 }

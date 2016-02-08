@@ -217,13 +217,14 @@ message ListUserGroupsResponse {
 }
 
 message SetUserGroupsRequest {
-    repeated int64 groups = 1;
+	int64 user_id = 1;
+    repeated int64 groups = 2;
 }
 
 message SetUserGroupsResponse {
-    repeated string created = 1;
-    repeated string removed = 2;
-    repeated string untouched = 3;
+    int64 created = 1;
+    int64 removed = 2;
+    int64 untouched = 3;
 }
 
 // ---------------------
@@ -235,9 +236,9 @@ message RegisterPermissionsRequest {
 }
 
 message RegisterPermissionsResponse {
-    int32 created = 1;
-    int32 removed = 2;
-    int32 untouched = 3;
+    int64 created = 1;
+    int64 removed = 2;
+    int64 untouched = 3;
 }
 
 message ListPermissionsRequest {

@@ -180,10 +180,17 @@ func NewPermissions(ss ...string) Permissions {
 }
 
 // Contains returns true if given Permission exists in the collection.
-func (p Permissions) Contains(permission Permission) bool {
+// If none is provided returns false.
+func (p Permissions) Contains(permissions ...Permission) bool {
+	if len(permissions) == 0 {
+		return false
+	}
+
 	for _, perm := range p {
-		if perm == permission {
-			return true
+		for _, pp := range permissions {
+			if perm == pp {
+				return true
+			}
 		}
 	}
 

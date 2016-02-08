@@ -22,7 +22,7 @@ type PermissionRepository interface {
 	Find(criteria *permissionCriteria) ([]*permissionEntity, error)
 	FindOneByID(id int64) (entity *permissionEntity, err error)
 	FindByUserID(userID int64) (entities []*permissionEntity, err error)
-	Register(permissions charon.Permissions) (created, untouched, removed int, err error)
+	Register(permissions charon.Permissions) (created, untouched, removed int64, err error)
 	Insert(entity *permissionEntity) (*permissionEntity, error)
 }
 
@@ -84,7 +84,7 @@ func (pr *permissionRepository) findOneStmt() (*sql.Stmt, error) {
 	)
 }
 
-func (pr *permissionRepository) Register(permissions charon.Permissions) (created, untouched, removed int, err error) {
+func (pr *permissionRepository) Register(permissions charon.Permissions) (created, unt, removed int64, err error) {
 	var (
 		tx             *sql.Tx
 		insert, delete *sql.Stmt
@@ -116,7 +116,7 @@ func (pr *permissionRepository) Register(permissions charon.Permissions) (create
 			tx.Rollback()
 		} else {
 			tx.Commit()
-			untouched = len(permissions) - removed - created
+			unt = untouched(int64(len(permissions)), created, removed)
 		}
 	}()
 
@@ -196,7 +196,7 @@ type PermissionRegistry interface {
 	// Register checks if given collection is valid and
 	// calls PermissionRepository to store provided permissions
 	// in persistent way.
-	Register(permissions charon.Permissions) (created, untouched, removed int, err error)
+	Register(permissions charon.Permissions) (created, untouched, removed int64, err error)
 }
 
 type permissionRegistry struct {
@@ -222,7 +222,7 @@ func (pr *permissionRegistry) Exists(permission charon.Permission) (ok bool) {
 }
 
 // Register implements PermissionRegistry interface.
-func (pr *permissionRegistry) Register(permissions charon.Permissions) (created, untouched, removed int, err error) {
+func (pr *permissionRegistry) Register(permissions charon.Permissions) (created, untouched, removed int64, err error) {
 	pr.Lock()
 	defer pr.Unlock()
 

@@ -28,8 +28,8 @@ func (rph *registerPermissionsHandler) handle(ctx context.Context, req *charon.R
 	)
 
 	return &charon.RegisterPermissionsResponse{
-		Created:   int32(created),
-		Untouched: int32(untouched),
-		Removed:   int32(removed),
+		Created:   created,
+		Untouched: untouched,
+		Removed:   removed,
 	}, nil
 }
