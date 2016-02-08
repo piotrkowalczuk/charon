@@ -93,11 +93,6 @@ var (
 // Permission is a string that consist of subsystem, module/content type and an action.
 type Permission string
 
-// NewPermission allocate new Permission object using given string.
-func NewPermission(s string) Permission {
-	return Permission(s)
-}
-
 // String implements fmt.Stringer interface.
 func (p Permission) String() string {
 	return string(p)
