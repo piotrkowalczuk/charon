@@ -42,6 +42,12 @@ func TestUntouched(t *testing.T) {
 			removed:   100,
 			untouched: 5,
 		},
+		{
+			given:     5,
+			created:   6,
+			removed:   0,
+			untouched: 0,
+		},
 	}
 
 	for _, d := range data {
