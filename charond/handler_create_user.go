@@ -16,11 +16,11 @@ type createUserHandler struct {
 func (cuh *createUserHandler) handle(ctx context.Context, req *charon.CreateUserRequest) (*charon.CreateUserResponse, error) {
 	cuh.loggerWith("username", req.Username, "superuser", req.IsSuperuser.BoolOr(false))
 
-	akt, err := cuh.retrieveActor(ctx)
+	act, err := cuh.retrieveActor(ctx)
 	if err != nil {
 		return nil, err
 	}
-	if err = cuh.firewall(req, akt); err != nil {
+	if err = cuh.firewall(req, act); err != nil {
 		return nil, err
 	}
 
@@ -30,7 +30,7 @@ func (cuh *createUserHandler) handle(ctx context.Context, req *charon.CreateUser
 			return nil, err
 		}
 	} else {
-		if !akt.user.IsSuperuser {
+		if !act.user.IsSuperuser {
 			return nil, grpc.Errorf(codes.PermissionDenied, "charond: only superuser can create an user with manualy defined secure password")
 		}
 	}
@@ -55,17 +55,17 @@ func (cuh *createUserHandler) handle(ctx context.Context, req *charon.CreateUser
 	}, nil
 }
 
-func (cuh *createUserHandler) firewall(req *charon.CreateUserRequest, akt *actor) error {
-	if akt.isLocalhost() || akt.user.IsSuperuser {
+func (cuh *createUserHandler) firewall(req *charon.CreateUserRequest, act *actor) error {
+	if act.isLocalhost() || act.user.IsSuperuser {
 		return nil
 	}
 	if req.IsSuperuser.BoolOr(false) {
 		return grpc.Errorf(codes.PermissionDenied, "charond: user is not allowed to create superuser")
 	}
-	if req.IsStaff.BoolOr(false) && !akt.permissions.Contains(charon.UserCanCreateStaff) {
+	if req.IsStaff.BoolOr(false) && !act.permissions.Contains(charon.UserCanCreateStaff) {
 		return grpc.Errorf(codes.PermissionDenied, "charond: user is not allowed to create staff user")
 	}
-	if !akt.permissions.Contains(charon.UserCanCreateStaff, charon.UserCanCreate) {
+	if !act.permissions.Contains(charon.UserCanCreateStaff, charon.UserCanCreate) {
 		return grpc.Errorf(codes.PermissionDenied, "charond: user is not allowed to create another user")
 	}
 
