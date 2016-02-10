@@ -27,3 +27,14 @@ func (ggh *getGroupHandler) handle(ctx context.Context, req *charon.GetGroupRequ
 		Group: entity.Message(),
 	}, nil
 }
+
+func (ggh *getGroupHandler) firewall(req *charon.GetGroupRequest, act *actor) error {
+	if act.user.IsSuperuser {
+		return nil
+	}
+	if act.permissions.Contains(charon.GroupCanRetrieve) {
+		return nil
+	}
+
+	return grpc.Errorf(codes.PermissionDenied, "charond: group cannot be retrieved, missing permission")
+}
