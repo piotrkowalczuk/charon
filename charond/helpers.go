@@ -18,6 +18,14 @@ func nilBool(nb *nilt.Bool) nilt.Bool {
 	return *nb
 }
 
+func nilInt64(nb *nilt.Int64) nilt.Int64 {
+	if nb == nil {
+		return nilt.Int64{}
+	}
+
+	return *nb
+}
+
 func untouched(given, created, removed int64) int64 {
 	switch {
 	case given < 0:

@@ -26,6 +26,7 @@ func (iah *isAuthenticatedHandler) handle(ctx context.Context, req *charon.IsAut
 	if err != nil {
 		return nil, err
 	}
+	iah.loggerWith("user_id", uid)
 	exists, err := iah.repository.user.Exists(uid)
 	if err != nil {
 		return nil, err

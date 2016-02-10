@@ -156,7 +156,10 @@ message GetUserResponse {
 }
 
 message ListUsersRequest {
-    reserved 1 to 99;
+    reserved 4 to 99;
+    nilt.Bool is_superuser = 1;
+    nilt.Bool is_staff = 2;
+    nilt.Int64 created_by = 3;
     nilt.Int64 offset = 100;
     nilt.Int64 limit = 101;
 }
