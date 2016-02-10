@@ -360,6 +360,27 @@ type MockUserRepository struct {
 	mock.Mock
 }
 
+// Exists provides a mock function with given fields: id
+func (_m *MockUserRepository) Exists(id int64) (bool, error) {
+	ret := _m.Called(id)
+
+	var r0 bool
+	if rf, ok := ret.Get(0).(func(int64) bool); ok {
+		r0 = rf(id)
+	} else {
+		r0 = ret.Get(0).(bool)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(int64) error); ok {
+		r1 = rf(id)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Create provides a mock function with given fields: username, password, firstName, lastName, confirmationToken, isSuperuser, isStaff, isActive, isConfirmed
 func (_m *MockUserRepository) Create(username string, password []byte, firstName string, lastName string, confirmationToken []byte, isSuperuser bool, isStaff bool, isActive bool, isConfirmed bool) (*userEntity, error) {
 	ret := _m.Called(username, password, firstName, lastName, confirmationToken, isSuperuser, isStaff, isActive, isConfirmed)
