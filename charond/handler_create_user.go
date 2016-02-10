@@ -16,19 +16,12 @@ type createUserHandler struct {
 func (cuh *createUserHandler) handle(ctx context.Context, req *charon.CreateUserRequest) (*charon.CreateUserResponse, error) {
 	cuh.loggerWith("username", req.Username, "superuser", req.IsSuperuser.BoolOr(false))
 
-	actor, err := cuh.retrieveActor(ctx)
+	akt, err := cuh.retrieveActor(ctx)
 	if err != nil {
 		return nil, err
 	}
-
-	if !actor.isLocalhost() && !actor.user.IsSuperuser {
-		if req.IsSuperuser.BoolOr(false) {
-			return nil, grpc.Errorf(codes.PermissionDenied, "charond: user is not allowed to create superuser")
-		}
-
-		if req.IsStaff.BoolOr(false) && !actor.permissions.Contains(charon.UserCanCreateStaff) {
-			return nil, grpc.Errorf(codes.PermissionDenied, "charond: user is not allowed to create staff user")
-		}
+	if err = cuh.firewall(req, akt); err != nil {
+		return nil, err
 	}
 
 	if len(req.SecurePassword) == 0 {
@@ -37,7 +30,7 @@ func (cuh *createUserHandler) handle(ctx context.Context, req *charon.CreateUser
 			return nil, err
 		}
 	} else {
-		if !actor.user.IsSuperuser {
+		if !akt.user.IsSuperuser {
 			return nil, grpc.Errorf(codes.PermissionDenied, "charond: only superuser can create an user with manualy defined secure password")
 		}
 	}
@@ -60,4 +53,21 @@ func (cuh *createUserHandler) handle(ctx context.Context, req *charon.CreateUser
 	return &charon.CreateUserResponse{
 		User: entity.Message(),
 	}, nil
+}
+
+func (cuh *createUserHandler) firewall(req *charon.CreateUserRequest, akt *actor) error {
+	if akt.isLocalhost() || akt.user.IsSuperuser {
+		return nil
+	}
+	if req.IsSuperuser.BoolOr(false) {
+		return grpc.Errorf(codes.PermissionDenied, "charond: user is not allowed to create superuser")
+	}
+	if req.IsStaff.BoolOr(false) && !akt.permissions.Contains(charon.UserCanCreateStaff) {
+		return grpc.Errorf(codes.PermissionDenied, "charond: user is not allowed to create staff user")
+	}
+	if !akt.permissions.Contains(charon.UserCanCreateStaff, charon.UserCanCreate) {
+		return grpc.Errorf(codes.PermissionDenied, "charond: user is not allowed to create another user")
+	}
+
+	return nil
 }
