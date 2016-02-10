@@ -18,12 +18,20 @@ func (iah *isAuthenticatedHandler) handle(ctx context.Context, req *charon.IsAut
 
 	iah.loggerWith("token", req.Token.Encode())
 
-	ok, err := iah.session.Exists(ctx, *req.Token)
+	ses, err := iah.session.Get(ctx, *req.Token)
+	if err != nil {
+		return nil, err
+	}
+	uid, err := charon.SubjectID(ses.SubjectId).UserID()
+	if err != nil {
+		return nil, err
+	}
+	exists, err := iah.repository.user.Exists(uid)
 	if err != nil {
 		return nil, err
 	}
 
 	return &charon.IsAuthenticatedResponse{
-		Authenticated: ok,
+		Authenticated: exists,
 	}, nil
 }
