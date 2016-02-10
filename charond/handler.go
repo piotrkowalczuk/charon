@@ -61,7 +61,7 @@ func (h *handler) loggerWith(keyval ...interface{}) {
 	h.logger = log.NewContext(h.logger).With(keyval...)
 }
 
-func (h *handler) retrieveActor(ctx context.Context) (a *actor, err error) {
+func (h *handler) retrieveActor(ctx context.Context) (akt *actor, err error) {
 	var (
 		userID   int64
 		entities []*permissionEntity
@@ -83,8 +83,8 @@ func (h *handler) retrieveActor(ctx context.Context) (a *actor, err error) {
 		return
 	}
 
-	a = &actor{}
-	a.user, err = h.repository.user.FindOneByID(userID)
+	akt = &actor{}
+	akt.user, err = h.repository.user.FindOneByID(userID)
 	if err != nil {
 		return
 	}
@@ -92,14 +92,14 @@ func (h *handler) retrieveActor(ctx context.Context) (a *actor, err error) {
 	entities, err = h.repository.permission.FindByUserID(userID)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return a, nil
+			return akt, nil
 		}
 		return
 	}
 
-	a.permissions = make(charon.Permissions, 0, len(entities))
+	akt.permissions = make(charon.Permissions, 0, len(entities))
 	for _, e := range entities {
-		a.permissions = append(a.permissions, e.Permission())
+		akt.permissions = append(akt.permissions, e.Permission())
 	}
 
 	return
