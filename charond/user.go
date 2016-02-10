@@ -50,6 +50,7 @@ func (ue *userEntity) Message() *charon.User {
 
 // UserRepository ...
 type UserRepository interface {
+	Exists(id int64) (bool, error)
 	Create(username string, password []byte, firstName, lastName string, confirmationToken []byte, isSuperuser, isStaff, isActive, isConfirmed bool) (*userEntity, error)
 	Insert(*userEntity) (*userEntity, error)
 	CreateSuperuser(username string, password []byte, firstName, lastName string) (*userEntity, error)
@@ -252,4 +253,22 @@ func (ur *userRepository) UpdateLastLoginAt(userID int64) (int64, error) {
 	}
 
 	return result.RowsAffected()
+}
+
+// Exists implements UserRepository interface.
+func (ur *userRepository) Exists(userID int64) (bool, error) {
+	query := `
+		SELECT EXISTS(
+			SELECT 1
+			FROM ` + ur.table + ` AS p
+			WHERE ` + tableUserColumnID + ` = $1
+		)
+	`
+
+	var exists bool
+	if err := ur.db.QueryRow(query, userID).Scan(&exists); err != nil {
+		return false, err
+	}
+
+	return exists, nil
 }
