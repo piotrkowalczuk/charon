@@ -18,7 +18,7 @@ func TestGetPermissionHandler_firewall_success(t *testing.T) {
 			act: actor{
 				user: &userEntity{ID: 2},
 				permissions: charon.Permissions{
-					charon.UserPermissionCanRetrieve,
+					charon.PermissionCanRetrieve,
 				},
 			},
 		},

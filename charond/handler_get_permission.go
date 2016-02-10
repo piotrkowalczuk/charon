@@ -40,7 +40,7 @@ func (gph *getPermissionHandler) firewall(req *charon.GetPermissionRequest, act 
 	if act.user.IsSuperuser {
 		return nil
 	}
-	if act.permissions.Contains(charon.UserPermissionCanRetrieve) {
+	if act.permissions.Contains(charon.PermissionCanRetrieve) {
 		return nil
 	}
 
