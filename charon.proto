@@ -162,6 +162,7 @@ message ListUsersRequest {
     nilt.Int64 created_by = 3;
     nilt.Int64 offset = 100;
     nilt.Int64 limit = 101;
+    map<string, bool> sort = 102;
 }
 
 message ListUsersResponse {
@@ -254,7 +255,7 @@ message ListPermissionsRequest {
 
     nilt.Int64 offset = 100;
     nilt.Int64 limit = 101;
-    repeated string sort = 102;
+    map<string, bool> sort = 102;
 }
 
 message ListPermissionsResponse {

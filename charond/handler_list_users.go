@@ -22,13 +22,14 @@ func (luh *listUsersHandler) handle(ctx context.Context, req *charon.ListUsersRe
 	}
 
 	criteria := &userCriteria{
+		sort:        req.Sort,
 		offset:      req.Offset.Int64Or(0),
 		limit:       req.Limit.Int64Or(10),
 		isSuperuser: nilBool(req.IsSuperuser),
 		isStaff:     nilBool(req.IsStaff),
 		createdBy:   nilInt64(req.CreatedBy),
 	}
-	if act.permissions.Contains(charon.UserCanRetrieveAsOwner, charon.UserCanRetrieveAsStranger) {
+	if act.permissions.Contains(charon.UserCanRetrieveAsOwner, charon.UserCanRetrieveStaffAsOwner) {
 		criteria.createdBy = nilt.Int64{Int64: act.user.ID, Valid: true}
 	}
 
