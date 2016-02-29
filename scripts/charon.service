@@ -1,0 +1,22 @@
+[Unit]
+Description=charond
+
+[Service]
+EnvironmentFile=/etc/charon.env
+ExecStart=/usr/bin/charond \
+    -host=${CHARON_HOST} \
+    -port=${CHARON_PORT} \
+    -subsystem=${CHARON_SUBSYSTEM} \
+    -namespace=${CHARON_NAMESPACE} \
+    -l.format=${CHARON_LOGGER_FORMAT} \
+    -l.adapter=${CHARON_LOGGER_ADAPTER} \
+    -l.level=${CHARON_LOGGER_LEVEL} \
+    -m.engine=${CHARON_MONITORING_ENGINE} \
+    -ps.connectionstring=${CHARON_POSTGRES_CONNECTION_STRING} \
+    -pwd.strategy=${CHARON_PASSWORD_STRATEGY} \
+    -pwd.bcryptcost=${CHARON_PASSWORD_BCRYPT_COST} \
+    -mnemo.address=${CHARON_MNEMOSYNE_ADDRESS}
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

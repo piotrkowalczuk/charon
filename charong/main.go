@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"io"
 	"log"
 	"os"
@@ -31,32 +32,28 @@ func init() {
 }
 
 func main() {
-	sqlFile, goFile, err := openFiles(output)
+	file, err := openFile(output)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer sqlFile.Close()
-	defer goFile.Close()
+	defer file.Close()
 
 	sch := databaseSchema()
-	if err := pqtsql.NewGenerator().GenerateTo(sch, sqlFile); err != nil {
-		log.Fatal(err)
-	}
 	if err := pqtgo.NewGenerator().
 		AddImport("github.com/piotrkowalczuk/nilt").
 		SetAcronyms(acronyms).
-		GenerateTo(sch, goFile); err != nil {
+		GenerateTo(sch, file); err != nil {
 		log.Fatal(err)
 	}
+	fmt.Fprintf(file, "const schemaSQL = `\n")
+	if err := pqtsql.NewGenerator().GenerateTo(sch, file); err != nil {
+		log.Fatal(err)
+	}
+	fmt.Fprintf(file, "`")
 
 	log.Println("success")
 }
 
-func openFiles(output string) (sqlFile io.WriteCloser, goFile io.WriteCloser, err error) {
-	sqlFile, err = os.OpenFile(output+".sql", os.O_TRUNC|os.O_WRONLY|os.O_CREATE, 0660)
-	if err != nil {
-		return
-	}
-	goFile, err = os.OpenFile(output+".go", os.O_TRUNC|os.O_WRONLY|os.O_CREATE, 0660)
-	return
+func openFile(output string) (file io.WriteCloser, err error) {
+	return os.OpenFile(output+".go", os.O_TRUNC|os.O_WRONLY|os.O_CREATE, 0660)
 }

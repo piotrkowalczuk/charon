@@ -73,7 +73,9 @@ func (h *handler) retrieveActor(ctx context.Context) (act *actor, err error) {
 		// TODO: make it better ;(
 		if peer, ok := peer.FromContext(ctx); ok {
 			if strings.HasPrefix(peer.Addr.String(), "127.0.0.1") {
-				return &actor{}, nil
+				return &actor{
+					user: &userEntity{},
+				}, nil
 			}
 		}
 		return
@@ -88,7 +90,6 @@ func (h *handler) retrieveActor(ctx context.Context) (act *actor, err error) {
 	if err != nil {
 		return
 	}
-
 	entities, err = h.repository.permission.FindByUserID(userID)
 	if err != nil {
 		if err == sql.ErrNoRows {
