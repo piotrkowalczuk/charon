@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"os"
 )
 
@@ -39,7 +40,13 @@ func (c *configuration) parse() {
 		c.init()
 	}
 	if !c.cl.Parsed() {
-		c.cl.Parse(os.Args[2:])
+		if len(os.Args) < 2 {
+			// TODO: make it more verbose
+			fmt.Println("action is required eg. register")
+			os.Exit(1)
+		} else {
+			c.cl.Parse(os.Args[2:])
+		}
 	}
 }
 
