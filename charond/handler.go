@@ -19,13 +19,7 @@ type handler struct {
 	logger     log.Logger
 	monitor    monitoringRPC
 	session    mnemosyne.Mnemosyne
-	repository struct {
-			   user            UserRepository
-			   userGroups      UserGroupsRepository
-			   userPermissions UserPermissionsRepository
-			   permission      PermissionRepository
-			   group           GroupRepository
-		   }
+	repository repositories
 }
 
 func newHandler(rs *rpcServer, ctx context.Context, endpoint string) *handler {

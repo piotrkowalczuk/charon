@@ -39,14 +39,14 @@ func TestUserGroupsRepository_Exists(t *testing.T) {
 	suite := setupPostgresSuite(t)
 	defer suite.teardown(t)
 
-	for ur := range loadUserFixtures(t, suite.user, userGroupsTestFixtures) {
-		for gr := range loadGroupFixtures(t, suite.group, ur.given.Group) {
+	for ur := range loadUserFixtures(t, suite.repository.user, userGroupsTestFixtures) {
+		for gr := range loadGroupFixtures(t, suite.repository.group, ur.given.Group) {
 			add := []*userGroupsEntity{{
 				UserID:  ur.got.ID,
 				GroupID: gr.got.ID,
 			}}
-			for _ = range loadUserGroupsFixtures(t, suite.userGroups, add) {
-				exists, err := suite.userGroups.Exists(ur.given.ID, gr.given.ID)
+			for _ = range loadUserGroupsFixtures(t, suite.repository.userGroups, add) {
+				exists, err := suite.repository.userGroups.Exists(ur.given.ID, gr.given.ID)
 
 				if err != nil {
 					t.Errorf("user group cannot be found, unexpected error: %s", err.Error())
@@ -68,13 +68,13 @@ func TestUserGroupsRepository_Set(t *testing.T) {
 	defer suite.teardown(t)
 
 	groups := make([]int64, 0, len(userGroupsTestFixtures))
-	for ur := range loadUserFixtures(t, suite.user, userGroupsTestFixtures) {
-		for gr := range loadGroupFixtures(t, suite.group, ur.given.Group) {
+	for ur := range loadUserFixtures(t, suite.repository.user, userGroupsTestFixtures) {
+		for gr := range loadGroupFixtures(t, suite.repository.group, ur.given.Group) {
 			groups = append(groups, gr.got.ID)
 		}
 	}
 
-	i, d, err := suite.userGroups.Set(userGroupsTestFixtures[0].ID, groups)
+	i, d, err := suite.repository.userGroups.Set(userGroupsTestFixtures[0].ID, groups)
 	if err != nil {
 		t.Errorf("user groups cannot be set, unexpected error: %s", err.Error())
 	}
@@ -85,7 +85,7 @@ func TestUserGroupsRepository_Set(t *testing.T) {
 		t.Errorf("wrong number of user groups deleted, expected %d but got %d", 0, d)
 	}
 
-	i, d, err = suite.userGroups.Set(userGroupsTestFixtures[0].ID, groups)
+	i, d, err = suite.repository.userGroups.Set(userGroupsTestFixtures[0].ID, groups)
 	if err != nil {
 		t.Errorf("user groups cannot be set, unexpected error: %s", err.Error())
 	}
@@ -96,7 +96,7 @@ func TestUserGroupsRepository_Set(t *testing.T) {
 		t.Errorf("wrong number of user groups deleted, expected %d but got %d", 0, d)
 	}
 
-	i, d, err = suite.userGroups.Set(userGroupsTestFixtures[0].ID, []int64{})
+	i, d, err = suite.repository.userGroups.Set(userGroupsTestFixtures[0].ID, []int64{})
 	if err != nil {
 		t.Errorf("user groups cannot be set, unexpected error: %s", err.Error())
 	}

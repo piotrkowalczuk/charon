@@ -19,13 +19,7 @@ type rpcServer struct {
 	session            mnemosyne.Mnemosyne
 	passwordHasher     charon.PasswordHasher
 	permissionRegistry PermissionRegistry
-	repository         struct {
-		user            UserRepository
-		userGroups      UserGroupsRepository
-		userPermissions UserPermissionsRepository
-		permission      PermissionRepository
-		group           GroupRepository
-	}
+	repository         repositories
 }
 
 type actor struct {

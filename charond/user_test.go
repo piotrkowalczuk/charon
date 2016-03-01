@@ -33,7 +33,7 @@ func TestUserRepository_Create(t *testing.T) {
 	suite := setupPostgresSuite(t)
 	defer suite.teardown(t)
 
-	for res := range loadUserFixtures(t, suite.user, userTestFixtures) {
+	for res := range loadUserFixtures(t, suite.repository.user, userTestFixtures) {
 		if res.got.CreatedAt.IsZero() {
 			t.Errorf("invalid created at field, expected valid time but got %v", res.got.CreatedAt)
 		} else {
@@ -51,9 +51,9 @@ func TestUserRepository_UpdateByID(t *testing.T) {
 	suite := setupPostgresSuite(t)
 	defer suite.teardown(t)
 
-	for res := range loadUserFixtures(t, suite.user, userTestFixtures) {
+	for res := range loadUserFixtures(t, suite.repository.user, userTestFixtures) {
 		user := res.got
-		modified, err := suite.user.UpdateByID(
+		modified, err := suite.repository.user.UpdateByID(
 			user.ID,
 			nil,
 			nil,
@@ -96,8 +96,8 @@ func TestUserRepository_DeleteByID(t *testing.T) {
 	suite := setupPostgresSuite(t)
 	defer suite.teardown(t)
 
-	for res := range loadUserFixtures(t, suite.user, userTestFixtures) {
-		affected, err := suite.user.DeleteByID(res.got.ID)
+	for res := range loadUserFixtures(t, suite.repository.user, userTestFixtures) {
+		affected, err := suite.repository.user.DeleteByID(res.got.ID)
 
 		if err != nil {
 			t.Errorf("user cannot be deleted, unexpected error: %s", err.Error())
@@ -113,9 +113,9 @@ func TestUserRepository_FindOneByID(t *testing.T) {
 	suite := setupPostgresSuite(t)
 	defer suite.teardown(t)
 
-	for res := range loadUserFixtures(t, suite.user, userTestFixtures) {
+	for res := range loadUserFixtures(t, suite.repository.user, userTestFixtures) {
 		user := res.got
-		found, err := suite.user.FindOneByID(user.ID)
+		found, err := suite.repository.user.FindOneByID(user.ID)
 
 		if err != nil {
 			t.Errorf("user cannot be found, unexpected error: %s", err.Error())
@@ -132,8 +132,8 @@ func TestUserRepository_UpdateLastLoginAt(t *testing.T) {
 	suite := setupPostgresSuite(t)
 	defer suite.teardown(t)
 
-	for res := range loadUserFixtures(t, suite.user, userTestFixtures) {
-		affected, err := suite.user.UpdateLastLoginAt(res.got.ID)
+	for res := range loadUserFixtures(t, suite.repository.user, userTestFixtures) {
+		affected, err := suite.repository.user.UpdateLastLoginAt(res.got.ID)
 
 		if err != nil {
 			t.Errorf("user cannot be updated, unexpected error: %s", err.Error())
@@ -141,7 +141,7 @@ func TestUserRepository_UpdateLastLoginAt(t *testing.T) {
 		}
 
 		if assert(t, affected == 1, "user was not updated, no rows affected") {
-			entity, err := suite.user.FindOneByID(res.got.ID)
+			entity, err := suite.repository.user.FindOneByID(res.got.ID)
 			if err != nil {
 				t.Errorf("user cannot be found, unexpected error: %s", err.Error())
 				continue
@@ -161,18 +161,18 @@ func TestUserRepository_Find(t *testing.T) {
 	suite := setupPostgresSuite(t)
 	defer suite.teardown(t)
 
-	for _ = range loadUserFixtures(t, suite.user, userTestFixtures) {
+	for _ = range loadUserFixtures(t, suite.repository.user, userTestFixtures) {
 		all++
 	}
 
-	entities, err = suite.user.Find(&userCriteria{limit: all})
+	entities, err = suite.repository.user.Find(&userCriteria{limit: all})
 	if err != nil {
 		t.Errorf("users can not be retrieved, unexpected error: %s", err.Error())
 	} else {
 		assertf(t, int64(len(entities)) == all, "number of users retrived do not match, expected %d got %d", all, len(entities))
 	}
 
-	entities, err = suite.user.Find(&userCriteria{
+	entities, err = suite.repository.user.Find(&userCriteria{
 		offset: all,
 		limit:  all,
 	})
@@ -181,7 +181,7 @@ func TestUserRepository_Find(t *testing.T) {
 	} else {
 		assertf(t, len(entities) == 0, "number of users retrived do not match, expected %d got %d", 0, len(entities))
 	}
-	entities, err = suite.user.Find(&userCriteria{
+	entities, err = suite.repository.user.Find(&userCriteria{
 		limit:             all,
 		username:          nilt.String{String: "johnsnow@gmail.com", Valid: true},
 		password:          []byte("secret"),

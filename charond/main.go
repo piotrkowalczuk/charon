@@ -49,18 +49,14 @@ func main() {
 		sklog.Fatal(logger, errors.New("charond: unknown monitoring engine"))
 	}
 
-	userRepo := newUserRepository(postgres)
-	userGroupsRepo := newUserGroupsRepository(postgres)
-	userPermissionsRepo := newUserPermissionsRepository(postgres)
-	permissionRepo := newPermissionRepository(postgres)
-	groupRepo := newGroupRepository(postgres)
+	repos := newRepositories(postgres)
 
-	permissionReg := initPermissionRegistry(permissionRepo, charon.AllPermissions, logger)
+	permissionReg := initPermissionRegistry(repos.permission, charon.AllPermissions, logger)
 
 	// If any of this flags are set, try to create superuser. Will fail if data is wrong, or any user already exists.
 	superuser := config.superuser
 	if superuser.username != "" || superuser.password != "" || superuser.firstName != "" || superuser.lastName != "" {
-		user, err := createSuperuser(userRepo, passwordHasher, superuser.username, superuser.password, superuser.firstName, superuser.lastName)
+		user, err := createSuperuser(repos.user, passwordHasher, superuser.username, superuser.password, superuser.firstName, superuser.lastName)
 		if err != nil {
 			sklog.Fatal(logger, err)
 		}
@@ -90,19 +86,7 @@ func main() {
 		session:            mnemosyneClient,
 		passwordHasher:     passwordHasher,
 		permissionRegistry: permissionReg,
-		repository: struct {
-			user            UserRepository
-			userGroups      UserGroupsRepository
-			userPermissions UserPermissionsRepository
-			permission      PermissionRepository
-			group           GroupRepository
-		}{
-			user:            userRepo,
-			userGroups:      userGroupsRepo,
-			userPermissions: userPermissionsRepo,
-			permission:      permissionRepo,
-			group:           groupRepo,
-		},
+		repository: repos,
 	}
 	charon.RegisterRPCServer(gRPCServer, charonServer)
 

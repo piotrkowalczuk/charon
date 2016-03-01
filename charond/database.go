@@ -9,6 +9,26 @@ import (
 	"github.com/piotrkowalczuk/pqcomp"
 )
 
+type repositories struct {
+	user            UserRepository
+	userGroups      UserGroupsRepository
+	userPermissions UserPermissionsRepository
+	permission      PermissionRepository
+	group           GroupRepository
+	groupPermissions           GroupPermissionsRepository
+}
+
+func newRepositories(db *sql.DB) repositories {
+	return repositories{
+		user :newUserRepository(db),
+		userGroups : newUserGroupsRepository(db),
+		userPermissions: newUserPermissionsRepository(db),
+		permission: newPermissionRepository(db),
+		group : newGroupRepository(db),
+		groupPermissions : newGroupPermissionsRepository(db),
+	}
+}
+
 func execQueries(db *sql.DB, queries ...string) (err error) {
 	exec := func(query string) {
 		if err != nil {
@@ -118,4 +138,107 @@ func insertQueryComp(db *sql.DB, table string, insert *pqcomp.Composer, col []st
 	}
 
 	return db.QueryRow(b.String(), insert.Args()...)
+}
+
+
+func existsManyToManyQuery(table, column1, column2 string) string {
+	return `
+		SELECT EXISTS(
+			SELECT 1 FROM  ` + table + ` AS ug
+			WHERE ug.` + column1+ ` = $1
+				AND ug.` + column2+ `= $2
+		)
+	`
+}
+
+func setManyToMany(db *sql.DB, table, column1, column2 string, id int64, ids []int64) (int64, int64, error) {
+	var (
+		err                    error
+		aff, inserted, deleted int64
+		tx                     *sql.Tx
+		insert, exists         *sql.Stmt
+		res                    sql.Result
+		in                     []int64
+		granted                bool
+	)
+
+	tx, err = db.Begin()
+	if err != nil {
+		return 0, 0, err
+	}
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		} else {
+			tx.Commit()
+		}
+	}()
+
+	if len(ids) > 0 {
+		insert, err = tx.Prepare(`INSERT INTO ` + table + ` (` + column1 + `, ` + column2 + `) VALUES ($1, $2)`)
+		if err != nil {
+			return 0, 0, err
+		}
+		exists, err = tx.Prepare(existsManyToManyQuery(table, column1,column2))
+		if err != nil {
+			return 0, 0, err
+		}
+
+		in = make([]int64, 0, len(ids))
+		InsertLoop:
+		for _, groupID := range ids {
+			if err = exists.QueryRow(id, groupID).Scan(&granted); err != nil {
+				return 0, 0, err
+			}
+			// Given combination already exists, ignore.
+			if granted {
+				in = append(in, groupID)
+				granted = false
+				continue InsertLoop
+			}
+			res, err = insert.Exec(id, groupID)
+			if err != nil {
+				return 0, 0, err
+			}
+
+			aff, err = res.RowsAffected()
+			if err != nil {
+				return 0, 0, err
+			}
+			inserted += aff
+
+			in = append(in, groupID)
+		}
+	}
+
+	delete := pqcomp.New(1, len(in))
+	delete.AddArg(id)
+	for _, id := range in {
+		delete.AddExpr(column2, "IN", id)
+	}
+
+	query := bytes.NewBufferString(`DELETE FROM ` + table + ` WHERE ` + column1 + ` = $1`)
+	for delete.Next() {
+		if delete.First() {
+			fmt.Fprint(query, " AND "+column2+" NOT IN (")
+		} else {
+			fmt.Fprint(query, ", ")
+
+		}
+		fmt.Fprintf(query, "%s", delete.PlaceHolder())
+	}
+	if len(in) > 0 {
+		fmt.Fprint(query, ")")
+	}
+
+	res, err = tx.Exec(query.String(), delete.Args()...)
+	if err != nil {
+		return 0, 0, err
+	}
+	deleted, err = res.RowsAffected()
+	if err != nil {
+		return 0, 0, err
+	}
+
+	return inserted, deleted, nil
 }

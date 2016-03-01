@@ -8,11 +8,7 @@ import (
 
 type postgresSuite struct {
 	postgres        *sql.DB
-	user            UserRepository
-	userGroups      UserGroupsRepository
-	userPermissions UserPermissionsRepository
-	permission      PermissionRepository
-	group           GroupRepository
+	repository repositories
 }
 
 func setupPostgresSuite(t *testing.T) *postgresSuite {
@@ -37,11 +33,7 @@ func (ps *postgresSuite) setup(t *testing.T) {
 		t.FailNow()
 	}
 
-	ps.user = newUserRepository(ps.postgres)
-	ps.userGroups = newUserGroupsRepository(ps.postgres)
-	ps.userPermissions = newUserPermissionsRepository(ps.postgres)
-	ps.group = newGroupRepository(ps.postgres)
-	ps.permission = newPermissionRepository(ps.postgres)
+	ps.repository = newRepositories(ps.postgres)
 }
 
 func (ps *postgresSuite) teardown(t *testing.T) {

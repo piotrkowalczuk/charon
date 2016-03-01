@@ -30,8 +30,8 @@ func TestPermissionRepository_FindOneByID(t *testing.T) {
 	suite := setupPostgresSuite(t)
 	defer suite.teardown(t)
 
-	for res := range loadPermissionFixtures(t, suite.permission, permissionTestFixtures) {
-		found, err := suite.permission.FindOneByID(res.got.ID)
+	for res := range loadPermissionFixtures(t, suite.repository.permission, permissionTestFixtures) {
+		found, err := suite.repository.permission.FindOneByID(res.got.ID)
 
 		if err != nil {
 			t.Errorf("permission cannot be found, unexpected error: %s", err.Error())
@@ -88,7 +88,7 @@ func TestPermissionRepository_Register(t *testing.T) {
 	}
 
 	for i, d := range data {
-		created, untouched, removed, err := suite.permission.Register(d.permissions)
+		created, untouched, removed, err := suite.repository.permission.Register(d.permissions)
 		if err != nil {
 			t.Fatalf("unexpected error: %s", err.Error())
 		}
