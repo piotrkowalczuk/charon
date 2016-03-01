@@ -72,8 +72,8 @@ type userEntity struct {
 	Username          string
 	Author            *userEntity
 	Modifier          *userEntity
-	Group             []*groupEntity
 	Permission        []*permissionEntity
+	Group             []*groupEntity
 }
 type userCriteria struct {
 	offset, limit     int64
@@ -386,8 +386,8 @@ type groupEntity struct {
 	UpdatedBy   nilt.Int64
 	Author      *userEntity
 	Modifier    *userEntity
-	Users       []*userEntity
 	Permission  []*permissionEntity
+	Users       []*userEntity
 }
 type groupCriteria struct {
 	offset, limit int64
@@ -918,18 +918,20 @@ func (r *userGroupsRepository) Insert(e *userGroupsEntity) (*userGroupsEntity, e
 }
 
 const (
-	tableGroupPermissions                                    = "charon.group_permissions"
-	tableGroupPermissionsColumnCreatedAt                     = "created_at"
-	tableGroupPermissionsColumnCreatedBy                     = "created_by"
-	tableGroupPermissionsColumnGroupID                       = "group_id"
-	tableGroupPermissionsColumnPermissionID                  = "permission_id"
-	tableGroupPermissionsColumnUpdatedAt                     = "updated_at"
-	tableGroupPermissionsColumnUpdatedBy                     = "updated_by"
-	tableGroupPermissionsConstraintCreatedByForeignKey       = "charon.group_permissions_created_by_fkey"
-	tableGroupPermissionsConstraintUpdatedByForeignKey       = "charon.group_permissions_updated_by_fkey"
-	tableGroupPermissionsConstraintGroupIDForeignKey         = "charon.group_permissions_group_id_fkey"
-	tableGroupPermissionsConstraintPermissionIDForeignKey    = "charon.group_permissions_permission_id_fkey"
-	tableGroupPermissionsConstraintGroupIDPermissionIDUnique = "charon.group_permissions_group_id_permission_id_key"
+	tableGroupPermissions                                                                           = "charon.group_permissions"
+	tableGroupPermissionsColumnCreatedAt                                                            = "created_at"
+	tableGroupPermissionsColumnCreatedBy                                                            = "created_by"
+	tableGroupPermissionsColumnGroupID                                                              = "group_id"
+	tableGroupPermissionsColumnPermissionAction                                                     = "permission_action"
+	tableGroupPermissionsColumnPermissionModule                                                     = "permission_module"
+	tableGroupPermissionsColumnPermissionSubsystem                                                  = "permission_subsystem"
+	tableGroupPermissionsColumnUpdatedAt                                                            = "updated_at"
+	tableGroupPermissionsColumnUpdatedBy                                                            = "updated_by"
+	tableGroupPermissionsConstraintCreatedByForeignKey                                              = "charon.group_permissions_created_by_fkey"
+	tableGroupPermissionsConstraintUpdatedByForeignKey                                              = "charon.group_permissions_updated_by_fkey"
+	tableGroupPermissionsConstraintGroupIDForeignKey                                                = "charon.group_permissions_group_id_fkey"
+	tableGroupPermissionsConstraintPermissionSubsystemPermissionModulePermissionActionForeignKey    = "charon.group_permissions_subsystem_module_action_fkey"
+	tableGroupPermissionsConstraintGroupIDPermissionSubsystemPermissionModulePermissionActionUnique = "charon.group_permissions_group_id_subsystem_module_action_key"
 )
 
 var (
@@ -937,33 +939,39 @@ var (
 		tableGroupPermissionsColumnCreatedAt,
 		tableGroupPermissionsColumnCreatedBy,
 		tableGroupPermissionsColumnGroupID,
-		tableGroupPermissionsColumnPermissionID,
+		tableGroupPermissionsColumnPermissionAction,
+		tableGroupPermissionsColumnPermissionModule,
+		tableGroupPermissionsColumnPermissionSubsystem,
 		tableGroupPermissionsColumnUpdatedAt,
 		tableGroupPermissionsColumnUpdatedBy,
 	}
 )
 
 type groupPermissionsEntity struct {
-	CreatedAt    time.Time
-	CreatedBy    nilt.Int64
-	GroupID      int64
-	PermissionID int64
-	UpdatedAt    *time.Time
-	UpdatedBy    nilt.Int64
-	Group        *groupEntity
-	Permission   *permissionEntity
-	Author       *userEntity
-	Modifier     *userEntity
+	CreatedAt           time.Time
+	CreatedBy           nilt.Int64
+	GroupID             nilt.Int64
+	PermissionAction    string
+	PermissionModule    string
+	PermissionSubsystem string
+	UpdatedAt           *time.Time
+	UpdatedBy           nilt.Int64
+	Group               *groupEntity
+	Permission          *permissionEntity
+	Author              *userEntity
+	Modifier            *userEntity
 }
 type groupPermissionsCriteria struct {
-	offset, limit int64
-	sort          map[string]bool
-	createdAt     protot.TimestampRange
-	createdBy     nilt.Int64
-	groupID       nilt.Int64
-	permissionID  nilt.Int64
-	updatedAt     protot.TimestampRange
-	updatedBy     nilt.Int64
+	offset, limit       int64
+	sort                map[string]bool
+	createdAt           protot.TimestampRange
+	createdBy           nilt.Int64
+	groupID             nilt.Int64
+	permissionAction    nilt.String
+	permissionModule    nilt.String
+	permissionSubsystem nilt.String
+	updatedAt           protot.TimestampRange
+	updatedBy           nilt.Int64
 }
 
 type groupPermissionsRepository struct {
@@ -977,7 +985,7 @@ func (r *groupPermissionsRepository) Find(c *groupPermissionsCriteria) ([]*group
 	comp.AddArg(c.offset)
 	comp.AddArg(c.limit)
 
-	where := comp.Compose(6)
+	where := comp.Compose(8)
 	if c.createdAt.From != nil {
 		where.AddExpr(tableGroupPermissionsColumnCreatedAt, pqcomp.GT, c.createdAt.From.Time())
 	}
@@ -987,7 +995,9 @@ func (r *groupPermissionsRepository) Find(c *groupPermissionsCriteria) ([]*group
 
 	where.AddExpr(tableGroupPermissionsColumnCreatedBy, pqcomp.E, c.createdBy)
 	where.AddExpr(tableGroupPermissionsColumnGroupID, pqcomp.E, c.groupID)
-	where.AddExpr(tableGroupPermissionsColumnPermissionID, pqcomp.E, c.permissionID)
+	where.AddExpr(tableGroupPermissionsColumnPermissionAction, pqcomp.E, c.permissionAction)
+	where.AddExpr(tableGroupPermissionsColumnPermissionModule, pqcomp.E, c.permissionModule)
+	where.AddExpr(tableGroupPermissionsColumnPermissionSubsystem, pqcomp.E, c.permissionSubsystem)
 	if c.updatedAt.From != nil {
 		where.AddExpr(tableGroupPermissionsColumnUpdatedAt, pqcomp.GT, c.updatedAt.From.Time())
 	}
@@ -1010,7 +1020,9 @@ func (r *groupPermissionsRepository) Find(c *groupPermissionsCriteria) ([]*group
 			&entity.CreatedAt,
 			&entity.CreatedBy,
 			&entity.GroupID,
-			&entity.PermissionID,
+			&entity.PermissionAction,
+			&entity.PermissionModule,
+			&entity.PermissionSubsystem,
 			&entity.UpdatedAt,
 			&entity.UpdatedBy,
 		)
@@ -1027,16 +1039,20 @@ func (r *groupPermissionsRepository) Find(c *groupPermissionsCriteria) ([]*group
 	return entities, nil
 }
 func (r *groupPermissionsRepository) Insert(e *groupPermissionsEntity) (*groupPermissionsEntity, error) {
-	insert := pqcomp.New(0, 6)
+	insert := pqcomp.New(0, 8)
 	insert.AddExpr(tableGroupPermissionsColumnCreatedBy, "", e.CreatedBy)
 	insert.AddExpr(tableGroupPermissionsColumnGroupID, "", e.GroupID)
-	insert.AddExpr(tableGroupPermissionsColumnPermissionID, "", e.PermissionID)
+	insert.AddExpr(tableGroupPermissionsColumnPermissionAction, "", e.PermissionAction)
+	insert.AddExpr(tableGroupPermissionsColumnPermissionModule, "", e.PermissionModule)
+	insert.AddExpr(tableGroupPermissionsColumnPermissionSubsystem, "", e.PermissionSubsystem)
 	insert.AddExpr(tableGroupPermissionsColumnUpdatedAt, "", e.UpdatedAt)
 	insert.AddExpr(tableGroupPermissionsColumnUpdatedBy, "", e.UpdatedBy)
 	err := insertQueryComp(r.db, r.table, insert, r.columns).Scan(&e.CreatedAt,
 		&e.CreatedBy,
 		&e.GroupID,
-		&e.PermissionID,
+		&e.PermissionAction,
+		&e.PermissionModule,
+		&e.PermissionSubsystem,
 		&e.UpdatedAt,
 		&e.UpdatedBy,
 	)
@@ -1048,25 +1064,29 @@ func (r *groupPermissionsRepository) Insert(e *groupPermissionsEntity) (*groupPe
 }
 
 const (
-	tableUserPermissions                                   = "charon.user_permissions"
-	tableUserPermissionsColumnCreatedAt                    = "created_at"
-	tableUserPermissionsColumnCreatedBy                    = "created_by"
-	tableUserPermissionsColumnPermissionID                 = "permission_id"
-	tableUserPermissionsColumnUpdatedAt                    = "updated_at"
-	tableUserPermissionsColumnUpdatedBy                    = "updated_by"
-	tableUserPermissionsColumnUserID                       = "user_id"
-	tableUserPermissionsConstraintCreatedByForeignKey      = "charon.user_permissions_created_by_fkey"
-	tableUserPermissionsConstraintUpdatedByForeignKey      = "charon.user_permissions_updated_by_fkey"
-	tableUserPermissionsConstraintUserIDForeignKey         = "charon.user_permissions_user_id_fkey"
-	tableUserPermissionsConstraintPermissionIDForeignKey   = "charon.user_permissions_permission_id_fkey"
-	tableUserPermissionsConstraintUserIDPermissionIDUnique = "charon.user_permissions_user_id_permission_id_key"
+	tableUserPermissions                                                                          = "charon.user_permissions"
+	tableUserPermissionsColumnCreatedAt                                                           = "created_at"
+	tableUserPermissionsColumnCreatedBy                                                           = "created_by"
+	tableUserPermissionsColumnPermissionAction                                                    = "permission_action"
+	tableUserPermissionsColumnPermissionModule                                                    = "permission_module"
+	tableUserPermissionsColumnPermissionSubsystem                                                 = "permission_subsystem"
+	tableUserPermissionsColumnUpdatedAt                                                           = "updated_at"
+	tableUserPermissionsColumnUpdatedBy                                                           = "updated_by"
+	tableUserPermissionsColumnUserID                                                              = "user_id"
+	tableUserPermissionsConstraintCreatedByForeignKey                                             = "charon.user_permissions_created_by_fkey"
+	tableUserPermissionsConstraintUpdatedByForeignKey                                             = "charon.user_permissions_updated_by_fkey"
+	tableUserPermissionsConstraintUserIDForeignKey                                                = "charon.user_permissions_user_id_fkey"
+	tableUserPermissionsConstraintPermissionSubsystemPermissionModulePermissionActionForeignKey   = "charon.user_permissions_subsystem_module_action_fkey"
+	tableUserPermissionsConstraintUserIDPermissionSubsystemPermissionModulePermissionActionUnique = "charon.user_permissions_user_id_subsystem_module_action_key"
 )
 
 var (
 	tableUserPermissionsColumns = []string{
 		tableUserPermissionsColumnCreatedAt,
 		tableUserPermissionsColumnCreatedBy,
-		tableUserPermissionsColumnPermissionID,
+		tableUserPermissionsColumnPermissionAction,
+		tableUserPermissionsColumnPermissionModule,
+		tableUserPermissionsColumnPermissionSubsystem,
 		tableUserPermissionsColumnUpdatedAt,
 		tableUserPermissionsColumnUpdatedBy,
 		tableUserPermissionsColumnUserID,
@@ -1074,26 +1094,30 @@ var (
 )
 
 type userPermissionsEntity struct {
-	CreatedAt    time.Time
-	CreatedBy    nilt.Int64
-	PermissionID int64
-	UpdatedAt    *time.Time
-	UpdatedBy    nilt.Int64
-	UserID       int64
-	User         *userEntity
-	Permission   *permissionEntity
-	Author       *userEntity
-	Modifier     *userEntity
+	CreatedAt           time.Time
+	CreatedBy           nilt.Int64
+	PermissionAction    string
+	PermissionModule    string
+	PermissionSubsystem string
+	UpdatedAt           *time.Time
+	UpdatedBy           nilt.Int64
+	UserID              nilt.Int64
+	User                *userEntity
+	Permission          *permissionEntity
+	Author              *userEntity
+	Modifier            *userEntity
 }
 type userPermissionsCriteria struct {
-	offset, limit int64
-	sort          map[string]bool
-	createdAt     protot.TimestampRange
-	createdBy     nilt.Int64
-	permissionID  nilt.Int64
-	updatedAt     protot.TimestampRange
-	updatedBy     nilt.Int64
-	userID        nilt.Int64
+	offset, limit       int64
+	sort                map[string]bool
+	createdAt           protot.TimestampRange
+	createdBy           nilt.Int64
+	permissionAction    nilt.String
+	permissionModule    nilt.String
+	permissionSubsystem nilt.String
+	updatedAt           protot.TimestampRange
+	updatedBy           nilt.Int64
+	userID              nilt.Int64
 }
 
 type userPermissionsRepository struct {
@@ -1107,7 +1131,7 @@ func (r *userPermissionsRepository) Find(c *userPermissionsCriteria) ([]*userPer
 	comp.AddArg(c.offset)
 	comp.AddArg(c.limit)
 
-	where := comp.Compose(6)
+	where := comp.Compose(8)
 	if c.createdAt.From != nil {
 		where.AddExpr(tableUserPermissionsColumnCreatedAt, pqcomp.GT, c.createdAt.From.Time())
 	}
@@ -1116,7 +1140,9 @@ func (r *userPermissionsRepository) Find(c *userPermissionsCriteria) ([]*userPer
 	}
 
 	where.AddExpr(tableUserPermissionsColumnCreatedBy, pqcomp.E, c.createdBy)
-	where.AddExpr(tableUserPermissionsColumnPermissionID, pqcomp.E, c.permissionID)
+	where.AddExpr(tableUserPermissionsColumnPermissionAction, pqcomp.E, c.permissionAction)
+	where.AddExpr(tableUserPermissionsColumnPermissionModule, pqcomp.E, c.permissionModule)
+	where.AddExpr(tableUserPermissionsColumnPermissionSubsystem, pqcomp.E, c.permissionSubsystem)
 	if c.updatedAt.From != nil {
 		where.AddExpr(tableUserPermissionsColumnUpdatedAt, pqcomp.GT, c.updatedAt.From.Time())
 	}
@@ -1139,7 +1165,9 @@ func (r *userPermissionsRepository) Find(c *userPermissionsCriteria) ([]*userPer
 		err = rows.Scan(
 			&entity.CreatedAt,
 			&entity.CreatedBy,
-			&entity.PermissionID,
+			&entity.PermissionAction,
+			&entity.PermissionModule,
+			&entity.PermissionSubsystem,
 			&entity.UpdatedAt,
 			&entity.UpdatedBy,
 			&entity.UserID,
@@ -1157,15 +1185,19 @@ func (r *userPermissionsRepository) Find(c *userPermissionsCriteria) ([]*userPer
 	return entities, nil
 }
 func (r *userPermissionsRepository) Insert(e *userPermissionsEntity) (*userPermissionsEntity, error) {
-	insert := pqcomp.New(0, 6)
+	insert := pqcomp.New(0, 8)
 	insert.AddExpr(tableUserPermissionsColumnCreatedBy, "", e.CreatedBy)
-	insert.AddExpr(tableUserPermissionsColumnPermissionID, "", e.PermissionID)
+	insert.AddExpr(tableUserPermissionsColumnPermissionAction, "", e.PermissionAction)
+	insert.AddExpr(tableUserPermissionsColumnPermissionModule, "", e.PermissionModule)
+	insert.AddExpr(tableUserPermissionsColumnPermissionSubsystem, "", e.PermissionSubsystem)
 	insert.AddExpr(tableUserPermissionsColumnUpdatedAt, "", e.UpdatedAt)
 	insert.AddExpr(tableUserPermissionsColumnUpdatedBy, "", e.UpdatedBy)
 	insert.AddExpr(tableUserPermissionsColumnUserID, "", e.UserID)
 	err := insertQueryComp(r.db, r.table, insert, r.columns).Scan(&e.CreatedAt,
 		&e.CreatedBy,
-		&e.PermissionID,
+		&e.PermissionAction,
+		&e.PermissionModule,
+		&e.PermissionSubsystem,
 		&e.UpdatedAt,
 		&e.UpdatedBy,
 		&e.UserID,
@@ -1250,31 +1282,35 @@ CREATE TABLE IF NOT EXISTS charon.user_groups (
 CREATE TABLE IF NOT EXISTS charon.group_permissions (
 	created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
 	created_by BIGINT,
-	group_id BIGINT NOT NULL,
-	permission_id BIGINT NOT NULL,
+	group_id BIGINT,
+	permission_action TEXT NOT NULL,
+	permission_module TEXT NOT NULL,
+	permission_subsystem TEXT NOT NULL,
 	updated_at TIMESTAMPTZ,
 	updated_by BIGINT,
 
 	CONSTRAINT "charon.group_permissions_created_by_fkey" FOREIGN KEY (created_by) REFERENCES charon.user (id),
 	CONSTRAINT "charon.group_permissions_updated_by_fkey" FOREIGN KEY (updated_by) REFERENCES charon.user (id),
 	CONSTRAINT "charon.group_permissions_group_id_fkey" FOREIGN KEY (group_id) REFERENCES charon.group (id),
-	CONSTRAINT "charon.group_permissions_permission_id_fkey" FOREIGN KEY (permission_id) REFERENCES charon.permission (id),
-	CONSTRAINT "charon.group_permissions_group_id_permission_id_key" UNIQUE (group_id, permission_id)
+	CONSTRAINT "charon.group_permissions_subsystem_module_action_fkey" FOREIGN KEY (permission_subsystem, permission_module, permission_action) REFERENCES charon.permission (subsystem, module, action),
+	CONSTRAINT "charon.group_permissions_group_id_subsystem_module_action_key" UNIQUE (group_id, permission_subsystem, permission_module, permission_action)
 );
 
 CREATE TABLE IF NOT EXISTS charon.user_permissions (
 	created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
 	created_by BIGINT,
-	permission_id BIGINT NOT NULL,
+	permission_action TEXT NOT NULL,
+	permission_module TEXT NOT NULL,
+	permission_subsystem TEXT NOT NULL,
 	updated_at TIMESTAMPTZ,
 	updated_by BIGINT,
-	user_id BIGINT NOT NULL,
+	user_id BIGINT,
 
 	CONSTRAINT "charon.user_permissions_created_by_fkey" FOREIGN KEY (created_by) REFERENCES charon.user (id),
 	CONSTRAINT "charon.user_permissions_updated_by_fkey" FOREIGN KEY (updated_by) REFERENCES charon.user (id),
 	CONSTRAINT "charon.user_permissions_user_id_fkey" FOREIGN KEY (user_id) REFERENCES charon.user (id),
-	CONSTRAINT "charon.user_permissions_permission_id_fkey" FOREIGN KEY (permission_id) REFERENCES charon.permission (id),
-	CONSTRAINT "charon.user_permissions_user_id_permission_id_key" UNIQUE (user_id, permission_id)
+	CONSTRAINT "charon.user_permissions_subsystem_module_action_fkey" FOREIGN KEY (permission_subsystem, permission_module, permission_action) REFERENCES charon.permission (subsystem, module, action),
+	CONSTRAINT "charon.user_permissions_user_id_subsystem_module_action_key" UNIQUE (user_id, permission_subsystem, permission_module, permission_action)
 );
 
 `
