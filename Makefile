@@ -6,9 +6,17 @@ PACKAGE_CONTROL=$(PACKAGE)/$(SERVICE)ctl
 PACKAGE_GENERATOR=$(PACKAGE)/$(SERVICE)g
 PACKAGE_EXAMPLE=$(PACKAGE)/example
 PACKAGE_TEST=$(PACKAGE)/$(SERVICE)test
+
 BINARY_DAEMON=${SERVICE}d/${SERVICE}d
 BINARY_CONTROL=${SERVICE}ctl/${SERVICE}ctl
 BINARY_GENERATOR=${SERVICE}g/${SERVICE}g
+
+#packaging
+DIST_PACKAGE_BUILD_DIR=temp
+DIST_PACKAGE_DIR=dist
+DIST_PACKAGE_TYPE=deb
+DIST_PREFIX=/usr
+DIST_BINDIR=${DESTDIR}${DIST_PREFIX}/bin
 
 FLAGS=-host=$(CHARON_HOST) \
       	    -port=$(CHARON_PORT) \
@@ -30,7 +38,7 @@ PROTO_PATH=--proto_path=. \
           	    --proto_path=${GOPATH}/src/github.com/piotrkowalczuk/protot \
           	    --proto_path=${GOPATH}/src/github.com/piotrkowalczuk/nilt \
 
-.PHONY:	all proto rebuild build build-daemon build-control build-example install-generator run test test-unit test-postgres get
+.PHONY:	all proto rebuild build build-daemon build-control build-example install-generator run test test-unit test-postgres get buld package
 
 all: rebuild test run
 
@@ -81,3 +89,37 @@ get:
 	@go get ${PACKAGE}
 	@go get ${PACKAGE_TEST}
 	@go get ${PACKAGE_DAEMON}
+
+install: build
+	#install binary
+	install -Dm 755 ${BINARY_DAEMON} ${DIST_BINDIR}/${SERVICE}d
+	install -Dm 755 ${BINARY_CONTROL} ${DIST_BINDIR}/${SERVICE}ctl
+	#install config file
+	install -Dm 644 scripts/${SERVICE}.env ${DESTDIR}/etc/${SERVICE}.env
+	install -Dm 644 scripts/${SERVICE}.env ${DESTDIR}/etc/${SERVICE}.env
+	#install init script
+	install -Dm 644 scripts/${SERVICE}.service ${DESTDIR}/etc/systemd/system/${SERVICE}.service
+
+package:
+	# export DIST_PACKAGE_TYPE to vary package type (e.g. deb, tar, rpm)
+	@if [ -z "$(shell which fpm 2>/dev/null)" ]; then \
+		echo "error:\nPackaging requires effing package manager (fpm) to run.\nsee https://github.com/jordansissel/fpm\n"; \
+		exit 1; \
+	fi
+
+	#run make install against the packaging dir
+	mkdir -p ${DIST_PACKAGE_BUILD_DIR} && $(MAKE) install DESTDIR=${DIST_PACKAGE_BUILD_DIR}
+
+	#clean
+	mkdir -p ${DIST_PACKAGE_DIR} && rm -f ${DIST_PACKAGE_DIR}/*.${DIST_PACKAGE_TYPE}
+
+	#build package
+	fpm --rpm-os linux \
+		-s dir \
+		-p dist \
+		-t ${DIST_PACKAGE_TYPE} \
+		-n ${SERVICE} \
+		-v `${DIST_PACKAGE_BUILD_DIR}${DIST_PREFIX}/bin/${SERVICE}d -version` \
+		--config-files /etc/${SERVICE}.env \
+		--config-files /etc/systemd/system/${SERVICE}.service \
+		-C ${DIST_PACKAGE_BUILD_DIR} .
