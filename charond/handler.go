@@ -20,12 +20,12 @@ type handler struct {
 	monitor    monitoringRPC
 	session    mnemosyne.Mnemosyne
 	repository struct {
-		user            UserRepository
-		userGroups      UserGroupsRepository
-		userPermissions UserPermissionsRepository
-		permission      PermissionRepository
-		group           GroupRepository
-	}
+			   user            UserRepository
+			   userGroups      UserGroupsRepository
+			   userPermissions UserPermissionsRepository
+			   permission      PermissionRepository
+			   group           GroupRepository
+		   }
 }
 
 func newHandler(rs *rpcServer, ctx context.Context, endpoint string) *handler {
