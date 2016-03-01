@@ -21,6 +21,7 @@ func (pe *permissionEntity) Permission() charon.Permission {
 type PermissionRepository interface {
 	Find(criteria *permissionCriteria) ([]*permissionEntity, error)
 	FindOneByID(id int64) (entity *permissionEntity, err error)
+	// FindByUserID retrieves all permissions for user represented by given id.
 	FindByUserID(userID int64) (entities []*permissionEntity, err error)
 	Register(permissions charon.Permissions) (created, untouched, removed int64, err error)
 	Insert(entity *permissionEntity) (*permissionEntity, error)
@@ -34,7 +35,7 @@ func newPermissionRepository(dbPool *sql.DB) *permissionRepository {
 	}
 }
 
-// FindByUserID retrieves all permissions for user represented by given id.
+// FindByUserID implements PermissionRepository interface.
 func (pr *permissionRepository) FindByUserID(userID int64) ([]*permissionEntity, error) {
 	query := `
 		SELECT DISTINCT ON (p.id)
@@ -84,6 +85,7 @@ func (pr *permissionRepository) findOneStmt() (*sql.Stmt, error) {
 	)
 }
 
+// Register implements PermissionRepository interface.
 func (pr *permissionRepository) Register(permissions charon.Permissions) (created, unt, removed int64, err error) {
 	var (
 		tx             *sql.Tx
@@ -248,4 +250,46 @@ func (pr *permissionRegistry) Register(permissions charon.Permissions) (created,
 	}
 
 	return 0, 0, 0, nil
+}
+
+// FindByTag implements PermissionRepository interface.
+func (pr *permissionRepository) FindByTag(userID int64) ([]*permissionEntity, error) {
+	query := `
+		SELECT DISTINCT ON (p.id)
+			` + columns(tablePermissionColumns, "p") + `
+		FROM ` + pr.table + ` AS p
+		LEFT JOIN ` + tableUserPermissions + ` AS up ON up.permission_id = p.id AND up.user_id = $1
+		LEFT JOIN ` + tableUserGroups + ` AS ug ON ug.user_id = $1
+		LEFT JOIN ` + tableGroupPermissions + ` AS gp ON gp.permission_id = p.id AND gp.group_id = ug.group_id
+		WHERE up.user_id = $1 OR ug.user_id = $1
+	`
+
+	rows, err := pr.db.Query(query, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	permissions := []*permissionEntity{}
+	for rows.Next() {
+		var p permissionEntity
+		err = rows.Scan(
+			&p.Action,
+			&p.CreatedAt,
+			&p.ID,
+			&p.Module,
+			&p.Subsystem,
+			&p.UpdatedAt,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		permissions = append(permissions, &p)
+	}
+	if rows.Err() != nil {
+		return nil, rows.Err()
+	}
+
+	return permissions, nil
 }
