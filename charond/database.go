@@ -186,17 +186,17 @@ func setManyToMany(db *sql.DB, table, column1, column2 string, id int64, ids []i
 
 		in = make([]int64, 0, len(ids))
 		InsertLoop:
-		for _, groupID := range ids {
-			if err = exists.QueryRow(id, groupID).Scan(&granted); err != nil {
+		for _, idd := range ids {
+			if err = exists.QueryRow(id, idd).Scan(&granted); err != nil {
 				return 0, 0, err
 			}
 			// Given combination already exists, ignore.
 			if granted {
-				in = append(in, groupID)
+				in = append(in, idd)
 				granted = false
 				continue InsertLoop
 			}
-			res, err = insert.Exec(id, groupID)
+			res, err = insert.Exec(id, idd)
 			if err != nil {
 				return 0, 0, err
 			}
@@ -207,7 +207,7 @@ func setManyToMany(db *sql.DB, table, column1, column2 string, id int64, ids []i
 			}
 			inserted += aff
 
-			in = append(in, groupID)
+			in = append(in, idd)
 		}
 	}
 
