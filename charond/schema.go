@@ -799,6 +799,7 @@ const (
 	tableUserGroupsConstraintUpdatedByForeignKey = "charon.user_groups_updated_by_fkey"
 	tableUserGroupsConstraintUserIDForeignKey    = "charon.user_groups_user_id_fkey"
 	tableUserGroupsConstraintGroupIDForeignKey   = "charon.user_groups_group_id_fkey"
+	tableUserGroupsConstraintUserIDGroupIDUnique = "charon.user_groups_user_id_group_id_key"
 )
 
 var (
@@ -917,17 +918,18 @@ func (r *userGroupsRepository) Insert(e *userGroupsEntity) (*userGroupsEntity, e
 }
 
 const (
-	tableGroupPermissions                                 = "charon.group_permissions"
-	tableGroupPermissionsColumnCreatedAt                  = "created_at"
-	tableGroupPermissionsColumnCreatedBy                  = "created_by"
-	tableGroupPermissionsColumnGroupID                    = "group_id"
-	tableGroupPermissionsColumnPermissionID               = "permission_id"
-	tableGroupPermissionsColumnUpdatedAt                  = "updated_at"
-	tableGroupPermissionsColumnUpdatedBy                  = "updated_by"
-	tableGroupPermissionsConstraintCreatedByForeignKey    = "charon.group_permissions_created_by_fkey"
-	tableGroupPermissionsConstraintUpdatedByForeignKey    = "charon.group_permissions_updated_by_fkey"
-	tableGroupPermissionsConstraintGroupIDForeignKey      = "charon.group_permissions_group_id_fkey"
-	tableGroupPermissionsConstraintPermissionIDForeignKey = "charon.group_permissions_permission_id_fkey"
+	tableGroupPermissions                                    = "charon.group_permissions"
+	tableGroupPermissionsColumnCreatedAt                     = "created_at"
+	tableGroupPermissionsColumnCreatedBy                     = "created_by"
+	tableGroupPermissionsColumnGroupID                       = "group_id"
+	tableGroupPermissionsColumnPermissionID                  = "permission_id"
+	tableGroupPermissionsColumnUpdatedAt                     = "updated_at"
+	tableGroupPermissionsColumnUpdatedBy                     = "updated_by"
+	tableGroupPermissionsConstraintCreatedByForeignKey       = "charon.group_permissions_created_by_fkey"
+	tableGroupPermissionsConstraintUpdatedByForeignKey       = "charon.group_permissions_updated_by_fkey"
+	tableGroupPermissionsConstraintGroupIDForeignKey         = "charon.group_permissions_group_id_fkey"
+	tableGroupPermissionsConstraintPermissionIDForeignKey    = "charon.group_permissions_permission_id_fkey"
+	tableGroupPermissionsConstraintGroupIDPermissionIDUnique = "charon.group_permissions_group_id_permission_id_key"
 )
 
 var (
@@ -1046,17 +1048,18 @@ func (r *groupPermissionsRepository) Insert(e *groupPermissionsEntity) (*groupPe
 }
 
 const (
-	tableUserPermissions                                 = "charon.user_permissions"
-	tableUserPermissionsColumnCreatedAt                  = "created_at"
-	tableUserPermissionsColumnCreatedBy                  = "created_by"
-	tableUserPermissionsColumnPermissionID               = "permission_id"
-	tableUserPermissionsColumnUpdatedAt                  = "updated_at"
-	tableUserPermissionsColumnUpdatedBy                  = "updated_by"
-	tableUserPermissionsColumnUserID                     = "user_id"
-	tableUserPermissionsConstraintCreatedByForeignKey    = "charon.user_permissions_created_by_fkey"
-	tableUserPermissionsConstraintUpdatedByForeignKey    = "charon.user_permissions_updated_by_fkey"
-	tableUserPermissionsConstraintUserIDForeignKey       = "charon.user_permissions_user_id_fkey"
-	tableUserPermissionsConstraintPermissionIDForeignKey = "charon.user_permissions_permission_id_fkey"
+	tableUserPermissions                                   = "charon.user_permissions"
+	tableUserPermissionsColumnCreatedAt                    = "created_at"
+	tableUserPermissionsColumnCreatedBy                    = "created_by"
+	tableUserPermissionsColumnPermissionID                 = "permission_id"
+	tableUserPermissionsColumnUpdatedAt                    = "updated_at"
+	tableUserPermissionsColumnUpdatedBy                    = "updated_by"
+	tableUserPermissionsColumnUserID                       = "user_id"
+	tableUserPermissionsConstraintCreatedByForeignKey      = "charon.user_permissions_created_by_fkey"
+	tableUserPermissionsConstraintUpdatedByForeignKey      = "charon.user_permissions_updated_by_fkey"
+	tableUserPermissionsConstraintUserIDForeignKey         = "charon.user_permissions_user_id_fkey"
+	tableUserPermissionsConstraintPermissionIDForeignKey   = "charon.user_permissions_permission_id_fkey"
+	tableUserPermissionsConstraintUserIDPermissionIDUnique = "charon.user_permissions_user_id_permission_id_key"
 )
 
 var (
@@ -1240,7 +1243,8 @@ CREATE TABLE IF NOT EXISTS charon.user_groups (
 	CONSTRAINT "charon.user_groups_created_by_fkey" FOREIGN KEY (created_by) REFERENCES charon.user (id),
 	CONSTRAINT "charon.user_groups_updated_by_fkey" FOREIGN KEY (updated_by) REFERENCES charon.user (id),
 	CONSTRAINT "charon.user_groups_user_id_fkey" FOREIGN KEY (user_id) REFERENCES charon.user (id),
-	CONSTRAINT "charon.user_groups_group_id_fkey" FOREIGN KEY (group_id) REFERENCES charon.group (id)
+	CONSTRAINT "charon.user_groups_group_id_fkey" FOREIGN KEY (group_id) REFERENCES charon.group (id),
+	CONSTRAINT "charon.user_groups_user_id_group_id_key" UNIQUE (user_id, group_id)
 );
 
 CREATE TABLE IF NOT EXISTS charon.group_permissions (
@@ -1254,7 +1258,8 @@ CREATE TABLE IF NOT EXISTS charon.group_permissions (
 	CONSTRAINT "charon.group_permissions_created_by_fkey" FOREIGN KEY (created_by) REFERENCES charon.user (id),
 	CONSTRAINT "charon.group_permissions_updated_by_fkey" FOREIGN KEY (updated_by) REFERENCES charon.user (id),
 	CONSTRAINT "charon.group_permissions_group_id_fkey" FOREIGN KEY (group_id) REFERENCES charon.group (id),
-	CONSTRAINT "charon.group_permissions_permission_id_fkey" FOREIGN KEY (permission_id) REFERENCES charon.permission (id)
+	CONSTRAINT "charon.group_permissions_permission_id_fkey" FOREIGN KEY (permission_id) REFERENCES charon.permission (id),
+	CONSTRAINT "charon.group_permissions_group_id_permission_id_key" UNIQUE (group_id, permission_id)
 );
 
 CREATE TABLE IF NOT EXISTS charon.user_permissions (
@@ -1268,7 +1273,8 @@ CREATE TABLE IF NOT EXISTS charon.user_permissions (
 	CONSTRAINT "charon.user_permissions_created_by_fkey" FOREIGN KEY (created_by) REFERENCES charon.user (id),
 	CONSTRAINT "charon.user_permissions_updated_by_fkey" FOREIGN KEY (updated_by) REFERENCES charon.user (id),
 	CONSTRAINT "charon.user_permissions_user_id_fkey" FOREIGN KEY (user_id) REFERENCES charon.user (id),
-	CONSTRAINT "charon.user_permissions_permission_id_fkey" FOREIGN KEY (permission_id) REFERENCES charon.permission (id)
+	CONSTRAINT "charon.user_permissions_permission_id_fkey" FOREIGN KEY (permission_id) REFERENCES charon.permission (id),
+	CONSTRAINT "charon.user_permissions_user_id_permission_id_key" UNIQUE (user_id, permission_id)
 );
 
 `
