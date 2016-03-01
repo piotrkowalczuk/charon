@@ -67,12 +67,13 @@ func (c *configuration) init() {
 }
 
 func (c *configuration) parse() {
-	ver := flag.Bool("version", false, "Print version and exit")
+
 	if !flag.Parsed() {
 		flag.Parse()
-	}
-	if *ver {
-		fmt.Printf("%s", VERSION)
-		os.Exit(0)
+		ver := flag.Bool("version", false, "Print version and exit")
+		if *ver {
+			fmt.Printf("%s", VERSION)
+			os.Exit(0)
+		}
 	}
 }
