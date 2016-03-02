@@ -9,4 +9,5 @@ charon.iml
 test.sh
 run.sh
 coverage.txt
-profile.out
+*.out
+
