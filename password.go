@@ -3,60 +3,44 @@ package charon
 import (
 	"errors"
 
-	"github.com/go-kit/kit/log"
-	"github.com/piotrkowalczuk/sklog"
 	"golang.org/x/crypto/bcrypt"
 )
 
 var (
-	// ErrBcryptCostOutOfRange ...
-	ErrBcryptCostOutOfRange = errors.New("charon: bcrypt cost out of range")
+	// ErrBCryptCostOutOfRange can be returned by NewBCryptPasswordHasher if provided cost is not between min and max.
+	ErrBCryptCostOutOfRange = errors.New("charon: bcrypt cost out of range")
 )
 
-type Hasher interface {
+// PasswordHasher define set of methods that object needs to implement to be considered as a hasher.
+type PasswordHasher interface {
 	Hash([]byte) ([]byte, error)
-}
-
-type Comparator interface {
 	Compare([]byte, []byte) bool
 }
 
-// PasswordHasher ...
-type PasswordHasher interface {
-	Hasher
-	Comparator
+// BCryptPasswordHasher hasher that use BCrypt algorithm to secure password.
+type BCryptPasswordHasher struct {
+	cost int
 }
 
-// BcryptPasswordHasher ...
-type BcryptPasswordHasher struct {
-	logger log.Logger
-	cost   int
-}
-
-// NewBcryptPasswordHasher ...
-func NewBcryptPasswordHasher(cost int, logger log.Logger) (PasswordHasher, error) {
+// NewBCryptPasswordHasher allocates new BCryptPasswordHasher.
+// If cost is not between min and max value it returns an error.
+func NewBCryptPasswordHasher(cost int) (PasswordHasher, error) {
 	if bcrypt.MinCost > cost || cost > bcrypt.MaxCost {
-		return nil, ErrBcryptCostOutOfRange
+		return nil, ErrBCryptCostOutOfRange
 	}
 
-	return &BcryptPasswordHasher{
-		cost:   cost,
-		logger: logger,
-	}, nil
+	return &BCryptPasswordHasher{cost: cost}, nil
 }
 
 // Hash implements PasswordHasher interface.
-func (bph BcryptPasswordHasher) Hash(plainPassword []byte) ([]byte, error) {
+func (bph BCryptPasswordHasher) Hash(plainPassword []byte) ([]byte, error) {
 	return bcrypt.GenerateFromPassword(plainPassword, bph.cost)
 }
 
 // Compare implements PasswordHasher interface.
-func (bph BcryptPasswordHasher) Compare(hashedPassword, plainPassword []byte) bool {
+func (bph BCryptPasswordHasher) Compare(hashedPassword, plainPassword []byte) bool {
 	err := bcrypt.CompareHashAndPassword(hashedPassword, plainPassword)
 	if err != nil {
-		if bph.logger != nil {
-			sklog.Error(bph.logger, err)
-		}
 		return false
 	}
 

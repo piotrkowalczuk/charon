@@ -2,6 +2,7 @@ package charon
 
 import (
 	"encoding/json"
+	"reflect"
 	"testing"
 )
 
@@ -23,6 +24,7 @@ func TestPermission_Split(t *testing.T) {
 		subsystem, module, action string
 		permission                Permission
 	}{
+		{},
 		{
 			subsystem:  "charon",
 			module:     "user",
@@ -170,5 +172,13 @@ func TestPermissions_Contains_many(t *testing.T) {
 	permissions = Permissions{UserCanCreate, UserCanDeleteAsOwner}
 	if c := permissions.Contains(UserCanModifyAsOwner, UserCanDeleteAsStranger); c {
 		t.Errorf("none of privided permission are present but was found")
+	}
+}
+
+func TestPermissions_Strings(t *testing.T) {
+	got := Permissions{UserCanCreate, UserCanDeleteAsOwner}.Strings()
+	expected := []string{UserCanCreate.String(), UserCanDeleteAsOwner.String()}
+	if !reflect.DeepEqual(got, expected) {
+		t.Errorf("output does not match, expected %v but got %v", expected, got)
 	}
 }

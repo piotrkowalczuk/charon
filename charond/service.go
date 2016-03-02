@@ -74,7 +74,7 @@ func initMnemosyne(address string, logger log.Logger) (*grpc.ClientConn, mnemosy
 }
 
 func initPasswordHasher(cost int, logger log.Logger) charon.PasswordHasher {
-	bh, err := charon.NewBcryptPasswordHasher(cost, logger)
+	bh, err := charon.NewBCryptPasswordHasher(cost)
 	if err != nil {
 		sklog.Fatal(logger, err)
 	}
