@@ -950,7 +950,7 @@ var (
 type groupPermissionsEntity struct {
 	CreatedAt           time.Time
 	CreatedBy           nilt.Int64
-	GroupID             nilt.Int64
+	GroupID             int64
 	PermissionAction    string
 	PermissionModule    string
 	PermissionSubsystem string
@@ -1101,7 +1101,7 @@ type userPermissionsEntity struct {
 	PermissionSubsystem string
 	UpdatedAt           *time.Time
 	UpdatedBy           nilt.Int64
-	UserID              nilt.Int64
+	UserID              int64
 	User                *userEntity
 	Permission          *permissionEntity
 	Author              *userEntity
@@ -1282,7 +1282,7 @@ CREATE TABLE IF NOT EXISTS charon.user_groups (
 CREATE TABLE IF NOT EXISTS charon.group_permissions (
 	created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
 	created_by BIGINT,
-	group_id BIGINT,
+	group_id BIGINT NOT NULL,
 	permission_action TEXT NOT NULL,
 	permission_module TEXT NOT NULL,
 	permission_subsystem TEXT NOT NULL,
@@ -1304,7 +1304,7 @@ CREATE TABLE IF NOT EXISTS charon.user_permissions (
 	permission_subsystem TEXT NOT NULL,
 	updated_at TIMESTAMPTZ,
 	updated_by BIGINT,
-	user_id BIGINT,
+	user_id BIGINT NOT NULL,
 
 	CONSTRAINT "charon.user_permissions_created_by_fkey" FOREIGN KEY (created_by) REFERENCES charon.user (id),
 	CONSTRAINT "charon.user_permissions_updated_by_fkey" FOREIGN KEY (updated_by) REFERENCES charon.user (id),

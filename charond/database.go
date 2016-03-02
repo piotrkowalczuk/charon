@@ -6,26 +6,27 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/pqcomp"
 )
 
 type repositories struct {
-	user            UserRepository
-	userGroups      UserGroupsRepository
-	userPermissions UserPermissionsRepository
-	permission      PermissionRepository
-	group           GroupRepository
-	groupPermissions           GroupPermissionsRepository
+	user             UserRepository
+	userGroups       UserGroupsRepository
+	userPermissions  UserPermissionsRepository
+	permission       PermissionRepository
+	group            GroupRepository
+	groupPermissions GroupPermissionsRepository
 }
 
 func newRepositories(db *sql.DB) repositories {
 	return repositories{
-		user :newUserRepository(db),
-		userGroups : newUserGroupsRepository(db),
-		userPermissions: newUserPermissionsRepository(db),
-		permission: newPermissionRepository(db),
-		group : newGroupRepository(db),
-		groupPermissions : newGroupPermissionsRepository(db),
+		user:             newUserRepository(db),
+		userGroups:       newUserGroupsRepository(db),
+		userPermissions:  newUserPermissionsRepository(db),
+		permission:       newPermissionRepository(db),
+		group:            newGroupRepository(db),
+		groupPermissions: newGroupPermissionsRepository(db),
 	}
 }
 
@@ -140,13 +141,24 @@ func insertQueryComp(db *sql.DB, table string, insert *pqcomp.Composer, col []st
 	return db.QueryRow(b.String(), insert.Args()...)
 }
 
-
 func existsManyToManyQuery(table, column1, column2 string) string {
 	return `
 		SELECT EXISTS(
-			SELECT 1 FROM  ` + table + ` AS ug
-			WHERE ug.` + column1+ ` = $1
-				AND ug.` + column2+ `= $2
+			SELECT 1 FROM  ` + table + ` AS t
+			WHERE t.` + column1 + ` = $1
+				AND t.` + column2 + `= $2
+		)
+	`
+}
+
+func isGrantedQuery(table, columnID, columnSubsystem, columnModule, columnAction string) string {
+	return `
+		SELECT EXISTS(
+			SELECT 1 FROM  ` + table + ` AS t
+			WHERE t.` + columnID + ` = $1
+				AND t.` + columnSubsystem + `= $2
+				AND t.` + columnModule + `= $3
+				AND t.` + columnAction + `= $4
 		)
 	`
 }
@@ -179,13 +191,13 @@ func setManyToMany(db *sql.DB, table, column1, column2 string, id int64, ids []i
 		if err != nil {
 			return 0, 0, err
 		}
-		exists, err = tx.Prepare(existsManyToManyQuery(table, column1,column2))
+		exists, err = tx.Prepare(existsManyToManyQuery(table, column1, column2))
 		if err != nil {
 			return 0, 0, err
 		}
 
 		in = make([]int64, 0, len(ids))
-		InsertLoop:
+	InsertLoop:
 		for _, idd := range ids {
 			if err = exists.QueryRow(id, idd).Scan(&granted); err != nil {
 				return 0, 0, err
@@ -221,6 +233,105 @@ func setManyToMany(db *sql.DB, table, column1, column2 string, id int64, ids []i
 	for delete.Next() {
 		if delete.First() {
 			fmt.Fprint(query, " AND "+column2+" NOT IN (")
+		} else {
+			fmt.Fprint(query, ", ")
+
+		}
+		fmt.Fprintf(query, "%s", delete.PlaceHolder())
+	}
+	if len(in) > 0 {
+		fmt.Fprint(query, ")")
+	}
+
+	res, err = tx.Exec(query.String(), delete.Args()...)
+	if err != nil {
+		return 0, 0, err
+	}
+	deleted, err = res.RowsAffected()
+	if err != nil {
+		return 0, 0, err
+	}
+
+	return inserted, deleted, nil
+}
+
+func setPermissions(db *sql.DB, table, columnID, columnSubsystem, columnModule, columnAction string, id int64, permissions charon.Permissions) (int64, int64, error) {
+	var (
+		err                    error
+		aff, inserted, deleted int64
+		tx                     *sql.Tx
+		insert, exists         *sql.Stmt
+		res                    sql.Result
+		in                     []charon.Permission
+		granted                bool
+	)
+
+	tx, err = db.Begin()
+	if err != nil {
+		return 0, 0, err
+	}
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		} else {
+			tx.Commit()
+		}
+	}()
+
+	var (
+		subsystem, module, action string
+	)
+
+	if len(permissions) > 0 {
+		insert, err = tx.Prepare(`INSERT INTO ` + table + ` (` + columnID + `, ` + columnSubsystem + `, ` + columnModule + `,` + columnAction + `) VALUES ($1, $2, $3, $4)`)
+		if err != nil {
+			return 0, 0, err
+		}
+		exists, err = tx.Prepare(isGrantedQuery(table, columnID, columnSubsystem, columnModule, columnAction))
+		if err != nil {
+			return 0, 0, err
+		}
+
+		in = make(charon.Permissions, 0, len(permissions))
+	InsertLoop:
+		for _, p := range permissions {
+			subsystem, module, action = p.Split()
+
+			if err = exists.QueryRow(id, subsystem, module, action).Scan(&granted); err != nil {
+				return 0, 0, err
+			}
+			// Given combination already exists, ignore.
+			if granted {
+				in = append(in, p)
+				granted = false
+				continue InsertLoop
+			}
+			res, err = insert.Exec(id, subsystem, module, action)
+			if err != nil {
+				return 0, 0, err
+			}
+
+			aff, err = res.RowsAffected()
+			if err != nil {
+				return 0, 0, err
+			}
+			inserted += aff
+
+			in = append(in, p)
+		}
+	}
+
+	delete := pqcomp.New(1, len(in))
+	delete.AddArg(id)
+	for _, p := range in {
+		subsystem, module, action = p.Split()
+		delete.AddExpr("-", "IN", fmt.Sprintf("(%s, %s, %s)", subsystem, module, action))
+	}
+
+	query := bytes.NewBufferString(`DELETE FROM ` + table + ` WHERE ` + columnID + ` = $1`)
+	for delete.Next() {
+		if delete.First() {
+			fmt.Fprint(query, " AND ("+columnSubsystem+", "+columnModule+", "+columnAction+") NOT IN (")
 		} else {
 			fmt.Fprint(query, ", ")
 

@@ -39,34 +39,6 @@ var (
 	}
 )
 
-func TestUserPermissionsRepository_IsGranted(t *testing.T) {
-	suite := setupPostgresSuite(t)
-	defer suite.teardown(t)
-
-	for ur := range loadUserFixtures(t, suite.repository.user, userPermissionsTestFixtures) {
-		for pr := range loadPermissionFixtures(t, suite.repository.permission, ur.given.Permission) {
-			add := []*userPermissionsEntity{{
-				UserID:       ur.got.ID,
-				PermissionID: pr.got.ID,
-			}}
-			for _ = range loadUserPermissionsFixtures(t, suite.repository.userPermissions, add) {
-				exists, err := suite.repository.userPermissions.IsGranted(ur.given.ID, pr.given.Permission())
-
-				if err != nil {
-					t.Errorf("user permission cannot be found, unexpected error: %s", err.Error())
-					continue
-				}
-
-				if !exists {
-					t.Errorf("user permission not found for user %d and permission %d", ur.given.ID, pr.given.ID)
-				} else {
-					t.Logf("user permission relationship exists for user %d and permission %d", ur.given.ID, pr.given.ID)
-				}
-			}
-		}
-	}
-}
-
 type userPermissionsFixtures struct {
 	got, given userPermissionsEntity
 }

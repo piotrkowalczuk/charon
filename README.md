@@ -46,13 +46,13 @@ $ charonctl register -noauth -r.username="j.snow@gmail.com" -r.password=123 -r.f
     - [x] create
     - [ ] set permissions
     - [ ] list permissions
-- [ ] User
+- [x] User
     - [x] get
     - [x] list
     - [x] modify
     - [x] delete
     - [x] create
-    - [ ] set permissions
+    - [x] set permissions
     - [x] set groups
     - [x] list permissions
     - [x] list groups

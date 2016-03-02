@@ -46,6 +46,8 @@ type GroupRepository interface {
 	UpdateOneByID(id, updatedBy int64, name, description *nilt.String) (*groupEntity, error)
 	// DeleteOneByID ...
 	DeleteOneByID(id int64) (int64, error)
+	// IsGranted ...
+	IsGranted(id int64, permission charon.Permission) (bool, error)
 }
 
 func newGroupRepository(dbPool *sql.DB) GroupRepository {
@@ -210,4 +212,21 @@ func (gr *groupRepository) DeleteOneByID(id int64) (int64, error) {
 	}
 
 	return res.RowsAffected()
+}
+
+// IsGranted implements GroupRepository interface.
+func (gr *groupRepository) IsGranted(id int64, p charon.Permission) (bool, error) {
+	var exists bool
+	subsystem, module, action := p.Split()
+	if err := gr.db.QueryRow(isGrantedQuery(
+		tableGroupPermissions,
+		tableGroupPermissionsColumnGroupID,
+		tableGroupPermissionsColumnPermissionSubsystem,
+		tableGroupPermissionsColumnPermissionModule,
+		tableGroupPermissionsColumnPermissionAction,
+	), id, subsystem, module, action).Scan(&exists); err != nil {
+		return false, err
+	}
+
+	return exists, nil
 }

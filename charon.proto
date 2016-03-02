@@ -208,9 +208,9 @@ message SetUserPermissionsRequest {
 }
 
 message SetUserPermissionsResponse {
-    repeated string created = 1;
-    repeated string removed = 2;
-    repeated string untouched = 3;
+	int64 created = 1;
+	int64 removed = 2;
+	int64 untouched = 3;
 }
 
 message ListUserGroupsRequest {
@@ -336,9 +336,9 @@ message SetGroupPermissionsRequest {
 }
 
 message SetGroupPermissionsResponse {
-    repeated string created = 1;
-    repeated string removed = 2;
-    repeated string untouched = 3;
+	int64 created = 1;
+	int64 removed = 2;
+	int64 untouched = 3;
 }
 
 message ListGroupPermissionsRequest {

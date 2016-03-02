@@ -80,6 +80,8 @@ type UserRepository interface {
 		username nilt.String,
 	) (*userEntity, error)
 	RegistrationConfirmation(id int64, confirmationToken string) error
+	IsGranted(id int64, permission charon.Permission) (bool, error)
+	SetPermissions(id int64, permissions ...charon.Permission) (int64, int64, error)
 }
 
 func newUserRepository(dbPool *sql.DB) UserRepository {
@@ -271,4 +273,30 @@ func (ur *userRepository) Exists(userID int64) (bool, error) {
 	}
 
 	return exists, nil
+}
+
+// IsGranted implements UserRepository interface.
+func (ur *userRepository) IsGranted(id int64, p charon.Permission) (bool, error) {
+	var exists bool
+	subsystem, module, action := p.Split()
+	if err := ur.db.QueryRow(isGrantedQuery(
+		tableUserPermissions,
+		tableUserPermissionsColumnUserID,
+		tableUserPermissionsColumnPermissionSubsystem,
+		tableUserPermissionsColumnPermissionModule,
+		tableUserPermissionsColumnPermissionAction,
+	), id, subsystem, module, action).Scan(&exists); err != nil {
+		return false, err
+	}
+
+	return exists, nil
+}
+
+// SetPermissions implements UserRepository interface.
+func (ur *userRepository) SetPermissions(id int64, p ...charon.Permission) (int64, int64, error) {
+	return setPermissions(ur.db, tableUserPermissions,
+		tableUserPermissionsColumnUserID,
+		tableUserPermissionsColumnPermissionSubsystem,
+		tableUserPermissionsColumnPermissionModule,
+		tableUserPermissionsColumnPermissionAction, id, p)
 }

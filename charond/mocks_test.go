@@ -172,6 +172,27 @@ func (_m *MockGroupRepository) DeleteOneByID(id int64) (int64, error) {
 	return r0, r1
 }
 
+// IsGranted provides a mock function with given fields: id, permission
+func (_m *MockGroupRepository) IsGranted(id int64, permission charon.Permission) (bool, error) {
+	ret := _m.Called(id, permission)
+
+	var r0 bool
+	if rf, ok := ret.Get(0).(func(int64, charon.Permission) bool); ok {
+		r0 = rf(id, permission)
+	} else {
+		r0 = ret.Get(0).(bool)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(int64, charon.Permission) error); ok {
+		r1 = rf(id, permission)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 type MockGroupPermissionsRepository struct {
 	mock.Mock
 }
@@ -197,76 +218,6 @@ func (_m *MockGroupPermissionsRepository) Insert(entity *groupPermissionsEntity)
 	}
 
 	return r0, r1
-}
-
-// IsGranted provides a mock function with given fields: userID, permission
-func (_m *MockGroupPermissionsRepository) IsGranted(userID int64, permission charon.Permission) (bool, error) {
-	ret := _m.Called(userID, permission)
-
-	var r0 bool
-	if rf, ok := ret.Get(0).(func(int64, charon.Permission) bool); ok {
-		r0 = rf(userID, permission)
-	} else {
-		r0 = ret.Get(0).(bool)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(int64, charon.Permission) error); ok {
-		r1 = rf(userID, permission)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// Exists provides a mock function with given fields: userID, permissionID
-func (_m *MockGroupPermissionsRepository) Exists(userID int64, permissionID int64) (bool, error) {
-	ret := _m.Called(userID, permissionID)
-
-	var r0 bool
-	if rf, ok := ret.Get(0).(func(int64, int64) bool); ok {
-		r0 = rf(userID, permissionID)
-	} else {
-		r0 = ret.Get(0).(bool)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(int64, int64) error); ok {
-		r1 = rf(userID, permissionID)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// Set provides a mock function with given fields: userID, permissionIDs
-func (_m *MockGroupPermissionsRepository) Set(userID int64, permissionIDs []int64) (int64, int64, error) {
-	ret := _m.Called(userID, permissionIDs)
-
-	var r0 int64
-	if rf, ok := ret.Get(0).(func(int64, []int64) int64); ok {
-		r0 = rf(userID, permissionIDs)
-	} else {
-		r0 = ret.Get(0).(int64)
-	}
-
-	var r1 int64
-	if rf, ok := ret.Get(1).(func(int64, []int64) int64); ok {
-		r1 = rf(userID, permissionIDs)
-	} else {
-		r1 = ret.Get(1).(int64)
-	}
-
-	var r2 error
-	if rf, ok := ret.Get(2).(func(int64, []int64) error); ok {
-		r2 = rf(userID, permissionIDs)
-	} else {
-		r2 = ret.Error(2)
-	}
-
-	return r0, r1, r2
 }
 
 type MockPermissionRepository struct {
@@ -730,6 +681,55 @@ func (_m *MockUserRepository) RegistrationConfirmation(id int64, confirmationTok
 	return r0
 }
 
+// IsGranted provides a mock function with given fields: id, permission
+func (_m *MockUserRepository) IsGranted(id int64, permission charon.Permission) (bool, error) {
+	ret := _m.Called(id, permission)
+
+	var r0 bool
+	if rf, ok := ret.Get(0).(func(int64, charon.Permission) bool); ok {
+		r0 = rf(id, permission)
+	} else {
+		r0 = ret.Get(0).(bool)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(int64, charon.Permission) error); ok {
+		r1 = rf(id, permission)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// SetPermissions provides a mock function with given fields: id, permissions
+func (_m *MockUserRepository) SetPermissions(id int64, permissions ...charon.Permission) (int64, int64, error) {
+	ret := _m.Called(id, permissions)
+
+	var r0 int64
+	if rf, ok := ret.Get(0).(func(int64, ...charon.Permission) int64); ok {
+		r0 = rf(id, permissions...)
+	} else {
+		r0 = ret.Get(0).(int64)
+	}
+
+	var r1 int64
+	if rf, ok := ret.Get(1).(func(int64, ...charon.Permission) int64); ok {
+		r1 = rf(id, permissions...)
+	} else {
+		r1 = ret.Get(1).(int64)
+	}
+
+	var r2 error
+	if rf, ok := ret.Get(2).(func(int64, ...charon.Permission) error); ok {
+		r2 = rf(id, permissions...)
+	} else {
+		r2 = ret.Error(2)
+	}
+
+	return r0, r1, r2
+}
+
 type MockUserGroupsRepository struct {
 	mock.Mock
 }
@@ -854,74 +854,4 @@ func (_m *MockUserPermissionsRepository) Insert(entity *userPermissionsEntity) (
 	}
 
 	return r0, r1
-}
-
-// IsGranted provides a mock function with given fields: userID, permission
-func (_m *MockUserPermissionsRepository) IsGranted(userID int64, permission charon.Permission) (bool, error) {
-	ret := _m.Called(userID, permission)
-
-	var r0 bool
-	if rf, ok := ret.Get(0).(func(int64, charon.Permission) bool); ok {
-		r0 = rf(userID, permission)
-	} else {
-		r0 = ret.Get(0).(bool)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(int64, charon.Permission) error); ok {
-		r1 = rf(userID, permission)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// Exists provides a mock function with given fields: userID, permissionID
-func (_m *MockUserPermissionsRepository) Exists(userID int64, permissionID int64) (bool, error) {
-	ret := _m.Called(userID, permissionID)
-
-	var r0 bool
-	if rf, ok := ret.Get(0).(func(int64, int64) bool); ok {
-		r0 = rf(userID, permissionID)
-	} else {
-		r0 = ret.Get(0).(bool)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(int64, int64) error); ok {
-		r1 = rf(userID, permissionID)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// Set provides a mock function with given fields: userID, permissionIDs
-func (_m *MockUserPermissionsRepository) Set(userID int64, permissionIDs []int64) (int64, int64, error) {
-	ret := _m.Called(userID, permissionIDs)
-
-	var r0 int64
-	if rf, ok := ret.Get(0).(func(int64, []int64) int64); ok {
-		r0 = rf(userID, permissionIDs)
-	} else {
-		r0 = ret.Get(0).(int64)
-	}
-
-	var r1 int64
-	if rf, ok := ret.Get(1).(func(int64, []int64) int64); ok {
-		r1 = rf(userID, permissionIDs)
-	} else {
-		r1 = ret.Get(1).(int64)
-	}
-
-	var r2 error
-	if rf, ok := ret.Get(2).(func(int64, []int64) error); ok {
-		r2 = rf(userID, permissionIDs)
-	} else {
-		r2 = ret.Error(2)
-	}
-
-	return r0, r1, r2
 }
