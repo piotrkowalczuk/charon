@@ -68,7 +68,8 @@ func (h *handler) retrieveActor(ctx context.Context) (act *actor, err error) {
 		if peer, ok := peer.FromContext(ctx); ok {
 			if strings.HasPrefix(peer.Addr.String(), "127.0.0.1") {
 				return &actor{
-					user: &userEntity{},
+					user:  &userEntity{},
+					isLocal: true,
 				}, nil
 			}
 		}

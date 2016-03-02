@@ -26,10 +26,7 @@ type actor struct {
 	user        *userEntity
 	session     *mnemosyne.Session
 	permissions charon.Permissions
-}
-
-func (a *actor) isLocalhost() bool {
-	return a.user == nil && a.session == nil && a.permissions == nil
+	isLocal     bool
 }
 
 // TODO: refactor

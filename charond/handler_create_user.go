@@ -24,6 +24,15 @@ func (cuh *createUserHandler) handle(ctx context.Context, req *charon.CreateUser
 		return nil, err
 	}
 
+	if act.isLocal && !act.user.IsSuperuser {
+		count, err := cuh.repository.user.Count()
+		if err != nil {
+			return nil, err
+		}
+		if count > 0 {
+			return nil, grpc.Errorf(codes.AlreadyExists, "charond: initial superuser account already exists")
+		}
+	}
 	if len(req.SecurePassword) == 0 {
 		req.SecurePassword, err = cuh.hasher.Hash([]byte(req.PlainPassword))
 		if err != nil {
@@ -56,7 +65,7 @@ func (cuh *createUserHandler) handle(ctx context.Context, req *charon.CreateUser
 }
 
 func (cuh *createUserHandler) firewall(req *charon.CreateUserRequest, act *actor) error {
-	if act.isLocalhost() || act.user.IsSuperuser {
+	if act.isLocal || act.user.IsSuperuser {
 		return nil
 	}
 	if req.IsSuperuser.BoolOr(false) {

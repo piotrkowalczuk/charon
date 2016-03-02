@@ -48,6 +48,13 @@ func TestCreateUserHandler_firewall_success(t *testing.T) {
 				user: &userEntity{ID: 2, IsSuperuser: true},
 			},
 		},
+		{
+			req: charon.CreateUserRequest{},
+			act: actor{
+				user:    &userEntity{},
+				isLocal: true,
+			},
+		},
 	}
 
 	h := &createUserHandler{}
@@ -63,6 +70,12 @@ func TestCreateUserHandler_firewall_failure(t *testing.T) {
 		req charon.CreateUserRequest
 		act actor
 	}{
+		{
+			req: charon.CreateUserRequest{},
+			act: actor{
+				user: &userEntity{},
+			},
+		},
 		{
 			req: charon.CreateUserRequest{},
 			act: actor{

@@ -3,12 +3,28 @@ Charon [![GoDoc](https://godoc.org/github.com/piotrkowalczuk/charon?status.svg)]
 
 <img src="/data/logo/charon.png?raw=true" width="300">
 
-## Documentation
-Documentation is available on [charon.readme.io](http://charon.readme.io).
+## Quick Start
+
+### Installation
+
+```bash
+$ go install github.com/piotrkowalczuk/charon/charond
+$ go install github.com/piotrkowalczuk/charon/charonctl
+```
+
+### Superuser
+
+```bash
+$ charonctl register -noauth -r.username="j.snow@gmail.com" -r.password=123 -r.firstname=John -r.lastname=Snow
+```
+
 
 ## Contribution
 
-## TODO
+### Documentation
+Documentation is available on [charon.readme.io](http://charon.readme.io).
+
+### TODO
 - [x] Auth
     - [x] login
     - [x] logout
