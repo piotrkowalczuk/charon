@@ -21,8 +21,11 @@ $ charonctl register -noauth -r.username="j.snow@gmail.com" -r.password=123 -r.f
 
 ## Contribution
 
+@TODO
+
 ### Documentation
-Documentation is available on [charon.readme.io](http://charon.readme.io).
+
+@TODO
 
 ### TODO
 - [x] Auth
