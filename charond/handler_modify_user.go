@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/nilt"
+	"github.com/piotrkowalczuk/pqt"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -51,7 +52,12 @@ func (muh *modifyUserHandler) handle(ctx context.Context, req *charon.ModifyUser
 		nilString(req.Username),
 	)
 	if err != nil {
-		return nil, mapUserError(err)
+		switch pqt.ErrorConstraint(err) {
+		case tableUserConstraintUsernameUnique:
+			return nil, grpc.Errorf(codes.AlreadyExists, charon.ErrDescUserWithUsernameExists)
+		default:
+			return nil, err
+		}
 	}
 
 	return &charon.ModifyUserResponse{

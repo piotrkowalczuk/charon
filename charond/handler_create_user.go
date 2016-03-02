@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/pborman/uuid"
 	"github.com/piotrkowalczuk/charon"
+	"github.com/piotrkowalczuk/pqt"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -56,7 +57,14 @@ func (cuh *createUserHandler) handle(ctx context.Context, req *charon.CreateUser
 		req.IsConfirmed.BoolOr(false),
 	)
 	if err != nil {
-		return nil, mapUserError(err)
+		switch pqt.ErrorConstraint(err) {
+		case tableUserConstraintPrimaryKey:
+			return nil, grpc.Errorf(codes.AlreadyExists, charon.ErrDescUserWithIDExists)
+		case tableUserConstraintUsernameUnique:
+			return nil, grpc.Errorf(codes.AlreadyExists, charon.ErrDescUserWithUsernameExists)
+		default:
+			return nil, err
+		}
 	}
 
 	return &charon.CreateUserResponse{

@@ -4,10 +4,7 @@ import (
 	"github.com/go-kit/kit/log"
 	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/mnemosyne"
-	"github.com/piotrkowalczuk/pqcnstr"
 	"golang.org/x/net/context"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/peer"
 )
@@ -27,18 +24,6 @@ type actor struct {
 	session     *mnemosyne.Session
 	permissions charon.Permissions
 	isLocal     bool
-}
-
-// TODO: refactor
-func mapUserError(err error) error {
-	switch pqcnstr.FromError(err) {
-	case tableUserConstraintPrimaryKey:
-		return grpc.Errorf(codes.AlreadyExists, charon.ErrDescUserWithIDExists)
-	case tableUserConstraintUsernameUnique:
-		return grpc.Errorf(codes.AlreadyExists, charon.ErrDescUserWithUsernameExists)
-	default:
-		return err
-	}
 }
 
 func (rs *rpcServer) loggerBackground(ctx context.Context, keyval ...interface{}) log.Logger {
