@@ -18,7 +18,6 @@ $ go install github.com/piotrkowalczuk/charon/charonctl
 $ charonctl register -noauth -r.username="j.snow@gmail.com" -r.password=123 -r.firstname=John -r.lastname=Snow
 ```
 
-
 ## Contribution
 
 @TODO
