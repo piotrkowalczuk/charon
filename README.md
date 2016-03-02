@@ -35,6 +35,6 @@ Documentation is available on [charon.readme.io](http://charon.readme.io).
     - [x] delete
     - [x] create
     - [ ] set permissions
-    - [ ] set groups
+    - [x] set groups
     - [x] list permissions
     - [x] list groups
