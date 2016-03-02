@@ -16,12 +16,10 @@ env:
   CHARON_POSTGRES_RETRY: 1
   CHARON_PASSWORD_STRATEGY: bcrypt
   CHARON_PASSWORD_BCRYPT_COST: 8
-before_script:
-- psql -c 'create database travis_ci_test;' -U postgres
-before_install:
-- pip install --user codecov
 install:
 - make get
+before_script:
+- psql -c 'create database travis_ci_test;' -U postgres
 script:
 - make build
 - make test-unit
