@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-const VERSION = "0.1.0"
+const VERSION = "0.1.1"
 
 type configuration struct {
 	host      string
