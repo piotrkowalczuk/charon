@@ -37,17 +37,40 @@ func newPermissionRepository(dbPool *sql.DB) *permissionRepository {
 
 // FindByUserID implements PermissionRepository interface.
 func (pr *permissionRepository) FindByUserID(userID int64) ([]*permissionEntity, error) {
-	query := `
+	// TODO: does it work?
+	return pr.findBy(`
 		SELECT DISTINCT ON (p.id)
-			` + columns(tablePermissionColumns, "p") + `
-		FROM ` + pr.table + ` AS p
-		LEFT JOIN ` + tableUserPermissions + ` AS up ON up.permission_id = p.id AND up.user_id = $1
-		LEFT JOIN ` + tableUserGroups + ` AS ug ON ug.user_id = $1
-		LEFT JOIN ` + tableGroupPermissions + ` AS gp ON gp.permission_id = p.id AND gp.group_id = ug.group_id
-		WHERE up.user_id = $1 OR ug.user_id = $1
-	`
+			`+columns(tablePermissionColumns, "p")+`
+		FROM `+pr.table+` AS p
+		LEFT JOIN `+tableUserPermissions+` AS up
+			ON up.`+tableUserPermissionsColumnPermissionSubsystem+` = p.`+tablePermissionColumnSubsystem+`
+			ON up.`+tableUserPermissionsColumnPermissionModule+` = p.`+tablePermissionColumnModule+`
+			ON up.`+tableUserPermissionsColumnPermissionAction+` = p.`+tablePermissionColumnAction+`
+			AND up.`+tableUserPermissionsColumnUserID+` = $1
+		LEFT JOIN `+tableUserGroups+` AS ug ON ug.`+tableUserGroupsColumnUserID+` = $1
+		LEFT JOIN `+tableGroupPermissions+` AS gp 
+			ON gp.`+tableGroupPermissionsColumnPermissionSubsystem+` = p.`+tablePermissionColumnSubsystem+`
+			ON gp.`+tableGroupPermissionsColumnPermissionModule+` = p.`+tablePermissionColumnModule+`
+			ON gp.`+tableGroupPermissionsColumnPermissionAction+` = p.`+tablePermissionColumnAction+` 
+			AND gp.`+tableGroupPermissionsColumnGroupID+` = ug.`+tableUserGroupsColumnGroupID+`
+		WHERE up.`+tableUserPermissionsColumnUserID+` = $1 OR ug.`+tableUserGroupsColumnUserID+` = $1
+	`, userID)
+}
 
-	rows, err := pr.db.Query(query, userID)
+// FindByGroupID implements PermissionRepository interface.
+func (pr *permissionRepository) FindByGroupID(userID int64) ([]*permissionEntity, error) {
+	// TODO: does it work?
+	return pr.findBy(`
+		SELECT DISTINCT ON (p.id)
+			`+columns(tablePermissionColumns, "p")+`
+		FROM `+pr.table+` AS p
+		LEFT JOIN `+tableGroupPermissions+` AS gp ON gp.permission_id = p.id AND gp.group_id = ug.group_id
+		WHERE up.user_id = $1 OR ug.user_id = $1
+	`, userID)
+}
+
+func (pr *permissionRepository) findBy(query string, args ...interface{}) ([]*permissionEntity, error) {
+	rows, err := pr.db.Query(query, args...)
 	if err != nil {
 		return nil, err
 	}
