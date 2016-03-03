@@ -7,6 +7,7 @@ import (
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"github.com/piotrkowalczuk/nilt"
 )
 
 type createUserHandler struct {
@@ -33,6 +34,8 @@ func (cuh *createUserHandler) handle(ctx context.Context, req *charon.CreateUser
 		if count > 0 {
 			return nil, grpc.Errorf(codes.AlreadyExists, "charond: initial superuser account already exists")
 		}
+
+		req.IsSuperuser = &nilt.Bool{Bool: true, Valid: true}d
 	}
 	if len(req.SecurePassword) == 0 {
 		req.SecurePassword, err = cuh.hasher.Hash([]byte(req.PlainPassword))
