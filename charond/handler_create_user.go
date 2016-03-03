@@ -3,11 +3,11 @@ package main
 import (
 	"github.com/pborman/uuid"
 	"github.com/piotrkowalczuk/charon"
+	"github.com/piotrkowalczuk/nilt"
 	"github.com/piotrkowalczuk/pqt"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
-	"github.com/piotrkowalczuk/nilt"
 )
 
 type createUserHandler struct {
@@ -35,7 +35,7 @@ func (cuh *createUserHandler) handle(ctx context.Context, req *charon.CreateUser
 			return nil, grpc.Errorf(codes.AlreadyExists, "charond: initial superuser account already exists")
 		}
 
-		req.IsSuperuser = &nilt.Bool{Bool: true, Valid: true}d
+		req.IsSuperuser = &nilt.Bool{Bool: true, Valid: true}
 	}
 	if len(req.SecurePassword) == 0 {
 		req.SecurePassword, err = cuh.hasher.Hash([]byte(req.PlainPassword))
