@@ -97,7 +97,7 @@ func (rs *rpcServer) IsAuthenticated(ctx context.Context, req *charon.IsAuthenti
 	h.addRequest(1)
 
 	resp, err := h.handle(ctx, req)
-	h.handler.handle(err, "subject has been logged out")
+	h.handler.handle(err, "subject authentication status has been checked")
 
 	return resp, err
 }
