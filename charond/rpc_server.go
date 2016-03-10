@@ -29,7 +29,7 @@ type actor struct {
 func (rs *rpcServer) loggerBackground(ctx context.Context, keyval ...interface{}) log.Logger {
 	l := log.NewContext(rs.logger).With(keyval...)
 	if md, ok := metadata.FromContext(ctx); ok {
-		if rid, ok := md["request_id"]; ok && len(rid) < 1 {
+		if rid, ok := md["request_id"]; ok && len(rid) >= 1 {
 			l = l.With("request_id", rid[0])
 		}
 	}
