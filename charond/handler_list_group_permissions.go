@@ -1,10 +1,11 @@
 package main
 
 import (
+	"database/sql"
+
 	"github.com/piotrkowalczuk/charon"
+	"github.com/piotrkowalczuk/sklog"
 	"golang.org/x/net/context"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
 )
 
 type listGroupPermissionsHandler struct {
@@ -17,9 +18,9 @@ func (lgph *listGroupPermissionsHandler) handle(ctx context.Context, req *charon
 	permissions, err := lgph.repository.permission.FindByUserID(req.Id)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			sklog.Debug(lgph.logger, "user permissions retrieved", "user_id", req.Id, "count", len(permissions))
+			sklog.Debug(lgph.logger, "group permissions retrieved", "user_id", req.Id, "count", len(permissions))
 
-			return &charon.ListUserPermissionsResponse{}, nil
+			return &charon.ListGroupPermissionsResponse{}, nil
 		}
 		return nil, err
 	}
@@ -31,7 +32,7 @@ func (lgph *listGroupPermissionsHandler) handle(ctx context.Context, req *charon
 
 	lgph.loggerWith("results", len(permissions))
 
-	return &charon.ListUserPermissionsResponse{
+	return &charon.ListGroupPermissionsResponse{
 		Permissions: perms,
 	}, nil
 }
