@@ -22,7 +22,7 @@ func (dgh *deleteGroupHandler) handle(ctx context.Context, req *charon.DeleteGro
 		return nil, err
 	}
 
-	affected, err := dgh.repository.group.DeleteOneByID(req.Id)
+	affected, err := dgh.repository.group.DeleteByID(req.Id)
 	if err != nil {
 		return nil, err
 	}

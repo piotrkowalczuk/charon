@@ -44,8 +44,8 @@ type GroupRepository interface {
 	Create(createdBy int64, name string, description *nilt.String) (*groupEntity, error)
 	// UpdateOneByID ...
 	UpdateOneByID(id, updatedBy int64, name, description *nilt.String) (*groupEntity, error)
-	// DeleteOneByID ...
-	DeleteOneByID(id int64) (int64, error)
+	// DeleteByID ...
+	DeleteByID(id int64) (int64, error)
 	// IsGranted ...
 	IsGranted(id int64, permission charon.Permission) (bool, error)
 	// SetPermissions ...
@@ -199,21 +199,6 @@ func (gr *groupRepository) UpdateOneByID(id, updatedBy int64, name, description 
 	}
 
 	return &entity, nil
-}
-
-// DeleteByUserID implements GroupRepository interface.
-func (gr *groupRepository) DeleteOneByID(id int64) (int64, error) {
-	query := `
-		DELETE FROM ` + tableGroup + `
-		WHERE id = $1
-	`
-
-	res, err := gr.db.Exec(query, id)
-	if err != nil {
-		return 0, err
-	}
-
-	return res.RowsAffected()
 }
 
 // IsGranted implements GroupRepository interface.
