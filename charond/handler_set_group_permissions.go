@@ -12,5 +12,6 @@ type setGroupPermissionsHandler struct {
 }
 
 func (sgh *setGroupPermissionsHandler) handle(ctx context.Context, req *charon.SetGroupPermissionsRequest) (*charon.SetGroupPermissionsResponse, error) {
+	sgh.loggerWith("group_id", req.GroupId)
 	return nil, grpc.Errorf(codes.Unimplemented, "charond: set group permissions endpoint is not implemented yet")
 }

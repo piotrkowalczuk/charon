@@ -12,6 +12,8 @@ type setUserGroupsHandler struct {
 }
 
 func (sugh *setUserGroupsHandler) handle(ctx context.Context, req *charon.SetUserGroupsRequest) (*charon.SetUserGroupsResponse, error) {
+	sugh.loggerWith("user_id", req.UserId)
+
 	act, err := sugh.retrieveActor(ctx)
 	if err != nil {
 		return nil, err
