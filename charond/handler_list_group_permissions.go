@@ -15,10 +15,10 @@ type listGroupPermissionsHandler struct {
 func (lgph *listGroupPermissionsHandler) handle(ctx context.Context, req *charon.ListGroupPermissionsRequest) (*charon.ListGroupPermissionsResponse, error) {
 	lgph.loggerWith("group_id", req.Id)
 
-	permissions, err := lgph.repository.permission.FindByUserID(req.Id)
+	permissions, err := lgph.repository.permission.FindByGroupID(req.Id)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			sklog.Debug(lgph.logger, "group permissions retrieved", "user_id", req.Id, "count", len(permissions))
+			sklog.Debug(lgph.logger, "group permissions retrieved", "group_id", req.Id, "count", len(permissions))
 
 			return &charon.ListGroupPermissionsResponse{}, nil
 		}

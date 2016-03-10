@@ -293,6 +293,29 @@ func (_m *MockPermissionRepository) FindByUserID(userID int64) ([]*permissionEnt
 	return r0, r1
 }
 
+// FindByGroupID provides a mock function with given fields: groupID
+func (_m *MockPermissionRepository) FindByGroupID(groupID int64) ([]*permissionEntity, error) {
+	ret := _m.Called(groupID)
+
+	var r0 []*permissionEntity
+	if rf, ok := ret.Get(0).(func(int64) []*permissionEntity); ok {
+		r0 = rf(groupID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*permissionEntity)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(int64) error); ok {
+		r1 = rf(groupID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Register provides a mock function with given fields: permissions
 func (_m *MockPermissionRepository) Register(permissions charon.Permissions) (int64, int64, int64, error) {
 	ret := _m.Called(permissions)

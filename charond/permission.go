@@ -23,6 +23,8 @@ type PermissionRepository interface {
 	FindOneByID(id int64) (entity *permissionEntity, err error)
 	// FindByUserID retrieves all permissions for user represented by given id.
 	FindByUserID(userID int64) (entities []*permissionEntity, err error)
+	// FindByGroupID retrieves all permissions for group represented by given id.
+	FindByGroupID(groupID int64) (entities []*permissionEntity, err error)
 	Register(permissions charon.Permissions) (created, untouched, removed int64, err error)
 	Insert(entity *permissionEntity) (*permissionEntity, error)
 }
