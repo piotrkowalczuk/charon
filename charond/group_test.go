@@ -8,6 +8,36 @@ var (
 	groupTestFixtures = []*groupEntity{}
 )
 
+func TestGroupRepository_IsGranted(t *testing.T) {
+	suite := setupPostgresSuite(t)
+	defer suite.teardown(t)
+
+	for ur := range loadGroupFixtures(t, suite.repository.group, groupPermissionsTestFixtures) {
+		for pr := range loadPermissionFixtures(t, suite.repository.permission, ur.given.Permission) {
+			add := []*groupPermissionsEntity{{
+				GroupID:             ur.got.ID,
+				PermissionSubsystem: pr.got.Subsystem,
+				PermissionModule:    pr.got.Module,
+				PermissionAction:    pr.got.Action,
+			}}
+			for _ = range loadGroupPermissionsFixtures(t, suite.repository.groupPermissions, add) {
+				exists, err := suite.repository.group.IsGranted(ur.given.ID, pr.given.Permission())
+
+				if err != nil {
+					t.Errorf("group permission cannot be found, unexpected error: %s", err.Error())
+					continue
+				}
+
+				if !exists {
+					t.Errorf("group permission not found for group %d and permission %d", ur.given.ID, pr.given.ID)
+				} else {
+					t.Logf("group permission relationship exists for group %d and permission %d", ur.given.ID, pr.given.ID)
+				}
+			}
+		}
+	}
+}
+
 type groupFixtures struct {
 	got, given groupEntity
 }

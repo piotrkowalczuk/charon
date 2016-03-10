@@ -11,7 +11,35 @@ type setGroupPermissionsHandler struct {
 	*handler
 }
 
-func (sgh *setGroupPermissionsHandler) handle(ctx context.Context, req *charon.SetGroupPermissionsRequest) (*charon.SetGroupPermissionsResponse, error) {
-	sgh.loggerWith("group_id", req.GroupId)
-	return nil, grpc.Errorf(codes.Unimplemented, "charond: set group permissions endpoint is not implemented yet")
+func (sgph *setGroupPermissionsHandler) handle(ctx context.Context, req *charon.SetGroupPermissionsRequest) (*charon.SetGroupPermissionsResponse, error) {
+	act, err := sgph.retrieveActor(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = sgph.firewall(req, act); err != nil {
+		return nil, err
+	}
+
+	created, removed, err := sgph.repository.group.SetPermissions(req.GroupId, charon.NewPermissions(req.Permissions...)...)
+	if err != nil {
+		return nil, err
+	}
+
+	return &charon.SetGroupPermissionsResponse{
+		Created:   created,
+		Removed:   removed,
+		Untouched: untouched(int64(len(req.Permissions)), created, removed),
+	}, nil
+}
+
+func (sgph *setGroupPermissionsHandler) firewall(req *charon.SetGroupPermissionsRequest, act *actor) error {
+	if act.user.IsSuperuser {
+		return nil
+	}
+	if act.permissions.Contains(charon.GroupPermissionCanCreate) && act.permissions.Contains(charon.GroupPermissionCanDelete) {
+		return nil
+	}
+
+	return grpc.Errorf(codes.PermissionDenied, "charond: group permissions cannot be set, missing permission")
 }

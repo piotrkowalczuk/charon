@@ -48,6 +48,8 @@ type GroupRepository interface {
 	DeleteOneByID(id int64) (int64, error)
 	// IsGranted ...
 	IsGranted(id int64, permission charon.Permission) (bool, error)
+	// SetPermissions ...
+	SetPermissions(id int64, permissions ...charon.Permission) (int64, int64, error)
 }
 
 func newGroupRepository(dbPool *sql.DB) GroupRepository {
@@ -229,4 +231,13 @@ func (gr *groupRepository) IsGranted(id int64, p charon.Permission) (bool, error
 	}
 
 	return exists, nil
+}
+
+// SetPermissions implements GroupRepository interface.
+func (ur *groupRepository) SetPermissions(id int64, p ...charon.Permission) (int64, int64, error) {
+	return setPermissions(ur.db, tableGroupPermissions,
+		tableUserPermissionsColumnUserID,
+		tableUserPermissionsColumnPermissionSubsystem,
+		tableUserPermissionsColumnPermissionModule,
+		tableUserPermissionsColumnPermissionAction, id, p)
 }
