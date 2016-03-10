@@ -1,46 +1,11 @@
 package charon
 
 import (
-	"errors"
-
 	"github.com/piotrkowalczuk/mnemosyne"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 )
-
-const (
-	DecisionUnknown = 0
-	DecisionGranted = 1
-)
-
-var (
-	// ErrMissingTokenInContext can be returned by functions
-	// that are using arbitrary token taken from a context if it missing.
-	ErrMissingTokenInContext = errors.New("charon: missing token in context")
-)
-
-// Error ...
-type Error struct {
-	StatusCode   int
-	InternalCode int
-	Message      string
-	Validation   map[string][]string
-}
-
-// Error ...
-func (e *Error) Error() string {
-	return e.Message
-}
-
-// AddValidation ...
-func (e *Error) AddValidation(key, value string) {
-	if e.Validation[key] == nil {
-		e.Validation[key] = make([]string, 0, 1)
-	}
-
-	e.Validation[key] = append(e.Validation[key], value)
-}
 
 type charonOptions struct {
 	metadata metadata.MD
@@ -56,7 +21,9 @@ func WithMetadata(kv ...string) CharonOption {
 	}
 }
 
-// Charon ...
+// Charon is an interface that describes simplified client.
+// It contains most commonly used methods.
+// For more powerful low level API check RPCClient interface.
 type Charon interface {
 	IsGranted(context.Context, int64, Permission) (bool, error)
 	IsAuthenticated(context.Context, mnemosyne.Token) (bool, error)
