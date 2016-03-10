@@ -3,6 +3,8 @@ package main
 import (
 	"github.com/piotrkowalczuk/charon"
 	"golang.org/x/net/context"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 )
 
 type listUserGroupsHandler struct {
@@ -25,4 +27,15 @@ func (lugh *listUserGroupsHandler) handle(ctx context.Context, req *charon.ListU
 	return &charon.ListUserGroupsResponse{
 		Groups: groups,
 	}, nil
+}
+
+func (lugh *listUserGroupsHandler) firewall(req *charon.ListUserGroupsRequest, act *actor) error {
+	if act.user.IsSuperuser {
+		return nil
+	}
+	if act.permissions.Contains(charon.UserGroupCanRetrieve) {
+		return nil
+	}
+
+	return grpc.Errorf(codes.PermissionDenied, "charond: list of user groups cannot be retrieved, missing permission")
 }
