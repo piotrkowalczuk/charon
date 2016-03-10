@@ -133,7 +133,7 @@ func (ur *userRepository) Count() (n int64, err error) {
 
 func (ur *userRepository) insert(e *userEntity) error {
 	query := `
-		INSERT INTO ` + tableUser + ` (
+		INSERT INTO ` + ur.table + ` (
 			password, username, first_name, last_name, is_active, is_staff,
 			is_superuser, is_confirmed, confirmation_token,
 			created_at, created_by
@@ -158,7 +158,7 @@ func (ur *userRepository) insert(e *userEntity) error {
 
 func (ur *userRepository) RegistrationConfirmation(userID int64, confirmationToken string) error {
 	query := `
-		UPDATE ` + tableUser + `
+		UPDATE ` + ur.table + `
 		SET is_confirmed = true, is_active = true, updated_at = NOW(), confirmation_token = $1
 		WHERE is_confirmed = false AND id = $2 AND confirmation_token = $3;
 	`
@@ -181,7 +181,7 @@ func (ur *userRepository) RegistrationConfirmation(userID int64, confirmationTok
 // ChangePassword ...
 func (ur *userRepository) ChangePassword(userID int64, password string) error {
 	query := `
-		UPDATE ` + tableUser + `
+		UPDATE ` + ur.table + `
 		SET password = $2, updated_at = NOW()
 		WHERE id = $1;
 	`
@@ -207,7 +207,7 @@ func (ur *userRepository) FindOneByUsername(username string) (*userEntity, error
 func (ur *userRepository) findOneBy(fieldName string, value interface{}) (*userEntity, error) {
 	query := `
 		SELECT ` + strings.Join(tableUserColumns, ",") + `
-		FROM ` + tableUser + `
+		FROM ` + ur.table + `
 		WHERE ` + fieldName + ` = $1
 		LIMIT 1
 	`

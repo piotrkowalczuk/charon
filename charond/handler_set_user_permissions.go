@@ -37,7 +37,7 @@ func (suph *setUserPermissionsHandler) firewall(req *charon.SetUserPermissionsRe
 	if act.user.IsSuperuser {
 		return nil
 	}
-	if act.permissions.Contains(charon.UserPermissionCanCreate, charon.UserPermissionCanDelete) {
+	if act.permissions.Contains(charon.UserPermissionCanCreate) && act.permissions.Contains(charon.UserPermissionCanDelete) {
 		return nil
 	}
 
