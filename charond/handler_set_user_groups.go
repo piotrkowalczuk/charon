@@ -39,7 +39,7 @@ func (sugh *setUserGroupsHandler) firewall(req *charon.SetUserGroupsRequest, act
 	if act.user.IsSuperuser {
 		return nil
 	}
-	if act.permissions.Contains(charon.UserGroupCanCreate, charon.UserGroupCanDelete) {
+	if act.permissions.Contains(charon.UserGroupCanCreate) && act.permissions.Contains(charon.UserGroupCanDelete) {
 		return nil
 	}
 
