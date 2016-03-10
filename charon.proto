@@ -203,7 +203,8 @@ message ListUserPermissionsResponse {
 }
 
 message SetUserPermissionsRequest {
-    repeated string permissions = 1;
+	int64 user_id = 1;
+    repeated string permissions = 2;
 }
 
 message SetUserPermissionsResponse {
@@ -330,7 +331,8 @@ message ModifyGroupResponse {
 }
 
 message SetGroupPermissionsRequest {
-    repeated string permissions = 1;
+	int64 group_id = 1;
+    repeated string permissions = 2;
 }
 
 message SetGroupPermissionsResponse {
