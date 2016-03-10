@@ -3,6 +3,9 @@ package main
 import (
 	"database/sql"
 
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+
 	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/sklog"
 	"golang.org/x/net/context"
@@ -35,4 +38,15 @@ func (luph *listUserPermissionsHandler) handle(ctx context.Context, req *charon.
 	return &charon.ListUserPermissionsResponse{
 		Permissions: perms,
 	}, nil
+}
+
+func (luph *listUserPermissionsHandler) firewall(req *charon.ListUserPermissionsRequest, act *actor) error {
+	if act.user.IsSuperuser {
+		return nil
+	}
+	if act.permissions.Contains(charon.UserPermissionCanRetrieve) {
+		return nil
+	}
+
+	return grpc.Errorf(codes.PermissionDenied, "charond: list of user permissions cannot be retrieved, missing permission")
 }
