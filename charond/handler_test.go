@@ -1,4 +1,4 @@
-// +build unit,!postgres
+// +build unit,!postgres,!e2e
 
 package main
 
@@ -54,9 +54,9 @@ func TestHandler(t *testing.T) {
 			sessionMock.On("FromContext", ctx).
 				Once().
 				Return(&mnemosyne.Session{
-				Token:     &tkn,
-				SubjectId: charon.SubjectIDFromInt64(id).String(),
-			}, nil)
+					Token:     &tkn,
+					SubjectId: charon.SubjectIDFromInt64(id).String(),
+				}, nil)
 
 			Convey("When user exists", func() {
 				userRepositoryMock.On("FindOneByID", id).
@@ -67,17 +67,17 @@ func TestHandler(t *testing.T) {
 					permissionRepositoryMock.On("FindByUserID", id).
 						Once().
 						Return([]*permissionEntity{
-						{
-							Subsystem: charon.PermissionCanRetrieve.Subsystem(),
-							Module:    charon.PermissionCanRetrieve.Module(),
-							Action:    charon.PermissionCanRetrieve.Action(),
-						},
-						{
-							Subsystem: charon.UserCanRetrieveAsOwner.Subsystem(),
-							Module:    charon.UserCanRetrieveAsOwner.Module(),
-							Action:    charon.UserCanRetrieveAsOwner.Action(),
-						},
-					}, nil)
+							{
+								Subsystem: charon.PermissionCanRetrieve.Subsystem(),
+								Module:    charon.PermissionCanRetrieve.Module(),
+								Action:    charon.PermissionCanRetrieve.Action(),
+							},
+							{
+								Subsystem: charon.UserCanRetrieveAsOwner.Subsystem(),
+								Module:    charon.UserCanRetrieveAsOwner.Module(),
+								Action:    charon.UserCanRetrieveAsOwner.Action(),
+							},
+						}, nil)
 
 					Convey("Then it should be retrieved without any error", func() {
 						act, err = h.retrieveActor(ctx)

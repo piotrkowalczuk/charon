@@ -1,18 +1,21 @@
+// +build unit,!postgres,!e2e
+
 package charon_test
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
+
 	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/mnemosyne"
 	"golang.org/x/net/context"
-	"fmt"
 )
 
 func ExampleSecurityContext() {
 	token := mnemosyne.NewToken([]byte("0000000001"), []byte("some hash"))
-	subject:= charon.Subject{
-		ID: 1,
+	subject := charon.Subject{
+		ID:       1,
 		Username: "j.kowalski@gmail.com",
 	}
 	ctx := charon.NewSubjectContext(context.Background(), subject)
@@ -20,8 +23,8 @@ func ExampleSecurityContext() {
 	sctx := charon.NewSecurityContext(ctx)
 
 	var (
-		t mnemosyne.Token
-		s charon.Subject
+		t  mnemosyne.Token
+		s  charon.Subject
 		ok bool
 	)
 	if t, ok = sctx.Token(); ok {
@@ -84,7 +87,6 @@ func TestSecurityContext_Token(t *testing.T) {
 		t.Errorf("token should be able retrieved")
 	}
 }
-
 
 func TestSecurityContext_Token_empty(t *testing.T) {
 	sctx := charon.NewSecurityContext(context.Background())

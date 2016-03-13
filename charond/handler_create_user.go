@@ -16,7 +16,7 @@ type createUserHandler struct {
 }
 
 func (cuh *createUserHandler) handle(ctx context.Context, req *charon.CreateUserRequest) (*charon.CreateUserResponse, error) {
-	cuh.loggerWith("username", req.Username, "superuser", req.IsSuperuser.BoolOr(false))
+	cuh.loggerWith("username", req.Username, "is_superuser", req.IsSuperuser.BoolOr(false))
 
 	act, err := cuh.retrieveActor(ctx)
 	if err != nil {

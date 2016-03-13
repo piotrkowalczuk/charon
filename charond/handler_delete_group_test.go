@@ -1,4 +1,4 @@
-// +build unit,!postgres
+// +build unit,!postgres,!e2e
 
 package main
 
