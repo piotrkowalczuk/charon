@@ -34,12 +34,6 @@ type configuration struct {
 	postgres struct {
 		connectionString string
 	}
-	superuser struct {
-		username  string
-		password  string
-		firstName string
-		lastName  string
-	}
 }
 
 func (c *configuration) init() {
@@ -60,12 +54,6 @@ func (c *configuration) init() {
 	flag.IntVar(&c.password.bcrypt.cost, "pwd.bcryptcost", 10, "bcrypt cost, bigget than safer (and longer to create)")
 	flag.StringVar(&c.monitoring.engine, "m.engine", monitoringEnginePrometheus, "monitoring engine")
 	flag.StringVar(&c.postgres.connectionString, "ps.connectionstring", "postgres://localhost:5432?sslmode=disable", "storage postgres connection string")
-
-	// Superuser configuration
-	flag.StringVar(&c.superuser.username, "su.username", "", "superuser username")
-	flag.StringVar(&c.superuser.password, "su.password", "", "superuser password")
-	flag.StringVar(&c.superuser.firstName, "su.firstname", "", "superuser first name")
-	flag.StringVar(&c.superuser.lastName, "su.lastname", "", "superuser last name")
 }
 
 func (c *configuration) parse() {
