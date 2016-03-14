@@ -53,7 +53,7 @@ func setupDatabase(db *sql.DB) error {
 	)
 }
 
-func tearDownDatabase(db *sql.DB) error {
+func teardownDatabase(db *sql.DB) error {
 	return execQueries(
 		db,
 		`DROP SCHEMA IF EXISTS charon CASCADE`,
