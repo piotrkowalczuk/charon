@@ -11,6 +11,7 @@ import (
 	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/mnemosyne"
 	"github.com/piotrkowalczuk/sklog"
+	"github.com/piotrkowalczuk/sklog/ctxgrpc"
 	stdprometheus "github.com/prometheus/client_golang/prometheus"
 	"google.golang.org/grpc"
 )
@@ -23,6 +24,7 @@ const (
 )
 
 func initLogger(adapter, format string, level int, context ...interface{}) log.Logger {
+	sklog.SetContextErrorFunc(ctxgrpc.NewContextErrorGeneric)
 	var l log.Logger
 
 	if adapter != loggerAdapterStdOut {
