@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"database/sql"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -256,6 +257,9 @@ func setManyToMany(db *sql.DB, table, column1, column2 string, id int64, ids []i
 }
 
 func setPermissions(db *sql.DB, table, columnID, columnSubsystem, columnModule, columnAction string, id int64, permissions charon.Permissions) (int64, int64, error) {
+	if len(permissions) == 0 {
+		return 0, 0, errors.New("charond: permission cannot be set, none provided")
+	}
 	var (
 		err                    error
 		aff, inserted, deleted int64
@@ -298,7 +302,7 @@ func setPermissions(db *sql.DB, table, columnID, columnSubsystem, columnModule, 
 			subsystem, module, action = p.Split()
 
 			if err = exists.QueryRow(id, subsystem, module, action).Scan(&granted); err != nil {
-				return 0, 0, err
+				return 0, 0, fmt.Errorf("charond: error on permission check: %s", err.Error())
 			}
 			// Given combination already exists, ignore.
 			if granted {
@@ -308,7 +312,7 @@ func setPermissions(db *sql.DB, table, columnID, columnSubsystem, columnModule, 
 			}
 			res, err = insert.Exec(id, subsystem, module, action)
 			if err != nil {
-				return 0, 0, err
+				return 0, 0, fmt.Errorf("charond: error on permission insert: %s", err.Error())
 			}
 
 			aff, err = res.RowsAffected()
@@ -325,26 +329,31 @@ func setPermissions(db *sql.DB, table, columnID, columnSubsystem, columnModule, 
 	delete.AddArg(id)
 	for _, p := range in {
 		subsystem, module, action = p.Split()
-		delete.AddExpr("-", "IN", fmt.Sprintf("(%s, %s, %s)", subsystem, module, action))
+		delete.AddExpr(columnSubsystem, "IN", subsystem)
+		delete.AddExpr(columnModule, "IN", module)
+		delete.AddExpr(columnAction, "IN", action)
 	}
 
 	query := bytes.NewBufferString(`DELETE FROM ` + table + ` WHERE ` + columnID + ` = $1`)
-	for delete.Next() {
-		if delete.First() {
-			fmt.Fprint(query, " AND ("+columnSubsystem+", "+columnModule+", "+columnAction+") NOT IN (")
-		} else {
-			fmt.Fprint(query, ", ")
-
-		}
-		fmt.Fprintf(query, "%s", delete.PlaceHolder())
-	}
 	if len(in) > 0 {
+		fmt.Fprint(query, ` AND (`+columnSubsystem+`, `+columnModule+`, `+columnAction+`) NOT IN (`)
+		for i, _ := range in {
+			if i != 0 {
+				fmt.Fprint(query, ", ")
+			}
+			delete.Next()
+			fmt.Fprintf(query, "(%s", delete.PlaceHolder())
+			delete.Next()
+			fmt.Fprintf(query, ",%s,", delete.PlaceHolder())
+			delete.Next()
+			fmt.Fprintf(query, "%s)", delete.PlaceHolder())
+		}
 		fmt.Fprint(query, ")")
 	}
 
 	res, err = tx.Exec(query.String(), delete.Args()...)
 	if err != nil {
-		return 0, 0, err
+		return 0, 0, fmt.Errorf("charond: error on redundant permission removal: %s", err.Error())
 	}
 	deleted, err = res.RowsAffected()
 	if err != nil {
