@@ -1,4 +1,7 @@
+// +build postgres,!unit,!e2e
+
 package main
+
 
 import (
 	"database/sql"
@@ -37,7 +40,7 @@ func (ps *postgresSuite) setup(t *testing.T) {
 }
 
 func (ps *postgresSuite) teardown(t *testing.T) {
-	if err := tearDownDatabase(ps.postgres); err != nil {
+	if err := teardownDatabase(ps.postgres); err != nil {
 		t.Errorf("unexpected error during database teardown: %s", err.Error())
 	}
 
