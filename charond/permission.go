@@ -46,14 +46,13 @@ func (pr *permissionRepository) FindByUserID(userID int64) ([]*permissionEntity,
 		FROM `+pr.table+` AS p
 		LEFT JOIN `+tableUserPermissions+` AS up
 			ON up.`+tableUserPermissionsColumnPermissionSubsystem+` = p.`+tablePermissionColumnSubsystem+`
-			ON up.`+tableUserPermissionsColumnPermissionModule+` = p.`+tablePermissionColumnModule+`
-			ON up.`+tableUserPermissionsColumnPermissionAction+` = p.`+tablePermissionColumnAction+`
-			AND up.`+tableUserPermissionsColumnUserID+` = $1
+			AND up.`+tableUserPermissionsColumnPermissionModule+` = p.`+tablePermissionColumnModule+`
+			AND up.`+tableUserPermissionsColumnPermissionAction+` = p.`+tablePermissionColumnAction+`
 		LEFT JOIN `+tableUserGroups+` AS ug ON ug.`+tableUserGroupsColumnUserID+` = $1
-		LEFT JOIN `+tableGroupPermissions+` AS gp 
+		LEFT JOIN `+tableGroupPermissions+` AS gp
 			ON gp.`+tableGroupPermissionsColumnPermissionSubsystem+` = p.`+tablePermissionColumnSubsystem+`
-			ON gp.`+tableGroupPermissionsColumnPermissionModule+` = p.`+tablePermissionColumnModule+`
-			ON gp.`+tableGroupPermissionsColumnPermissionAction+` = p.`+tablePermissionColumnAction+` 
+			AND gp.`+tableGroupPermissionsColumnPermissionModule+` = p.`+tablePermissionColumnModule+`
+			AND gp.`+tableGroupPermissionsColumnPermissionAction+` = p.`+tablePermissionColumnAction+`
 			AND gp.`+tableGroupPermissionsColumnGroupID+` = ug.`+tableUserGroupsColumnGroupID+`
 		WHERE up.`+tableUserPermissionsColumnUserID+` = $1 OR ug.`+tableUserGroupsColumnUserID+` = $1
 	`, userID)
