@@ -52,14 +52,10 @@ func main() {
 
 	repos := newRepositories(postgres)
 	if config.test {
-		password, err := passwordHasher.Hash([]byte("test"))
-		if err != nil {
+		if _, err = createDumyTestUser(repos.user, passwordHasher); err != nil {
 			sklog.Fatal(logger, err)
 		}
-		if _, err = repos.user.CreateSuperuser("test", password, "Test", "Test"); err != nil {
-			sklog.Fatal(logger, err)
-		}
-		sklog.Info(logger, "test super user has been created")
+		sklog.Info(logger, "test super user ")
 	}
 
 	permissionReg := initPermissionRegistry(repos.permission, charon.AllPermissions, logger)

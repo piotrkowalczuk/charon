@@ -300,3 +300,11 @@ func (ur *userRepository) SetPermissions(id int64, p ...charon.Permission) (int6
 		tableUserPermissionsColumnPermissionModule,
 		tableUserPermissionsColumnPermissionAction, id, p)
 }
+
+func createDumyTestUser(repo UserRepository, hasher charon.PasswordHasher) (*userEntity, error) {
+	password, err := hasher.Hash([]byte("test"))
+	if err != nil {
+		return nil, err
+	}
+	return repo.CreateSuperuser("test", password, "Test", "Test")
+}
