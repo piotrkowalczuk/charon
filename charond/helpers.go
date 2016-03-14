@@ -1,6 +1,10 @@
 package main
 
-import "github.com/piotrkowalczuk/nilt"
+import (
+	"strconv"
+
+	"github.com/piotrkowalczuk/nilt"
+)
 
 func nilString(ns *nilt.String) nilt.String {
 	if ns == nil {
@@ -37,4 +41,8 @@ func untouched(given, created, removed int64) int64 {
 	default:
 		return given - created
 	}
+}
+
+func address(host string, port int) string {
+	return host + ":" + strconv.FormatInt(int64(port), 10)
 }
