@@ -28,6 +28,7 @@ func main() {
 	logger := initLogger(config.logger.adapter, config.logger.format, config.logger.level, sklog.KeySubsystem, config.subsystem)
 	postgres := initPostgres(
 		config.postgres.connectionString,
+		config.test,
 		logger,
 	)
 	passwordHasher := initPasswordHasher(config.password.bcrypt.cost, logger)
@@ -50,6 +51,16 @@ func main() {
 	}
 
 	repos := newRepositories(postgres)
+	if config.test {
+		password, err := passwordHasher.Hash([]byte("test"))
+		if err != nil {
+			sklog.Fatal(logger, err)
+		}
+		if _, err = repos.user.CreateSuperuser("test", password, "Test", "Test"); err != nil {
+			sklog.Fatal(logger, err)
+		}
+		sklog.Info(logger, "test super user has been created")
+	}
 
 	permissionReg := initPermissionRegistry(repos.permission, charon.AllPermissions, logger)
 
@@ -86,7 +97,7 @@ func main() {
 		session:            mnemosyneClient,
 		passwordHasher:     passwordHasher,
 		permissionRegistry: permissionReg,
-		repository: repos,
+		repository:         repos,
 	}
 	charon.RegisterRPCServer(gRPCServer, charonServer)
 

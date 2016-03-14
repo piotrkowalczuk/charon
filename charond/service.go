@@ -49,12 +49,18 @@ func initLogger(adapter, format string, level int, context ...interface{}) log.L
 	return l
 }
 
-func initPostgres(connectionString string, logger log.Logger) *sql.DB {
+func initPostgres(connectionString string, test bool, logger log.Logger) *sql.DB {
 	postgres, err := sql.Open("postgres", connectionString)
 	if err != nil {
 		sklog.Fatal(logger, err)
 	}
 
+	if test {
+		if err = teardownDatabase(postgres); err != nil {
+			sklog.Fatal(logger, err)
+		}
+		sklog.Info(logger, "database has been cleared upfront")
+	}
 	err = setupDatabase(postgres)
 	if err != nil {
 		sklog.Fatal(logger, err)

@@ -37,11 +37,8 @@ func newHandler(rs *rpcServer, ctx context.Context, endpoint string) *handler {
 
 func (h *handler) handle(err error, msg string) {
 	if err != nil {
-		code := grpc.Code(err)
-
-		h.loggerWith("code", code)
 		if h.monitor.enabled {
-			h.monitor.errors.With(metrics.Field{Key: "code", Value: code.String()}).Add(1)
+			h.monitor.errors.With(metrics.Field{Key: "code", Value: grpc.Code(err).String()}).Add(1)
 		}
 		sklog.Error(h.logger, err)
 
@@ -68,7 +65,7 @@ func (h *handler) retrieveActor(ctx context.Context) (act *actor, err error) {
 		if peer, ok := peer.FromContext(ctx); ok {
 			if strings.HasPrefix(peer.Addr.String(), "127.0.0.1") {
 				return &actor{
-					user:  &userEntity{},
+					user:    &userEntity{},
 					isLocal: true,
 				}, nil
 			}

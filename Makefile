@@ -22,6 +22,7 @@ FLAGS=-host=$(CHARON_HOST) \
       	    -port=$(CHARON_PORT) \
       	    -subsystem=$(CHARON_SUBSYSTEM) \
       	    -namespace=$(CHARON_NAMESPACE) \
+      	    -test=$(CHARON_TEST) \
       	    -l.format=$(CHARON_LOGGER_FORMAT) \
       	    -l.adapter=$(CHARON_LOGGER_ADAPTER) \
       	    -l.level=$(CHARON_LOGGER_LEVEL) \

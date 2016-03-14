@@ -13,6 +13,7 @@ type configuration struct {
 	port      int
 	namespace string
 	subsystem string
+	test      bool
 	logger    struct {
 		adapter string
 		format  string
@@ -50,6 +51,7 @@ func (c *configuration) init() {
 	flag.IntVar(&c.port, "port", 8080, "port")
 	flag.StringVar(&c.namespace, "namespace", "", "namespace")
 	flag.StringVar(&c.subsystem, "subsystem", "charon", "subsystem")
+	flag.BoolVar(&c.test, "test", false, "determines in what mode application starts")
 	flag.StringVar(&c.logger.adapter, "l.adapter", loggerAdapterStdOut, "logger adapter")
 	flag.StringVar(&c.logger.format, "l.format", loggerFormatJSON, "logger format")
 	flag.IntVar(&c.logger.level, "l.level", 6, "logger level")
