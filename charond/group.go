@@ -139,16 +139,16 @@ func (gr *groupRepository) Create(createdBy int64, name string, description *nil
 func (gr *groupRepository) insert(e *groupEntity) error {
 	query := `
 		INSERT INTO ` + tableGroup + ` (
-			name string, description, created_at, created_by
+			name, description, created_at, created_by
 		)
 		VALUES ($1, $2, NOW(), $3)
 		RETURNING id, created_at
 	`
 	return gr.db.QueryRow(
 		query,
-		e.CreatedBy,
-		e.Description,
 		e.Name,
+		e.Description,
+		e.CreatedBy,
 	).Scan(&e.ID, &e.CreatedAt)
 }
 

@@ -13,16 +13,15 @@ type createGroupHandler struct {
 }
 
 func (cgh *createGroupHandler) handle(ctx context.Context, req *charon.CreateGroupRequest) (*charon.CreateGroupResponse, error) {
-	actor, err := cgh.retrieveActor(ctx)
+	act, err := cgh.retrieveActor(ctx)
 	if err != nil {
 		return nil, err
 	}
-
-	if !actor.permissions.Contains(charon.GroupCanCreate) {
-		return nil, grpc.Errorf(codes.PermissionDenied, "charond: actor do not have permission: %s", charon.GroupCanCreate.String())
+	if err = cgh.firewall(req, act); err != nil {
+		return nil, err
 	}
 
-	entity, err := cgh.repository.group.Create(actor.user.ID, req.Name, req.Description)
+	entity, err := cgh.repository.group.Create(act.user.ID, req.Name, req.Description)
 	if err != nil {
 		switch pqt.ErrorConstraint(err) {
 		case tableGroupConstraintNameUnique:
