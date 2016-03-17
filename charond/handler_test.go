@@ -49,13 +49,13 @@ func TestHandler(t *testing.T) {
 		})
 		Convey("As authenticated user", func() {
 			id = 7856282
-			tkn = mnemosyne.NewToken([]byte("0000000001"), []byte("hash"))
-			ctx = mnemosyne.NewTokenContext(context.Background(), tkn)
+			tkn = mnemosyne.NewAccessToken([]byte("0000000001"), []byte("hash"))
+			ctx = mnemosyne.NewAccessTokenContext(context.Background(), tkn)
 			sessionMock.On("FromContext", ctx).
 				Once().
 				Return(&mnemosyne.Session{
-					Token:     &tkn,
-					SubjectId: charon.SubjectIDFromInt64(id).String(),
+					AccessToken: &tkn,
+					SubjectId:   charon.SubjectIDFromInt64(id).String(),
 				}, nil)
 
 			Convey("When user exists", func() {

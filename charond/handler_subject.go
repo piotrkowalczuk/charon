@@ -38,7 +38,7 @@ func (sh *subjectHandler) handle(ctx context.Context, r *charon.SubjectRequest) 
 	userEntity, err := sh.repository.user.FindOneByID(id)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, grpc.Errorf(codes.NotFound, "charond: user does not exists with id: %d", id)
+			return nil, grpc.Errorf(codes.NotFound, "charond: subject does not exists with id: %d", id)
 		}
 
 		return nil, err
@@ -46,7 +46,7 @@ func (sh *subjectHandler) handle(ctx context.Context, r *charon.SubjectRequest) 
 
 	permissionEntities, err := sh.repository.permission.FindByUserID(id)
 	if err != nil && err != sql.ErrNoRows {
-		return nil, grpc.Errorf(codes.Internal, "charond: list of permissions failure: %s", err.Error())
+		return nil, grpc.Errorf(codes.Internal, "charond: subject list of permissions failure: %s", err.Error())
 	}
 
 	permissions := make([]string, 0, len(permissionEntities))
