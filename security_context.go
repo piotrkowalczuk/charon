@@ -6,16 +6,16 @@ import (
 )
 
 const (
-	contextKeySubject = "context_key_charon_subject";
+	contextKeySubject = "context_key_charon_subject"
 )
 
 // SecurityContext ....
-type SecurityContext interface{
+type SecurityContext interface {
 	context.Context
 	// Subject ...
 	Subject() (Subject, bool)
-	// Token ...
-	Token() (mnemosyne.Token, bool)
+	// AccessToken ...
+	AccessToken() (mnemosyne.AccessToken, bool)
 }
 
 type securityContext struct {
@@ -28,11 +28,11 @@ func NewSecurityContext(ctx context.Context) SecurityContext {
 }
 
 // Subject implements SecurityContext interface.
-func (sc *securityContext) Subject() (Subject, bool){
+func (sc *securityContext) Subject() (Subject, bool) {
 	return SubjectFromContext(sc)
 }
 
-// Token implements SecurityContext interface.
-func (sc *securityContext) Token() (mnemosyne.Token, bool) {
-	return mnemosyne.TokenFromContext(sc)
+// AccessToken implements SecurityContext interface.
+func (sc *securityContext) AccessToken() (mnemosyne.AccessToken, bool) {
+	return mnemosyne.AccessTokenFromContext(sc)
 }

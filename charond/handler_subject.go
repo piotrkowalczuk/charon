@@ -20,12 +20,12 @@ func (sh *subjectHandler) handle(ctx context.Context, r *charon.SubjectRequest) 
 		ses *mnemosyne.Session
 		err error
 	)
-	if r.Token == nil {
+	if r.AccessToken == nil {
 		if ses, err = sh.session.FromContext(ctx); err != nil {
 			return nil, err
 		}
 	} else {
-		if ses, err = sh.session.Get(ctx, *r.Token); err != nil {
+		if ses, err = sh.session.Get(ctx, *r.AccessToken); err != nil {
 			return nil, err
 		}
 	}

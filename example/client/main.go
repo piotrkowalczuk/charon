@@ -55,7 +55,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	sub, err := charon.New(conn).Subject(metadata.NewContext(context.Background(), metadata.Pairs("request_id", "123456789")), mnemosyne.DecodeToken([]byte(token)))
+	sub, err := charon.New(conn).Subject(metadata.NewContext(context.Background(), metadata.Pairs("request_id", "123456789")), mnemosyne.DecodeAccessTokenString((token)))
 	if err != nil {
 		log.Fatalf("%s: %s", grpc.Code(err).String(), grpc.ErrorDesc(err))
 	}

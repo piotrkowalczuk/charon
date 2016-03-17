@@ -57,12 +57,12 @@ func (lh *loginHandler) handle(ctx context.Context, r *charon.LoginRequest) (*ch
 		return nil, err
 	}
 
-	lh.loggerWith("token", session.Token.Encode())
+	lh.loggerWith("token", session.AccessToken.Encode())
 
 	_, err = lh.repository.user.UpdateLastLoginAt(user.ID)
 	if err != nil {
 		return nil, grpc.Errorf(codes.Internal, "charond: last login update failure: %s", err)
 	}
 
-	return &charon.LoginResponse{Token: session.Token}, nil
+	return &charon.LoginResponse{AccessToken: session.AccessToken}, nil
 }

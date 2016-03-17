@@ -151,8 +151,8 @@ func (_m *MockGroupRepository) UpdateOneByID(id int64, updatedBy int64, name *ni
 	return r0, r1
 }
 
-// DeleteOneByID provides a mock function with given fields: id
-func (_m *MockGroupRepository) DeleteOneByID(id int64) (int64, error) {
+// DeleteByID provides a mock function with given fields: id
+func (_m *MockGroupRepository) DeleteByID(id int64) (int64, error) {
 	ret := _m.Called(id)
 
 	var r0 int64
@@ -191,6 +191,34 @@ func (_m *MockGroupRepository) IsGranted(id int64, permission charon.Permission)
 	}
 
 	return r0, r1
+}
+
+// SetPermissions provides a mock function with given fields: id, permissions
+func (_m *MockGroupRepository) SetPermissions(id int64, permissions ...charon.Permission) (int64, int64, error) {
+	ret := _m.Called(id, permissions)
+
+	var r0 int64
+	if rf, ok := ret.Get(0).(func(int64, ...charon.Permission) int64); ok {
+		r0 = rf(id, permissions...)
+	} else {
+		r0 = ret.Get(0).(int64)
+	}
+
+	var r1 int64
+	if rf, ok := ret.Get(1).(func(int64, ...charon.Permission) int64); ok {
+		r1 = rf(id, permissions...)
+	} else {
+		r1 = ret.Get(1).(int64)
+	}
+
+	var r2 error
+	if rf, ok := ret.Get(2).(func(int64, ...charon.Permission) error); ok {
+		r2 = rf(id, permissions...)
+	} else {
+		r2 = ret.Error(2)
+	}
+
+	return r0, r1, r2
 }
 
 type MockGroupPermissionsRepository struct {

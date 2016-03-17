@@ -26,11 +26,11 @@ func WithMetadata(kv ...string) CharonOption {
 // For more powerful low level API check RPCClient interface.
 type Charon interface {
 	IsGranted(context.Context, int64, Permission) (bool, error)
-	IsAuthenticated(context.Context, mnemosyne.Token) (bool, error)
-	Subject(context.Context, mnemosyne.Token) (*Subject, error)
+	IsAuthenticated(context.Context, mnemosyne.AccessToken) (bool, error)
+	Subject(context.Context, mnemosyne.AccessToken) (*Subject, error)
 	FromContext(context.Context) (*Subject, error)
-	Login(context.Context, string, string) (*mnemosyne.Token, error)
-	Logout(context.Context, mnemosyne.Token) error
+	Login(context.Context, string, string) (*mnemosyne.AccessToken, error)
+	Logout(context.Context, mnemosyne.AccessToken) error
 }
 
 type charon struct {
@@ -67,8 +67,8 @@ func (c *charon) IsGranted(ctx context.Context, userID int64, perm Permission) (
 }
 
 // Subject implements Charon interface.
-func (c *charon) Subject(ctx context.Context, token mnemosyne.Token) (*Subject, error) {
-	resp, err := c.client.Subject(ctx, &SubjectRequest{Token: &token})
+func (c *charon) Subject(ctx context.Context, token mnemosyne.AccessToken) (*Subject, error) {
+	resp, err := c.client.Subject(ctx, &SubjectRequest{AccessToken: &token})
 	if err != nil {
 		return nil, err
 	}
@@ -101,9 +101,9 @@ func (c *charon) mapSubject(resp *SubjectResponse) *Subject {
 }
 
 // IsAuthenticated implements Charon interface.
-func (c *charon) IsAuthenticated(ctx context.Context, token mnemosyne.Token) (bool, error) {
+func (c *charon) IsAuthenticated(ctx context.Context, token mnemosyne.AccessToken) (bool, error) {
 	res, err := c.client.IsAuthenticated(ctx, &IsAuthenticatedRequest{
-		Token: &token,
+		AccessToken: &token,
 	})
 	if err != nil {
 		return false, err
@@ -113,7 +113,7 @@ func (c *charon) IsAuthenticated(ctx context.Context, token mnemosyne.Token) (bo
 }
 
 // Login implements Charon interface.
-func (c *charon) Login(ctx context.Context, username, password string) (*mnemosyne.Token, error) {
+func (c *charon) Login(ctx context.Context, username, password string) (*mnemosyne.AccessToken, error) {
 	res, err := c.client.Login(ctx, &LoginRequest{
 		Username: username,
 		Password: password,
@@ -122,13 +122,13 @@ func (c *charon) Login(ctx context.Context, username, password string) (*mnemosy
 		return nil, err
 	}
 
-	return res.Token, nil
+	return res.AccessToken, nil
 }
 
 // Logout implements Charon interface.
-func (c *charon) Logout(ctx context.Context, token mnemosyne.Token) error {
+func (c *charon) Logout(ctx context.Context, token mnemosyne.AccessToken) error {
 	_, err := c.client.Logout(ctx, &LogoutRequest{
-		Token: &token,
+		AccessToken: &token,
 	})
 	return err
 }

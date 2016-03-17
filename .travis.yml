@@ -2,7 +2,7 @@ language: go
 go:
 - tip
 addons:
-  postgresql: '9.3'
+  postgresql: '9.4'
 env:
   CHARON_HOST: localhost
   CHARON_PORT: 9001
@@ -25,6 +25,7 @@ script:
 - make build
 - make test-unit
 - make test-postgres
+
 after_success:
 - bash <(curl -s https://codecov.io/bash)
 notifications:

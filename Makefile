@@ -39,7 +39,7 @@ PROTO_PATH=--proto_path=. \
           	    --proto_path=${GOPATH}/src/github.com/piotrkowalczuk/protot \
           	    --proto_path=${GOPATH}/src/github.com/piotrkowalczuk/nilt \
 
-.PHONY:	all proto rebuild build build-daemon build-control build-example install-generator run test test-unit test-postgres get buld package
+.PHONY:	all proto rebuild build build-daemon build-control build-example install-generator run test test-unit test-postgres test-e2e get build package
 
 all: rebuild test run
 
@@ -71,7 +71,7 @@ generate:
 run:
 	@${BINARY_DAEMON} ${FLAGS}
 
-test: test-unit test-postgres
+test: test-unit test-postgres test-e2e
 
 test-unit:
 	@${CMD_TEST} ${PACKAGE}
@@ -83,6 +83,10 @@ test-unit:
 
 test-postgres:
 	@${CMD_TEST} -tags=postgres ${PACKAGE_DAEMON} ${FLAGS}
+	@cat profile.out >> coverage.txt && rm profile.out
+
+test-e2e:
+	@${CMD_TEST} -tags=e2e ${PACKAGE_DAEMON} ${FLAGS}
 	@cat profile.out >> coverage.txt && rm profile.out
 
 get:

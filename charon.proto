@@ -61,17 +61,17 @@ message LoginRequest {
 }
 
 message LoginResponse {
-    mnemosyne.Token token = 1;
+    mnemosyne.AccessToken access_token = 1;
 }
 
 message LogoutRequest {
-    mnemosyne.Token token = 1;
+    mnemosyne.AccessToken access_token = 1;
 }
 
 message LogoutResponse {}
 
 message IsAuthenticatedRequest {
-    mnemosyne.Token token = 1;
+    mnemosyne.AccessToken access_token = 1;
 }
 
 message IsAuthenticatedResponse {
@@ -97,7 +97,7 @@ message BelongsToResponse {
 }
 
 message SubjectRequest {
-    mnemosyne.Token token = 1;
+    mnemosyne.AccessToken access_token = 1;
 }
 
 message SubjectResponse {

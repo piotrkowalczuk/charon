@@ -47,7 +47,7 @@ func client() (client charon.RPCClient, ctx context.Context) {
 			os.Exit(1)
 		}
 
-		ctx = metadata.NewContext(ctx, metadata.Pairs(mnemosyne.TokenMetadataKey, string(resp.Token.Encode())))
+		ctx = metadata.NewContext(ctx, metadata.Pairs(mnemosyne.AccessTokenMetadataKey, string(resp.AccessToken.Encode())))
 	}
 
 	return

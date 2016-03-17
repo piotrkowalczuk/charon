@@ -57,7 +57,6 @@ func (c *configuration) init() {
 }
 
 func (c *configuration) parse() {
-
 	if !flag.Parsed() {
 		ver := flag.Bool("version", false, "print version and exit")
 		flag.Parse()

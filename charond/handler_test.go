@@ -21,7 +21,7 @@ func TestHandler(t *testing.T) {
 		ctx context.Context
 		err error
 		act *actor
-		tkn mnemosyne.Token
+		tkn mnemosyne.AccessToken
 	)
 
 	Convey("retrieveActor", t, func() {
@@ -40,7 +40,7 @@ func TestHandler(t *testing.T) {
 				Once().
 				Return(nil, errors.New("mnemosyned: test error"))
 
-			Convey("should return an error", func() {
+			Convey("Should return an error", func() {
 				act, err = h.retrieveActor(ctx)
 
 				So(err, ShouldNotBeNil)

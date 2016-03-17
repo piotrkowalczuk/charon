@@ -325,7 +325,7 @@ func setPermissions(db *sql.DB, table, columnID, columnSubsystem, columnModule, 
 		}
 	}
 
-	delete := pqcomp.New(1, len(in))
+	delete := pqcomp.New(1, len(in)*3)
 	delete.AddArg(id)
 	for _, p := range in {
 		subsystem, module, action = p.Split()
