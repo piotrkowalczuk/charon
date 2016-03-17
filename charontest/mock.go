@@ -18,14 +18,14 @@ func (c *Charon) IsGranted(ctx context.Context, userID int64, perm charon.Permis
 }
 
 // IsAuthenticated implements Charon interface.
-func (c *Charon) IsAuthenticated(ctx context.Context, token mnemosyne.Token) (bool, error) {
+func (c *Charon) IsAuthenticated(ctx context.Context, token mnemosyne.AccessToken) (bool, error) {
 	a := c.Called(ctx, token)
 
 	return a.Bool(0), a.Error(1)
 }
 
 // Subject implements Charon interface.
-func (c *Charon) Subject(ctx context.Context, token mnemosyne.Token) (*charon.Subject, error) {
+func (c *Charon) Subject(ctx context.Context, token mnemosyne.AccessToken) (*charon.Subject, error) {
 	a := c.Called(ctx, token)
 
 	subj, err := a.Get(0), a.Error(1)
@@ -49,7 +49,7 @@ func (c *Charon) FromContext(ctx context.Context) (*charon.Subject, error) {
 }
 
 // Login implements Charon interface.
-func (c *Charon) Login(ctx context.Context, username, password string) (*mnemosyne.Token, error) {
+func (c *Charon) Login(ctx context.Context, username, password string) (*mnemosyne.AccessToken, error) {
 	a := c.Called(ctx, username, password)
 
 	ses, err := a.Get(0), a.Error(1)
@@ -57,11 +57,11 @@ func (c *Charon) Login(ctx context.Context, username, password string) (*mnemosy
 		return nil, err
 	}
 
-	return ses.(*mnemosyne.Token), nil
+	return ses.(*mnemosyne.AccessToken), nil
 }
 
 // Logout implements Charon interface.
-func (c *Charon) Logout(ctx context.Context, token mnemosyne.Token) error {
+func (c *Charon) Logout(ctx context.Context, token mnemosyne.AccessToken) error {
 	a := c.Called(ctx, token)
 
 	return a.Error(0)
