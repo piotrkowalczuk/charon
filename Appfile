@@ -1,0 +1,13 @@
+application {
+  name = "charon"
+  type = "go"
+
+  dependency {
+    source = "github.com/piotrkowalczuk/mnemosyne"
+  }
+}
+
+customization {
+  go_version = "1.6"
+  go_import_path = "github.com/piotrkowalczuk/charon"
+}

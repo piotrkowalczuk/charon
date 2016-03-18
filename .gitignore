@@ -1,9 +1,10 @@
+.vagrant
+.idea
+.otto
 charond/charond
 charonctl/charonctl
 charong/charong
 example/client/client
-.vagrant
-.idea
 /temp
 charon.iml
 test.sh
