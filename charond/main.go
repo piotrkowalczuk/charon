@@ -77,7 +77,7 @@ func main() {
 		}
 		opts = []grpc.ServerOption{grpc.Creds(creds)}
 	}
-	opts = append(opts, grpc.Creds(charon.NewCredentials()))
+	//opts = append(opts, grpc.Creds(charon.NewCredentials()))
 	grpclog.SetLogger(sklog.NewGRPCLogger(logger))
 	gRPCServer := grpc.NewServer(opts...)
 
