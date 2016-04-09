@@ -2,9 +2,11 @@ syntax = "proto3";
 
 package charon;
 
-import "mnemosyne.proto";
-import "protot.proto";
-import "nilt.proto";
+import "github.com/golang/protobuf/ptypes/timestamp/timestamp.proto";
+import "github.com/piotrkowalczuk/mnemosyne/mnemosyne.proto";
+import "github.com/piotrkowalczuk/protot/protot.proto";
+import "github.com/piotrkowalczuk/nilt/nilt.proto";
+
 
 service RPC {
     // Authentication
@@ -125,9 +127,9 @@ message User {
     bool is_active = 6;
     bool is_staff = 7;
     bool is_confirmed = 8;
-    protot.Timestamp created_at = 9;
+    google.protobuf.Timestamp created_at = 9;
     nilt.Int64 created_by = 10;
-    protot.Timestamp updated_at = 11;
+    google.protobuf.Timestamp updated_at = 11;
     nilt.Int64 updated_by = 12;
 }
 
@@ -159,7 +161,7 @@ message ListUsersRequest {
     reserved 4 to 99;
     nilt.Bool is_superuser = 1;
     nilt.Bool is_staff = 2;
-    nilt.Int64 created_by = 3;
+    protot.QueryInt64 created_by = 3;
     nilt.Int64 offset = 100;
     nilt.Int64 limit = 101;
     map<string, bool> sort = 102;
@@ -248,11 +250,12 @@ message RegisterPermissionsResponse {
 
 message ListPermissionsRequest {
     reserved 6 to 99;
-    nilt.String subsystem = 1;
-    nilt.String module = 2;
-    nilt.String action = 3;
-    protot.TimestampRange created_at = 4;
-    nilt.Int64 created_by = 5;
+
+    protot.QueryString subsystem = 1;
+    protot.QueryString module = 2;
+    protot.QueryString action = 3;
+    protot.QueryTimestamp created_at = 4;
+    protot.QueryInt64 created_by = 5;
 
     nilt.Int64 offset = 100;
     nilt.Int64 limit = 101;
@@ -279,9 +282,9 @@ message Group {
     int64 id = 1;
     string name = 2;
     string description = 3;
-    protot.Timestamp created_at = 4;
+    google.protobuf.Timestamp created_at = 4;
     nilt.Int64 created_by = 5;
-    protot.Timestamp updated_at = 6;
+    google.protobuf.Timestamp updated_at = 6;
     nilt.Int64 updated_by = 7;
 }
 

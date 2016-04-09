@@ -1,5 +1,3 @@
-// +build unit,!postgres,!e2e
-
 package charon
 
 import (

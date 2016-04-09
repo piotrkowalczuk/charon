@@ -1,34 +1,35 @@
-// +build unit,!postgres,!e2e
-
-package charon_test
+package charon
 
 import (
 	"fmt"
 	"reflect"
 	"testing"
 
-	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/mnemosyne"
 	"golang.org/x/net/context"
+	"golang.org/x/oauth2"
 )
 
 func ExampleSecurityContext() {
-	token := mnemosyne.NewToken([]byte("0000000001"), []byte("some hash"))
-	subject := charon.Subject{
+	token := mnemosyne.NewAccessToken([]byte("0000000001"), []byte("some hash"))
+	subject := Subject{
 		ID:       1,
 		Username: "j.kowalski@gmail.com",
 	}
-	ctx := charon.NewSubjectContext(context.Background(), subject)
-	ctx = mnemosyne.NewTokenContext(ctx, token)
-	sctx := charon.NewSecurityContext(ctx)
+	ctx := NewSubjectContext(context.Background(), subject)
+	ctx = mnemosyne.NewAccessTokenContext(ctx, token)
+	sctx := NewSecurityContext(ctx)
 
 	var (
-		t  mnemosyne.Token
-		s  charon.Subject
-		ok bool
+		t   *oauth2.Token
+		s   Subject
+		err error
+		ok  bool
 	)
-	if t, ok = sctx.Token(); ok {
-		fmt.Println(t.Encode())
+	if t, err = sctx.Token(); err != nil {
+		fmt.Printf("unexpected error: %s", err.Error())
+	} else {
+		fmt.Println(t.AccessToken)
 	}
 	if s, ok = sctx.Subject(); ok {
 		fmt.Println(s.ID)
@@ -42,17 +43,17 @@ func ExampleSecurityContext() {
 }
 
 func TestNewSecurityContext(t *testing.T) {
-	sctx := charon.NewSecurityContext(context.Background())
+	sctx := NewSecurityContext(context.Background())
 
-	if _, ok := sctx.(charon.SecurityContext); !ok {
+	if _, ok := sctx.(SecurityContext); !ok {
 		t.Errorf("result should imeplement SecurityContext interface")
 	}
 }
 
 func TestSecurityContext_Subject(t *testing.T) {
-	expectedSubject := charon.Subject{ID: 1}
-	ctx := charon.NewSubjectContext(context.Background(), expectedSubject)
-	sctx := charon.NewSecurityContext(ctx)
+	expectedSubject := Subject{ID: 1}
+	ctx := NewSubjectContext(context.Background(), expectedSubject)
+	sctx := NewSecurityContext(ctx)
 
 	subject, ok := sctx.Subject()
 	if ok {
@@ -65,7 +66,7 @@ func TestSecurityContext_Subject(t *testing.T) {
 }
 
 func TestSecurityContext_Subject_empty(t *testing.T) {
-	sctx := charon.NewSecurityContext(context.Background())
+	sctx := NewSecurityContext(context.Background())
 
 	_, ok := sctx.Subject()
 	if ok {
@@ -74,25 +75,24 @@ func TestSecurityContext_Subject_empty(t *testing.T) {
 }
 
 func TestSecurityContext_Token(t *testing.T) {
-	expectedToken := mnemosyne.NewToken([]byte("0000000001"), []byte("1"))
-	ctx := mnemosyne.NewTokenContext(context.Background(), expectedToken)
-	sctx := charon.NewSecurityContext(ctx)
+	expectedToken := mnemosyne.NewAccessToken([]byte("0000000001"), []byte("1"))
+	ctx := mnemosyne.NewAccessTokenContext(context.Background(), expectedToken)
+	sctx := NewSecurityContext(ctx)
 
-	token, ok := sctx.Token()
-	if ok {
-		if !reflect.DeepEqual(token, expectedToken) {
-			t.Error("provided and retrieved token should be the same")
-		}
-	} else {
-		t.Errorf("token should be able retrieved")
+	token, err := sctx.Token()
+	if err != nil {
+		t.Fatalf("unexpected error: %s", err.Error())
+	}
+	if token.AccessToken != expectedToken.Encode() {
+		t.Error("provided and retrieved token should be the same")
 	}
 }
 
 func TestSecurityContext_Token_empty(t *testing.T) {
-	sctx := charon.NewSecurityContext(context.Background())
+	sctx := NewSecurityContext(context.Background())
 
-	_, ok := sctx.Token()
-	if ok {
-		t.Errorf("token should not be there")
+	_, err := sctx.Token()
+	if err == nil {
+		t.Errorf("expected error, got nil")
 	}
 }

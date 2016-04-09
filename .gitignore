@@ -1,9 +1,8 @@
 .vagrant
 .idea
-charond/.otto
-charond/charond
-charonctl/charonctl
-charong/charong
+cmd/charond/charond
+cmd/charonctl/charonctl
+cmd/charong/charong
 example/client/client
 /temp
 charon.iml

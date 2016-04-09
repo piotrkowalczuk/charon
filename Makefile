@@ -1,15 +1,16 @@
 PROTOC=/usr/local/bin/protoc
 SERVICE=charon
 PACKAGE=github.com/piotrkowalczuk/charon
-PACKAGE_DAEMON=$(PACKAGE)/$(SERVICE)d
-PACKAGE_CONTROL=$(PACKAGE)/$(SERVICE)ctl
-PACKAGE_GENERATOR=$(PACKAGE)/$(SERVICE)g
-PACKAGE_EXAMPLE=$(PACKAGE)/example
 PACKAGE_TEST=$(PACKAGE)/$(SERVICE)test
+PACKAGE_EXAMPLE=$(PACKAGE)/example
 
-BINARY_DAEMON=${SERVICE}d/${SERVICE}d
-BINARY_CONTROL=${SERVICE}ctl/${SERVICE}ctl
-BINARY_GENERATOR=${SERVICE}g/${SERVICE}g
+PACKAGE_CMD_DAEMON=$(PACKAGE)/cmd/$(SERVICE)d
+PACKAGE_CMD_CONTROL=$(PACKAGE)/cmd/$(SERVICE)ctl
+PACKAGE_CMD_GENERATOR=$(PACKAGE)/cmd/$(SERVICE)g
+
+BINARY_CMD_DAEMON=cmd/${SERVICE}d/${SERVICE}d
+BINARY_CMD_CONTROL=cmd/${SERVICE}ctl/${SERVICE}ctl
+BINARY_CMD_GENERATOR=cmd/${SERVICE}g/${SERVICE}g
 
 #packaging
 DIST_PACKAGE_BUILD_DIR=temp
@@ -27,7 +28,7 @@ FLAGS=-host=$(CHARON_HOST) \
       	    -l.adapter=$(CHARON_LOGGER_ADAPTER) \
       	    -l.level=$(CHARON_LOGGER_LEVEL) \
       	    -m.engine=$(CHARON_MONITORING_ENGINE) \
-      	    -ps.connectionstring=$(CHARON_POSTGRES_CONNECTION_STRING) \
+      	    -p.address=$(CHARON_POSTGRES_ADDRESS) \
       	    -pwd.strategy=$(CHARON_PASSWORD_STRATEGY) \
       	    -pwd.bcryptcost=$(CHARON_PASSWORD_BCRYPT_COST) \
       	    -mnemo.address=$(CHARON_MNEMOSYNE_ADDRESS)
@@ -35,70 +36,68 @@ FLAGS=-host=$(CHARON_HOST) \
 CMD_TEST=go test -v -coverprofile=profile.out -covermode=atomic
 
 PROTO_PATH=--proto_path=. \
+          	    --proto_path=${GOPATH}/src \
           	    --proto_path=${GOPATH}/src/github.com/piotrkowalczuk/mnemosyne \
           	    --proto_path=${GOPATH}/src/github.com/piotrkowalczuk/protot \
           	    --proto_path=${GOPATH}/src/github.com/piotrkowalczuk/nilt \
 
-.PHONY:	all proto rebuild build build-daemon build-control build-example install-generator run test test-unit test-postgres test-e2e get build package
+.PHONY:	all proto rebuild build build-daemon build-control build-example install-generator run test test-short get build package
 
 all: rebuild test run
 
 proto:
-	@${PROTOC} ${PROTO_PATH}--go_out=Mmnemosyne.proto=github.com/piotrkowalczuk/mnemosyne,Mprotot.proto=github.com/piotrkowalczuk/protot,Mnilt.proto=github.com/piotrkowalczuk/nilt,plugins=grpc:. \
+	@${PROTOC} --proto_path=. \
+				--proto_path=${GOPATH}/src \
+				--go_out=Mmnemosyne.proto=github.com/piotrkowalczuk/mnemosyne,Mprotot.proto=github.com/piotrkowalczuk/protot,Mnilt.proto=github.com/piotrkowalczuk/nilt,plugins=grpc:. \
 		${SERVICE}.proto
 	@ls -al | grep pb.go
 
-rebuild: install-generator proto generate build
+rebuild: install-generator proto gen build
 
 build: build-daemon build-control build-example
 
 build-daemon:
-	@go build -o ${BINARY_DAEMON} ${PACKAGE_DAEMON}
+	@go build -o ${BINARY_CMD_DAEMON} ${PACKAGE_CMD_DAEMON}
 
 build-control:
-	@go build -o ${BINARY_CONTROL} ${PACKAGE_CONTROL}
+	@go build -o ${BINARY_CMD_CONTROL} ${PACKAGE_CMD_CONTROL}
 
 build-example:
 	@go build -o example/client/client ${PACKAGE_EXAMPLE}/client
 
 install-generator:
-	@go install ${PACKAGE_GENERATOR}
+	@go install ${PACKAGE_CMD_GENERATOR}
 
-generate:
+gen:
 	@go generate ./...
-	@goimports -w ./charond/schema.go
+	@goimports -w ./schema.go
 
 run:
-	@${BINARY_DAEMON} ${FLAGS}
+	@${BINARY_CMD_DAEMON} ${FLAGS}
 
-test: test-unit test-postgres test-e2e
-
-test-unit:
-	@${CMD_TEST} ${PACKAGE}
+test:
+	@${CMD_TEST} ${PACKAGE} -p.address=$(CHARON_POSTGRES_ADDRESS)
 	@cat profile.out >> coverage.txt && rm profile.out
 	@${CMD_TEST} ${PACKAGE_TEST}
-	@cat profile.out >> coverage.txt && rm profile.out
-	@${CMD_TEST} -tags=unit ${PACKAGE_DAEMON}
-	@cat profile.out >> coverage.txt && rm profile.out
 
-test-postgres:
-	@${CMD_TEST} -tags=postgres ${PACKAGE_DAEMON} ${FLAGS}
+test-short:
+	@${CMD_TEST} -short ${PACKAGE}
 	@cat profile.out >> coverage.txt && rm profile.out
-
-test-e2e:
-	@${CMD_TEST} -tags=e2e ${PACKAGE_DAEMON} ${FLAGS}
-	@cat profile.out >> coverage.txt && rm profile.out
+	@${CMD_TEST} -short ${PACKAGE_TEST}
 
 get:
 	@go get github.com/smartystreets/goconvey/convey
 	@go get ${PACKAGE}
 	@go get ${PACKAGE_TEST}
 	@go get ${PACKAGE_DAEMON}
+	@go get ${PACKAGE_CMD_DAEMON}
+	@go get ${PACKAGE_CMD_CONTROL}
+	@go get ${PACKAGE_CMD_GENERATOR}
 
 install: build
 	#install binary
-	install -Dm 755 ${BINARY_DAEMON} ${DIST_BINDIR}/${SERVICE}d
-	install -Dm 755 ${BINARY_CONTROL} ${DIST_BINDIR}/${SERVICE}ctl
+	install -Dm 755 ${BINARY_CMD_DAEMON} ${DIST_BINDIR}/${SERVICE}d
+	install -Dm 755 ${BINARY_CMD_CONTROL} ${DIST_BINDIR}/${SERVICE}ctl
 	#install config file
 	install -Dm 644 scripts/${SERVICE}.env ${DESTDIR}/etc/${SERVICE}.env
 	install -Dm 644 scripts/${SERVICE}.env ${DESTDIR}/etc/${SERVICE}.env
