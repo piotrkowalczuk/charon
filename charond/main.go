@@ -15,6 +15,7 @@ import (
 	"github.com/piotrkowalczuk/sklog"
 	"github.com/prometheus/client_golang/prometheus"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/grpclog"
 )
 
@@ -77,6 +78,14 @@ func main() {
 	//		opts = []grpc.ServerOption{grpc.Creds(creds)}
 	//	}
 
+	if config.tls.enabled {
+		creds, err := credentials.NewServerTLSFromFile(config.tls.certFile, config.tls.keyFile)
+		if err != nil {
+			sklog.Fatal(logger, err)
+		}
+		opts = []grpc.ServerOption{grpc.Creds(creds)}
+	}
+	opts = append(opts, grpc.Creds(charon.NewCredentials()))
 	grpclog.SetLogger(sklog.NewGRPCLogger(logger))
 	gRPCServer := grpc.NewServer(opts...)
 

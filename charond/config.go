@@ -34,6 +34,11 @@ type configuration struct {
 	postgres struct {
 		connectionString string
 	}
+	tls struct {
+		enabled  bool
+		certFile string
+		keyFile  string
+	}
 }
 
 func (c *configuration) init() {
@@ -54,6 +59,9 @@ func (c *configuration) init() {
 	flag.IntVar(&c.password.bcrypt.cost, "pwd.bcryptcost", 10, "bcrypt cost, bigget than safer (and longer to create)")
 	flag.StringVar(&c.monitoring.engine, "m.engine", monitoringEnginePrometheus, "monitoring engine")
 	flag.StringVar(&c.postgres.connectionString, "ps.connectionstring", "postgres://localhost:5432?sslmode=disable", "storage postgres connection string")
+	flag.BoolVar(&c.tls.enabled, "tls", false, "tls enable flag")
+	flag.StringVar(&c.tls.certFile, "tls.certfile", "", "path to tls cert file")
+	flag.StringVar(&c.tls.keyFile, "tls.keyfile", "", "path to tls key file")
 }
 
 func (c *configuration) parse() {
