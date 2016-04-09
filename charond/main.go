@@ -6,11 +6,11 @@ package main
 import (
 	"errors"
 	"net"
-	"os"
-	"strconv"
 	"net/http"
 	_ "net/http/pprof"
-	
+	"os"
+	"strconv"
+
 	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/sklog"
 	"github.com/prometheus/client_golang/prometheus"
@@ -70,14 +70,6 @@ func main() {
 	}
 
 	var opts []grpc.ServerOption
-	//	if *tls {
-	//		creds, err := credentials.NewServerTLSFromFile(*certFile, *keyFile)
-	//		if err != nil {
-	//			grpclog.Fatalf("Failed to generate credentials %v", err)
-	//		}
-	//		opts = []grpc.ServerOption{grpc.Creds(creds)}
-	//	}
-
 	if config.tls.enabled {
 		creds, err := credentials.NewServerTLSFromFile(config.tls.certFile, config.tls.keyFile)
 		if err != nil {
