@@ -4,27 +4,14 @@ go:
 addons:
   postgresql: "9.4"
 env:
-  CHARON_HOST: localhost
-  CHARON_PORT: 9001
-  CHARON_SUBSYSTEM: charon_travis
-  CHARON_NAMESPACE: charon
-  CHARON_TEST: false
-  CHARON_LOGGER_FORMAT: humane
-  CHARON_LOGGER_ADAPTER: stdout
-  CHARON_LOGGER_LEVEL: 6
-  CHARON_MONITORING_ENGINE: prometheus
-  CHARON_POSTGRES_CONNECTION_STRING: postgres://postgres:@localhost/travis_ci_test?sslmode=disable
-  CHARON_POSTGRES_RETRY: 1
-  CHARON_PASSWORD_STRATEGY: bcrypt
-  CHARON_PASSWORD_BCRYPT_COST: 8
+  CHARON_POSTGRES_ADDRESS: postgres://postgres:@localhost/travis_ci_test?sslmode=disable
 install:
 - make get
 before_script:
 - psql -c 'create database travis_ci_test;' -U postgres
 script:
 - make build
-- make test-unit
-- make test-postgres
+- make test
 after_success:
 - bash <(curl -s https://codecov.io/bash)
 notifications:

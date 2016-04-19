@@ -1050,7 +1050,7 @@ var _ grpc.ClientConn
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
-const _ = grpc.SupportPackageIsVersion1
+const _ = grpc.SupportPackageIsVersion2
 
 // Client API for RPC service
 
@@ -1349,304 +1349,454 @@ func RegisterRPCServer(s *grpc.Server, srv RPCServer) {
 	s.RegisterService(&_RPC_serviceDesc, srv)
 }
 
-func _RPC_Login_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error) (interface{}, error) {
+func _RPC_Login_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(LoginRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
-	out, err := srv.(RPCServer).Login(ctx, in)
-	if err != nil {
-		return nil, err
+	if interceptor == nil {
+		return srv.(RPCServer).Login(ctx, in)
 	}
-	return out, nil
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/charon.RPC/Login",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RPCServer).Login(ctx, req.(*LoginRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
-func _RPC_Logout_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error) (interface{}, error) {
+func _RPC_Logout_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(LogoutRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
-	out, err := srv.(RPCServer).Logout(ctx, in)
-	if err != nil {
-		return nil, err
+	if interceptor == nil {
+		return srv.(RPCServer).Logout(ctx, in)
 	}
-	return out, nil
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/charon.RPC/Logout",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RPCServer).Logout(ctx, req.(*LogoutRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
-func _RPC_IsAuthenticated_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error) (interface{}, error) {
+func _RPC_IsAuthenticated_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(IsAuthenticatedRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
-	out, err := srv.(RPCServer).IsAuthenticated(ctx, in)
-	if err != nil {
-		return nil, err
+	if interceptor == nil {
+		return srv.(RPCServer).IsAuthenticated(ctx, in)
 	}
-	return out, nil
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/charon.RPC/IsAuthenticated",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RPCServer).IsAuthenticated(ctx, req.(*IsAuthenticatedRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
-func _RPC_Subject_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error) (interface{}, error) {
+func _RPC_Subject_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(SubjectRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
-	out, err := srv.(RPCServer).Subject(ctx, in)
-	if err != nil {
-		return nil, err
+	if interceptor == nil {
+		return srv.(RPCServer).Subject(ctx, in)
 	}
-	return out, nil
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/charon.RPC/Subject",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RPCServer).Subject(ctx, req.(*SubjectRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
-func _RPC_IsGranted_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error) (interface{}, error) {
+func _RPC_IsGranted_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(IsGrantedRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
-	out, err := srv.(RPCServer).IsGranted(ctx, in)
-	if err != nil {
-		return nil, err
+	if interceptor == nil {
+		return srv.(RPCServer).IsGranted(ctx, in)
 	}
-	return out, nil
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/charon.RPC/IsGranted",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RPCServer).IsGranted(ctx, req.(*IsGrantedRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
-func _RPC_BelongsTo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error) (interface{}, error) {
+func _RPC_BelongsTo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(BelongsToRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
-	out, err := srv.(RPCServer).BelongsTo(ctx, in)
-	if err != nil {
-		return nil, err
+	if interceptor == nil {
+		return srv.(RPCServer).BelongsTo(ctx, in)
 	}
-	return out, nil
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/charon.RPC/BelongsTo",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RPCServer).BelongsTo(ctx, req.(*BelongsToRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
-func _RPC_CreateUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error) (interface{}, error) {
+func _RPC_CreateUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(CreateUserRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
-	out, err := srv.(RPCServer).CreateUser(ctx, in)
-	if err != nil {
-		return nil, err
+	if interceptor == nil {
+		return srv.(RPCServer).CreateUser(ctx, in)
 	}
-	return out, nil
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/charon.RPC/CreateUser",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RPCServer).CreateUser(ctx, req.(*CreateUserRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
-func _RPC_ModifyUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error) (interface{}, error) {
+func _RPC_ModifyUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ModifyUserRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
-	out, err := srv.(RPCServer).ModifyUser(ctx, in)
-	if err != nil {
-		return nil, err
+	if interceptor == nil {
+		return srv.(RPCServer).ModifyUser(ctx, in)
 	}
-	return out, nil
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/charon.RPC/ModifyUser",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RPCServer).ModifyUser(ctx, req.(*ModifyUserRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
-func _RPC_GetUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error) (interface{}, error) {
+func _RPC_GetUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetUserRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
-	out, err := srv.(RPCServer).GetUser(ctx, in)
-	if err != nil {
-		return nil, err
+	if interceptor == nil {
+		return srv.(RPCServer).GetUser(ctx, in)
 	}
-	return out, nil
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/charon.RPC/GetUser",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RPCServer).GetUser(ctx, req.(*GetUserRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
-func _RPC_ListUsers_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error) (interface{}, error) {
+func _RPC_ListUsers_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ListUsersRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
-	out, err := srv.(RPCServer).ListUsers(ctx, in)
-	if err != nil {
-		return nil, err
+	if interceptor == nil {
+		return srv.(RPCServer).ListUsers(ctx, in)
 	}
-	return out, nil
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/charon.RPC/ListUsers",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RPCServer).ListUsers(ctx, req.(*ListUsersRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
-func _RPC_DeleteUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error) (interface{}, error) {
+func _RPC_DeleteUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(DeleteUserRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
-	out, err := srv.(RPCServer).DeleteUser(ctx, in)
-	if err != nil {
-		return nil, err
+	if interceptor == nil {
+		return srv.(RPCServer).DeleteUser(ctx, in)
 	}
-	return out, nil
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/charon.RPC/DeleteUser",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RPCServer).DeleteUser(ctx, req.(*DeleteUserRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
-func _RPC_ListUserPermissions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error) (interface{}, error) {
+func _RPC_ListUserPermissions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ListUserPermissionsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
-	out, err := srv.(RPCServer).ListUserPermissions(ctx, in)
-	if err != nil {
-		return nil, err
+	if interceptor == nil {
+		return srv.(RPCServer).ListUserPermissions(ctx, in)
 	}
-	return out, nil
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/charon.RPC/ListUserPermissions",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RPCServer).ListUserPermissions(ctx, req.(*ListUserPermissionsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
-func _RPC_SetUserPermissions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error) (interface{}, error) {
+func _RPC_SetUserPermissions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(SetUserPermissionsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
-	out, err := srv.(RPCServer).SetUserPermissions(ctx, in)
-	if err != nil {
-		return nil, err
+	if interceptor == nil {
+		return srv.(RPCServer).SetUserPermissions(ctx, in)
 	}
-	return out, nil
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/charon.RPC/SetUserPermissions",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RPCServer).SetUserPermissions(ctx, req.(*SetUserPermissionsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
-func _RPC_ListUserGroups_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error) (interface{}, error) {
+func _RPC_ListUserGroups_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ListUserGroupsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
-	out, err := srv.(RPCServer).ListUserGroups(ctx, in)
-	if err != nil {
-		return nil, err
+	if interceptor == nil {
+		return srv.(RPCServer).ListUserGroups(ctx, in)
 	}
-	return out, nil
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/charon.RPC/ListUserGroups",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RPCServer).ListUserGroups(ctx, req.(*ListUserGroupsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
-func _RPC_SetUserGroups_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error) (interface{}, error) {
+func _RPC_SetUserGroups_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(SetUserGroupsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
-	out, err := srv.(RPCServer).SetUserGroups(ctx, in)
-	if err != nil {
-		return nil, err
+	if interceptor == nil {
+		return srv.(RPCServer).SetUserGroups(ctx, in)
 	}
-	return out, nil
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/charon.RPC/SetUserGroups",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RPCServer).SetUserGroups(ctx, req.(*SetUserGroupsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
-func _RPC_RegisterPermissions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error) (interface{}, error) {
+func _RPC_RegisterPermissions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(RegisterPermissionsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
-	out, err := srv.(RPCServer).RegisterPermissions(ctx, in)
-	if err != nil {
-		return nil, err
+	if interceptor == nil {
+		return srv.(RPCServer).RegisterPermissions(ctx, in)
 	}
-	return out, nil
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/charon.RPC/RegisterPermissions",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RPCServer).RegisterPermissions(ctx, req.(*RegisterPermissionsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
-func _RPC_ListPermissions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error) (interface{}, error) {
+func _RPC_ListPermissions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ListPermissionsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
-	out, err := srv.(RPCServer).ListPermissions(ctx, in)
-	if err != nil {
-		return nil, err
+	if interceptor == nil {
+		return srv.(RPCServer).ListPermissions(ctx, in)
 	}
-	return out, nil
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/charon.RPC/ListPermissions",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RPCServer).ListPermissions(ctx, req.(*ListPermissionsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
-func _RPC_GetPermission_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error) (interface{}, error) {
+func _RPC_GetPermission_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetPermissionRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
-	out, err := srv.(RPCServer).GetPermission(ctx, in)
-	if err != nil {
-		return nil, err
+	if interceptor == nil {
+		return srv.(RPCServer).GetPermission(ctx, in)
 	}
-	return out, nil
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/charon.RPC/GetPermission",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RPCServer).GetPermission(ctx, req.(*GetPermissionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
-func _RPC_CreateGroup_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error) (interface{}, error) {
+func _RPC_CreateGroup_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(CreateGroupRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
-	out, err := srv.(RPCServer).CreateGroup(ctx, in)
-	if err != nil {
-		return nil, err
+	if interceptor == nil {
+		return srv.(RPCServer).CreateGroup(ctx, in)
 	}
-	return out, nil
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/charon.RPC/CreateGroup",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RPCServer).CreateGroup(ctx, req.(*CreateGroupRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
-func _RPC_ModifyGroup_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error) (interface{}, error) {
+func _RPC_ModifyGroup_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ModifyGroupRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
-	out, err := srv.(RPCServer).ModifyGroup(ctx, in)
-	if err != nil {
-		return nil, err
+	if interceptor == nil {
+		return srv.(RPCServer).ModifyGroup(ctx, in)
 	}
-	return out, nil
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/charon.RPC/ModifyGroup",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RPCServer).ModifyGroup(ctx, req.(*ModifyGroupRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
-func _RPC_GetGroup_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error) (interface{}, error) {
+func _RPC_GetGroup_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetGroupRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
-	out, err := srv.(RPCServer).GetGroup(ctx, in)
-	if err != nil {
-		return nil, err
+	if interceptor == nil {
+		return srv.(RPCServer).GetGroup(ctx, in)
 	}
-	return out, nil
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/charon.RPC/GetGroup",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RPCServer).GetGroup(ctx, req.(*GetGroupRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
-func _RPC_ListGroups_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error) (interface{}, error) {
+func _RPC_ListGroups_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ListGroupsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
-	out, err := srv.(RPCServer).ListGroups(ctx, in)
-	if err != nil {
-		return nil, err
+	if interceptor == nil {
+		return srv.(RPCServer).ListGroups(ctx, in)
 	}
-	return out, nil
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/charon.RPC/ListGroups",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RPCServer).ListGroups(ctx, req.(*ListGroupsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
-func _RPC_DeleteGroup_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error) (interface{}, error) {
+func _RPC_DeleteGroup_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(DeleteGroupRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
-	out, err := srv.(RPCServer).DeleteGroup(ctx, in)
-	if err != nil {
-		return nil, err
+	if interceptor == nil {
+		return srv.(RPCServer).DeleteGroup(ctx, in)
 	}
-	return out, nil
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/charon.RPC/DeleteGroup",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RPCServer).DeleteGroup(ctx, req.(*DeleteGroupRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
-func _RPC_ListGroupPermissions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error) (interface{}, error) {
+func _RPC_ListGroupPermissions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ListGroupPermissionsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
-	out, err := srv.(RPCServer).ListGroupPermissions(ctx, in)
-	if err != nil {
-		return nil, err
+	if interceptor == nil {
+		return srv.(RPCServer).ListGroupPermissions(ctx, in)
 	}
-	return out, nil
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/charon.RPC/ListGroupPermissions",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RPCServer).ListGroupPermissions(ctx, req.(*ListGroupPermissionsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
-func _RPC_SetGroupPermissions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error) (interface{}, error) {
+func _RPC_SetGroupPermissions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(SetGroupPermissionsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
-	out, err := srv.(RPCServer).SetGroupPermissions(ctx, in)
-	if err != nil {
-		return nil, err
+	if interceptor == nil {
+		return srv.(RPCServer).SetGroupPermissions(ctx, in)
 	}
-	return out, nil
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/charon.RPC/SetGroupPermissions",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RPCServer).SetGroupPermissions(ctx, req.(*SetGroupPermissionsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 var _RPC_serviceDesc = grpc.ServiceDesc{
