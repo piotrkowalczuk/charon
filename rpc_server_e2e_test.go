@@ -3,8 +3,8 @@ package charon
 import (
 	"testing"
 
-	"code.google.com/p/go.net/context"
 	"github.com/piotrkowalczuk/mnemosyne"
+	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 )
