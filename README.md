@@ -8,8 +8,8 @@ Charon [![GoDoc](https://godoc.org/github.com/piotrkowalczuk/charon?status.svg)]
 ### Installation
 
 ```bash
-$ go install github.com/piotrkowalczuk/charon/charond
-$ go install github.com/piotrkowalczuk/charon/charonctl
+$ go install github.com/piotrkowalczuk/charon/cmd/charond
+$ go install github.com/piotrkowalczuk/charon/cmd/charonctl
 ```
 
 ### Superuser
