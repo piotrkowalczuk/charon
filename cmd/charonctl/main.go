@@ -8,6 +8,7 @@ import (
 
 	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/mnemosyne"
+	"github.com/piotrkowalczuk/nilt"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 )
@@ -60,11 +61,16 @@ func registerUser(config configuration) {
 		PlainPassword: config.register.password,
 		FirstName:     config.register.firstName,
 		LastName:      config.register.lastName,
+		IsSuperuser:   &nilt.Bool{Bool: config.register.superuser, Valid: true},
 	})
 	if err != nil {
 		fmt.Printf("charonctl: registration failure: %s", grpc.ErrorDesc(err))
 		os.Exit(1)
 	}
 
-	fmt.Printf(`user "%s" has been created successfully`, resp.User.Username)
+	if config.register.superuser {
+		fmt.Printf(`superuser "%s" has been created`, resp.User.Username)
+	} else {
+		fmt.Printf(`user "%s" has been created`, resp.User.Username)
+	}
 }

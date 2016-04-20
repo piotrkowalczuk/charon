@@ -2,7 +2,6 @@ package charon
 
 import (
 	"github.com/pborman/uuid"
-	"github.com/piotrkowalczuk/nilt"
 	"github.com/piotrkowalczuk/pqt"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
@@ -25,7 +24,7 @@ func (cuh *createUserHandler) handle(ctx context.Context, req *CreateUserRequest
 		return nil, err
 	}
 
-	if act.isLocal && act.user.IsSuperuser {
+	if act.isLocal && req.IsSuperuser.BoolOr(false) {
 		count, err := cuh.repository.user.Count()
 		if err != nil {
 			return nil, err
@@ -33,8 +32,6 @@ func (cuh *createUserHandler) handle(ctx context.Context, req *CreateUserRequest
 		if count > 0 {
 			return nil, grpc.Errorf(codes.AlreadyExists, "charon: initial superuser account already exists")
 		}
-
-		req.IsSuperuser = &nilt.Bool{Bool: true, Valid: true}
 	}
 	if len(req.SecurePassword) == 0 {
 		req.SecurePassword, err = cuh.hasher.Hash([]byte(req.PlainPassword))
@@ -42,6 +39,7 @@ func (cuh *createUserHandler) handle(ctx context.Context, req *CreateUserRequest
 			return nil, err
 		}
 	} else {
+		// TODO: only one superuser can be defined so this else statement makes no sense in this place.
 		if !act.user.IsSuperuser {
 			return nil, grpc.Errorf(codes.PermissionDenied, "charon: only superuser can create an user with manualy defined secure password")
 		}

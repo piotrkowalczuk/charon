@@ -15,7 +15,7 @@ $ go install github.com/piotrkowalczuk/charon/charonctl
 ### Superuser
 
 ```bash
-$ charonctl register -noauth -r.username="j.snow@gmail.com" -r.password=123 -r.firstname=John -r.lastname=Snow
+$ charonctl register -noauth -r.superuser=true -r.username="j.snow@gmail.com" -r.password=123 -r.firstname=John -r.lastname=Snow
 ```
 
 ## Contribution
