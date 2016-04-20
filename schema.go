@@ -9,7 +9,6 @@ import (
 	"github.com/golang/protobuf/ptypes"
 	"github.com/piotrkowalczuk/nilt"
 	"github.com/piotrkowalczuk/pqcomp"
-	"github.com/piotrkowalczuk/pqt"
 	"github.com/piotrkowalczuk/protot"
 )
 
@@ -168,7 +167,9 @@ func (r *userRepository) Find(c *userCriteria) ([]*userEntity, error) {
 		case protot.NumericQueryType_LESS_EQUAL:
 			where.AddExpr(tableUserColumnCreatedBy, pqcomp.LTE, c.createdBy.Value())
 		case protot.NumericQueryType_IN:
-			where.AddExpr(tableUserColumnCreatedBy, pqcomp.IN, pqt.ArrayInt64(c.createdBy.Values))
+			for _, v := range c.createdBy.Values {
+				where.AddExpr(tableUserColumnCreatedBy, pqcomp.IN, v)
+			}
 		case protot.NumericQueryType_BETWEEN:
 			where.AddExpr(tableUserColumnCreatedBy, pqcomp.GT, c.createdBy.Values[0])
 			where.AddExpr(tableUserColumnCreatedBy, pqcomp.LT, c.createdBy.Values[1])
@@ -178,11 +179,19 @@ func (r *userRepository) Find(c *userCriteria) ([]*userEntity, error) {
 	if c.firstName != nil && c.firstName.Valid {
 		switch c.firstName.Type {
 		case protot.TextQueryType_NOT_A_TEXT:
-			where.AddExpr(tableUserColumnFirstName, pqcomp.IS, pqcomp.NULL)
+			if c.firstName.Negation {
+				where.AddExpr(tableUserColumnFirstName, pqcomp.IS, pqcomp.NOT_NULL)
+			} else {
+				where.AddExpr(tableUserColumnFirstName, pqcomp.IS, pqcomp.NULL)
+			}
 		case protot.TextQueryType_EXACT:
 			where.AddExpr(tableUserColumnFirstName, pqcomp.E, c.firstName.Value())
 		case protot.TextQueryType_SUBSTRING:
 			where.AddExpr(tableUserColumnFirstName, pqcomp.LIKE, "%"+c.firstName.Value()+"%")
+		case protot.TextQueryType_HAS_PREFIX:
+			where.AddExpr(tableUserColumnFirstName, pqcomp.LIKE, c.firstName.Value()+"%")
+		case protot.TextQueryType_HAS_SUFFIX:
+			where.AddExpr(tableUserColumnFirstName, pqcomp.LIKE, "%"+c.firstName.Value())
 		}
 	}
 
@@ -203,7 +212,9 @@ func (r *userRepository) Find(c *userCriteria) ([]*userEntity, error) {
 		case protot.NumericQueryType_LESS_EQUAL:
 			where.AddExpr(tableUserColumnID, pqcomp.LTE, c.id.Value())
 		case protot.NumericQueryType_IN:
-			where.AddExpr(tableUserColumnID, pqcomp.IN, pqt.ArrayInt64(c.id.Values))
+			for _, v := range c.id.Values {
+				where.AddExpr(tableUserColumnID, pqcomp.IN, v)
+			}
 		case protot.NumericQueryType_BETWEEN:
 			where.AddExpr(tableUserColumnID, pqcomp.GT, c.id.Values[0])
 			where.AddExpr(tableUserColumnID, pqcomp.LT, c.id.Values[1])
@@ -258,11 +269,19 @@ func (r *userRepository) Find(c *userCriteria) ([]*userEntity, error) {
 	if c.lastName != nil && c.lastName.Valid {
 		switch c.lastName.Type {
 		case protot.TextQueryType_NOT_A_TEXT:
-			where.AddExpr(tableUserColumnLastName, pqcomp.IS, pqcomp.NULL)
+			if c.lastName.Negation {
+				where.AddExpr(tableUserColumnLastName, pqcomp.IS, pqcomp.NOT_NULL)
+			} else {
+				where.AddExpr(tableUserColumnLastName, pqcomp.IS, pqcomp.NULL)
+			}
 		case protot.TextQueryType_EXACT:
 			where.AddExpr(tableUserColumnLastName, pqcomp.E, c.lastName.Value())
 		case protot.TextQueryType_SUBSTRING:
 			where.AddExpr(tableUserColumnLastName, pqcomp.LIKE, "%"+c.lastName.Value()+"%")
+		case protot.TextQueryType_HAS_PREFIX:
+			where.AddExpr(tableUserColumnLastName, pqcomp.LIKE, c.lastName.Value()+"%")
+		case protot.TextQueryType_HAS_SUFFIX:
+			where.AddExpr(tableUserColumnLastName, pqcomp.LIKE, "%"+c.lastName.Value())
 		}
 	}
 
@@ -325,7 +344,9 @@ func (r *userRepository) Find(c *userCriteria) ([]*userEntity, error) {
 		case protot.NumericQueryType_LESS_EQUAL:
 			where.AddExpr(tableUserColumnUpdatedBy, pqcomp.LTE, c.updatedBy.Value())
 		case protot.NumericQueryType_IN:
-			where.AddExpr(tableUserColumnUpdatedBy, pqcomp.IN, pqt.ArrayInt64(c.updatedBy.Values))
+			for _, v := range c.updatedBy.Values {
+				where.AddExpr(tableUserColumnUpdatedBy, pqcomp.IN, v)
+			}
 		case protot.NumericQueryType_BETWEEN:
 			where.AddExpr(tableUserColumnUpdatedBy, pqcomp.GT, c.updatedBy.Values[0])
 			where.AddExpr(tableUserColumnUpdatedBy, pqcomp.LT, c.updatedBy.Values[1])
@@ -335,11 +356,19 @@ func (r *userRepository) Find(c *userCriteria) ([]*userEntity, error) {
 	if c.username != nil && c.username.Valid {
 		switch c.username.Type {
 		case protot.TextQueryType_NOT_A_TEXT:
-			where.AddExpr(tableUserColumnUsername, pqcomp.IS, pqcomp.NULL)
+			if c.username.Negation {
+				where.AddExpr(tableUserColumnUsername, pqcomp.IS, pqcomp.NOT_NULL)
+			} else {
+				where.AddExpr(tableUserColumnUsername, pqcomp.IS, pqcomp.NULL)
+			}
 		case protot.TextQueryType_EXACT:
 			where.AddExpr(tableUserColumnUsername, pqcomp.E, c.username.Value())
 		case protot.TextQueryType_SUBSTRING:
 			where.AddExpr(tableUserColumnUsername, pqcomp.LIKE, "%"+c.username.Value()+"%")
+		case protot.TextQueryType_HAS_PREFIX:
+			where.AddExpr(tableUserColumnUsername, pqcomp.LIKE, c.username.Value()+"%")
+		case protot.TextQueryType_HAS_SUFFIX:
+			where.AddExpr(tableUserColumnUsername, pqcomp.LIKE, "%"+c.username.Value())
 		}
 	}
 
@@ -673,7 +702,9 @@ func (r *groupRepository) Find(c *groupCriteria) ([]*groupEntity, error) {
 		case protot.NumericQueryType_LESS_EQUAL:
 			where.AddExpr(tableGroupColumnCreatedBy, pqcomp.LTE, c.createdBy.Value())
 		case protot.NumericQueryType_IN:
-			where.AddExpr(tableGroupColumnCreatedBy, pqcomp.IN, pqt.ArrayInt64(c.createdBy.Values))
+			for _, v := range c.createdBy.Values {
+				where.AddExpr(tableGroupColumnCreatedBy, pqcomp.IN, v)
+			}
 		case protot.NumericQueryType_BETWEEN:
 			where.AddExpr(tableGroupColumnCreatedBy, pqcomp.GT, c.createdBy.Values[0])
 			where.AddExpr(tableGroupColumnCreatedBy, pqcomp.LT, c.createdBy.Values[1])
@@ -683,11 +714,19 @@ func (r *groupRepository) Find(c *groupCriteria) ([]*groupEntity, error) {
 	if c.description != nil && c.description.Valid {
 		switch c.description.Type {
 		case protot.TextQueryType_NOT_A_TEXT:
-			where.AddExpr(tableGroupColumnDescription, pqcomp.IS, pqcomp.NULL)
+			if c.description.Negation {
+				where.AddExpr(tableGroupColumnDescription, pqcomp.IS, pqcomp.NOT_NULL)
+			} else {
+				where.AddExpr(tableGroupColumnDescription, pqcomp.IS, pqcomp.NULL)
+			}
 		case protot.TextQueryType_EXACT:
 			where.AddExpr(tableGroupColumnDescription, pqcomp.E, c.description.Value())
 		case protot.TextQueryType_SUBSTRING:
 			where.AddExpr(tableGroupColumnDescription, pqcomp.LIKE, "%"+c.description.Value()+"%")
+		case protot.TextQueryType_HAS_PREFIX:
+			where.AddExpr(tableGroupColumnDescription, pqcomp.LIKE, c.description.Value()+"%")
+		case protot.TextQueryType_HAS_SUFFIX:
+			where.AddExpr(tableGroupColumnDescription, pqcomp.LIKE, "%"+c.description.Value())
 		}
 	}
 
@@ -708,7 +747,9 @@ func (r *groupRepository) Find(c *groupCriteria) ([]*groupEntity, error) {
 		case protot.NumericQueryType_LESS_EQUAL:
 			where.AddExpr(tableGroupColumnID, pqcomp.LTE, c.id.Value())
 		case protot.NumericQueryType_IN:
-			where.AddExpr(tableGroupColumnID, pqcomp.IN, pqt.ArrayInt64(c.id.Values))
+			for _, v := range c.id.Values {
+				where.AddExpr(tableGroupColumnID, pqcomp.IN, v)
+			}
 		case protot.NumericQueryType_BETWEEN:
 			where.AddExpr(tableGroupColumnID, pqcomp.GT, c.id.Values[0])
 			where.AddExpr(tableGroupColumnID, pqcomp.LT, c.id.Values[1])
@@ -718,11 +759,19 @@ func (r *groupRepository) Find(c *groupCriteria) ([]*groupEntity, error) {
 	if c.name != nil && c.name.Valid {
 		switch c.name.Type {
 		case protot.TextQueryType_NOT_A_TEXT:
-			where.AddExpr(tableGroupColumnName, pqcomp.IS, pqcomp.NULL)
+			if c.name.Negation {
+				where.AddExpr(tableGroupColumnName, pqcomp.IS, pqcomp.NOT_NULL)
+			} else {
+				where.AddExpr(tableGroupColumnName, pqcomp.IS, pqcomp.NULL)
+			}
 		case protot.TextQueryType_EXACT:
 			where.AddExpr(tableGroupColumnName, pqcomp.E, c.name.Value())
 		case protot.TextQueryType_SUBSTRING:
 			where.AddExpr(tableGroupColumnName, pqcomp.LIKE, "%"+c.name.Value()+"%")
+		case protot.TextQueryType_HAS_PREFIX:
+			where.AddExpr(tableGroupColumnName, pqcomp.LIKE, c.name.Value()+"%")
+		case protot.TextQueryType_HAS_SUFFIX:
+			where.AddExpr(tableGroupColumnName, pqcomp.LIKE, "%"+c.name.Value())
 		}
 	}
 
@@ -783,7 +832,9 @@ func (r *groupRepository) Find(c *groupCriteria) ([]*groupEntity, error) {
 		case protot.NumericQueryType_LESS_EQUAL:
 			where.AddExpr(tableGroupColumnUpdatedBy, pqcomp.LTE, c.updatedBy.Value())
 		case protot.NumericQueryType_IN:
-			where.AddExpr(tableGroupColumnUpdatedBy, pqcomp.IN, pqt.ArrayInt64(c.updatedBy.Values))
+			for _, v := range c.updatedBy.Values {
+				where.AddExpr(tableGroupColumnUpdatedBy, pqcomp.IN, v)
+			}
 		case protot.NumericQueryType_BETWEEN:
 			where.AddExpr(tableGroupColumnUpdatedBy, pqcomp.GT, c.updatedBy.Values[0])
 			where.AddExpr(tableGroupColumnUpdatedBy, pqcomp.LT, c.updatedBy.Values[1])
@@ -994,11 +1045,19 @@ func (r *permissionRepository) Find(c *permissionCriteria) ([]*permissionEntity,
 	if c.action != nil && c.action.Valid {
 		switch c.action.Type {
 		case protot.TextQueryType_NOT_A_TEXT:
-			where.AddExpr(tablePermissionColumnAction, pqcomp.IS, pqcomp.NULL)
+			if c.action.Negation {
+				where.AddExpr(tablePermissionColumnAction, pqcomp.IS, pqcomp.NOT_NULL)
+			} else {
+				where.AddExpr(tablePermissionColumnAction, pqcomp.IS, pqcomp.NULL)
+			}
 		case protot.TextQueryType_EXACT:
 			where.AddExpr(tablePermissionColumnAction, pqcomp.E, c.action.Value())
 		case protot.TextQueryType_SUBSTRING:
 			where.AddExpr(tablePermissionColumnAction, pqcomp.LIKE, "%"+c.action.Value()+"%")
+		case protot.TextQueryType_HAS_PREFIX:
+			where.AddExpr(tablePermissionColumnAction, pqcomp.LIKE, c.action.Value()+"%")
+		case protot.TextQueryType_HAS_SUFFIX:
+			where.AddExpr(tablePermissionColumnAction, pqcomp.LIKE, "%"+c.action.Value())
 		}
 	}
 
@@ -1059,7 +1118,9 @@ func (r *permissionRepository) Find(c *permissionCriteria) ([]*permissionEntity,
 		case protot.NumericQueryType_LESS_EQUAL:
 			where.AddExpr(tablePermissionColumnID, pqcomp.LTE, c.id.Value())
 		case protot.NumericQueryType_IN:
-			where.AddExpr(tablePermissionColumnID, pqcomp.IN, pqt.ArrayInt64(c.id.Values))
+			for _, v := range c.id.Values {
+				where.AddExpr(tablePermissionColumnID, pqcomp.IN, v)
+			}
 		case protot.NumericQueryType_BETWEEN:
 			where.AddExpr(tablePermissionColumnID, pqcomp.GT, c.id.Values[0])
 			where.AddExpr(tablePermissionColumnID, pqcomp.LT, c.id.Values[1])
@@ -1069,22 +1130,38 @@ func (r *permissionRepository) Find(c *permissionCriteria) ([]*permissionEntity,
 	if c.module != nil && c.module.Valid {
 		switch c.module.Type {
 		case protot.TextQueryType_NOT_A_TEXT:
-			where.AddExpr(tablePermissionColumnModule, pqcomp.IS, pqcomp.NULL)
+			if c.module.Negation {
+				where.AddExpr(tablePermissionColumnModule, pqcomp.IS, pqcomp.NOT_NULL)
+			} else {
+				where.AddExpr(tablePermissionColumnModule, pqcomp.IS, pqcomp.NULL)
+			}
 		case protot.TextQueryType_EXACT:
 			where.AddExpr(tablePermissionColumnModule, pqcomp.E, c.module.Value())
 		case protot.TextQueryType_SUBSTRING:
 			where.AddExpr(tablePermissionColumnModule, pqcomp.LIKE, "%"+c.module.Value()+"%")
+		case protot.TextQueryType_HAS_PREFIX:
+			where.AddExpr(tablePermissionColumnModule, pqcomp.LIKE, c.module.Value()+"%")
+		case protot.TextQueryType_HAS_SUFFIX:
+			where.AddExpr(tablePermissionColumnModule, pqcomp.LIKE, "%"+c.module.Value())
 		}
 	}
 
 	if c.subsystem != nil && c.subsystem.Valid {
 		switch c.subsystem.Type {
 		case protot.TextQueryType_NOT_A_TEXT:
-			where.AddExpr(tablePermissionColumnSubsystem, pqcomp.IS, pqcomp.NULL)
+			if c.subsystem.Negation {
+				where.AddExpr(tablePermissionColumnSubsystem, pqcomp.IS, pqcomp.NOT_NULL)
+			} else {
+				where.AddExpr(tablePermissionColumnSubsystem, pqcomp.IS, pqcomp.NULL)
+			}
 		case protot.TextQueryType_EXACT:
 			where.AddExpr(tablePermissionColumnSubsystem, pqcomp.E, c.subsystem.Value())
 		case protot.TextQueryType_SUBSTRING:
 			where.AddExpr(tablePermissionColumnSubsystem, pqcomp.LIKE, "%"+c.subsystem.Value()+"%")
+		case protot.TextQueryType_HAS_PREFIX:
+			where.AddExpr(tablePermissionColumnSubsystem, pqcomp.LIKE, c.subsystem.Value()+"%")
+		case protot.TextQueryType_HAS_SUFFIX:
+			where.AddExpr(tablePermissionColumnSubsystem, pqcomp.LIKE, "%"+c.subsystem.Value())
 		}
 	}
 
@@ -1383,7 +1460,9 @@ func (r *userGroupsRepository) Find(c *userGroupsCriteria) ([]*userGroupsEntity,
 		case protot.NumericQueryType_LESS_EQUAL:
 			where.AddExpr(tableUserGroupsColumnCreatedBy, pqcomp.LTE, c.createdBy.Value())
 		case protot.NumericQueryType_IN:
-			where.AddExpr(tableUserGroupsColumnCreatedBy, pqcomp.IN, pqt.ArrayInt64(c.createdBy.Values))
+			for _, v := range c.createdBy.Values {
+				where.AddExpr(tableUserGroupsColumnCreatedBy, pqcomp.IN, v)
+			}
 		case protot.NumericQueryType_BETWEEN:
 			where.AddExpr(tableUserGroupsColumnCreatedBy, pqcomp.GT, c.createdBy.Values[0])
 			where.AddExpr(tableUserGroupsColumnCreatedBy, pqcomp.LT, c.createdBy.Values[1])
@@ -1407,7 +1486,9 @@ func (r *userGroupsRepository) Find(c *userGroupsCriteria) ([]*userGroupsEntity,
 		case protot.NumericQueryType_LESS_EQUAL:
 			where.AddExpr(tableUserGroupsColumnGroupID, pqcomp.LTE, c.groupID.Value())
 		case protot.NumericQueryType_IN:
-			where.AddExpr(tableUserGroupsColumnGroupID, pqcomp.IN, pqt.ArrayInt64(c.groupID.Values))
+			for _, v := range c.groupID.Values {
+				where.AddExpr(tableUserGroupsColumnGroupID, pqcomp.IN, v)
+			}
 		case protot.NumericQueryType_BETWEEN:
 			where.AddExpr(tableUserGroupsColumnGroupID, pqcomp.GT, c.groupID.Values[0])
 			where.AddExpr(tableUserGroupsColumnGroupID, pqcomp.LT, c.groupID.Values[1])
@@ -1471,7 +1552,9 @@ func (r *userGroupsRepository) Find(c *userGroupsCriteria) ([]*userGroupsEntity,
 		case protot.NumericQueryType_LESS_EQUAL:
 			where.AddExpr(tableUserGroupsColumnUpdatedBy, pqcomp.LTE, c.updatedBy.Value())
 		case protot.NumericQueryType_IN:
-			where.AddExpr(tableUserGroupsColumnUpdatedBy, pqcomp.IN, pqt.ArrayInt64(c.updatedBy.Values))
+			for _, v := range c.updatedBy.Values {
+				where.AddExpr(tableUserGroupsColumnUpdatedBy, pqcomp.IN, v)
+			}
 		case protot.NumericQueryType_BETWEEN:
 			where.AddExpr(tableUserGroupsColumnUpdatedBy, pqcomp.GT, c.updatedBy.Values[0])
 			where.AddExpr(tableUserGroupsColumnUpdatedBy, pqcomp.LT, c.updatedBy.Values[1])
@@ -1495,7 +1578,9 @@ func (r *userGroupsRepository) Find(c *userGroupsCriteria) ([]*userGroupsEntity,
 		case protot.NumericQueryType_LESS_EQUAL:
 			where.AddExpr(tableUserGroupsColumnUserID, pqcomp.LTE, c.userID.Value())
 		case protot.NumericQueryType_IN:
-			where.AddExpr(tableUserGroupsColumnUserID, pqcomp.IN, pqt.ArrayInt64(c.userID.Values))
+			for _, v := range c.userID.Values {
+				where.AddExpr(tableUserGroupsColumnUserID, pqcomp.IN, v)
+			}
 		case protot.NumericQueryType_BETWEEN:
 			where.AddExpr(tableUserGroupsColumnUserID, pqcomp.GT, c.userID.Values[0])
 			where.AddExpr(tableUserGroupsColumnUserID, pqcomp.LT, c.userID.Values[1])
@@ -1679,7 +1764,9 @@ func (r *groupPermissionsRepository) Find(c *groupPermissionsCriteria) ([]*group
 		case protot.NumericQueryType_LESS_EQUAL:
 			where.AddExpr(tableGroupPermissionsColumnCreatedBy, pqcomp.LTE, c.createdBy.Value())
 		case protot.NumericQueryType_IN:
-			where.AddExpr(tableGroupPermissionsColumnCreatedBy, pqcomp.IN, pqt.ArrayInt64(c.createdBy.Values))
+			for _, v := range c.createdBy.Values {
+				where.AddExpr(tableGroupPermissionsColumnCreatedBy, pqcomp.IN, v)
+			}
 		case protot.NumericQueryType_BETWEEN:
 			where.AddExpr(tableGroupPermissionsColumnCreatedBy, pqcomp.GT, c.createdBy.Values[0])
 			where.AddExpr(tableGroupPermissionsColumnCreatedBy, pqcomp.LT, c.createdBy.Values[1])
@@ -1703,7 +1790,9 @@ func (r *groupPermissionsRepository) Find(c *groupPermissionsCriteria) ([]*group
 		case protot.NumericQueryType_LESS_EQUAL:
 			where.AddExpr(tableGroupPermissionsColumnGroupID, pqcomp.LTE, c.groupID.Value())
 		case protot.NumericQueryType_IN:
-			where.AddExpr(tableGroupPermissionsColumnGroupID, pqcomp.IN, pqt.ArrayInt64(c.groupID.Values))
+			for _, v := range c.groupID.Values {
+				where.AddExpr(tableGroupPermissionsColumnGroupID, pqcomp.IN, v)
+			}
 		case protot.NumericQueryType_BETWEEN:
 			where.AddExpr(tableGroupPermissionsColumnGroupID, pqcomp.GT, c.groupID.Values[0])
 			where.AddExpr(tableGroupPermissionsColumnGroupID, pqcomp.LT, c.groupID.Values[1])
@@ -1713,33 +1802,57 @@ func (r *groupPermissionsRepository) Find(c *groupPermissionsCriteria) ([]*group
 	if c.permissionAction != nil && c.permissionAction.Valid {
 		switch c.permissionAction.Type {
 		case protot.TextQueryType_NOT_A_TEXT:
-			where.AddExpr(tableGroupPermissionsColumnPermissionAction, pqcomp.IS, pqcomp.NULL)
+			if c.permissionAction.Negation {
+				where.AddExpr(tableGroupPermissionsColumnPermissionAction, pqcomp.IS, pqcomp.NOT_NULL)
+			} else {
+				where.AddExpr(tableGroupPermissionsColumnPermissionAction, pqcomp.IS, pqcomp.NULL)
+			}
 		case protot.TextQueryType_EXACT:
 			where.AddExpr(tableGroupPermissionsColumnPermissionAction, pqcomp.E, c.permissionAction.Value())
 		case protot.TextQueryType_SUBSTRING:
 			where.AddExpr(tableGroupPermissionsColumnPermissionAction, pqcomp.LIKE, "%"+c.permissionAction.Value()+"%")
+		case protot.TextQueryType_HAS_PREFIX:
+			where.AddExpr(tableGroupPermissionsColumnPermissionAction, pqcomp.LIKE, c.permissionAction.Value()+"%")
+		case protot.TextQueryType_HAS_SUFFIX:
+			where.AddExpr(tableGroupPermissionsColumnPermissionAction, pqcomp.LIKE, "%"+c.permissionAction.Value())
 		}
 	}
 
 	if c.permissionModule != nil && c.permissionModule.Valid {
 		switch c.permissionModule.Type {
 		case protot.TextQueryType_NOT_A_TEXT:
-			where.AddExpr(tableGroupPermissionsColumnPermissionModule, pqcomp.IS, pqcomp.NULL)
+			if c.permissionModule.Negation {
+				where.AddExpr(tableGroupPermissionsColumnPermissionModule, pqcomp.IS, pqcomp.NOT_NULL)
+			} else {
+				where.AddExpr(tableGroupPermissionsColumnPermissionModule, pqcomp.IS, pqcomp.NULL)
+			}
 		case protot.TextQueryType_EXACT:
 			where.AddExpr(tableGroupPermissionsColumnPermissionModule, pqcomp.E, c.permissionModule.Value())
 		case protot.TextQueryType_SUBSTRING:
 			where.AddExpr(tableGroupPermissionsColumnPermissionModule, pqcomp.LIKE, "%"+c.permissionModule.Value()+"%")
+		case protot.TextQueryType_HAS_PREFIX:
+			where.AddExpr(tableGroupPermissionsColumnPermissionModule, pqcomp.LIKE, c.permissionModule.Value()+"%")
+		case protot.TextQueryType_HAS_SUFFIX:
+			where.AddExpr(tableGroupPermissionsColumnPermissionModule, pqcomp.LIKE, "%"+c.permissionModule.Value())
 		}
 	}
 
 	if c.permissionSubsystem != nil && c.permissionSubsystem.Valid {
 		switch c.permissionSubsystem.Type {
 		case protot.TextQueryType_NOT_A_TEXT:
-			where.AddExpr(tableGroupPermissionsColumnPermissionSubsystem, pqcomp.IS, pqcomp.NULL)
+			if c.permissionSubsystem.Negation {
+				where.AddExpr(tableGroupPermissionsColumnPermissionSubsystem, pqcomp.IS, pqcomp.NOT_NULL)
+			} else {
+				where.AddExpr(tableGroupPermissionsColumnPermissionSubsystem, pqcomp.IS, pqcomp.NULL)
+			}
 		case protot.TextQueryType_EXACT:
 			where.AddExpr(tableGroupPermissionsColumnPermissionSubsystem, pqcomp.E, c.permissionSubsystem.Value())
 		case protot.TextQueryType_SUBSTRING:
 			where.AddExpr(tableGroupPermissionsColumnPermissionSubsystem, pqcomp.LIKE, "%"+c.permissionSubsystem.Value()+"%")
+		case protot.TextQueryType_HAS_PREFIX:
+			where.AddExpr(tableGroupPermissionsColumnPermissionSubsystem, pqcomp.LIKE, c.permissionSubsystem.Value()+"%")
+		case protot.TextQueryType_HAS_SUFFIX:
+			where.AddExpr(tableGroupPermissionsColumnPermissionSubsystem, pqcomp.LIKE, "%"+c.permissionSubsystem.Value())
 		}
 	}
 
@@ -1800,7 +1913,9 @@ func (r *groupPermissionsRepository) Find(c *groupPermissionsCriteria) ([]*group
 		case protot.NumericQueryType_LESS_EQUAL:
 			where.AddExpr(tableGroupPermissionsColumnUpdatedBy, pqcomp.LTE, c.updatedBy.Value())
 		case protot.NumericQueryType_IN:
-			where.AddExpr(tableGroupPermissionsColumnUpdatedBy, pqcomp.IN, pqt.ArrayInt64(c.updatedBy.Values))
+			for _, v := range c.updatedBy.Values {
+				where.AddExpr(tableGroupPermissionsColumnUpdatedBy, pqcomp.IN, v)
+			}
 		case protot.NumericQueryType_BETWEEN:
 			where.AddExpr(tableGroupPermissionsColumnUpdatedBy, pqcomp.GT, c.updatedBy.Values[0])
 			where.AddExpr(tableGroupPermissionsColumnUpdatedBy, pqcomp.LT, c.updatedBy.Values[1])
@@ -1990,7 +2105,9 @@ func (r *userPermissionsRepository) Find(c *userPermissionsCriteria) ([]*userPer
 		case protot.NumericQueryType_LESS_EQUAL:
 			where.AddExpr(tableUserPermissionsColumnCreatedBy, pqcomp.LTE, c.createdBy.Value())
 		case protot.NumericQueryType_IN:
-			where.AddExpr(tableUserPermissionsColumnCreatedBy, pqcomp.IN, pqt.ArrayInt64(c.createdBy.Values))
+			for _, v := range c.createdBy.Values {
+				where.AddExpr(tableUserPermissionsColumnCreatedBy, pqcomp.IN, v)
+			}
 		case protot.NumericQueryType_BETWEEN:
 			where.AddExpr(tableUserPermissionsColumnCreatedBy, pqcomp.GT, c.createdBy.Values[0])
 			where.AddExpr(tableUserPermissionsColumnCreatedBy, pqcomp.LT, c.createdBy.Values[1])
@@ -2000,33 +2117,57 @@ func (r *userPermissionsRepository) Find(c *userPermissionsCriteria) ([]*userPer
 	if c.permissionAction != nil && c.permissionAction.Valid {
 		switch c.permissionAction.Type {
 		case protot.TextQueryType_NOT_A_TEXT:
-			where.AddExpr(tableUserPermissionsColumnPermissionAction, pqcomp.IS, pqcomp.NULL)
+			if c.permissionAction.Negation {
+				where.AddExpr(tableUserPermissionsColumnPermissionAction, pqcomp.IS, pqcomp.NOT_NULL)
+			} else {
+				where.AddExpr(tableUserPermissionsColumnPermissionAction, pqcomp.IS, pqcomp.NULL)
+			}
 		case protot.TextQueryType_EXACT:
 			where.AddExpr(tableUserPermissionsColumnPermissionAction, pqcomp.E, c.permissionAction.Value())
 		case protot.TextQueryType_SUBSTRING:
 			where.AddExpr(tableUserPermissionsColumnPermissionAction, pqcomp.LIKE, "%"+c.permissionAction.Value()+"%")
+		case protot.TextQueryType_HAS_PREFIX:
+			where.AddExpr(tableUserPermissionsColumnPermissionAction, pqcomp.LIKE, c.permissionAction.Value()+"%")
+		case protot.TextQueryType_HAS_SUFFIX:
+			where.AddExpr(tableUserPermissionsColumnPermissionAction, pqcomp.LIKE, "%"+c.permissionAction.Value())
 		}
 	}
 
 	if c.permissionModule != nil && c.permissionModule.Valid {
 		switch c.permissionModule.Type {
 		case protot.TextQueryType_NOT_A_TEXT:
-			where.AddExpr(tableUserPermissionsColumnPermissionModule, pqcomp.IS, pqcomp.NULL)
+			if c.permissionModule.Negation {
+				where.AddExpr(tableUserPermissionsColumnPermissionModule, pqcomp.IS, pqcomp.NOT_NULL)
+			} else {
+				where.AddExpr(tableUserPermissionsColumnPermissionModule, pqcomp.IS, pqcomp.NULL)
+			}
 		case protot.TextQueryType_EXACT:
 			where.AddExpr(tableUserPermissionsColumnPermissionModule, pqcomp.E, c.permissionModule.Value())
 		case protot.TextQueryType_SUBSTRING:
 			where.AddExpr(tableUserPermissionsColumnPermissionModule, pqcomp.LIKE, "%"+c.permissionModule.Value()+"%")
+		case protot.TextQueryType_HAS_PREFIX:
+			where.AddExpr(tableUserPermissionsColumnPermissionModule, pqcomp.LIKE, c.permissionModule.Value()+"%")
+		case protot.TextQueryType_HAS_SUFFIX:
+			where.AddExpr(tableUserPermissionsColumnPermissionModule, pqcomp.LIKE, "%"+c.permissionModule.Value())
 		}
 	}
 
 	if c.permissionSubsystem != nil && c.permissionSubsystem.Valid {
 		switch c.permissionSubsystem.Type {
 		case protot.TextQueryType_NOT_A_TEXT:
-			where.AddExpr(tableUserPermissionsColumnPermissionSubsystem, pqcomp.IS, pqcomp.NULL)
+			if c.permissionSubsystem.Negation {
+				where.AddExpr(tableUserPermissionsColumnPermissionSubsystem, pqcomp.IS, pqcomp.NOT_NULL)
+			} else {
+				where.AddExpr(tableUserPermissionsColumnPermissionSubsystem, pqcomp.IS, pqcomp.NULL)
+			}
 		case protot.TextQueryType_EXACT:
 			where.AddExpr(tableUserPermissionsColumnPermissionSubsystem, pqcomp.E, c.permissionSubsystem.Value())
 		case protot.TextQueryType_SUBSTRING:
 			where.AddExpr(tableUserPermissionsColumnPermissionSubsystem, pqcomp.LIKE, "%"+c.permissionSubsystem.Value()+"%")
+		case protot.TextQueryType_HAS_PREFIX:
+			where.AddExpr(tableUserPermissionsColumnPermissionSubsystem, pqcomp.LIKE, c.permissionSubsystem.Value()+"%")
+		case protot.TextQueryType_HAS_SUFFIX:
+			where.AddExpr(tableUserPermissionsColumnPermissionSubsystem, pqcomp.LIKE, "%"+c.permissionSubsystem.Value())
 		}
 	}
 
@@ -2087,7 +2228,9 @@ func (r *userPermissionsRepository) Find(c *userPermissionsCriteria) ([]*userPer
 		case protot.NumericQueryType_LESS_EQUAL:
 			where.AddExpr(tableUserPermissionsColumnUpdatedBy, pqcomp.LTE, c.updatedBy.Value())
 		case protot.NumericQueryType_IN:
-			where.AddExpr(tableUserPermissionsColumnUpdatedBy, pqcomp.IN, pqt.ArrayInt64(c.updatedBy.Values))
+			for _, v := range c.updatedBy.Values {
+				where.AddExpr(tableUserPermissionsColumnUpdatedBy, pqcomp.IN, v)
+			}
 		case protot.NumericQueryType_BETWEEN:
 			where.AddExpr(tableUserPermissionsColumnUpdatedBy, pqcomp.GT, c.updatedBy.Values[0])
 			where.AddExpr(tableUserPermissionsColumnUpdatedBy, pqcomp.LT, c.updatedBy.Values[1])
@@ -2111,7 +2254,9 @@ func (r *userPermissionsRepository) Find(c *userPermissionsCriteria) ([]*userPer
 		case protot.NumericQueryType_LESS_EQUAL:
 			where.AddExpr(tableUserPermissionsColumnUserID, pqcomp.LTE, c.userID.Value())
 		case protot.NumericQueryType_IN:
-			where.AddExpr(tableUserPermissionsColumnUserID, pqcomp.IN, pqt.ArrayInt64(c.userID.Values))
+			for _, v := range c.userID.Values {
+				where.AddExpr(tableUserPermissionsColumnUserID, pqcomp.IN, v)
+			}
 		case protot.NumericQueryType_BETWEEN:
 			where.AddExpr(tableUserPermissionsColumnUserID, pqcomp.GT, c.userID.Values[0])
 			where.AddExpr(tableUserPermissionsColumnUserID, pqcomp.LT, c.userID.Values[1])
