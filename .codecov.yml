@@ -1,0 +1,14 @@
+comment:
+  layout: header, changes, diff
+coverage:
+  ignore:
+  - .*.pb.go
+  - charontest/.*.go
+  notify:
+    slack:
+      default:
+        threshold: '0'
+        url: https://hooks.slack.com/services/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
+  status:
+    patch: false
+
