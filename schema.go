@@ -58,7 +58,7 @@ var (
 type userEntity struct {
 	ConfirmationToken []byte
 	CreatedAt         time.Time
-	CreatedBy         nilt.Int64
+	CreatedBy         *nilt.Int64
 	FirstName         string
 	ID                int64
 	IsActive          bool
@@ -69,7 +69,7 @@ type userEntity struct {
 	LastName          string
 	Password          []byte
 	UpdatedAt         *time.Time
-	UpdatedBy         nilt.Int64
+	UpdatedBy         *nilt.Int64
 	Username          string
 	Author            *userEntity
 	Modifier          *userEntity
@@ -84,10 +84,10 @@ type userCriteria struct {
 	createdBy         *protot.QueryInt64
 	firstName         *protot.QueryString
 	id                *protot.QueryInt64
-	isActive          nilt.Bool
-	isConfirmed       nilt.Bool
-	isStaff           nilt.Bool
-	isSuperuser       nilt.Bool
+	isActive          *nilt.Bool
+	isConfirmed       *nilt.Bool
+	isStaff           *nilt.Bool
+	isSuperuser       *nilt.Bool
 	lastLoginAt       *protot.QueryTimestamp
 	lastName          *protot.QueryString
 	password          []byte
@@ -457,8 +457,13 @@ username
 func (r *userRepository) Insert(e *userEntity) (*userEntity, error) {
 	insert := pqcomp.New(0, 15)
 	insert.AddExpr(tableUserColumnConfirmationToken, "", e.ConfirmationToken)
+	insert.AddExpr(tableUserColumnCreatedAt, "", e.CreatedAt)
 	insert.AddExpr(tableUserColumnCreatedBy, "", e.CreatedBy)
 	insert.AddExpr(tableUserColumnFirstName, "", e.FirstName)
+	insert.AddExpr(tableUserColumnIsActive, "", e.IsActive)
+	insert.AddExpr(tableUserColumnIsConfirmed, "", e.IsConfirmed)
+	insert.AddExpr(tableUserColumnIsStaff, "", e.IsStaff)
+	insert.AddExpr(tableUserColumnIsSuperuser, "", e.IsSuperuser)
 	insert.AddExpr(tableUserColumnLastLoginAt, "", e.LastLoginAt)
 	insert.AddExpr(tableUserColumnLastName, "", e.LastName)
 	insert.AddExpr(tableUserColumnPassword, "", e.Password)
@@ -491,18 +496,18 @@ func (r *userRepository) UpdateByID(
 	id int64,
 	confirmationToken []byte,
 	createdAt *time.Time,
-	createdBy nilt.Int64,
-	firstName nilt.String,
-	isActive nilt.Bool,
-	isConfirmed nilt.Bool,
-	isStaff nilt.Bool,
-	isSuperuser nilt.Bool,
+	createdBy *nilt.Int64,
+	firstName *nilt.String,
+	isActive *nilt.Bool,
+	isConfirmed *nilt.Bool,
+	isStaff *nilt.Bool,
+	isSuperuser *nilt.Bool,
 	lastLoginAt *time.Time,
-	lastName nilt.String,
+	lastName *nilt.String,
 	password []byte,
 	updatedAt *time.Time,
-	updatedBy nilt.Int64,
-	username nilt.String,
+	updatedBy *nilt.Int64,
+	username *nilt.String,
 ) (*userEntity, error) {
 	update := pqcomp.New(0, 15)
 	update.AddExpr(tableUserColumnID, pqcomp.E, id)
@@ -609,12 +614,12 @@ var (
 
 type groupEntity struct {
 	CreatedAt   time.Time
-	CreatedBy   nilt.Int64
-	Description nilt.String
+	CreatedBy   *nilt.Int64
+	Description *nilt.String
 	ID          int64
 	Name        string
 	UpdatedAt   *time.Time
-	UpdatedBy   nilt.Int64
+	UpdatedBy   *nilt.Int64
 	Author      *userEntity
 	Modifier    *userEntity
 	Permission  []*permissionEntity
@@ -901,6 +906,7 @@ updated_by
 }
 func (r *groupRepository) Insert(e *groupEntity) (*groupEntity, error) {
 	insert := pqcomp.New(0, 7)
+	insert.AddExpr(tableGroupColumnCreatedAt, "", e.CreatedAt)
 	insert.AddExpr(tableGroupColumnCreatedBy, "", e.CreatedBy)
 	insert.AddExpr(tableGroupColumnDescription, "", e.Description)
 	insert.AddExpr(tableGroupColumnName, "", e.Name)
@@ -923,11 +929,11 @@ func (r *groupRepository) Insert(e *groupEntity) (*groupEntity, error) {
 func (r *groupRepository) UpdateByID(
 	id int64,
 	createdAt *time.Time,
-	createdBy nilt.Int64,
-	description nilt.String,
-	name nilt.String,
+	createdBy *nilt.Int64,
+	description *nilt.String,
+	name *nilt.String,
 	updatedAt *time.Time,
-	updatedBy nilt.Int64,
+	updatedBy *nilt.Int64,
 ) (*groupEntity, error) {
 	update := pqcomp.New(0, 7)
 	update.AddExpr(tableGroupColumnID, pqcomp.E, id)
@@ -1263,6 +1269,7 @@ updated_at
 func (r *permissionRepository) Insert(e *permissionEntity) (*permissionEntity, error) {
 	insert := pqcomp.New(0, 6)
 	insert.AddExpr(tablePermissionColumnAction, "", e.Action)
+	insert.AddExpr(tablePermissionColumnCreatedAt, "", e.CreatedAt)
 	insert.AddExpr(tablePermissionColumnModule, "", e.Module)
 	insert.AddExpr(tablePermissionColumnSubsystem, "", e.Subsystem)
 	insert.AddExpr(tablePermissionColumnUpdatedAt, "", e.UpdatedAt)
@@ -1281,10 +1288,10 @@ func (r *permissionRepository) Insert(e *permissionEntity) (*permissionEntity, e
 }
 func (r *permissionRepository) UpdateByID(
 	id int64,
-	action nilt.String,
+	action *nilt.String,
 	createdAt *time.Time,
-	module nilt.String,
-	subsystem nilt.String,
+	module *nilt.String,
+	subsystem *nilt.String,
 	updatedAt *time.Time,
 ) (*permissionEntity, error) {
 	update := pqcomp.New(0, 6)
@@ -1369,10 +1376,10 @@ var (
 
 type userGroupsEntity struct {
 	CreatedAt time.Time
-	CreatedBy nilt.Int64
+	CreatedBy *nilt.Int64
 	GroupID   int64
 	UpdatedAt *time.Time
-	UpdatedBy nilt.Int64
+	UpdatedBy *nilt.Int64
 	UserID    int64
 	User      *userEntity
 	Group     *groupEntity
@@ -1618,6 +1625,7 @@ func (r *userGroupsRepository) Find(c *userGroupsCriteria) ([]*userGroupsEntity,
 }
 func (r *userGroupsRepository) Insert(e *userGroupsEntity) (*userGroupsEntity, error) {
 	insert := pqcomp.New(0, 6)
+	insert.AddExpr(tableUserGroupsColumnCreatedAt, "", e.CreatedAt)
 	insert.AddExpr(tableUserGroupsColumnCreatedBy, "", e.CreatedBy)
 	insert.AddExpr(tableUserGroupsColumnGroupID, "", e.GroupID)
 	insert.AddExpr(tableUserGroupsColumnUpdatedAt, "", e.UpdatedAt)
@@ -1669,13 +1677,13 @@ var (
 
 type groupPermissionsEntity struct {
 	CreatedAt           time.Time
-	CreatedBy           nilt.Int64
+	CreatedBy           *nilt.Int64
 	GroupID             int64
 	PermissionAction    string
 	PermissionModule    string
 	PermissionSubsystem string
 	UpdatedAt           *time.Time
-	UpdatedBy           nilt.Int64
+	UpdatedBy           *nilt.Int64
 	Group               *groupEntity
 	Permission          *permissionEntity
 	Author              *userEntity
@@ -1955,6 +1963,7 @@ func (r *groupPermissionsRepository) Find(c *groupPermissionsCriteria) ([]*group
 }
 func (r *groupPermissionsRepository) Insert(e *groupPermissionsEntity) (*groupPermissionsEntity, error) {
 	insert := pqcomp.New(0, 8)
+	insert.AddExpr(tableGroupPermissionsColumnCreatedAt, "", e.CreatedAt)
 	insert.AddExpr(tableGroupPermissionsColumnCreatedBy, "", e.CreatedBy)
 	insert.AddExpr(tableGroupPermissionsColumnGroupID, "", e.GroupID)
 	insert.AddExpr(tableGroupPermissionsColumnPermissionAction, "", e.PermissionAction)
@@ -2010,12 +2019,12 @@ var (
 
 type userPermissionsEntity struct {
 	CreatedAt           time.Time
-	CreatedBy           nilt.Int64
+	CreatedBy           *nilt.Int64
 	PermissionAction    string
 	PermissionModule    string
 	PermissionSubsystem string
 	UpdatedAt           *time.Time
-	UpdatedBy           nilt.Int64
+	UpdatedBy           *nilt.Int64
 	UserID              int64
 	User                *userEntity
 	Permission          *permissionEntity
@@ -2296,6 +2305,7 @@ func (r *userPermissionsRepository) Find(c *userPermissionsCriteria) ([]*userPer
 }
 func (r *userPermissionsRepository) Insert(e *userPermissionsEntity) (*userPermissionsEntity, error) {
 	insert := pqcomp.New(0, 8)
+	insert.AddExpr(tableUserPermissionsColumnCreatedAt, "", e.CreatedAt)
 	insert.AddExpr(tableUserPermissionsColumnCreatedBy, "", e.CreatedBy)
 	insert.AddExpr(tableUserPermissionsColumnPermissionAction, "", e.PermissionAction)
 	insert.AddExpr(tableUserPermissionsColumnPermissionModule, "", e.PermissionModule)

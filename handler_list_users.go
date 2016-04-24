@@ -24,8 +24,8 @@ func (luh *listUsersHandler) handle(ctx context.Context, req *ListUsersRequest) 
 		sort:        req.Sort,
 		offset:      req.Offset.Int64Or(0),
 		limit:       req.Limit.Int64Or(10),
-		isSuperuser: nilBool(req.IsSuperuser),
-		isStaff:     nilBool(req.IsStaff),
+		isSuperuser: req.IsSuperuser,
+		isStaff:     req.IsStaff,
 		createdBy:   req.CreatedBy,
 	}
 	if act.permissions.Contains(UserCanRetrieveAsOwner, UserCanRetrieveStaffAsOwner) {

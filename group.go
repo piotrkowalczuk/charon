@@ -32,9 +32,9 @@ func (ge *groupEntity) Message() (*Group, error) {
 		Name:        ge.Name,
 		Description: ge.Description.String,
 		CreatedAt:   createdAt,
-		CreatedBy:   &ge.CreatedBy,
+		CreatedBy:   ge.CreatedBy,
 		UpdatedAt:   updatedAt,
-		UpdatedBy:   &ge.UpdatedBy,
+		UpdatedBy:   ge.UpdatedBy,
 	}, nil
 }
 
@@ -130,8 +130,8 @@ func (gr *groupRepository) Create(createdBy int64, name string, description *nil
 	}
 	entity := groupEntity{
 		Name:        name,
-		Description: *description,
-		CreatedBy:   nilt.Int64{Int64: createdBy, Valid: createdBy > 0},
+		Description: description,
+		CreatedBy:   &nilt.Int64{Int64: createdBy, Valid: createdBy > 0},
 	}
 
 	err := gr.insert(&entity)

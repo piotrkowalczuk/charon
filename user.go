@@ -46,9 +46,9 @@ func (ue *userEntity) Message() (*User, error) {
 		IsStaff:     ue.IsStaff,
 		IsConfirmed: ue.IsConfirmed,
 		CreatedAt:   createdAt,
-		CreatedBy:   &ue.CreatedBy,
+		CreatedBy:   ue.CreatedBy,
 		UpdatedAt:   updatedAt,
-		UpdatedBy:   &ue.UpdatedBy,
+		UpdatedBy:   ue.UpdatedBy,
 	}, nil
 }
 
@@ -69,18 +69,18 @@ type userProvider interface {
 		id int64,
 		confirmationToken []byte,
 		createdAt *time.Time,
-		createdBy nilt.Int64,
-		firstName nilt.String,
-		isActive nilt.Bool,
-		isConfirmed nilt.Bool,
-		isStaff nilt.Bool,
-		isSuperuser nilt.Bool,
+		createdBy *nilt.Int64,
+		firstName *nilt.String,
+		isActive *nilt.Bool,
+		isConfirmed *nilt.Bool,
+		isStaff *nilt.Bool,
+		isSuperuser *nilt.Bool,
 		lastLoginAt *time.Time,
-		lastName nilt.String,
+		lastName *nilt.String,
 		password []byte,
 		updatedAt *time.Time,
-		updatedBy nilt.Int64,
-		username nilt.String,
+		updatedBy *nilt.Int64,
+		username *nilt.String,
 	) (*userEntity, error)
 	RegistrationConfirmation(id int64, confirmationToken string) error
 	IsGranted(id int64, permission Permission) (bool, error)
@@ -114,12 +114,7 @@ func (ur *userRepository) Create(username string, password []byte, firstName, la
 		IsActive:          isActive,
 		IsConfirmed:       isConfirmed,
 	}
-	err := ur.insert(entity)
-	if err != nil {
-		return nil, err
-	}
-
-	return entity, nil
+	return ur.Insert(entity)
 }
 
 // CreateSuperuser implements UserRepository interface.
@@ -132,31 +127,6 @@ func (ur *userRepository) Count() (n int64, err error) {
 	err = ur.db.QueryRow("SELECT COUNT(*) FROM " + tableUser).Scan(&n)
 
 	return
-}
-
-func (ur *userRepository) insert(e *userEntity) error {
-	query := `
-		INSERT INTO ` + ur.table + ` (
-			password, username, first_name, last_name, is_active, is_staff,
-			is_superuser, is_confirmed, confirmation_token,
-			created_at, created_by
-		)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW(), $10)
-		RETURNING id, created_at
-	`
-	return ur.db.QueryRow(
-		query,
-		e.Password,
-		e.Username,
-		e.FirstName,
-		e.LastName,
-		e.IsActive,
-		e.IsStaff,
-		e.IsSuperuser,
-		e.IsConfirmed,
-		e.ConfirmationToken,
-		e.CreatedBy,
-	).Scan(&e.ID, &e.CreatedAt)
 }
 
 func (ur *userRepository) RegistrationConfirmation(userID int64, confirmationToken string) error {

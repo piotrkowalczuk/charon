@@ -4,15 +4,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/mock"
-)
-
-import (
 	"github.com/piotrkowalczuk/mnemosyne"
 	"github.com/piotrkowalczuk/nilt"
+	"github.com/stretchr/testify/mock"
+	"golang.org/x/net/context"
+	"google.golang.org/grpc"
 )
-import "golang.org/x/net/context"
-import "google.golang.org/grpc"
 
 type MockCharon struct {
 	mock.Mock
@@ -2089,11 +2086,11 @@ func (_m *mockUserProvider) DeleteByID(id int64) (int64, error) {
 }
 
 // UpdateByID provides a mock function with given fields: id, confirmationToken, createdAt, createdBy, firstName, isActive, isConfirmed, isStaff, isSuperuser, lastLoginAt, lastName, password, updatedAt, updatedBy, username
-func (_m *mockUserProvider) UpdateByID(id int64, confirmationToken []byte, createdAt *time.Time, createdBy nilt.Int64, firstName nilt.String, isActive nilt.Bool, isConfirmed nilt.Bool, isStaff nilt.Bool, isSuperuser nilt.Bool, lastLoginAt *time.Time, lastName nilt.String, password []byte, updatedAt *time.Time, updatedBy nilt.Int64, username nilt.String) (*userEntity, error) {
+func (_m *mockUserProvider) UpdateByID(id int64, confirmationToken []byte, createdAt *time.Time, createdBy *nilt.Int64, firstName *nilt.String, isActive *nilt.Bool, isConfirmed *nilt.Bool, isStaff *nilt.Bool, isSuperuser *nilt.Bool, lastLoginAt *time.Time, lastName *nilt.String, password []byte, updatedAt *time.Time, updatedBy *nilt.Int64, username *nilt.String) (*userEntity, error) {
 	ret := _m.Called(id, confirmationToken, createdAt, createdBy, firstName, isActive, isConfirmed, isStaff, isSuperuser, lastLoginAt, lastName, password, updatedAt, updatedBy, username)
 
 	var r0 *userEntity
-	if rf, ok := ret.Get(0).(func(int64, []byte, *time.Time, nilt.Int64, nilt.String, nilt.Bool, nilt.Bool, nilt.Bool, nilt.Bool, *time.Time, nilt.String, []byte, *time.Time, nilt.Int64, nilt.String) *userEntity); ok {
+	if rf, ok := ret.Get(0).(func(int64, []byte, *time.Time, *nilt.Int64, *nilt.String, *nilt.Bool, *nilt.Bool, *nilt.Bool, *nilt.Bool, *time.Time, *nilt.String, []byte, *time.Time, *nilt.Int64, *nilt.String) *userEntity); ok {
 		r0 = rf(id, confirmationToken, createdAt, createdBy, firstName, isActive, isConfirmed, isStaff, isSuperuser, lastLoginAt, lastName, password, updatedAt, updatedBy, username)
 	} else {
 		if ret.Get(0) != nil {
@@ -2102,7 +2099,7 @@ func (_m *mockUserProvider) UpdateByID(id int64, confirmationToken []byte, creat
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(int64, []byte, *time.Time, nilt.Int64, nilt.String, nilt.Bool, nilt.Bool, nilt.Bool, nilt.Bool, *time.Time, nilt.String, []byte, *time.Time, nilt.Int64, nilt.String) error); ok {
+	if rf, ok := ret.Get(1).(func(int64, []byte, *time.Time, *nilt.Int64, *nilt.String, *nilt.Bool, *nilt.Bool, *nilt.Bool, *nilt.Bool, *time.Time, *nilt.String, []byte, *time.Time, *nilt.Int64, *nilt.String) error); ok {
 		r1 = rf(id, confirmationToken, createdAt, createdBy, firstName, isActive, isConfirmed, isStaff, isSuperuser, lastLoginAt, lastName, password, updatedAt, updatedBy, username)
 	} else {
 		r1 = ret.Error(1)

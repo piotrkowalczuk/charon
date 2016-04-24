@@ -34,8 +34,8 @@ func TestHandler(t *testing.T) {
 		Convey("As unauthenticated user", func() {
 			ctx = context.Background()
 			sessionMock.On("FromContext", mock.Anything).
-				Once().
-				Return(nil, errors.New("mnemosyned: test error"))
+				Return(nil, errors.New("mnemosyned: test error")).
+				Once()
 
 			Convey("Should return an error", func() {
 				act, err = h.retrieveActor(ctx)
@@ -49,20 +49,19 @@ func TestHandler(t *testing.T) {
 			tkn = mnemosyne.NewAccessToken([]byte("0000000001"), []byte("hash"))
 			ctx = mnemosyne.NewAccessTokenContext(context.Background(), tkn)
 			sessionMock.On("FromContext", ctx).
-				Once().
 				Return(&mnemosyne.Session{
 					AccessToken: &tkn,
 					SubjectId:   SubjectIDFromInt64(id).String(),
-				}, nil)
+				}, nil).
+				Once()
 
 			Convey("When user exists", func() {
 				userRepositoryMock.On("FindOneByID", id).
-					Once().
-					Return(&userEntity{ID: id}, nil)
+					Return(&userEntity{ID: id}, nil).
+					Once()
 
 				Convey("And it has some permissions", func() {
 					permissionRepositoryMock.On("FindByUserID", id).
-						Once().
 						Return([]*permissionEntity{
 							{
 								Subsystem: PermissionCanRetrieve.Subsystem(),
@@ -74,7 +73,8 @@ func TestHandler(t *testing.T) {
 								Module:    UserCanRetrieveAsOwner.Module(),
 								Action:    UserCanRetrieveAsOwner.Action(),
 							},
-						}, nil)
+						}, nil).
+						Once()
 
 					Convey("Then it should be retrieved without any error", func() {
 						act, err = h.retrieveActor(ctx)
@@ -87,8 +87,8 @@ func TestHandler(t *testing.T) {
 				})
 				Convey("And it has no permissions", func() {
 					permissionRepositoryMock.On("FindByUserID", id).
-						Once().
-						Return(nil, sql.ErrNoRows)
+						Return(nil, sql.ErrNoRows).
+						Once()
 
 					Convey("Then it should be retrieved without any error", func() {
 						act, err = h.retrieveActor(ctx)

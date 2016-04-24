@@ -58,18 +58,18 @@ func TestUserRepository_UpdateByID(t *testing.T) {
 			user.ID,
 			nil,
 			nil,
-			nilt.Int64{},
-			nilt.String{String: user.FirstName + suffix, Valid: true},
-			nilt.Bool{Bool: true, Valid: true},
-			nilt.Bool{Bool: true, Valid: true},
-			nilt.Bool{Bool: true, Valid: true},
-			nilt.Bool{Bool: true, Valid: true},
+			&nilt.Int64{},
+			&nilt.String{String: user.FirstName + suffix, Valid: true},
+			&nilt.Bool{Bool: true, Valid: true},
+			&nilt.Bool{Bool: true, Valid: true},
+			&nilt.Bool{Bool: true, Valid: true},
+			&nilt.Bool{Bool: true, Valid: true},
 			nil,
-			nilt.String{String: user.LastName + suffix, Valid: true},
+			&nilt.String{String: user.LastName + suffix, Valid: true},
 			user.Password,
 			nil,
-			nilt.Int64{},
-			nilt.String{String: user.Username + suffix, Valid: true},
+			&nilt.Int64{},
+			&nilt.String{String: user.Username + suffix, Valid: true},
 		)
 
 		if err != nil {
@@ -193,7 +193,7 @@ func TestUserRepository_Find(t *testing.T) {
 		firstName:         protot.ExactString("John"),
 		lastName:          protot.ExactString("Snow"),
 		confirmationToken: []byte("1234567890"),
-		isSuperuser:       nilt.Bool{Bool: true}, // Is not valid, should not affect results
+		isSuperuser:       &nilt.Bool{Bool: true}, // Is not valid, should not affect results
 	})
 	if err != nil {
 		t.Errorf("users can not be retrieved, unexpected error: %s", err.Error())
