@@ -29,6 +29,7 @@ func initPostgres(connectionString string, env string, logger log.Logger) (*sql.
 	if err != nil {
 		return nil, err
 	}
+
 	sklog.Info(logger, "postgres connection has been established", "address", connectionString)
 
 	return postgres, nil

@@ -4,12 +4,15 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/mock"
+)
+
+import (
 	"github.com/piotrkowalczuk/mnemosyne"
 	"github.com/piotrkowalczuk/nilt"
-	"github.com/stretchr/testify/mock"
-	"golang.org/x/net/context"
-	"google.golang.org/grpc"
 )
+import "golang.org/x/net/context"
+import "google.golang.org/grpc"
 
 type MockCharon struct {
 	mock.Mock

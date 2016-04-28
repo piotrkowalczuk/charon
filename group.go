@@ -169,8 +169,8 @@ func (gr *groupRepository) UpdateOneByID(id, updatedBy int64, name, description 
 	comp := pqcomp.New(2, 2)
 	comp.AddArg(id)
 	comp.AddArg(updatedBy)
-	comp.AddExpr("g.name", pqcomp.E, name)
-	comp.AddExpr("g.description", pqcomp.E, description)
+	comp.AddExpr("g.name", pqcomp.Equal, name)
+	comp.AddExpr("g.description", pqcomp.Equal, description)
 
 	if comp.Len() == 0 {
 		return nil, errors.New("charon: nothing to update")

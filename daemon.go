@@ -12,6 +12,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/grpclog"
 )
 
 const (
@@ -67,7 +68,7 @@ func (d *Daemon) Run() (err error) {
 
 	postgres, err := initPostgres(d.opts.PostgresAddress, d.opts.Environment, d.logger)
 	if err != nil {
-		sklog.Error(d.logger, err)
+		return err
 	}
 	passwordHasher := initPasswordHasher(d.opts.PasswordBCryptCost, d.logger)
 	d.mnemosyneConn, mnemosyneClient = initMnemosyne(d.opts.MnemosyneAddress, d.logger)
@@ -91,8 +92,8 @@ func (d *Daemon) Run() (err error) {
 		opts = []grpc.ServerOption{grpc.Creds(creds)}
 	}
 
+	grpclog.SetLogger(sklog.NewGRPCLogger(d.logger))
 	gRPCServer := grpc.NewServer(opts...)
-
 	charonServer := &rpcServer{
 		logger:             d.logger,
 		session:            mnemosyneClient,
@@ -107,6 +108,7 @@ func (d *Daemon) Run() (err error) {
 
 		if err := gRPCServer.Serve(d.rpcListener); err != nil {
 			if err == grpc.ErrServerStopped {
+				sklog.Info(d.logger, "grpc server has been stoped")
 				return
 			}
 
