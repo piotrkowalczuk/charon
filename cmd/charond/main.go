@@ -6,7 +6,7 @@ import (
 	"strconv"
 
 	"github.com/go-kit/kit/log"
-	"github.com/piotrkowalczuk/charon"
+	"github.com/piotrkowalczuk/charon/charond"
 	"github.com/piotrkowalczuk/sklog"
 	"google.golang.org/grpc/grpclog"
 )
@@ -24,7 +24,7 @@ func main() {
 	rpcListener := initListener(logger, config.host, config.port)
 	debugListener := initListener(logger, config.host, config.port+1)
 
-	daemon := charon.NewDaemon(&charon.DaemonOpts{
+	daemon := charond.NewDaemon(&charond.DaemonOpts{
 		Namespace:          config.namespace,
 		Subsystem:          config.subsystem,
 		TLS:                config.tls.enabled,

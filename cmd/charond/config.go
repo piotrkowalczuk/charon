@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/piotrkowalczuk/charon"
+	"github.com/piotrkowalczuk/charon/charond"
 )
 
 const VERSION = "0.1.2"
@@ -59,7 +59,7 @@ func (c *configuration) init() {
 	flag.StringVar(&c.mnemosyne.address, "mnemo.address", "", "mnemosyne session store connection address")
 	flag.StringVar(&c.password.strategy, "pwd.strategy", "bcrypt", "strategy how password will be stored")
 	flag.IntVar(&c.password.bcrypt.cost, "pwd.bcryptcost", 10, "bcrypt cost, bigget than safer (and longer to create)")
-	flag.StringVar(&c.monitoring.engine, "m.engine", charon.MonitoringEnginePrometheus, "monitoring engine")
+	flag.StringVar(&c.monitoring.engine, "m.engine", charond.MonitoringEnginePrometheus, "monitoring engine")
 	flag.StringVar(&c.postgres.address, "p.address", "postgres://localhost:5432?sslmode=disable", "postgres connection string")
 	flag.BoolVar(&c.tls.enabled, "tls", false, "tls enable flag")
 	flag.StringVar(&c.tls.certFile, "tls.certfile", "", "path to tls cert file")

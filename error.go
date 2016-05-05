@@ -1,5 +1,7 @@
 package charon
 
+// TODO: remove?
+
 const (
 	// ErrDescUserWithIDExists this error should not happen. Id is auto generated.
 	ErrDescUserWithIDExists = "charon: user with such id already exists"

@@ -28,7 +28,7 @@ var (
 
 func init() {
 	flag.StringVar(&schema, "schema", "charon", "")
-	flag.StringVar(&output, "output", "schema", "")
+	flag.StringVar(&output, "output", "schema.pqt", "")
 }
 
 func main() {
@@ -43,7 +43,7 @@ func main() {
 		AddImport("github.com/piotrkowalczuk/ntypes").
 		AddImport("github.com/piotrkowalczuk/qtypes").
 		SetAcronyms(acronyms).
-		SetPackage("charon").
+		SetPackage("charond").
 		GenerateTo(sch, file); err != nil {
 		log.Fatal(err)
 	}
@@ -52,8 +52,6 @@ func main() {
 		log.Fatal(err)
 	}
 	fmt.Fprintf(file, "`")
-
-	log.Println("success")
 }
 
 func openFile(output string) (file io.WriteCloser, err error) {

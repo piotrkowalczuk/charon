@@ -2,6 +2,7 @@ PROTOC=/usr/local/bin/protoc
 SERVICE=charon
 PACKAGE=github.com/piotrkowalczuk/charon
 PACKAGE_TEST=$(PACKAGE)/$(SERVICE)test
+PACKAGE_DAEMON=$(PACKAGE)/$(SERVICE)d
 PACKAGE_EXAMPLE=$(PACKAGE)/example
 
 PACKAGE_CMD_DAEMON=$(PACKAGE)/cmd/$(SERVICE)d
@@ -70,13 +71,16 @@ install-generator:
 
 gen:
 	@go generate ./...
-	@goimports -w ./schema.go
+	@goimports -w ./${SERVICE}d/schema.pqt.go
+	@ls -al ${SERVICE}d | grep pqt
 
 run:
 	@${BINARY_CMD_DAEMON} ${FLAGS}
 
 test:
-	@${CMD_TEST} ${PACKAGE} -p.address=$(CHARON_POSTGRES_ADDRESS)
+	@${CMD_TEST} ${PACKAGE}
+	@cat profile.out >> coverage.txt && rm profile.out
+	@${CMD_TEST} ${PACKAGE_DAEMON} -p.address=$(CHARON_POSTGRES_ADDRESS)
 	@cat profile.out >> coverage.txt && rm profile.out
 	@${CMD_TEST} ${PACKAGE_TEST}
 
