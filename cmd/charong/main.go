@@ -40,8 +40,8 @@ func main() {
 
 	sch := databaseSchema()
 	if err := pqtgo.NewGenerator().
-		AddImport("github.com/piotrkowalczuk/nilt").
-		AddImport("github.com/piotrkowalczuk/protot").
+		AddImport("github.com/piotrkowalczuk/ntypes").
+		AddImport("github.com/piotrkowalczuk/qtypes").
 		SetAcronyms(acronyms).
 		SetPackage("charon").
 		GenerateTo(sch, file); err != nil {

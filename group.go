@@ -8,7 +8,7 @@ import (
 
 	"github.com/golang/protobuf/ptypes"
 	pbts "github.com/golang/protobuf/ptypes/timestamp"
-	"github.com/piotrkowalczuk/nilt"
+	"github.com/piotrkowalczuk/ntypes"
 	"github.com/piotrkowalczuk/pqcomp"
 )
 
@@ -47,9 +47,9 @@ type groupProvider interface {
 	// Find ...
 	Find(c *groupCriteria) ([]*groupEntity, error)
 	// Create ...
-	Create(createdBy int64, name string, description *nilt.String) (*groupEntity, error)
+	Create(createdBy int64, name string, description *ntypes.String) (*groupEntity, error)
 	// UpdateOneByID ...
-	UpdateOneByID(id, updatedBy int64, name, description *nilt.String) (*groupEntity, error)
+	UpdateOneByID(id, updatedBy int64, name, description *ntypes.String) (*groupEntity, error)
 	// DeleteByID ...
 	DeleteByID(id int64) (int64, error)
 	// IsGranted ...
@@ -124,14 +124,14 @@ func (gr *groupRepository) FindByUserID(userID int64) ([]*groupEntity, error) {
 }
 
 // Create implements GroupRepository interface.
-func (gr *groupRepository) Create(createdBy int64, name string, description *nilt.String) (*groupEntity, error) {
+func (gr *groupRepository) Create(createdBy int64, name string, description *ntypes.String) (*groupEntity, error) {
 	if description == nil {
-		description = &nilt.String{}
+		description = &ntypes.String{}
 	}
 	entity := groupEntity{
 		Name:        name,
 		Description: description,
-		CreatedBy:   &nilt.Int64{Int64: createdBy, Valid: createdBy > 0},
+		CreatedBy:   &ntypes.Int64{Int64: createdBy, Valid: createdBy > 0},
 	}
 
 	err := gr.insert(&entity)
@@ -159,7 +159,7 @@ func (gr *groupRepository) insert(e *groupEntity) error {
 }
 
 // UpdateOneByID implements GroupRepository interface.
-func (gr *groupRepository) UpdateOneByID(id, updatedBy int64, name, description *nilt.String) (*groupEntity, error) {
+func (gr *groupRepository) UpdateOneByID(id, updatedBy int64, name, description *ntypes.String) (*groupEntity, error) {
 	var (
 		err    error
 		entity groupEntity

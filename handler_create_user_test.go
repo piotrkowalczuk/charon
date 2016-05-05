@@ -3,7 +3,7 @@ package charon
 import (
 	"testing"
 
-	"github.com/piotrkowalczuk/nilt"
+	"github.com/piotrkowalczuk/ntypes"
 )
 
 func TestCreateUserHandler_firewall_success(t *testing.T) {
@@ -22,7 +22,7 @@ func TestCreateUserHandler_firewall_success(t *testing.T) {
 		},
 		{
 			req: CreateUserRequest{
-				IsStaff: &nilt.Bool{Bool: true, Valid: true},
+				IsStaff: &ntypes.Bool{Bool: true, Valid: true},
 			},
 			act: actor{
 				user: &userEntity{ID: 2},
@@ -33,7 +33,7 @@ func TestCreateUserHandler_firewall_success(t *testing.T) {
 		},
 		{
 			req: CreateUserRequest{
-				IsSuperuser: &nilt.Bool{Bool: true, Valid: true},
+				IsSuperuser: &ntypes.Bool{Bool: true, Valid: true},
 			},
 			act: actor{
 				user: &userEntity{ID: 2, IsSuperuser: true},
@@ -90,7 +90,7 @@ func TestCreateUserHandler_firewall_failure(t *testing.T) {
 		},
 		{
 			req: CreateUserRequest{
-				IsStaff: &nilt.Bool{Bool: true, Valid: true},
+				IsStaff: &ntypes.Bool{Bool: true, Valid: true},
 			},
 			act: actor{
 				user: &userEntity{
@@ -101,7 +101,7 @@ func TestCreateUserHandler_firewall_failure(t *testing.T) {
 		},
 		{
 			req: CreateUserRequest{
-				IsSuperuser: &nilt.Bool{Bool: true, Valid: true},
+				IsSuperuser: &ntypes.Bool{Bool: true, Valid: true},
 			},
 			act: actor{
 				user: &userEntity{ID: 1},
@@ -112,7 +112,7 @@ func TestCreateUserHandler_firewall_failure(t *testing.T) {
 		},
 		{
 			req: CreateUserRequest{
-				IsStaff: &nilt.Bool{Bool: true, Valid: true},
+				IsStaff: &ntypes.Bool{Bool: true, Valid: true},
 			},
 			act: actor{
 				user: &userEntity{

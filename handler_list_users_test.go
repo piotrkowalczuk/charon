@@ -3,8 +3,8 @@ package charon
 import (
 	"testing"
 
-	"github.com/piotrkowalczuk/nilt"
-	"github.com/piotrkowalczuk/protot"
+	"github.com/piotrkowalczuk/ntypes"
+	"github.com/piotrkowalczuk/qtypes"
 )
 
 func TestListUsersHandler_firewall_success(t *testing.T) {
@@ -14,7 +14,7 @@ func TestListUsersHandler_firewall_success(t *testing.T) {
 	}{
 		{
 			req: ListUsersRequest{
-				CreatedBy: protot.EqualInt64(1),
+				CreatedBy: qtypes.EqualInt64(1),
 			},
 			act: actor{
 				user: &userEntity{ID: 1},
@@ -25,7 +25,7 @@ func TestListUsersHandler_firewall_success(t *testing.T) {
 		},
 		{
 			req: ListUsersRequest{
-				CreatedBy: protot.EqualInt64(3),
+				CreatedBy: qtypes.EqualInt64(3),
 			},
 			act: actor{
 				user: &userEntity{ID: 1},
@@ -36,7 +36,7 @@ func TestListUsersHandler_firewall_success(t *testing.T) {
 		},
 		{
 			req: ListUsersRequest{
-				IsSuperuser: &nilt.Bool{Bool: true, Valid: true},
+				IsSuperuser: &ntypes.Bool{Bool: true, Valid: true},
 			},
 			act: actor{
 				user: &userEntity{
@@ -56,8 +56,8 @@ func TestListUsersHandler_firewall_success(t *testing.T) {
 		},
 		{
 			req: ListUsersRequest{
-				IsStaff:   &nilt.Bool{Bool: true, Valid: true},
-				CreatedBy: protot.EqualInt64(1),
+				IsStaff:   &ntypes.Bool{Bool: true, Valid: true},
+				CreatedBy: qtypes.EqualInt64(1),
 			},
 			act: actor{
 				user: &userEntity{
@@ -70,8 +70,8 @@ func TestListUsersHandler_firewall_success(t *testing.T) {
 		},
 		{
 			req: ListUsersRequest{
-				IsStaff:   &nilt.Bool{Bool: true, Valid: true},
-				CreatedBy: protot.EqualInt64(3),
+				IsStaff:   &ntypes.Bool{Bool: true, Valid: true},
+				CreatedBy: qtypes.EqualInt64(3),
 			},
 			act: actor{
 				user: &userEntity{
@@ -96,7 +96,7 @@ func TestListUsersHandler_firewall_success(t *testing.T) {
 		},
 		{
 			req: ListUsersRequest{
-				IsSuperuser: &nilt.Bool{Bool: true, Valid: true},
+				IsSuperuser: &ntypes.Bool{Bool: true, Valid: true},
 			},
 			act: actor{
 				user: &userEntity{ID: 1, IsSuperuser: true},
@@ -137,7 +137,7 @@ func TestListUsersHandler_firewall_failure(t *testing.T) {
 		},
 		{
 			req: ListUsersRequest{
-				IsSuperuser: &nilt.Bool{Bool: true, Valid: true},
+				IsSuperuser: &ntypes.Bool{Bool: true, Valid: true},
 			},
 			act: actor{
 				user: &userEntity{ID: 1},

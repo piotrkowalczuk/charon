@@ -1,7 +1,7 @@
 package charon
 
 import (
-	"github.com/piotrkowalczuk/protot"
+	"github.com/piotrkowalczuk/qtypes"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -29,7 +29,7 @@ func (luh *listUsersHandler) handle(ctx context.Context, req *ListUsersRequest) 
 		createdBy:   req.CreatedBy,
 	}
 	if act.permissions.Contains(UserCanRetrieveAsOwner, UserCanRetrieveStaffAsOwner) {
-		criteria.createdBy = &protot.QueryInt64{Values: []int64{act.user.ID}, Type: protot.NumericQueryType_EQUAL, Valid: true}
+		criteria.createdBy = &qtypes.Int64{Values: []int64{act.user.ID}, Type: qtypes.NumericQueryType_EQUAL, Valid: true}
 	}
 
 	ents, err := luh.repository.user.Find(criteria)

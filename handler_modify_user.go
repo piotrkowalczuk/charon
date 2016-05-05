@@ -1,7 +1,7 @@
 package charon
 
 import (
-	"github.com/piotrkowalczuk/nilt"
+	"github.com/piotrkowalczuk/ntypes"
 	"github.com/piotrkowalczuk/pqt"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
@@ -37,7 +37,7 @@ func (muh *modifyUserHandler) handle(ctx context.Context, req *ModifyUserRequest
 		req.Id,
 		nil,
 		nil,
-		&nilt.Int64{Int64: actor.user.ID, Valid: actor.user.ID != 0},
+		&ntypes.Int64{Int64: actor.user.ID, Valid: actor.user.ID != 0},
 		req.FirstName,
 		req.IsActive,
 		req.IsConfirmed,

@@ -7,7 +7,7 @@ import (
 
 	"github.com/golang/protobuf/ptypes"
 	pbts "github.com/golang/protobuf/ptypes/timestamp"
-	"github.com/piotrkowalczuk/nilt"
+	"github.com/piotrkowalczuk/ntypes"
 )
 
 const (
@@ -69,18 +69,18 @@ type userProvider interface {
 		id int64,
 		confirmationToken []byte,
 		createdAt *time.Time,
-		createdBy *nilt.Int64,
-		firstName *nilt.String,
-		isActive *nilt.Bool,
-		isConfirmed *nilt.Bool,
-		isStaff *nilt.Bool,
-		isSuperuser *nilt.Bool,
+		createdBy *ntypes.Int64,
+		firstName *ntypes.String,
+		isActive *ntypes.Bool,
+		isConfirmed *ntypes.Bool,
+		isStaff *ntypes.Bool,
+		isSuperuser *ntypes.Bool,
 		lastLoginAt *time.Time,
-		lastName *nilt.String,
+		lastName *ntypes.String,
 		password []byte,
 		updatedAt *time.Time,
-		updatedBy *nilt.Int64,
-		username *nilt.String,
+		updatedBy *ntypes.Int64,
+		username *ntypes.String,
 	) (*userEntity, error)
 	RegistrationConfirmation(id int64, confirmationToken string) error
 	IsGranted(id int64, permission Permission) (bool, error)

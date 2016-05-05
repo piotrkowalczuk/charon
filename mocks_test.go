@@ -9,7 +9,7 @@ import (
 
 import (
 	"github.com/piotrkowalczuk/mnemosyne"
-	"github.com/piotrkowalczuk/nilt"
+	"github.com/piotrkowalczuk/ntypes"
 )
 import "golang.org/x/net/context"
 import "google.golang.org/grpc"
@@ -1398,11 +1398,11 @@ func (_m *mockGroupProvider) Find(c *groupCriteria) ([]*groupEntity, error) {
 }
 
 // Create provides a mock function with given fields: createdBy, name, description
-func (_m *mockGroupProvider) Create(createdBy int64, name string, description *nilt.String) (*groupEntity, error) {
+func (_m *mockGroupProvider) Create(createdBy int64, name string, description *ntypes.String) (*groupEntity, error) {
 	ret := _m.Called(createdBy, name, description)
 
 	var r0 *groupEntity
-	if rf, ok := ret.Get(0).(func(int64, string, *nilt.String) *groupEntity); ok {
+	if rf, ok := ret.Get(0).(func(int64, string, *ntypes.String) *groupEntity); ok {
 		r0 = rf(createdBy, name, description)
 	} else {
 		if ret.Get(0) != nil {
@@ -1411,7 +1411,7 @@ func (_m *mockGroupProvider) Create(createdBy int64, name string, description *n
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(int64, string, *nilt.String) error); ok {
+	if rf, ok := ret.Get(1).(func(int64, string, *ntypes.String) error); ok {
 		r1 = rf(createdBy, name, description)
 	} else {
 		r1 = ret.Error(1)
@@ -1421,11 +1421,11 @@ func (_m *mockGroupProvider) Create(createdBy int64, name string, description *n
 }
 
 // UpdateOneByID provides a mock function with given fields: id, updatedBy, name, description
-func (_m *mockGroupProvider) UpdateOneByID(id int64, updatedBy int64, name *nilt.String, description *nilt.String) (*groupEntity, error) {
+func (_m *mockGroupProvider) UpdateOneByID(id int64, updatedBy int64, name *ntypes.String, description *ntypes.String) (*groupEntity, error) {
 	ret := _m.Called(id, updatedBy, name, description)
 
 	var r0 *groupEntity
-	if rf, ok := ret.Get(0).(func(int64, int64, *nilt.String, *nilt.String) *groupEntity); ok {
+	if rf, ok := ret.Get(0).(func(int64, int64, *ntypes.String, *ntypes.String) *groupEntity); ok {
 		r0 = rf(id, updatedBy, name, description)
 	} else {
 		if ret.Get(0) != nil {
@@ -1434,7 +1434,7 @@ func (_m *mockGroupProvider) UpdateOneByID(id int64, updatedBy int64, name *nilt
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(int64, int64, *nilt.String, *nilt.String) error); ok {
+	if rf, ok := ret.Get(1).(func(int64, int64, *ntypes.String, *ntypes.String) error); ok {
 		r1 = rf(id, updatedBy, name, description)
 	} else {
 		r1 = ret.Error(1)
@@ -2089,11 +2089,11 @@ func (_m *mockUserProvider) DeleteByID(id int64) (int64, error) {
 }
 
 // UpdateByID provides a mock function with given fields: id, confirmationToken, createdAt, createdBy, firstName, isActive, isConfirmed, isStaff, isSuperuser, lastLoginAt, lastName, password, updatedAt, updatedBy, username
-func (_m *mockUserProvider) UpdateByID(id int64, confirmationToken []byte, createdAt *time.Time, createdBy *nilt.Int64, firstName *nilt.String, isActive *nilt.Bool, isConfirmed *nilt.Bool, isStaff *nilt.Bool, isSuperuser *nilt.Bool, lastLoginAt *time.Time, lastName *nilt.String, password []byte, updatedAt *time.Time, updatedBy *nilt.Int64, username *nilt.String) (*userEntity, error) {
+func (_m *mockUserProvider) UpdateByID(id int64, confirmationToken []byte, createdAt *time.Time, createdBy *ntypes.Int64, firstName *ntypes.String, isActive *ntypes.Bool, isConfirmed *ntypes.Bool, isStaff *ntypes.Bool, isSuperuser *ntypes.Bool, lastLoginAt *time.Time, lastName *ntypes.String, password []byte, updatedAt *time.Time, updatedBy *ntypes.Int64, username *ntypes.String) (*userEntity, error) {
 	ret := _m.Called(id, confirmationToken, createdAt, createdBy, firstName, isActive, isConfirmed, isStaff, isSuperuser, lastLoginAt, lastName, password, updatedAt, updatedBy, username)
 
 	var r0 *userEntity
-	if rf, ok := ret.Get(0).(func(int64, []byte, *time.Time, *nilt.Int64, *nilt.String, *nilt.Bool, *nilt.Bool, *nilt.Bool, *nilt.Bool, *time.Time, *nilt.String, []byte, *time.Time, *nilt.Int64, *nilt.String) *userEntity); ok {
+	if rf, ok := ret.Get(0).(func(int64, []byte, *time.Time, *ntypes.Int64, *ntypes.String, *ntypes.Bool, *ntypes.Bool, *ntypes.Bool, *ntypes.Bool, *time.Time, *ntypes.String, []byte, *time.Time, *ntypes.Int64, *ntypes.String) *userEntity); ok {
 		r0 = rf(id, confirmationToken, createdAt, createdBy, firstName, isActive, isConfirmed, isStaff, isSuperuser, lastLoginAt, lastName, password, updatedAt, updatedBy, username)
 	} else {
 		if ret.Get(0) != nil {
@@ -2102,7 +2102,7 @@ func (_m *mockUserProvider) UpdateByID(id int64, confirmationToken []byte, creat
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(int64, []byte, *time.Time, *nilt.Int64, *nilt.String, *nilt.Bool, *nilt.Bool, *nilt.Bool, *nilt.Bool, *time.Time, *nilt.String, []byte, *time.Time, *nilt.Int64, *nilt.String) error); ok {
+	if rf, ok := ret.Get(1).(func(int64, []byte, *time.Time, *ntypes.Int64, *ntypes.String, *ntypes.Bool, *ntypes.Bool, *ntypes.Bool, *ntypes.Bool, *time.Time, *ntypes.String, []byte, *time.Time, *ntypes.Int64, *ntypes.String) error); ok {
 		r1 = rf(id, confirmationToken, createdAt, createdBy, firstName, isActive, isConfirmed, isStaff, isSuperuser, lastLoginAt, lastName, password, updatedAt, updatedBy, username)
 	} else {
 		r1 = ret.Error(1)

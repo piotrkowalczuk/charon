@@ -3,7 +3,7 @@ package charon
 import (
 	"testing"
 
-	"github.com/piotrkowalczuk/nilt"
+	"github.com/piotrkowalczuk/ntypes"
 )
 
 func TestGetUserHandler_firewall_success(t *testing.T) {
@@ -22,7 +22,7 @@ func TestGetUserHandler_firewall_success(t *testing.T) {
 			},
 			ent: userEntity{
 				ID:        2,
-				CreatedBy: &nilt.Int64{Int64: 1, Valid: true},
+				CreatedBy: &ntypes.Int64{Int64: 1, Valid: true},
 			},
 		},
 		{
@@ -35,7 +35,7 @@ func TestGetUserHandler_firewall_success(t *testing.T) {
 			},
 			ent: userEntity{
 				ID:        2,
-				CreatedBy: &nilt.Int64{Int64: 3, Valid: true},
+				CreatedBy: &ntypes.Int64{Int64: 3, Valid: true},
 			},
 		},
 		{
@@ -76,7 +76,7 @@ func TestGetUserHandler_firewall_success(t *testing.T) {
 			ent: userEntity{
 				ID:        2,
 				IsStaff:   true,
-				CreatedBy: &nilt.Int64{Int64: 1, Valid: true},
+				CreatedBy: &ntypes.Int64{Int64: 1, Valid: true},
 			},
 		},
 		{
@@ -92,7 +92,7 @@ func TestGetUserHandler_firewall_success(t *testing.T) {
 			ent: userEntity{
 				ID:        2,
 				IsStaff:   true,
-				CreatedBy: &nilt.Int64{Int64: 3, Valid: true},
+				CreatedBy: &ntypes.Int64{Int64: 3, Valid: true},
 			},
 		},
 		{

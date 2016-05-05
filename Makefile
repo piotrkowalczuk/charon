@@ -38,8 +38,8 @@ CMD_TEST=go test -v -coverprofile=profile.out -covermode=atomic
 PROTO_PATH=--proto_path=. \
           	    --proto_path=${GOPATH}/src \
           	    --proto_path=${GOPATH}/src/github.com/piotrkowalczuk/mnemosyne \
-          	    --proto_path=${GOPATH}/src/github.com/piotrkowalczuk/protot \
-          	    --proto_path=${GOPATH}/src/github.com/piotrkowalczuk/nilt \
+          	    --proto_path=${GOPATH}/src/github.com/piotrkowalczuk/qtypes \
+          	    --proto_path=${GOPATH}/src/github.com/piotrkowalczuk/ntypes \
 
 .PHONY:	all proto rebuild build build-daemon build-control build-example install-generator run test test-short get build package
 
@@ -48,7 +48,7 @@ all: rebuild test run
 proto:
 	@${PROTOC} --proto_path=. \
 				--proto_path=${GOPATH}/src \
-				--go_out=Mmnemosyne.proto=github.com/piotrkowalczuk/mnemosyne,Mprotot.proto=github.com/piotrkowalczuk/protot,Mnilt.proto=github.com/piotrkowalczuk/nilt,plugins=grpc:. \
+				--go_out=Mmnemosyne.proto=github.com/piotrkowalczuk/mnemosyne,Mqtypes.proto=github.com/piotrkowalczuk/qtypes,Mntypes.proto=github.com/piotrkowalczuk/ntypes,plugins=grpc:. \
 		${SERVICE}.proto
 	@ls -al | grep pb.go
 

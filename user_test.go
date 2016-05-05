@@ -5,8 +5,8 @@ import (
 
 	"reflect"
 
-	"github.com/piotrkowalczuk/nilt"
-	"github.com/piotrkowalczuk/protot"
+	"github.com/piotrkowalczuk/ntypes"
+	"github.com/piotrkowalczuk/qtypes"
 )
 
 var (
@@ -58,18 +58,18 @@ func TestUserRepository_UpdateByID(t *testing.T) {
 			user.ID,
 			nil,
 			nil,
-			&nilt.Int64{},
-			&nilt.String{String: user.FirstName + suffix, Valid: true},
-			&nilt.Bool{Bool: true, Valid: true},
-			&nilt.Bool{Bool: true, Valid: true},
-			&nilt.Bool{Bool: true, Valid: true},
-			&nilt.Bool{Bool: true, Valid: true},
+			&ntypes.Int64{},
+			&ntypes.String{String: user.FirstName + suffix, Valid: true},
+			&ntypes.Bool{Bool: true, Valid: true},
+			&ntypes.Bool{Bool: true, Valid: true},
+			&ntypes.Bool{Bool: true, Valid: true},
+			&ntypes.Bool{Bool: true, Valid: true},
 			nil,
-			&nilt.String{String: user.LastName + suffix, Valid: true},
+			&ntypes.String{String: user.LastName + suffix, Valid: true},
 			user.Password,
 			nil,
-			&nilt.Int64{},
-			&nilt.String{String: user.Username + suffix, Valid: true},
+			&ntypes.Int64{},
+			&ntypes.String{String: user.Username + suffix, Valid: true},
 		)
 
 		if err != nil {
@@ -188,12 +188,12 @@ func TestUserRepository_Find(t *testing.T) {
 	}
 	entities, err = suite.repository.user.Find(&userCriteria{
 		limit:             all,
-		username:          protot.ExactString("johnsnow@gmail.com"),
+		username:          qtypes.ExactString("johnsnow@gmail.com"),
 		password:          []byte("secret"),
-		firstName:         protot.ExactString("John"),
-		lastName:          protot.ExactString("Snow"),
+		firstName:         qtypes.ExactString("John"),
+		lastName:          qtypes.ExactString("Snow"),
 		confirmationToken: []byte("1234567890"),
-		isSuperuser:       &nilt.Bool{Bool: true}, // Is not valid, should not affect results
+		isSuperuser:       &ntypes.Bool{Bool: true}, // Is not valid, should not affect results
 	})
 	if err != nil {
 		t.Errorf("users can not be retrieved, unexpected error: %s", err.Error())

@@ -9,9 +9,10 @@ import (
 	"time"
 
 	"github.com/golang/protobuf/ptypes"
-	"github.com/piotrkowalczuk/nilt"
+	"github.com/piotrkowalczuk/ntypes"
 	"github.com/piotrkowalczuk/pqcomp"
-	"github.com/piotrkowalczuk/protot"
+	"github.com/piotrkowalczuk/pqt"
+	"github.com/piotrkowalczuk/qtypes"
 )
 
 const (
@@ -60,7 +61,7 @@ var (
 type userEntity struct {
 	ConfirmationToken []byte
 	CreatedAt         time.Time
-	CreatedBy         *nilt.Int64
+	CreatedBy         *ntypes.Int64
 	FirstName         string
 	ID                int64
 	IsActive          bool
@@ -71,10 +72,10 @@ type userEntity struct {
 	LastName          string
 	Password          []byte
 	UpdatedAt         *time.Time
-	UpdatedBy         *nilt.Int64
+	UpdatedBy         *ntypes.Int64
 	Username          string
-	Author            *userEntity
-	Modifier          *userEntity
+	Author            []*userEntity
+	Modifier          []*userEntity
 	Permission        []*permissionEntity
 	Group             []*groupEntity
 }
@@ -82,20 +83,34 @@ type userCriteria struct {
 	offset, limit     int64
 	sort              map[string]bool
 	confirmationToken []byte
-	createdAt         *protot.QueryTimestamp
-	createdBy         *protot.QueryInt64
-	firstName         *protot.QueryString
-	id                *protot.QueryInt64
-	isActive          *nilt.Bool
-	isConfirmed       *nilt.Bool
-	isStaff           *nilt.Bool
-	isSuperuser       *nilt.Bool
-	lastLoginAt       *protot.QueryTimestamp
-	lastName          *protot.QueryString
-	password          []byte
-	updatedAt         *protot.QueryTimestamp
-	updatedBy         *protot.QueryInt64
-	username          *protot.QueryString
+
+	createdAt *qtypes.Timestamp
+
+	createdBy *qtypes.Int64
+
+	firstName *qtypes.String
+
+	id *qtypes.Int64
+
+	isActive *ntypes.Bool
+
+	isConfirmed *ntypes.Bool
+
+	isStaff *ntypes.Bool
+
+	isSuperuser *ntypes.Bool
+
+	lastLoginAt *qtypes.Timestamp
+
+	lastName *qtypes.String
+
+	password []byte
+
+	updatedAt *qtypes.Timestamp
+
+	updatedBy *qtypes.Int64
+
+	username *qtypes.String
 }
 
 type userRepository struct {
@@ -105,12 +120,26 @@ type userRepository struct {
 }
 
 func (r *userRepository) Find(c *userCriteria) ([]*userEntity, error) {
-	comp := pqcomp.New(2, 0, 1)
-	comp.AddArg(c.offset)
-	comp.AddArg(c.limit)
+	wbuf := bytes.NewBuffer(nil)
+	qbuf := bytes.NewBuffer(nil)
+	qbuf.WriteString("SELECT ")
+	qbuf.WriteString(strings.Join(r.columns, ", "))
+	qbuf.WriteString(" FROM ")
+	qbuf.WriteString(r.table)
 
-	where := comp.Compose(15)
-	where.AddExpr(tableUserColumnConfirmationToken, pqcomp.Equal, c.confirmationToken)
+	pw := pqt.NewPlaceholderWriter()
+	args := make([]interface{}, 0)
+	dirty := false
+	if c.confirmationToken != nil {
+		if dirty {
+			wbuf.WriteString(" AND ")
+		}
+		dirty = true
+		wbuf.WriteString(tableUserColumnConfirmationToken)
+		wbuf.WriteString("=")
+		pw.WriteTo(wbuf)
+		args = append(args, c.confirmationToken)
+	}
 
 	if c.createdAt != nil && c.createdAt.Valid {
 		createdAtt1 := c.createdAt.Value()
@@ -121,27 +150,94 @@ func (r *userRepository) Find(c *userCriteria) ([]*userEntity, error) {
 			}
 
 			switch c.createdAt.Type {
-			case protot.NumericQueryType_NOT_A_NUMBER:
-				if c.createdAt.Negation {
-					where.AddExpr(tableUserColumnCreatedAt, pqcomp.IsNotNull, "")
-				} else {
-					where.AddExpr(tableUserColumnCreatedAt, pqcomp.IsNull, "")
+			case qtypes.NumericQueryType_NOT_A_NUMBER:
+				if dirty {
+					wbuf.WriteString(" AND ")
 				}
-			case protot.NumericQueryType_EQUAL:
-				where.AddExpr(tableUserColumnCreatedAt, pqcomp.Equal, createdAt1)
-			case protot.NumericQueryType_NOT_EQUAL:
-				where.AddExpr(tableUserColumnCreatedAt, pqcomp.NotEqual, createdAt1)
-			case protot.NumericQueryType_GREATER:
-				where.AddExpr(tableUserColumnCreatedAt, pqcomp.GreaterThan, createdAt1)
-			case protot.NumericQueryType_GREATER_EQUAL:
-				where.AddExpr(tableUserColumnCreatedAt, pqcomp.GreaterThanOrEqual, createdAt1)
-			case protot.NumericQueryType_LESS:
-				where.AddExpr(tableUserColumnCreatedAt, pqcomp.LessThan, createdAt1)
-			case protot.NumericQueryType_LESS_EQUAL:
-				where.AddExpr(tableUserColumnCreatedAt, pqcomp.LessThanOrEqual, createdAt1)
-			case protot.NumericQueryType_IN:
-				where.AddExpr(tableUserColumnCreatedAt, pqcomp.In, createdAt1)
-			case protot.NumericQueryType_BETWEEN:
+				dirty = true
+
+				wbuf.WriteString(tableUserColumnCreatedAt)
+				if c.createdAt.Negation {
+					wbuf.WriteString(" IS NOT NULL ")
+				} else {
+					wbuf.WriteString(" IS NULL ")
+				}
+			case qtypes.NumericQueryType_EQUAL:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tableUserColumnCreatedAt)
+				wbuf.WriteString("=")
+				pw.WriteTo(wbuf)
+				args = append(args, c.createdAt)
+			case qtypes.NumericQueryType_NOT_EQUAL:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tableUserColumnCreatedAt)
+				wbuf.WriteString("!=")
+				pw.WriteTo(wbuf)
+				args = append(args, c.createdAt)
+			case qtypes.NumericQueryType_GREATER:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tableUserColumnCreatedAt)
+				wbuf.WriteString(">")
+				pw.WriteTo(wbuf)
+				args = append(args, c.createdAt)
+			case qtypes.NumericQueryType_GREATER_EQUAL:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tableUserColumnCreatedAt)
+				wbuf.WriteString(">=")
+				pw.WriteTo(wbuf)
+				args = append(args, c.createdAt)
+			case qtypes.NumericQueryType_LESS:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tableUserColumnCreatedAt)
+				wbuf.WriteString("<")
+				pw.WriteTo(wbuf)
+				args = append(args, c.createdAt)
+			case qtypes.NumericQueryType_LESS_EQUAL:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tableUserColumnCreatedAt)
+				wbuf.WriteString("<=")
+				pw.WriteTo(wbuf)
+				args = append(args, c.createdAt)
+			case qtypes.NumericQueryType_IN:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tableUserColumnCreatedAt)
+				wbuf.WriteString(" IN ")
+				pw.WriteTo(wbuf)
+				args = append(args, c.createdAt)
+			case qtypes.NumericQueryType_BETWEEN:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
 				createdAtt2 := c.createdAt.Values[1]
 				if createdAtt2 != nil {
 					createdAt2, err := ptypes.Timestamp(createdAtt2)
@@ -149,8 +245,15 @@ func (r *userRepository) Find(c *userCriteria) ([]*userEntity, error) {
 						return nil, err
 					}
 
-					where.AddExpr(tableUserColumnCreatedAt, pqcomp.GreaterThan, createdAt1)
-					where.AddExpr(tableUserColumnCreatedAt, pqcomp.LessThan, createdAt2)
+					wbuf.WriteString(tableUserColumnCreatedAt)
+					wbuf.WriteString(" > ")
+					pw.WriteTo(wbuf)
+					args = append(args, createdAt1)
+
+					wbuf.WriteString(tableUserColumnCreatedAt)
+					wbuf.WriteString(" > ")
+					pw.WriteTo(wbuf)
+					args = append(args, createdAt2)
 				}
 			}
 		}
@@ -158,87 +261,309 @@ func (r *userRepository) Find(c *userCriteria) ([]*userEntity, error) {
 
 	if c.createdBy != nil && c.createdBy.Valid {
 		switch c.createdBy.Type {
-		case protot.NumericQueryType_NOT_A_NUMBER:
+		case qtypes.NumericQueryType_NOT_A_NUMBER:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserColumnCreatedBy)
 			if c.createdBy.Negation {
-				where.AddExpr(tableUserColumnCreatedBy, pqcomp.IsNotNull, "")
+				wbuf.WriteString(" IS NOT NULL ")
 			} else {
-				where.AddExpr(tableUserColumnCreatedBy, pqcomp.IsNull, "")
+				wbuf.WriteString(" IS NULL ")
 			}
-		case protot.NumericQueryType_EQUAL:
-			where.AddExpr(tableUserColumnCreatedBy, pqcomp.Equal, c.createdBy.Value())
-		case protot.NumericQueryType_NOT_EQUAL:
-			where.AddExpr(tableUserColumnCreatedBy, pqcomp.NotEqual, c.createdBy.Value())
-		case protot.NumericQueryType_GREATER:
-			where.AddExpr(tableUserColumnCreatedBy, pqcomp.GreaterThan, c.createdBy.Value())
-		case protot.NumericQueryType_GREATER_EQUAL:
-			where.AddExpr(tableUserColumnCreatedBy, pqcomp.GreaterThanOrEqual, c.createdBy.Value())
-		case protot.NumericQueryType_LESS:
-			where.AddExpr(tableUserColumnCreatedBy, pqcomp.LessThan, c.createdBy.Value())
-		case protot.NumericQueryType_LESS_EQUAL:
-			where.AddExpr(tableUserColumnCreatedBy, pqcomp.LessThanOrEqual, c.createdBy.Value())
-		case protot.NumericQueryType_IN:
+		case qtypes.NumericQueryType_EQUAL:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserColumnCreatedBy)
+			wbuf.WriteString("=")
+			pw.WriteTo(wbuf)
+			args = append(args, c.createdBy)
+		case qtypes.NumericQueryType_NOT_EQUAL:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserColumnCreatedBy)
+			wbuf.WriteString(" <> ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.createdBy)
+		case qtypes.NumericQueryType_GREATER:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserColumnCreatedBy)
+			wbuf.WriteString(" > ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.createdBy)
+		case qtypes.NumericQueryType_GREATER_EQUAL:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserColumnCreatedBy)
+			wbuf.WriteString(" >= ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.createdBy)
+		case qtypes.NumericQueryType_LESS:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserColumnCreatedBy)
+			wbuf.WriteString(" < ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.createdBy)
+		case qtypes.NumericQueryType_LESS_EQUAL:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserColumnCreatedBy)
+			wbuf.WriteString(" >= ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.createdBy)
+		case qtypes.NumericQueryType_IN:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserColumnCreatedBy)
+			wbuf.WriteString(" IN ")
 			for _, v := range c.createdBy.Values {
-				where.AddExpr(tableUserColumnCreatedBy, pqcomp.In, v)
+				pw.WriteTo(wbuf)
+				args = append(args, v)
 			}
-		case protot.NumericQueryType_BETWEEN:
-			where.AddExpr(tableUserColumnCreatedBy, pqcomp.GreaterThan, c.createdBy.Values[0])
-			where.AddExpr(tableUserColumnCreatedBy, pqcomp.LessThan, c.createdBy.Values[1])
+		case qtypes.NumericQueryType_BETWEEN:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserColumnCreatedBy)
+			wbuf.WriteString(" > ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.createdBy.Values[0])
+
+			wbuf.WriteString(tableUserColumnCreatedBy)
+			wbuf.WriteString(" > ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.createdBy.Values[1])
 		}
 	}
 
 	if c.firstName != nil && c.firstName.Valid {
 		switch c.firstName.Type {
-		case protot.TextQueryType_NOT_A_TEXT:
-			if c.firstName.Negation {
-				where.AddExpr(tableUserColumnFirstName, pqcomp.IsNotNull, "")
-			} else {
-				where.AddExpr(tableUserColumnFirstName, pqcomp.IsNull, "")
+		case qtypes.TextQueryType_NOT_A_TEXT:
+			if dirty {
+				wbuf.WriteString(" AND ")
 			}
-		case protot.TextQueryType_EXACT:
-			where.AddExpr(tableUserColumnFirstName, pqcomp.Equal, c.firstName.Value())
-		case protot.TextQueryType_SUBSTRING:
-			where.AddExpr(tableUserColumnFirstName, pqcomp.Like, "%"+c.firstName.Value()+"%")
-		case protot.TextQueryType_HAS_PREFIX:
-			where.AddExpr(tableUserColumnFirstName, pqcomp.Like, c.firstName.Value()+"%")
-		case protot.TextQueryType_HAS_SUFFIX:
-			where.AddExpr(tableUserColumnFirstName, pqcomp.Like, "%"+c.firstName.Value())
+			dirty = true
+
+			wbuf.WriteString(tableUserColumnFirstName)
+			if c.firstName.Negation {
+				wbuf.WriteString(" IS NOT NULL ")
+			} else {
+				wbuf.WriteString(" IS NULL ")
+			}
+		case qtypes.TextQueryType_EXACT:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserColumnFirstName)
+			wbuf.WriteString("=")
+			pw.WriteTo(wbuf)
+			args = append(args, c.firstName.Value())
+		case qtypes.TextQueryType_SUBSTRING:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserColumnFirstName)
+			wbuf.WriteString(" LIKE ")
+			pw.WriteTo(wbuf)
+			args = append(args, fmt.Sprintf("%%%s%%", c.firstName.Value()))
+		case qtypes.TextQueryType_HAS_PREFIX:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserColumnFirstName)
+			wbuf.WriteString(" LIKE ")
+			pw.WriteTo(wbuf)
+			args = append(args, fmt.Sprintf("%s%%", c.firstName.Value()))
+		case qtypes.TextQueryType_HAS_SUFFIX:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserColumnFirstName)
+			wbuf.WriteString(" LIKE ")
+			pw.WriteTo(wbuf)
+			args = append(args, fmt.Sprintf("%%%s", c.firstName.Value()))
 		}
 	}
 
 	if c.id != nil && c.id.Valid {
 		switch c.id.Type {
-		case protot.NumericQueryType_NOT_A_NUMBER:
+		case qtypes.NumericQueryType_NOT_A_NUMBER:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserColumnID)
 			if c.id.Negation {
-				where.AddExpr(tableUserColumnID, pqcomp.IsNotNull, "")
+				wbuf.WriteString(" IS NOT NULL ")
 			} else {
-				where.AddExpr(tableUserColumnID, pqcomp.IsNull, "")
+				wbuf.WriteString(" IS NULL ")
 			}
-		case protot.NumericQueryType_EQUAL:
-			where.AddExpr(tableUserColumnID, pqcomp.Equal, c.id.Value())
-		case protot.NumericQueryType_NOT_EQUAL:
-			where.AddExpr(tableUserColumnID, pqcomp.NotEqual, c.id.Value())
-		case protot.NumericQueryType_GREATER:
-			where.AddExpr(tableUserColumnID, pqcomp.GreaterThan, c.id.Value())
-		case protot.NumericQueryType_GREATER_EQUAL:
-			where.AddExpr(tableUserColumnID, pqcomp.GreaterThanOrEqual, c.id.Value())
-		case protot.NumericQueryType_LESS:
-			where.AddExpr(tableUserColumnID, pqcomp.LessThan, c.id.Value())
-		case protot.NumericQueryType_LESS_EQUAL:
-			where.AddExpr(tableUserColumnID, pqcomp.LessThanOrEqual, c.id.Value())
-		case protot.NumericQueryType_IN:
+		case qtypes.NumericQueryType_EQUAL:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserColumnID)
+			wbuf.WriteString("=")
+			pw.WriteTo(wbuf)
+			args = append(args, c.id)
+		case qtypes.NumericQueryType_NOT_EQUAL:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserColumnID)
+			wbuf.WriteString(" <> ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.id)
+		case qtypes.NumericQueryType_GREATER:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserColumnID)
+			wbuf.WriteString(" > ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.id)
+		case qtypes.NumericQueryType_GREATER_EQUAL:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserColumnID)
+			wbuf.WriteString(" >= ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.id)
+		case qtypes.NumericQueryType_LESS:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserColumnID)
+			wbuf.WriteString(" < ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.id)
+		case qtypes.NumericQueryType_LESS_EQUAL:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserColumnID)
+			wbuf.WriteString(" >= ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.id)
+		case qtypes.NumericQueryType_IN:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserColumnID)
+			wbuf.WriteString(" IN ")
 			for _, v := range c.id.Values {
-				where.AddExpr(tableUserColumnID, pqcomp.In, v)
+				pw.WriteTo(wbuf)
+				args = append(args, v)
 			}
-		case protot.NumericQueryType_BETWEEN:
-			where.AddExpr(tableUserColumnID, pqcomp.GreaterThan, c.id.Values[0])
-			where.AddExpr(tableUserColumnID, pqcomp.LessThan, c.id.Values[1])
+		case qtypes.NumericQueryType_BETWEEN:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserColumnID)
+			wbuf.WriteString(" > ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.id.Values[0])
+
+			wbuf.WriteString(tableUserColumnID)
+			wbuf.WriteString(" > ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.id.Values[1])
 		}
 	}
 
-	where.AddExpr(tableUserColumnIsActive, pqcomp.Equal, c.isActive)
-	where.AddExpr(tableUserColumnIsConfirmed, pqcomp.Equal, c.isConfirmed)
-	where.AddExpr(tableUserColumnIsStaff, pqcomp.Equal, c.isStaff)
-	where.AddExpr(tableUserColumnIsSuperuser, pqcomp.Equal, c.isSuperuser)
+	if c.isActive != nil && c.isActive.Valid {
+		if dirty {
+			wbuf.WriteString(" AND ")
+		}
+		dirty = true
+		wbuf.WriteString(tableUserColumnIsActive)
+		wbuf.WriteString("=")
+		pw.WriteTo(wbuf)
+		args = append(args, c.isActive)
+	}
+	if c.isConfirmed != nil && c.isConfirmed.Valid {
+		if dirty {
+			wbuf.WriteString(" AND ")
+		}
+		dirty = true
+		wbuf.WriteString(tableUserColumnIsConfirmed)
+		wbuf.WriteString("=")
+		pw.WriteTo(wbuf)
+		args = append(args, c.isConfirmed)
+	}
+	if c.isStaff != nil && c.isStaff.Valid {
+		if dirty {
+			wbuf.WriteString(" AND ")
+		}
+		dirty = true
+		wbuf.WriteString(tableUserColumnIsStaff)
+		wbuf.WriteString("=")
+		pw.WriteTo(wbuf)
+		args = append(args, c.isStaff)
+	}
+	if c.isSuperuser != nil && c.isSuperuser.Valid {
+		if dirty {
+			wbuf.WriteString(" AND ")
+		}
+		dirty = true
+		wbuf.WriteString(tableUserColumnIsSuperuser)
+		wbuf.WriteString("=")
+		pw.WriteTo(wbuf)
+		args = append(args, c.isSuperuser)
+	}
 
 	if c.lastLoginAt != nil && c.lastLoginAt.Valid {
 		lastLoginAtt1 := c.lastLoginAt.Value()
@@ -249,27 +574,94 @@ func (r *userRepository) Find(c *userCriteria) ([]*userEntity, error) {
 			}
 
 			switch c.lastLoginAt.Type {
-			case protot.NumericQueryType_NOT_A_NUMBER:
-				if c.lastLoginAt.Negation {
-					where.AddExpr(tableUserColumnLastLoginAt, pqcomp.IsNotNull, "")
-				} else {
-					where.AddExpr(tableUserColumnLastLoginAt, pqcomp.IsNull, "")
+			case qtypes.NumericQueryType_NOT_A_NUMBER:
+				if dirty {
+					wbuf.WriteString(" AND ")
 				}
-			case protot.NumericQueryType_EQUAL:
-				where.AddExpr(tableUserColumnLastLoginAt, pqcomp.Equal, lastLoginAt1)
-			case protot.NumericQueryType_NOT_EQUAL:
-				where.AddExpr(tableUserColumnLastLoginAt, pqcomp.NotEqual, lastLoginAt1)
-			case protot.NumericQueryType_GREATER:
-				where.AddExpr(tableUserColumnLastLoginAt, pqcomp.GreaterThan, lastLoginAt1)
-			case protot.NumericQueryType_GREATER_EQUAL:
-				where.AddExpr(tableUserColumnLastLoginAt, pqcomp.GreaterThanOrEqual, lastLoginAt1)
-			case protot.NumericQueryType_LESS:
-				where.AddExpr(tableUserColumnLastLoginAt, pqcomp.LessThan, lastLoginAt1)
-			case protot.NumericQueryType_LESS_EQUAL:
-				where.AddExpr(tableUserColumnLastLoginAt, pqcomp.LessThanOrEqual, lastLoginAt1)
-			case protot.NumericQueryType_IN:
-				where.AddExpr(tableUserColumnLastLoginAt, pqcomp.In, lastLoginAt1)
-			case protot.NumericQueryType_BETWEEN:
+				dirty = true
+
+				wbuf.WriteString(tableUserColumnLastLoginAt)
+				if c.lastLoginAt.Negation {
+					wbuf.WriteString(" IS NOT NULL ")
+				} else {
+					wbuf.WriteString(" IS NULL ")
+				}
+			case qtypes.NumericQueryType_EQUAL:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tableUserColumnLastLoginAt)
+				wbuf.WriteString("=")
+				pw.WriteTo(wbuf)
+				args = append(args, c.lastLoginAt)
+			case qtypes.NumericQueryType_NOT_EQUAL:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tableUserColumnLastLoginAt)
+				wbuf.WriteString("!=")
+				pw.WriteTo(wbuf)
+				args = append(args, c.lastLoginAt)
+			case qtypes.NumericQueryType_GREATER:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tableUserColumnLastLoginAt)
+				wbuf.WriteString(">")
+				pw.WriteTo(wbuf)
+				args = append(args, c.lastLoginAt)
+			case qtypes.NumericQueryType_GREATER_EQUAL:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tableUserColumnLastLoginAt)
+				wbuf.WriteString(">=")
+				pw.WriteTo(wbuf)
+				args = append(args, c.lastLoginAt)
+			case qtypes.NumericQueryType_LESS:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tableUserColumnLastLoginAt)
+				wbuf.WriteString("<")
+				pw.WriteTo(wbuf)
+				args = append(args, c.lastLoginAt)
+			case qtypes.NumericQueryType_LESS_EQUAL:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tableUserColumnLastLoginAt)
+				wbuf.WriteString("<=")
+				pw.WriteTo(wbuf)
+				args = append(args, c.lastLoginAt)
+			case qtypes.NumericQueryType_IN:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tableUserColumnLastLoginAt)
+				wbuf.WriteString(" IN ")
+				pw.WriteTo(wbuf)
+				args = append(args, c.lastLoginAt)
+			case qtypes.NumericQueryType_BETWEEN:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
 				lastLoginAtt2 := c.lastLoginAt.Values[1]
 				if lastLoginAtt2 != nil {
 					lastLoginAt2, err := ptypes.Timestamp(lastLoginAtt2)
@@ -277,8 +669,15 @@ func (r *userRepository) Find(c *userCriteria) ([]*userEntity, error) {
 						return nil, err
 					}
 
-					where.AddExpr(tableUserColumnLastLoginAt, pqcomp.GreaterThan, lastLoginAt1)
-					where.AddExpr(tableUserColumnLastLoginAt, pqcomp.LessThan, lastLoginAt2)
+					wbuf.WriteString(tableUserColumnLastLoginAt)
+					wbuf.WriteString(" > ")
+					pw.WriteTo(wbuf)
+					args = append(args, lastLoginAt1)
+
+					wbuf.WriteString(tableUserColumnLastLoginAt)
+					wbuf.WriteString(" > ")
+					pw.WriteTo(wbuf)
+					args = append(args, lastLoginAt2)
 				}
 			}
 		}
@@ -286,24 +685,71 @@ func (r *userRepository) Find(c *userCriteria) ([]*userEntity, error) {
 
 	if c.lastName != nil && c.lastName.Valid {
 		switch c.lastName.Type {
-		case protot.TextQueryType_NOT_A_TEXT:
-			if c.lastName.Negation {
-				where.AddExpr(tableUserColumnLastName, pqcomp.IsNotNull, "")
-			} else {
-				where.AddExpr(tableUserColumnLastName, pqcomp.IsNull, "")
+		case qtypes.TextQueryType_NOT_A_TEXT:
+			if dirty {
+				wbuf.WriteString(" AND ")
 			}
-		case protot.TextQueryType_EXACT:
-			where.AddExpr(tableUserColumnLastName, pqcomp.Equal, c.lastName.Value())
-		case protot.TextQueryType_SUBSTRING:
-			where.AddExpr(tableUserColumnLastName, pqcomp.Like, "%"+c.lastName.Value()+"%")
-		case protot.TextQueryType_HAS_PREFIX:
-			where.AddExpr(tableUserColumnLastName, pqcomp.Like, c.lastName.Value()+"%")
-		case protot.TextQueryType_HAS_SUFFIX:
-			where.AddExpr(tableUserColumnLastName, pqcomp.Like, "%"+c.lastName.Value())
+			dirty = true
+
+			wbuf.WriteString(tableUserColumnLastName)
+			if c.lastName.Negation {
+				wbuf.WriteString(" IS NOT NULL ")
+			} else {
+				wbuf.WriteString(" IS NULL ")
+			}
+		case qtypes.TextQueryType_EXACT:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserColumnLastName)
+			wbuf.WriteString("=")
+			pw.WriteTo(wbuf)
+			args = append(args, c.lastName.Value())
+		case qtypes.TextQueryType_SUBSTRING:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserColumnLastName)
+			wbuf.WriteString(" LIKE ")
+			pw.WriteTo(wbuf)
+			args = append(args, fmt.Sprintf("%%%s%%", c.lastName.Value()))
+		case qtypes.TextQueryType_HAS_PREFIX:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserColumnLastName)
+			wbuf.WriteString(" LIKE ")
+			pw.WriteTo(wbuf)
+			args = append(args, fmt.Sprintf("%s%%", c.lastName.Value()))
+		case qtypes.TextQueryType_HAS_SUFFIX:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserColumnLastName)
+			wbuf.WriteString(" LIKE ")
+			pw.WriteTo(wbuf)
+			args = append(args, fmt.Sprintf("%%%s", c.lastName.Value()))
 		}
 	}
 
-	where.AddExpr(tableUserColumnPassword, pqcomp.Equal, c.password)
+	if c.password != nil {
+		if dirty {
+			wbuf.WriteString(" AND ")
+		}
+		dirty = true
+		wbuf.WriteString(tableUserColumnPassword)
+		wbuf.WriteString("=")
+		pw.WriteTo(wbuf)
+		args = append(args, c.password)
+	}
 
 	if c.updatedAt != nil && c.updatedAt.Valid {
 		updatedAtt1 := c.updatedAt.Value()
@@ -314,27 +760,94 @@ func (r *userRepository) Find(c *userCriteria) ([]*userEntity, error) {
 			}
 
 			switch c.updatedAt.Type {
-			case protot.NumericQueryType_NOT_A_NUMBER:
-				if c.updatedAt.Negation {
-					where.AddExpr(tableUserColumnUpdatedAt, pqcomp.IsNotNull, "")
-				} else {
-					where.AddExpr(tableUserColumnUpdatedAt, pqcomp.IsNull, "")
+			case qtypes.NumericQueryType_NOT_A_NUMBER:
+				if dirty {
+					wbuf.WriteString(" AND ")
 				}
-			case protot.NumericQueryType_EQUAL:
-				where.AddExpr(tableUserColumnUpdatedAt, pqcomp.Equal, updatedAt1)
-			case protot.NumericQueryType_NOT_EQUAL:
-				where.AddExpr(tableUserColumnUpdatedAt, pqcomp.NotEqual, updatedAt1)
-			case protot.NumericQueryType_GREATER:
-				where.AddExpr(tableUserColumnUpdatedAt, pqcomp.GreaterThan, updatedAt1)
-			case protot.NumericQueryType_GREATER_EQUAL:
-				where.AddExpr(tableUserColumnUpdatedAt, pqcomp.GreaterThanOrEqual, updatedAt1)
-			case protot.NumericQueryType_LESS:
-				where.AddExpr(tableUserColumnUpdatedAt, pqcomp.LessThan, updatedAt1)
-			case protot.NumericQueryType_LESS_EQUAL:
-				where.AddExpr(tableUserColumnUpdatedAt, pqcomp.LessThanOrEqual, updatedAt1)
-			case protot.NumericQueryType_IN:
-				where.AddExpr(tableUserColumnUpdatedAt, pqcomp.In, updatedAt1)
-			case protot.NumericQueryType_BETWEEN:
+				dirty = true
+
+				wbuf.WriteString(tableUserColumnUpdatedAt)
+				if c.updatedAt.Negation {
+					wbuf.WriteString(" IS NOT NULL ")
+				} else {
+					wbuf.WriteString(" IS NULL ")
+				}
+			case qtypes.NumericQueryType_EQUAL:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tableUserColumnUpdatedAt)
+				wbuf.WriteString("=")
+				pw.WriteTo(wbuf)
+				args = append(args, c.updatedAt)
+			case qtypes.NumericQueryType_NOT_EQUAL:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tableUserColumnUpdatedAt)
+				wbuf.WriteString("!=")
+				pw.WriteTo(wbuf)
+				args = append(args, c.updatedAt)
+			case qtypes.NumericQueryType_GREATER:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tableUserColumnUpdatedAt)
+				wbuf.WriteString(">")
+				pw.WriteTo(wbuf)
+				args = append(args, c.updatedAt)
+			case qtypes.NumericQueryType_GREATER_EQUAL:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tableUserColumnUpdatedAt)
+				wbuf.WriteString(">=")
+				pw.WriteTo(wbuf)
+				args = append(args, c.updatedAt)
+			case qtypes.NumericQueryType_LESS:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tableUserColumnUpdatedAt)
+				wbuf.WriteString("<")
+				pw.WriteTo(wbuf)
+				args = append(args, c.updatedAt)
+			case qtypes.NumericQueryType_LESS_EQUAL:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tableUserColumnUpdatedAt)
+				wbuf.WriteString("<=")
+				pw.WriteTo(wbuf)
+				args = append(args, c.updatedAt)
+			case qtypes.NumericQueryType_IN:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tableUserColumnUpdatedAt)
+				wbuf.WriteString(" IN ")
+				pw.WriteTo(wbuf)
+				args = append(args, c.updatedAt)
+			case qtypes.NumericQueryType_BETWEEN:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
 				updatedAtt2 := c.updatedAt.Values[1]
 				if updatedAtt2 != nil {
 					updatedAt2, err := ptypes.Timestamp(updatedAtt2)
@@ -342,8 +855,15 @@ func (r *userRepository) Find(c *userCriteria) ([]*userEntity, error) {
 						return nil, err
 					}
 
-					where.AddExpr(tableUserColumnUpdatedAt, pqcomp.GreaterThan, updatedAt1)
-					where.AddExpr(tableUserColumnUpdatedAt, pqcomp.LessThan, updatedAt2)
+					wbuf.WriteString(tableUserColumnUpdatedAt)
+					wbuf.WriteString(" > ")
+					pw.WriteTo(wbuf)
+					args = append(args, updatedAt1)
+
+					wbuf.WriteString(tableUserColumnUpdatedAt)
+					wbuf.WriteString(" > ")
+					pw.WriteTo(wbuf)
+					args = append(args, updatedAt2)
 				}
 			}
 		}
@@ -351,54 +871,183 @@ func (r *userRepository) Find(c *userCriteria) ([]*userEntity, error) {
 
 	if c.updatedBy != nil && c.updatedBy.Valid {
 		switch c.updatedBy.Type {
-		case protot.NumericQueryType_NOT_A_NUMBER:
+		case qtypes.NumericQueryType_NOT_A_NUMBER:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserColumnUpdatedBy)
 			if c.updatedBy.Negation {
-				where.AddExpr(tableUserColumnUpdatedBy, pqcomp.IsNotNull, "")
+				wbuf.WriteString(" IS NOT NULL ")
 			} else {
-				where.AddExpr(tableUserColumnUpdatedBy, pqcomp.IsNull, "")
+				wbuf.WriteString(" IS NULL ")
 			}
-		case protot.NumericQueryType_EQUAL:
-			where.AddExpr(tableUserColumnUpdatedBy, pqcomp.Equal, c.updatedBy.Value())
-		case protot.NumericQueryType_NOT_EQUAL:
-			where.AddExpr(tableUserColumnUpdatedBy, pqcomp.NotEqual, c.updatedBy.Value())
-		case protot.NumericQueryType_GREATER:
-			where.AddExpr(tableUserColumnUpdatedBy, pqcomp.GreaterThan, c.updatedBy.Value())
-		case protot.NumericQueryType_GREATER_EQUAL:
-			where.AddExpr(tableUserColumnUpdatedBy, pqcomp.GreaterThanOrEqual, c.updatedBy.Value())
-		case protot.NumericQueryType_LESS:
-			where.AddExpr(tableUserColumnUpdatedBy, pqcomp.LessThan, c.updatedBy.Value())
-		case protot.NumericQueryType_LESS_EQUAL:
-			where.AddExpr(tableUserColumnUpdatedBy, pqcomp.LessThanOrEqual, c.updatedBy.Value())
-		case protot.NumericQueryType_IN:
+		case qtypes.NumericQueryType_EQUAL:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserColumnUpdatedBy)
+			wbuf.WriteString("=")
+			pw.WriteTo(wbuf)
+			args = append(args, c.updatedBy)
+		case qtypes.NumericQueryType_NOT_EQUAL:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserColumnUpdatedBy)
+			wbuf.WriteString(" <> ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.updatedBy)
+		case qtypes.NumericQueryType_GREATER:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserColumnUpdatedBy)
+			wbuf.WriteString(" > ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.updatedBy)
+		case qtypes.NumericQueryType_GREATER_EQUAL:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserColumnUpdatedBy)
+			wbuf.WriteString(" >= ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.updatedBy)
+		case qtypes.NumericQueryType_LESS:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserColumnUpdatedBy)
+			wbuf.WriteString(" < ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.updatedBy)
+		case qtypes.NumericQueryType_LESS_EQUAL:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserColumnUpdatedBy)
+			wbuf.WriteString(" >= ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.updatedBy)
+		case qtypes.NumericQueryType_IN:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserColumnUpdatedBy)
+			wbuf.WriteString(" IN ")
 			for _, v := range c.updatedBy.Values {
-				where.AddExpr(tableUserColumnUpdatedBy, pqcomp.In, v)
+				pw.WriteTo(wbuf)
+				args = append(args, v)
 			}
-		case protot.NumericQueryType_BETWEEN:
-			where.AddExpr(tableUserColumnUpdatedBy, pqcomp.GreaterThan, c.updatedBy.Values[0])
-			where.AddExpr(tableUserColumnUpdatedBy, pqcomp.LessThan, c.updatedBy.Values[1])
+		case qtypes.NumericQueryType_BETWEEN:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserColumnUpdatedBy)
+			wbuf.WriteString(" > ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.updatedBy.Values[0])
+
+			wbuf.WriteString(tableUserColumnUpdatedBy)
+			wbuf.WriteString(" > ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.updatedBy.Values[1])
 		}
 	}
 
 	if c.username != nil && c.username.Valid {
 		switch c.username.Type {
-		case protot.TextQueryType_NOT_A_TEXT:
-			if c.username.Negation {
-				where.AddExpr(tableUserColumnUsername, pqcomp.IsNotNull, "")
-			} else {
-				where.AddExpr(tableUserColumnUsername, pqcomp.IsNull, "")
+		case qtypes.TextQueryType_NOT_A_TEXT:
+			if dirty {
+				wbuf.WriteString(" AND ")
 			}
-		case protot.TextQueryType_EXACT:
-			where.AddExpr(tableUserColumnUsername, pqcomp.Equal, c.username.Value())
-		case protot.TextQueryType_SUBSTRING:
-			where.AddExpr(tableUserColumnUsername, pqcomp.Like, "%"+c.username.Value()+"%")
-		case protot.TextQueryType_HAS_PREFIX:
-			where.AddExpr(tableUserColumnUsername, pqcomp.Like, c.username.Value()+"%")
-		case protot.TextQueryType_HAS_SUFFIX:
-			where.AddExpr(tableUserColumnUsername, pqcomp.Like, "%"+c.username.Value())
+			dirty = true
+
+			wbuf.WriteString(tableUserColumnUsername)
+			if c.username.Negation {
+				wbuf.WriteString(" IS NOT NULL ")
+			} else {
+				wbuf.WriteString(" IS NULL ")
+			}
+		case qtypes.TextQueryType_EXACT:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserColumnUsername)
+			wbuf.WriteString("=")
+			pw.WriteTo(wbuf)
+			args = append(args, c.username.Value())
+		case qtypes.TextQueryType_SUBSTRING:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserColumnUsername)
+			wbuf.WriteString(" LIKE ")
+			pw.WriteTo(wbuf)
+			args = append(args, fmt.Sprintf("%%%s%%", c.username.Value()))
+		case qtypes.TextQueryType_HAS_PREFIX:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserColumnUsername)
+			wbuf.WriteString(" LIKE ")
+			pw.WriteTo(wbuf)
+			args = append(args, fmt.Sprintf("%s%%", c.username.Value()))
+		case qtypes.TextQueryType_HAS_SUFFIX:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserColumnUsername)
+			wbuf.WriteString(" LIKE ")
+			pw.WriteTo(wbuf)
+			args = append(args, fmt.Sprintf("%%%s", c.username.Value()))
 		}
 	}
 
-	rows, err := findQueryComp(r.db, r.table, comp, where, c.sort, r.columns)
+	fmt.Println("is dirty", dirty)
+	if dirty {
+		if _, err := qbuf.WriteString(" WHERE "); err != nil {
+			return nil, err
+		}
+		if _, err := wbuf.WriteTo(qbuf); err != nil {
+			return nil, err
+		}
+	}
+
+	qbuf.WriteString(" OFFSET ")
+	pw.WriteTo(qbuf)
+	args = append(args, c.offset)
+	qbuf.WriteString(" LIMIT ")
+	pw.WriteTo(qbuf)
+	args = append(args, c.limit)
+
+	rows, err := r.db.Query(qbuf.String(), args...)
 	if err != nil {
 		return nil, err
 	}
@@ -551,18 +1200,18 @@ func (r *userRepository) UpdateByID(
 	id int64,
 	confirmationToken []byte,
 	createdAt *time.Time,
-	createdBy *nilt.Int64,
-	firstName *nilt.String,
-	isActive *nilt.Bool,
-	isConfirmed *nilt.Bool,
-	isStaff *nilt.Bool,
-	isSuperuser *nilt.Bool,
+	createdBy *ntypes.Int64,
+	firstName *ntypes.String,
+	isActive *ntypes.Bool,
+	isConfirmed *ntypes.Bool,
+	isStaff *ntypes.Bool,
+	isSuperuser *ntypes.Bool,
 	lastLoginAt *time.Time,
-	lastName *nilt.String,
+	lastName *ntypes.String,
 	password []byte,
 	updatedAt *time.Time,
-	updatedBy *nilt.Int64,
-	username *nilt.String,
+	updatedBy *ntypes.Int64,
+	username *ntypes.String,
 ) (*userEntity, error) {
 	update := pqcomp.New(0, 15)
 	update.AddExpr(tableUserColumnID, pqcomp.Equal, id)
@@ -669,27 +1318,33 @@ var (
 
 type groupEntity struct {
 	CreatedAt   time.Time
-	CreatedBy   *nilt.Int64
-	Description *nilt.String
+	CreatedBy   *ntypes.Int64
+	Description *ntypes.String
 	ID          int64
 	Name        string
 	UpdatedAt   *time.Time
-	UpdatedBy   *nilt.Int64
-	Author      *userEntity
-	Modifier    *userEntity
+	UpdatedBy   *ntypes.Int64
+	Author      []*userEntity
+	Modifier    []*userEntity
 	Permission  []*permissionEntity
 	Users       []*userEntity
 }
 type groupCriteria struct {
 	offset, limit int64
 	sort          map[string]bool
-	createdAt     *protot.QueryTimestamp
-	createdBy     *protot.QueryInt64
-	description   *protot.QueryString
-	id            *protot.QueryInt64
-	name          *protot.QueryString
-	updatedAt     *protot.QueryTimestamp
-	updatedBy     *protot.QueryInt64
+	createdAt     *qtypes.Timestamp
+
+	createdBy *qtypes.Int64
+
+	description *qtypes.String
+
+	id *qtypes.Int64
+
+	name *qtypes.String
+
+	updatedAt *qtypes.Timestamp
+
+	updatedBy *qtypes.Int64
 }
 
 type groupRepository struct {
@@ -699,11 +1354,16 @@ type groupRepository struct {
 }
 
 func (r *groupRepository) Find(c *groupCriteria) ([]*groupEntity, error) {
-	comp := pqcomp.New(2, 0, 1)
-	comp.AddArg(c.offset)
-	comp.AddArg(c.limit)
+	wbuf := bytes.NewBuffer(nil)
+	qbuf := bytes.NewBuffer(nil)
+	qbuf.WriteString("SELECT ")
+	qbuf.WriteString(strings.Join(r.columns, ", "))
+	qbuf.WriteString(" FROM ")
+	qbuf.WriteString(r.table)
 
-	where := comp.Compose(7)
+	pw := pqt.NewPlaceholderWriter()
+	args := make([]interface{}, 0)
+	dirty := false
 
 	if c.createdAt != nil && c.createdAt.Valid {
 		createdAtt1 := c.createdAt.Value()
@@ -714,27 +1374,94 @@ func (r *groupRepository) Find(c *groupCriteria) ([]*groupEntity, error) {
 			}
 
 			switch c.createdAt.Type {
-			case protot.NumericQueryType_NOT_A_NUMBER:
-				if c.createdAt.Negation {
-					where.AddExpr(tableGroupColumnCreatedAt, pqcomp.IsNotNull, "")
-				} else {
-					where.AddExpr(tableGroupColumnCreatedAt, pqcomp.IsNull, "")
+			case qtypes.NumericQueryType_NOT_A_NUMBER:
+				if dirty {
+					wbuf.WriteString(" AND ")
 				}
-			case protot.NumericQueryType_EQUAL:
-				where.AddExpr(tableGroupColumnCreatedAt, pqcomp.Equal, createdAt1)
-			case protot.NumericQueryType_NOT_EQUAL:
-				where.AddExpr(tableGroupColumnCreatedAt, pqcomp.NotEqual, createdAt1)
-			case protot.NumericQueryType_GREATER:
-				where.AddExpr(tableGroupColumnCreatedAt, pqcomp.GreaterThan, createdAt1)
-			case protot.NumericQueryType_GREATER_EQUAL:
-				where.AddExpr(tableGroupColumnCreatedAt, pqcomp.GreaterThanOrEqual, createdAt1)
-			case protot.NumericQueryType_LESS:
-				where.AddExpr(tableGroupColumnCreatedAt, pqcomp.LessThan, createdAt1)
-			case protot.NumericQueryType_LESS_EQUAL:
-				where.AddExpr(tableGroupColumnCreatedAt, pqcomp.LessThanOrEqual, createdAt1)
-			case protot.NumericQueryType_IN:
-				where.AddExpr(tableGroupColumnCreatedAt, pqcomp.In, createdAt1)
-			case protot.NumericQueryType_BETWEEN:
+				dirty = true
+
+				wbuf.WriteString(tableGroupColumnCreatedAt)
+				if c.createdAt.Negation {
+					wbuf.WriteString(" IS NOT NULL ")
+				} else {
+					wbuf.WriteString(" IS NULL ")
+				}
+			case qtypes.NumericQueryType_EQUAL:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tableGroupColumnCreatedAt)
+				wbuf.WriteString("=")
+				pw.WriteTo(wbuf)
+				args = append(args, c.createdAt)
+			case qtypes.NumericQueryType_NOT_EQUAL:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tableGroupColumnCreatedAt)
+				wbuf.WriteString("!=")
+				pw.WriteTo(wbuf)
+				args = append(args, c.createdAt)
+			case qtypes.NumericQueryType_GREATER:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tableGroupColumnCreatedAt)
+				wbuf.WriteString(">")
+				pw.WriteTo(wbuf)
+				args = append(args, c.createdAt)
+			case qtypes.NumericQueryType_GREATER_EQUAL:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tableGroupColumnCreatedAt)
+				wbuf.WriteString(">=")
+				pw.WriteTo(wbuf)
+				args = append(args, c.createdAt)
+			case qtypes.NumericQueryType_LESS:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tableGroupColumnCreatedAt)
+				wbuf.WriteString("<")
+				pw.WriteTo(wbuf)
+				args = append(args, c.createdAt)
+			case qtypes.NumericQueryType_LESS_EQUAL:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tableGroupColumnCreatedAt)
+				wbuf.WriteString("<=")
+				pw.WriteTo(wbuf)
+				args = append(args, c.createdAt)
+			case qtypes.NumericQueryType_IN:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tableGroupColumnCreatedAt)
+				wbuf.WriteString(" IN ")
+				pw.WriteTo(wbuf)
+				args = append(args, c.createdAt)
+			case qtypes.NumericQueryType_BETWEEN:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
 				createdAtt2 := c.createdAt.Values[1]
 				if createdAtt2 != nil {
 					createdAt2, err := ptypes.Timestamp(createdAtt2)
@@ -742,8 +1469,15 @@ func (r *groupRepository) Find(c *groupCriteria) ([]*groupEntity, error) {
 						return nil, err
 					}
 
-					where.AddExpr(tableGroupColumnCreatedAt, pqcomp.GreaterThan, createdAt1)
-					where.AddExpr(tableGroupColumnCreatedAt, pqcomp.LessThan, createdAt2)
+					wbuf.WriteString(tableGroupColumnCreatedAt)
+					wbuf.WriteString(" > ")
+					pw.WriteTo(wbuf)
+					args = append(args, createdAt1)
+
+					wbuf.WriteString(tableGroupColumnCreatedAt)
+					wbuf.WriteString(" > ")
+					pw.WriteTo(wbuf)
+					args = append(args, createdAt2)
 				}
 			}
 		}
@@ -751,99 +1485,323 @@ func (r *groupRepository) Find(c *groupCriteria) ([]*groupEntity, error) {
 
 	if c.createdBy != nil && c.createdBy.Valid {
 		switch c.createdBy.Type {
-		case protot.NumericQueryType_NOT_A_NUMBER:
+		case qtypes.NumericQueryType_NOT_A_NUMBER:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableGroupColumnCreatedBy)
 			if c.createdBy.Negation {
-				where.AddExpr(tableGroupColumnCreatedBy, pqcomp.IsNotNull, "")
+				wbuf.WriteString(" IS NOT NULL ")
 			} else {
-				where.AddExpr(tableGroupColumnCreatedBy, pqcomp.IsNull, "")
+				wbuf.WriteString(" IS NULL ")
 			}
-		case protot.NumericQueryType_EQUAL:
-			where.AddExpr(tableGroupColumnCreatedBy, pqcomp.Equal, c.createdBy.Value())
-		case protot.NumericQueryType_NOT_EQUAL:
-			where.AddExpr(tableGroupColumnCreatedBy, pqcomp.NotEqual, c.createdBy.Value())
-		case protot.NumericQueryType_GREATER:
-			where.AddExpr(tableGroupColumnCreatedBy, pqcomp.GreaterThan, c.createdBy.Value())
-		case protot.NumericQueryType_GREATER_EQUAL:
-			where.AddExpr(tableGroupColumnCreatedBy, pqcomp.GreaterThanOrEqual, c.createdBy.Value())
-		case protot.NumericQueryType_LESS:
-			where.AddExpr(tableGroupColumnCreatedBy, pqcomp.LessThan, c.createdBy.Value())
-		case protot.NumericQueryType_LESS_EQUAL:
-			where.AddExpr(tableGroupColumnCreatedBy, pqcomp.LessThanOrEqual, c.createdBy.Value())
-		case protot.NumericQueryType_IN:
+		case qtypes.NumericQueryType_EQUAL:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableGroupColumnCreatedBy)
+			wbuf.WriteString("=")
+			pw.WriteTo(wbuf)
+			args = append(args, c.createdBy)
+		case qtypes.NumericQueryType_NOT_EQUAL:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableGroupColumnCreatedBy)
+			wbuf.WriteString(" <> ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.createdBy)
+		case qtypes.NumericQueryType_GREATER:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableGroupColumnCreatedBy)
+			wbuf.WriteString(" > ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.createdBy)
+		case qtypes.NumericQueryType_GREATER_EQUAL:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableGroupColumnCreatedBy)
+			wbuf.WriteString(" >= ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.createdBy)
+		case qtypes.NumericQueryType_LESS:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableGroupColumnCreatedBy)
+			wbuf.WriteString(" < ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.createdBy)
+		case qtypes.NumericQueryType_LESS_EQUAL:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableGroupColumnCreatedBy)
+			wbuf.WriteString(" >= ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.createdBy)
+		case qtypes.NumericQueryType_IN:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableGroupColumnCreatedBy)
+			wbuf.WriteString(" IN ")
 			for _, v := range c.createdBy.Values {
-				where.AddExpr(tableGroupColumnCreatedBy, pqcomp.In, v)
+				pw.WriteTo(wbuf)
+				args = append(args, v)
 			}
-		case protot.NumericQueryType_BETWEEN:
-			where.AddExpr(tableGroupColumnCreatedBy, pqcomp.GreaterThan, c.createdBy.Values[0])
-			where.AddExpr(tableGroupColumnCreatedBy, pqcomp.LessThan, c.createdBy.Values[1])
+		case qtypes.NumericQueryType_BETWEEN:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableGroupColumnCreatedBy)
+			wbuf.WriteString(" > ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.createdBy.Values[0])
+
+			wbuf.WriteString(tableGroupColumnCreatedBy)
+			wbuf.WriteString(" > ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.createdBy.Values[1])
 		}
 	}
 
 	if c.description != nil && c.description.Valid {
 		switch c.description.Type {
-		case protot.TextQueryType_NOT_A_TEXT:
-			if c.description.Negation {
-				where.AddExpr(tableGroupColumnDescription, pqcomp.IsNotNull, "")
-			} else {
-				where.AddExpr(tableGroupColumnDescription, pqcomp.IsNull, "")
+		case qtypes.TextQueryType_NOT_A_TEXT:
+			if dirty {
+				wbuf.WriteString(" AND ")
 			}
-		case protot.TextQueryType_EXACT:
-			where.AddExpr(tableGroupColumnDescription, pqcomp.Equal, c.description.Value())
-		case protot.TextQueryType_SUBSTRING:
-			where.AddExpr(tableGroupColumnDescription, pqcomp.Like, "%"+c.description.Value()+"%")
-		case protot.TextQueryType_HAS_PREFIX:
-			where.AddExpr(tableGroupColumnDescription, pqcomp.Like, c.description.Value()+"%")
-		case protot.TextQueryType_HAS_SUFFIX:
-			where.AddExpr(tableGroupColumnDescription, pqcomp.Like, "%"+c.description.Value())
+			dirty = true
+
+			wbuf.WriteString(tableGroupColumnDescription)
+			if c.description.Negation {
+				wbuf.WriteString(" IS NOT NULL ")
+			} else {
+				wbuf.WriteString(" IS NULL ")
+			}
+		case qtypes.TextQueryType_EXACT:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableGroupColumnDescription)
+			wbuf.WriteString("=")
+			pw.WriteTo(wbuf)
+			args = append(args, c.description.Value())
+		case qtypes.TextQueryType_SUBSTRING:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableGroupColumnDescription)
+			wbuf.WriteString(" LIKE ")
+			pw.WriteTo(wbuf)
+			args = append(args, fmt.Sprintf("%%%s%%", c.description.Value()))
+		case qtypes.TextQueryType_HAS_PREFIX:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableGroupColumnDescription)
+			wbuf.WriteString(" LIKE ")
+			pw.WriteTo(wbuf)
+			args = append(args, fmt.Sprintf("%s%%", c.description.Value()))
+		case qtypes.TextQueryType_HAS_SUFFIX:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableGroupColumnDescription)
+			wbuf.WriteString(" LIKE ")
+			pw.WriteTo(wbuf)
+			args = append(args, fmt.Sprintf("%%%s", c.description.Value()))
 		}
 	}
 
 	if c.id != nil && c.id.Valid {
 		switch c.id.Type {
-		case protot.NumericQueryType_NOT_A_NUMBER:
+		case qtypes.NumericQueryType_NOT_A_NUMBER:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableGroupColumnID)
 			if c.id.Negation {
-				where.AddExpr(tableGroupColumnID, pqcomp.IsNotNull, "")
+				wbuf.WriteString(" IS NOT NULL ")
 			} else {
-				where.AddExpr(tableGroupColumnID, pqcomp.IsNull, "")
+				wbuf.WriteString(" IS NULL ")
 			}
-		case protot.NumericQueryType_EQUAL:
-			where.AddExpr(tableGroupColumnID, pqcomp.Equal, c.id.Value())
-		case protot.NumericQueryType_NOT_EQUAL:
-			where.AddExpr(tableGroupColumnID, pqcomp.NotEqual, c.id.Value())
-		case protot.NumericQueryType_GREATER:
-			where.AddExpr(tableGroupColumnID, pqcomp.GreaterThan, c.id.Value())
-		case protot.NumericQueryType_GREATER_EQUAL:
-			where.AddExpr(tableGroupColumnID, pqcomp.GreaterThanOrEqual, c.id.Value())
-		case protot.NumericQueryType_LESS:
-			where.AddExpr(tableGroupColumnID, pqcomp.LessThan, c.id.Value())
-		case protot.NumericQueryType_LESS_EQUAL:
-			where.AddExpr(tableGroupColumnID, pqcomp.LessThanOrEqual, c.id.Value())
-		case protot.NumericQueryType_IN:
+		case qtypes.NumericQueryType_EQUAL:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableGroupColumnID)
+			wbuf.WriteString("=")
+			pw.WriteTo(wbuf)
+			args = append(args, c.id)
+		case qtypes.NumericQueryType_NOT_EQUAL:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableGroupColumnID)
+			wbuf.WriteString(" <> ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.id)
+		case qtypes.NumericQueryType_GREATER:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableGroupColumnID)
+			wbuf.WriteString(" > ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.id)
+		case qtypes.NumericQueryType_GREATER_EQUAL:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableGroupColumnID)
+			wbuf.WriteString(" >= ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.id)
+		case qtypes.NumericQueryType_LESS:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableGroupColumnID)
+			wbuf.WriteString(" < ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.id)
+		case qtypes.NumericQueryType_LESS_EQUAL:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableGroupColumnID)
+			wbuf.WriteString(" >= ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.id)
+		case qtypes.NumericQueryType_IN:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableGroupColumnID)
+			wbuf.WriteString(" IN ")
 			for _, v := range c.id.Values {
-				where.AddExpr(tableGroupColumnID, pqcomp.In, v)
+				pw.WriteTo(wbuf)
+				args = append(args, v)
 			}
-		case protot.NumericQueryType_BETWEEN:
-			where.AddExpr(tableGroupColumnID, pqcomp.GreaterThan, c.id.Values[0])
-			where.AddExpr(tableGroupColumnID, pqcomp.LessThan, c.id.Values[1])
+		case qtypes.NumericQueryType_BETWEEN:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableGroupColumnID)
+			wbuf.WriteString(" > ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.id.Values[0])
+
+			wbuf.WriteString(tableGroupColumnID)
+			wbuf.WriteString(" > ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.id.Values[1])
 		}
 	}
 
 	if c.name != nil && c.name.Valid {
 		switch c.name.Type {
-		case protot.TextQueryType_NOT_A_TEXT:
-			if c.name.Negation {
-				where.AddExpr(tableGroupColumnName, pqcomp.IsNotNull, "")
-			} else {
-				where.AddExpr(tableGroupColumnName, pqcomp.IsNull, "")
+		case qtypes.TextQueryType_NOT_A_TEXT:
+			if dirty {
+				wbuf.WriteString(" AND ")
 			}
-		case protot.TextQueryType_EXACT:
-			where.AddExpr(tableGroupColumnName, pqcomp.Equal, c.name.Value())
-		case protot.TextQueryType_SUBSTRING:
-			where.AddExpr(tableGroupColumnName, pqcomp.Like, "%"+c.name.Value()+"%")
-		case protot.TextQueryType_HAS_PREFIX:
-			where.AddExpr(tableGroupColumnName, pqcomp.Like, c.name.Value()+"%")
-		case protot.TextQueryType_HAS_SUFFIX:
-			where.AddExpr(tableGroupColumnName, pqcomp.Like, "%"+c.name.Value())
+			dirty = true
+
+			wbuf.WriteString(tableGroupColumnName)
+			if c.name.Negation {
+				wbuf.WriteString(" IS NOT NULL ")
+			} else {
+				wbuf.WriteString(" IS NULL ")
+			}
+		case qtypes.TextQueryType_EXACT:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableGroupColumnName)
+			wbuf.WriteString("=")
+			pw.WriteTo(wbuf)
+			args = append(args, c.name.Value())
+		case qtypes.TextQueryType_SUBSTRING:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableGroupColumnName)
+			wbuf.WriteString(" LIKE ")
+			pw.WriteTo(wbuf)
+			args = append(args, fmt.Sprintf("%%%s%%", c.name.Value()))
+		case qtypes.TextQueryType_HAS_PREFIX:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableGroupColumnName)
+			wbuf.WriteString(" LIKE ")
+			pw.WriteTo(wbuf)
+			args = append(args, fmt.Sprintf("%s%%", c.name.Value()))
+		case qtypes.TextQueryType_HAS_SUFFIX:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableGroupColumnName)
+			wbuf.WriteString(" LIKE ")
+			pw.WriteTo(wbuf)
+			args = append(args, fmt.Sprintf("%%%s", c.name.Value()))
 		}
 	}
 
@@ -856,27 +1814,94 @@ func (r *groupRepository) Find(c *groupCriteria) ([]*groupEntity, error) {
 			}
 
 			switch c.updatedAt.Type {
-			case protot.NumericQueryType_NOT_A_NUMBER:
-				if c.updatedAt.Negation {
-					where.AddExpr(tableGroupColumnUpdatedAt, pqcomp.IsNotNull, "")
-				} else {
-					where.AddExpr(tableGroupColumnUpdatedAt, pqcomp.IsNull, "")
+			case qtypes.NumericQueryType_NOT_A_NUMBER:
+				if dirty {
+					wbuf.WriteString(" AND ")
 				}
-			case protot.NumericQueryType_EQUAL:
-				where.AddExpr(tableGroupColumnUpdatedAt, pqcomp.Equal, updatedAt1)
-			case protot.NumericQueryType_NOT_EQUAL:
-				where.AddExpr(tableGroupColumnUpdatedAt, pqcomp.NotEqual, updatedAt1)
-			case protot.NumericQueryType_GREATER:
-				where.AddExpr(tableGroupColumnUpdatedAt, pqcomp.GreaterThan, updatedAt1)
-			case protot.NumericQueryType_GREATER_EQUAL:
-				where.AddExpr(tableGroupColumnUpdatedAt, pqcomp.GreaterThanOrEqual, updatedAt1)
-			case protot.NumericQueryType_LESS:
-				where.AddExpr(tableGroupColumnUpdatedAt, pqcomp.LessThan, updatedAt1)
-			case protot.NumericQueryType_LESS_EQUAL:
-				where.AddExpr(tableGroupColumnUpdatedAt, pqcomp.LessThanOrEqual, updatedAt1)
-			case protot.NumericQueryType_IN:
-				where.AddExpr(tableGroupColumnUpdatedAt, pqcomp.In, updatedAt1)
-			case protot.NumericQueryType_BETWEEN:
+				dirty = true
+
+				wbuf.WriteString(tableGroupColumnUpdatedAt)
+				if c.updatedAt.Negation {
+					wbuf.WriteString(" IS NOT NULL ")
+				} else {
+					wbuf.WriteString(" IS NULL ")
+				}
+			case qtypes.NumericQueryType_EQUAL:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tableGroupColumnUpdatedAt)
+				wbuf.WriteString("=")
+				pw.WriteTo(wbuf)
+				args = append(args, c.updatedAt)
+			case qtypes.NumericQueryType_NOT_EQUAL:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tableGroupColumnUpdatedAt)
+				wbuf.WriteString("!=")
+				pw.WriteTo(wbuf)
+				args = append(args, c.updatedAt)
+			case qtypes.NumericQueryType_GREATER:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tableGroupColumnUpdatedAt)
+				wbuf.WriteString(">")
+				pw.WriteTo(wbuf)
+				args = append(args, c.updatedAt)
+			case qtypes.NumericQueryType_GREATER_EQUAL:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tableGroupColumnUpdatedAt)
+				wbuf.WriteString(">=")
+				pw.WriteTo(wbuf)
+				args = append(args, c.updatedAt)
+			case qtypes.NumericQueryType_LESS:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tableGroupColumnUpdatedAt)
+				wbuf.WriteString("<")
+				pw.WriteTo(wbuf)
+				args = append(args, c.updatedAt)
+			case qtypes.NumericQueryType_LESS_EQUAL:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tableGroupColumnUpdatedAt)
+				wbuf.WriteString("<=")
+				pw.WriteTo(wbuf)
+				args = append(args, c.updatedAt)
+			case qtypes.NumericQueryType_IN:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tableGroupColumnUpdatedAt)
+				wbuf.WriteString(" IN ")
+				pw.WriteTo(wbuf)
+				args = append(args, c.updatedAt)
+			case qtypes.NumericQueryType_BETWEEN:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
 				updatedAtt2 := c.updatedAt.Values[1]
 				if updatedAtt2 != nil {
 					updatedAt2, err := ptypes.Timestamp(updatedAtt2)
@@ -884,8 +1909,15 @@ func (r *groupRepository) Find(c *groupCriteria) ([]*groupEntity, error) {
 						return nil, err
 					}
 
-					where.AddExpr(tableGroupColumnUpdatedAt, pqcomp.GreaterThan, updatedAt1)
-					where.AddExpr(tableGroupColumnUpdatedAt, pqcomp.LessThan, updatedAt2)
+					wbuf.WriteString(tableGroupColumnUpdatedAt)
+					wbuf.WriteString(" > ")
+					pw.WriteTo(wbuf)
+					args = append(args, updatedAt1)
+
+					wbuf.WriteString(tableGroupColumnUpdatedAt)
+					wbuf.WriteString(" > ")
+					pw.WriteTo(wbuf)
+					args = append(args, updatedAt2)
 				}
 			}
 		}
@@ -893,35 +1925,126 @@ func (r *groupRepository) Find(c *groupCriteria) ([]*groupEntity, error) {
 
 	if c.updatedBy != nil && c.updatedBy.Valid {
 		switch c.updatedBy.Type {
-		case protot.NumericQueryType_NOT_A_NUMBER:
+		case qtypes.NumericQueryType_NOT_A_NUMBER:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableGroupColumnUpdatedBy)
 			if c.updatedBy.Negation {
-				where.AddExpr(tableGroupColumnUpdatedBy, pqcomp.IsNotNull, "")
+				wbuf.WriteString(" IS NOT NULL ")
 			} else {
-				where.AddExpr(tableGroupColumnUpdatedBy, pqcomp.IsNull, "")
+				wbuf.WriteString(" IS NULL ")
 			}
-		case protot.NumericQueryType_EQUAL:
-			where.AddExpr(tableGroupColumnUpdatedBy, pqcomp.Equal, c.updatedBy.Value())
-		case protot.NumericQueryType_NOT_EQUAL:
-			where.AddExpr(tableGroupColumnUpdatedBy, pqcomp.NotEqual, c.updatedBy.Value())
-		case protot.NumericQueryType_GREATER:
-			where.AddExpr(tableGroupColumnUpdatedBy, pqcomp.GreaterThan, c.updatedBy.Value())
-		case protot.NumericQueryType_GREATER_EQUAL:
-			where.AddExpr(tableGroupColumnUpdatedBy, pqcomp.GreaterThanOrEqual, c.updatedBy.Value())
-		case protot.NumericQueryType_LESS:
-			where.AddExpr(tableGroupColumnUpdatedBy, pqcomp.LessThan, c.updatedBy.Value())
-		case protot.NumericQueryType_LESS_EQUAL:
-			where.AddExpr(tableGroupColumnUpdatedBy, pqcomp.LessThanOrEqual, c.updatedBy.Value())
-		case protot.NumericQueryType_IN:
+		case qtypes.NumericQueryType_EQUAL:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableGroupColumnUpdatedBy)
+			wbuf.WriteString("=")
+			pw.WriteTo(wbuf)
+			args = append(args, c.updatedBy)
+		case qtypes.NumericQueryType_NOT_EQUAL:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableGroupColumnUpdatedBy)
+			wbuf.WriteString(" <> ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.updatedBy)
+		case qtypes.NumericQueryType_GREATER:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableGroupColumnUpdatedBy)
+			wbuf.WriteString(" > ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.updatedBy)
+		case qtypes.NumericQueryType_GREATER_EQUAL:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableGroupColumnUpdatedBy)
+			wbuf.WriteString(" >= ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.updatedBy)
+		case qtypes.NumericQueryType_LESS:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableGroupColumnUpdatedBy)
+			wbuf.WriteString(" < ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.updatedBy)
+		case qtypes.NumericQueryType_LESS_EQUAL:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableGroupColumnUpdatedBy)
+			wbuf.WriteString(" >= ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.updatedBy)
+		case qtypes.NumericQueryType_IN:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableGroupColumnUpdatedBy)
+			wbuf.WriteString(" IN ")
 			for _, v := range c.updatedBy.Values {
-				where.AddExpr(tableGroupColumnUpdatedBy, pqcomp.In, v)
+				pw.WriteTo(wbuf)
+				args = append(args, v)
 			}
-		case protot.NumericQueryType_BETWEEN:
-			where.AddExpr(tableGroupColumnUpdatedBy, pqcomp.GreaterThan, c.updatedBy.Values[0])
-			where.AddExpr(tableGroupColumnUpdatedBy, pqcomp.LessThan, c.updatedBy.Values[1])
+		case qtypes.NumericQueryType_BETWEEN:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableGroupColumnUpdatedBy)
+			wbuf.WriteString(" > ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.updatedBy.Values[0])
+
+			wbuf.WriteString(tableGroupColumnUpdatedBy)
+			wbuf.WriteString(" > ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.updatedBy.Values[1])
 		}
 	}
 
-	rows, err := findQueryComp(r.db, r.table, comp, where, c.sort, r.columns)
+	fmt.Println("is dirty", dirty)
+	if dirty {
+		if _, err := qbuf.WriteString(" WHERE "); err != nil {
+			return nil, err
+		}
+		if _, err := wbuf.WriteTo(qbuf); err != nil {
+			return nil, err
+		}
+	}
+
+	qbuf.WriteString(" OFFSET ")
+	pw.WriteTo(qbuf)
+	args = append(args, c.offset)
+	qbuf.WriteString(" LIMIT ")
+	pw.WriteTo(qbuf)
+	args = append(args, c.limit)
+
+	rows, err := r.db.Query(qbuf.String(), args...)
 	if err != nil {
 		return nil, err
 	}
@@ -1033,11 +2156,11 @@ func (r *groupRepository) Insert(e *groupEntity) (*groupEntity, error) {
 func (r *groupRepository) UpdateByID(
 	id int64,
 	createdAt *time.Time,
-	createdBy *nilt.Int64,
-	description *nilt.String,
-	name *nilt.String,
+	createdBy *ntypes.Int64,
+	description *ntypes.String,
+	name *ntypes.String,
 	updatedAt *time.Time,
-	updatedBy *nilt.Int64,
+	updatedBy *ntypes.Int64,
 ) (*groupEntity, error) {
 	update := pqcomp.New(0, 7)
 	update.AddExpr(tableGroupColumnID, pqcomp.Equal, id)
@@ -1131,12 +2254,17 @@ type permissionEntity struct {
 type permissionCriteria struct {
 	offset, limit int64
 	sort          map[string]bool
-	action        *protot.QueryString
-	createdAt     *protot.QueryTimestamp
-	id            *protot.QueryInt64
-	module        *protot.QueryString
-	subsystem     *protot.QueryString
-	updatedAt     *protot.QueryTimestamp
+	action        *qtypes.String
+
+	createdAt *qtypes.Timestamp
+
+	id *qtypes.Int64
+
+	module *qtypes.String
+
+	subsystem *qtypes.String
+
+	updatedAt *qtypes.Timestamp
 }
 
 type permissionRepository struct {
@@ -1146,28 +2274,71 @@ type permissionRepository struct {
 }
 
 func (r *permissionRepository) Find(c *permissionCriteria) ([]*permissionEntity, error) {
-	comp := pqcomp.New(2, 0, 1)
-	comp.AddArg(c.offset)
-	comp.AddArg(c.limit)
+	wbuf := bytes.NewBuffer(nil)
+	qbuf := bytes.NewBuffer(nil)
+	qbuf.WriteString("SELECT ")
+	qbuf.WriteString(strings.Join(r.columns, ", "))
+	qbuf.WriteString(" FROM ")
+	qbuf.WriteString(r.table)
 
-	where := comp.Compose(6)
+	pw := pqt.NewPlaceholderWriter()
+	args := make([]interface{}, 0)
+	dirty := false
 
 	if c.action != nil && c.action.Valid {
 		switch c.action.Type {
-		case protot.TextQueryType_NOT_A_TEXT:
-			if c.action.Negation {
-				where.AddExpr(tablePermissionColumnAction, pqcomp.IsNotNull, "")
-			} else {
-				where.AddExpr(tablePermissionColumnAction, pqcomp.IsNull, "")
+		case qtypes.TextQueryType_NOT_A_TEXT:
+			if dirty {
+				wbuf.WriteString(" AND ")
 			}
-		case protot.TextQueryType_EXACT:
-			where.AddExpr(tablePermissionColumnAction, pqcomp.Equal, c.action.Value())
-		case protot.TextQueryType_SUBSTRING:
-			where.AddExpr(tablePermissionColumnAction, pqcomp.Like, "%"+c.action.Value()+"%")
-		case protot.TextQueryType_HAS_PREFIX:
-			where.AddExpr(tablePermissionColumnAction, pqcomp.Like, c.action.Value()+"%")
-		case protot.TextQueryType_HAS_SUFFIX:
-			where.AddExpr(tablePermissionColumnAction, pqcomp.Like, "%"+c.action.Value())
+			dirty = true
+
+			wbuf.WriteString(tablePermissionColumnAction)
+			if c.action.Negation {
+				wbuf.WriteString(" IS NOT NULL ")
+			} else {
+				wbuf.WriteString(" IS NULL ")
+			}
+		case qtypes.TextQueryType_EXACT:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tablePermissionColumnAction)
+			wbuf.WriteString("=")
+			pw.WriteTo(wbuf)
+			args = append(args, c.action.Value())
+		case qtypes.TextQueryType_SUBSTRING:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tablePermissionColumnAction)
+			wbuf.WriteString(" LIKE ")
+			pw.WriteTo(wbuf)
+			args = append(args, fmt.Sprintf("%%%s%%", c.action.Value()))
+		case qtypes.TextQueryType_HAS_PREFIX:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tablePermissionColumnAction)
+			wbuf.WriteString(" LIKE ")
+			pw.WriteTo(wbuf)
+			args = append(args, fmt.Sprintf("%s%%", c.action.Value()))
+		case qtypes.TextQueryType_HAS_SUFFIX:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tablePermissionColumnAction)
+			wbuf.WriteString(" LIKE ")
+			pw.WriteTo(wbuf)
+			args = append(args, fmt.Sprintf("%%%s", c.action.Value()))
 		}
 	}
 
@@ -1180,27 +2351,94 @@ func (r *permissionRepository) Find(c *permissionCriteria) ([]*permissionEntity,
 			}
 
 			switch c.createdAt.Type {
-			case protot.NumericQueryType_NOT_A_NUMBER:
-				if c.createdAt.Negation {
-					where.AddExpr(tablePermissionColumnCreatedAt, pqcomp.IsNotNull, "")
-				} else {
-					where.AddExpr(tablePermissionColumnCreatedAt, pqcomp.IsNull, "")
+			case qtypes.NumericQueryType_NOT_A_NUMBER:
+				if dirty {
+					wbuf.WriteString(" AND ")
 				}
-			case protot.NumericQueryType_EQUAL:
-				where.AddExpr(tablePermissionColumnCreatedAt, pqcomp.Equal, createdAt1)
-			case protot.NumericQueryType_NOT_EQUAL:
-				where.AddExpr(tablePermissionColumnCreatedAt, pqcomp.NotEqual, createdAt1)
-			case protot.NumericQueryType_GREATER:
-				where.AddExpr(tablePermissionColumnCreatedAt, pqcomp.GreaterThan, createdAt1)
-			case protot.NumericQueryType_GREATER_EQUAL:
-				where.AddExpr(tablePermissionColumnCreatedAt, pqcomp.GreaterThanOrEqual, createdAt1)
-			case protot.NumericQueryType_LESS:
-				where.AddExpr(tablePermissionColumnCreatedAt, pqcomp.LessThan, createdAt1)
-			case protot.NumericQueryType_LESS_EQUAL:
-				where.AddExpr(tablePermissionColumnCreatedAt, pqcomp.LessThanOrEqual, createdAt1)
-			case protot.NumericQueryType_IN:
-				where.AddExpr(tablePermissionColumnCreatedAt, pqcomp.In, createdAt1)
-			case protot.NumericQueryType_BETWEEN:
+				dirty = true
+
+				wbuf.WriteString(tablePermissionColumnCreatedAt)
+				if c.createdAt.Negation {
+					wbuf.WriteString(" IS NOT NULL ")
+				} else {
+					wbuf.WriteString(" IS NULL ")
+				}
+			case qtypes.NumericQueryType_EQUAL:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tablePermissionColumnCreatedAt)
+				wbuf.WriteString("=")
+				pw.WriteTo(wbuf)
+				args = append(args, c.createdAt)
+			case qtypes.NumericQueryType_NOT_EQUAL:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tablePermissionColumnCreatedAt)
+				wbuf.WriteString("!=")
+				pw.WriteTo(wbuf)
+				args = append(args, c.createdAt)
+			case qtypes.NumericQueryType_GREATER:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tablePermissionColumnCreatedAt)
+				wbuf.WriteString(">")
+				pw.WriteTo(wbuf)
+				args = append(args, c.createdAt)
+			case qtypes.NumericQueryType_GREATER_EQUAL:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tablePermissionColumnCreatedAt)
+				wbuf.WriteString(">=")
+				pw.WriteTo(wbuf)
+				args = append(args, c.createdAt)
+			case qtypes.NumericQueryType_LESS:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tablePermissionColumnCreatedAt)
+				wbuf.WriteString("<")
+				pw.WriteTo(wbuf)
+				args = append(args, c.createdAt)
+			case qtypes.NumericQueryType_LESS_EQUAL:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tablePermissionColumnCreatedAt)
+				wbuf.WriteString("<=")
+				pw.WriteTo(wbuf)
+				args = append(args, c.createdAt)
+			case qtypes.NumericQueryType_IN:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tablePermissionColumnCreatedAt)
+				wbuf.WriteString(" IN ")
+				pw.WriteTo(wbuf)
+				args = append(args, c.createdAt)
+			case qtypes.NumericQueryType_BETWEEN:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
 				createdAtt2 := c.createdAt.Values[1]
 				if createdAtt2 != nil {
 					createdAt2, err := ptypes.Timestamp(createdAtt2)
@@ -1208,8 +2446,15 @@ func (r *permissionRepository) Find(c *permissionCriteria) ([]*permissionEntity,
 						return nil, err
 					}
 
-					where.AddExpr(tablePermissionColumnCreatedAt, pqcomp.GreaterThan, createdAt1)
-					where.AddExpr(tablePermissionColumnCreatedAt, pqcomp.LessThan, createdAt2)
+					wbuf.WriteString(tablePermissionColumnCreatedAt)
+					wbuf.WriteString(" > ")
+					pw.WriteTo(wbuf)
+					args = append(args, createdAt1)
+
+					wbuf.WriteString(tablePermissionColumnCreatedAt)
+					wbuf.WriteString(" > ")
+					pw.WriteTo(wbuf)
+					args = append(args, createdAt2)
 				}
 			}
 		}
@@ -1217,69 +2462,219 @@ func (r *permissionRepository) Find(c *permissionCriteria) ([]*permissionEntity,
 
 	if c.id != nil && c.id.Valid {
 		switch c.id.Type {
-		case protot.NumericQueryType_NOT_A_NUMBER:
+		case qtypes.NumericQueryType_NOT_A_NUMBER:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tablePermissionColumnID)
 			if c.id.Negation {
-				where.AddExpr(tablePermissionColumnID, pqcomp.IsNotNull, "")
+				wbuf.WriteString(" IS NOT NULL ")
 			} else {
-				where.AddExpr(tablePermissionColumnID, pqcomp.IsNull, "")
+				wbuf.WriteString(" IS NULL ")
 			}
-		case protot.NumericQueryType_EQUAL:
-			where.AddExpr(tablePermissionColumnID, pqcomp.Equal, c.id.Value())
-		case protot.NumericQueryType_NOT_EQUAL:
-			where.AddExpr(tablePermissionColumnID, pqcomp.NotEqual, c.id.Value())
-		case protot.NumericQueryType_GREATER:
-			where.AddExpr(tablePermissionColumnID, pqcomp.GreaterThan, c.id.Value())
-		case protot.NumericQueryType_GREATER_EQUAL:
-			where.AddExpr(tablePermissionColumnID, pqcomp.GreaterThanOrEqual, c.id.Value())
-		case protot.NumericQueryType_LESS:
-			where.AddExpr(tablePermissionColumnID, pqcomp.LessThan, c.id.Value())
-		case protot.NumericQueryType_LESS_EQUAL:
-			where.AddExpr(tablePermissionColumnID, pqcomp.LessThanOrEqual, c.id.Value())
-		case protot.NumericQueryType_IN:
+		case qtypes.NumericQueryType_EQUAL:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tablePermissionColumnID)
+			wbuf.WriteString("=")
+			pw.WriteTo(wbuf)
+			args = append(args, c.id)
+		case qtypes.NumericQueryType_NOT_EQUAL:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tablePermissionColumnID)
+			wbuf.WriteString(" <> ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.id)
+		case qtypes.NumericQueryType_GREATER:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tablePermissionColumnID)
+			wbuf.WriteString(" > ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.id)
+		case qtypes.NumericQueryType_GREATER_EQUAL:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tablePermissionColumnID)
+			wbuf.WriteString(" >= ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.id)
+		case qtypes.NumericQueryType_LESS:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tablePermissionColumnID)
+			wbuf.WriteString(" < ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.id)
+		case qtypes.NumericQueryType_LESS_EQUAL:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tablePermissionColumnID)
+			wbuf.WriteString(" >= ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.id)
+		case qtypes.NumericQueryType_IN:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tablePermissionColumnID)
+			wbuf.WriteString(" IN ")
 			for _, v := range c.id.Values {
-				where.AddExpr(tablePermissionColumnID, pqcomp.In, v)
+				pw.WriteTo(wbuf)
+				args = append(args, v)
 			}
-		case protot.NumericQueryType_BETWEEN:
-			where.AddExpr(tablePermissionColumnID, pqcomp.GreaterThan, c.id.Values[0])
-			where.AddExpr(tablePermissionColumnID, pqcomp.LessThan, c.id.Values[1])
+		case qtypes.NumericQueryType_BETWEEN:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tablePermissionColumnID)
+			wbuf.WriteString(" > ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.id.Values[0])
+
+			wbuf.WriteString(tablePermissionColumnID)
+			wbuf.WriteString(" > ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.id.Values[1])
 		}
 	}
 
 	if c.module != nil && c.module.Valid {
 		switch c.module.Type {
-		case protot.TextQueryType_NOT_A_TEXT:
-			if c.module.Negation {
-				where.AddExpr(tablePermissionColumnModule, pqcomp.IsNotNull, "")
-			} else {
-				where.AddExpr(tablePermissionColumnModule, pqcomp.IsNull, "")
+		case qtypes.TextQueryType_NOT_A_TEXT:
+			if dirty {
+				wbuf.WriteString(" AND ")
 			}
-		case protot.TextQueryType_EXACT:
-			where.AddExpr(tablePermissionColumnModule, pqcomp.Equal, c.module.Value())
-		case protot.TextQueryType_SUBSTRING:
-			where.AddExpr(tablePermissionColumnModule, pqcomp.Like, "%"+c.module.Value()+"%")
-		case protot.TextQueryType_HAS_PREFIX:
-			where.AddExpr(tablePermissionColumnModule, pqcomp.Like, c.module.Value()+"%")
-		case protot.TextQueryType_HAS_SUFFIX:
-			where.AddExpr(tablePermissionColumnModule, pqcomp.Like, "%"+c.module.Value())
+			dirty = true
+
+			wbuf.WriteString(tablePermissionColumnModule)
+			if c.module.Negation {
+				wbuf.WriteString(" IS NOT NULL ")
+			} else {
+				wbuf.WriteString(" IS NULL ")
+			}
+		case qtypes.TextQueryType_EXACT:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tablePermissionColumnModule)
+			wbuf.WriteString("=")
+			pw.WriteTo(wbuf)
+			args = append(args, c.module.Value())
+		case qtypes.TextQueryType_SUBSTRING:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tablePermissionColumnModule)
+			wbuf.WriteString(" LIKE ")
+			pw.WriteTo(wbuf)
+			args = append(args, fmt.Sprintf("%%%s%%", c.module.Value()))
+		case qtypes.TextQueryType_HAS_PREFIX:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tablePermissionColumnModule)
+			wbuf.WriteString(" LIKE ")
+			pw.WriteTo(wbuf)
+			args = append(args, fmt.Sprintf("%s%%", c.module.Value()))
+		case qtypes.TextQueryType_HAS_SUFFIX:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tablePermissionColumnModule)
+			wbuf.WriteString(" LIKE ")
+			pw.WriteTo(wbuf)
+			args = append(args, fmt.Sprintf("%%%s", c.module.Value()))
 		}
 	}
 
 	if c.subsystem != nil && c.subsystem.Valid {
 		switch c.subsystem.Type {
-		case protot.TextQueryType_NOT_A_TEXT:
-			if c.subsystem.Negation {
-				where.AddExpr(tablePermissionColumnSubsystem, pqcomp.IsNotNull, "")
-			} else {
-				where.AddExpr(tablePermissionColumnSubsystem, pqcomp.IsNull, "")
+		case qtypes.TextQueryType_NOT_A_TEXT:
+			if dirty {
+				wbuf.WriteString(" AND ")
 			}
-		case protot.TextQueryType_EXACT:
-			where.AddExpr(tablePermissionColumnSubsystem, pqcomp.Equal, c.subsystem.Value())
-		case protot.TextQueryType_SUBSTRING:
-			where.AddExpr(tablePermissionColumnSubsystem, pqcomp.Like, "%"+c.subsystem.Value()+"%")
-		case protot.TextQueryType_HAS_PREFIX:
-			where.AddExpr(tablePermissionColumnSubsystem, pqcomp.Like, c.subsystem.Value()+"%")
-		case protot.TextQueryType_HAS_SUFFIX:
-			where.AddExpr(tablePermissionColumnSubsystem, pqcomp.Like, "%"+c.subsystem.Value())
+			dirty = true
+
+			wbuf.WriteString(tablePermissionColumnSubsystem)
+			if c.subsystem.Negation {
+				wbuf.WriteString(" IS NOT NULL ")
+			} else {
+				wbuf.WriteString(" IS NULL ")
+			}
+		case qtypes.TextQueryType_EXACT:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tablePermissionColumnSubsystem)
+			wbuf.WriteString("=")
+			pw.WriteTo(wbuf)
+			args = append(args, c.subsystem.Value())
+		case qtypes.TextQueryType_SUBSTRING:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tablePermissionColumnSubsystem)
+			wbuf.WriteString(" LIKE ")
+			pw.WriteTo(wbuf)
+			args = append(args, fmt.Sprintf("%%%s%%", c.subsystem.Value()))
+		case qtypes.TextQueryType_HAS_PREFIX:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tablePermissionColumnSubsystem)
+			wbuf.WriteString(" LIKE ")
+			pw.WriteTo(wbuf)
+			args = append(args, fmt.Sprintf("%s%%", c.subsystem.Value()))
+		case qtypes.TextQueryType_HAS_SUFFIX:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tablePermissionColumnSubsystem)
+			wbuf.WriteString(" LIKE ")
+			pw.WriteTo(wbuf)
+			args = append(args, fmt.Sprintf("%%%s", c.subsystem.Value()))
 		}
 	}
 
@@ -1292,27 +2687,94 @@ func (r *permissionRepository) Find(c *permissionCriteria) ([]*permissionEntity,
 			}
 
 			switch c.updatedAt.Type {
-			case protot.NumericQueryType_NOT_A_NUMBER:
-				if c.updatedAt.Negation {
-					where.AddExpr(tablePermissionColumnUpdatedAt, pqcomp.IsNotNull, "")
-				} else {
-					where.AddExpr(tablePermissionColumnUpdatedAt, pqcomp.IsNull, "")
+			case qtypes.NumericQueryType_NOT_A_NUMBER:
+				if dirty {
+					wbuf.WriteString(" AND ")
 				}
-			case protot.NumericQueryType_EQUAL:
-				where.AddExpr(tablePermissionColumnUpdatedAt, pqcomp.Equal, updatedAt1)
-			case protot.NumericQueryType_NOT_EQUAL:
-				where.AddExpr(tablePermissionColumnUpdatedAt, pqcomp.NotEqual, updatedAt1)
-			case protot.NumericQueryType_GREATER:
-				where.AddExpr(tablePermissionColumnUpdatedAt, pqcomp.GreaterThan, updatedAt1)
-			case protot.NumericQueryType_GREATER_EQUAL:
-				where.AddExpr(tablePermissionColumnUpdatedAt, pqcomp.GreaterThanOrEqual, updatedAt1)
-			case protot.NumericQueryType_LESS:
-				where.AddExpr(tablePermissionColumnUpdatedAt, pqcomp.LessThan, updatedAt1)
-			case protot.NumericQueryType_LESS_EQUAL:
-				where.AddExpr(tablePermissionColumnUpdatedAt, pqcomp.LessThanOrEqual, updatedAt1)
-			case protot.NumericQueryType_IN:
-				where.AddExpr(tablePermissionColumnUpdatedAt, pqcomp.In, updatedAt1)
-			case protot.NumericQueryType_BETWEEN:
+				dirty = true
+
+				wbuf.WriteString(tablePermissionColumnUpdatedAt)
+				if c.updatedAt.Negation {
+					wbuf.WriteString(" IS NOT NULL ")
+				} else {
+					wbuf.WriteString(" IS NULL ")
+				}
+			case qtypes.NumericQueryType_EQUAL:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tablePermissionColumnUpdatedAt)
+				wbuf.WriteString("=")
+				pw.WriteTo(wbuf)
+				args = append(args, c.updatedAt)
+			case qtypes.NumericQueryType_NOT_EQUAL:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tablePermissionColumnUpdatedAt)
+				wbuf.WriteString("!=")
+				pw.WriteTo(wbuf)
+				args = append(args, c.updatedAt)
+			case qtypes.NumericQueryType_GREATER:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tablePermissionColumnUpdatedAt)
+				wbuf.WriteString(">")
+				pw.WriteTo(wbuf)
+				args = append(args, c.updatedAt)
+			case qtypes.NumericQueryType_GREATER_EQUAL:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tablePermissionColumnUpdatedAt)
+				wbuf.WriteString(">=")
+				pw.WriteTo(wbuf)
+				args = append(args, c.updatedAt)
+			case qtypes.NumericQueryType_LESS:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tablePermissionColumnUpdatedAt)
+				wbuf.WriteString("<")
+				pw.WriteTo(wbuf)
+				args = append(args, c.updatedAt)
+			case qtypes.NumericQueryType_LESS_EQUAL:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tablePermissionColumnUpdatedAt)
+				wbuf.WriteString("<=")
+				pw.WriteTo(wbuf)
+				args = append(args, c.updatedAt)
+			case qtypes.NumericQueryType_IN:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tablePermissionColumnUpdatedAt)
+				wbuf.WriteString(" IN ")
+				pw.WriteTo(wbuf)
+				args = append(args, c.updatedAt)
+			case qtypes.NumericQueryType_BETWEEN:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
 				updatedAtt2 := c.updatedAt.Values[1]
 				if updatedAtt2 != nil {
 					updatedAt2, err := ptypes.Timestamp(updatedAtt2)
@@ -1320,14 +2782,38 @@ func (r *permissionRepository) Find(c *permissionCriteria) ([]*permissionEntity,
 						return nil, err
 					}
 
-					where.AddExpr(tablePermissionColumnUpdatedAt, pqcomp.GreaterThan, updatedAt1)
-					where.AddExpr(tablePermissionColumnUpdatedAt, pqcomp.LessThan, updatedAt2)
+					wbuf.WriteString(tablePermissionColumnUpdatedAt)
+					wbuf.WriteString(" > ")
+					pw.WriteTo(wbuf)
+					args = append(args, updatedAt1)
+
+					wbuf.WriteString(tablePermissionColumnUpdatedAt)
+					wbuf.WriteString(" > ")
+					pw.WriteTo(wbuf)
+					args = append(args, updatedAt2)
 				}
 			}
 		}
 	}
 
-	rows, err := findQueryComp(r.db, r.table, comp, where, c.sort, r.columns)
+	fmt.Println("is dirty", dirty)
+	if dirty {
+		if _, err := qbuf.WriteString(" WHERE "); err != nil {
+			return nil, err
+		}
+		if _, err := wbuf.WriteTo(qbuf); err != nil {
+			return nil, err
+		}
+	}
+
+	qbuf.WriteString(" OFFSET ")
+	pw.WriteTo(qbuf)
+	args = append(args, c.offset)
+	qbuf.WriteString(" LIMIT ")
+	pw.WriteTo(qbuf)
+	args = append(args, c.limit)
+
+	rows, err := r.db.Query(qbuf.String(), args...)
 	if err != nil {
 		return nil, err
 	}
@@ -1433,10 +2919,10 @@ func (r *permissionRepository) Insert(e *permissionEntity) (*permissionEntity, e
 }
 func (r *permissionRepository) UpdateByID(
 	id int64,
-	action *nilt.String,
+	action *ntypes.String,
 	createdAt *time.Time,
-	module *nilt.String,
-	subsystem *nilt.String,
+	module *ntypes.String,
+	subsystem *ntypes.String,
 	updatedAt *time.Time,
 ) (*permissionEntity, error) {
 	update := pqcomp.New(0, 6)
@@ -1521,25 +3007,30 @@ var (
 
 type userGroupsEntity struct {
 	CreatedAt time.Time
-	CreatedBy *nilt.Int64
+	CreatedBy *ntypes.Int64
 	GroupID   int64
 	UpdatedAt *time.Time
-	UpdatedBy *nilt.Int64
+	UpdatedBy *ntypes.Int64
 	UserID    int64
 	User      *userEntity
 	Group     *groupEntity
-	Author    *userEntity
-	Modifier  *userEntity
+	Author    []*userEntity
+	Modifier  []*userEntity
 }
 type userGroupsCriteria struct {
 	offset, limit int64
 	sort          map[string]bool
-	createdAt     *protot.QueryTimestamp
-	createdBy     *protot.QueryInt64
-	groupID       *protot.QueryInt64
-	updatedAt     *protot.QueryTimestamp
-	updatedBy     *protot.QueryInt64
-	userID        *protot.QueryInt64
+	createdAt     *qtypes.Timestamp
+
+	createdBy *qtypes.Int64
+
+	groupID *qtypes.Int64
+
+	updatedAt *qtypes.Timestamp
+
+	updatedBy *qtypes.Int64
+
+	userID *qtypes.Int64
 }
 
 type userGroupsRepository struct {
@@ -1549,11 +3040,16 @@ type userGroupsRepository struct {
 }
 
 func (r *userGroupsRepository) Find(c *userGroupsCriteria) ([]*userGroupsEntity, error) {
-	comp := pqcomp.New(2, 0, 1)
-	comp.AddArg(c.offset)
-	comp.AddArg(c.limit)
+	wbuf := bytes.NewBuffer(nil)
+	qbuf := bytes.NewBuffer(nil)
+	qbuf.WriteString("SELECT ")
+	qbuf.WriteString(strings.Join(r.columns, ", "))
+	qbuf.WriteString(" FROM ")
+	qbuf.WriteString(r.table)
 
-	where := comp.Compose(6)
+	pw := pqt.NewPlaceholderWriter()
+	args := make([]interface{}, 0)
+	dirty := false
 
 	if c.createdAt != nil && c.createdAt.Valid {
 		createdAtt1 := c.createdAt.Value()
@@ -1564,27 +3060,94 @@ func (r *userGroupsRepository) Find(c *userGroupsCriteria) ([]*userGroupsEntity,
 			}
 
 			switch c.createdAt.Type {
-			case protot.NumericQueryType_NOT_A_NUMBER:
-				if c.createdAt.Negation {
-					where.AddExpr(tableUserGroupsColumnCreatedAt, pqcomp.IsNotNull, "")
-				} else {
-					where.AddExpr(tableUserGroupsColumnCreatedAt, pqcomp.IsNull, "")
+			case qtypes.NumericQueryType_NOT_A_NUMBER:
+				if dirty {
+					wbuf.WriteString(" AND ")
 				}
-			case protot.NumericQueryType_EQUAL:
-				where.AddExpr(tableUserGroupsColumnCreatedAt, pqcomp.Equal, createdAt1)
-			case protot.NumericQueryType_NOT_EQUAL:
-				where.AddExpr(tableUserGroupsColumnCreatedAt, pqcomp.NotEqual, createdAt1)
-			case protot.NumericQueryType_GREATER:
-				where.AddExpr(tableUserGroupsColumnCreatedAt, pqcomp.GreaterThan, createdAt1)
-			case protot.NumericQueryType_GREATER_EQUAL:
-				where.AddExpr(tableUserGroupsColumnCreatedAt, pqcomp.GreaterThanOrEqual, createdAt1)
-			case protot.NumericQueryType_LESS:
-				where.AddExpr(tableUserGroupsColumnCreatedAt, pqcomp.LessThan, createdAt1)
-			case protot.NumericQueryType_LESS_EQUAL:
-				where.AddExpr(tableUserGroupsColumnCreatedAt, pqcomp.LessThanOrEqual, createdAt1)
-			case protot.NumericQueryType_IN:
-				where.AddExpr(tableUserGroupsColumnCreatedAt, pqcomp.In, createdAt1)
-			case protot.NumericQueryType_BETWEEN:
+				dirty = true
+
+				wbuf.WriteString(tableUserGroupsColumnCreatedAt)
+				if c.createdAt.Negation {
+					wbuf.WriteString(" IS NOT NULL ")
+				} else {
+					wbuf.WriteString(" IS NULL ")
+				}
+			case qtypes.NumericQueryType_EQUAL:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tableUserGroupsColumnCreatedAt)
+				wbuf.WriteString("=")
+				pw.WriteTo(wbuf)
+				args = append(args, c.createdAt)
+			case qtypes.NumericQueryType_NOT_EQUAL:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tableUserGroupsColumnCreatedAt)
+				wbuf.WriteString("!=")
+				pw.WriteTo(wbuf)
+				args = append(args, c.createdAt)
+			case qtypes.NumericQueryType_GREATER:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tableUserGroupsColumnCreatedAt)
+				wbuf.WriteString(">")
+				pw.WriteTo(wbuf)
+				args = append(args, c.createdAt)
+			case qtypes.NumericQueryType_GREATER_EQUAL:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tableUserGroupsColumnCreatedAt)
+				wbuf.WriteString(">=")
+				pw.WriteTo(wbuf)
+				args = append(args, c.createdAt)
+			case qtypes.NumericQueryType_LESS:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tableUserGroupsColumnCreatedAt)
+				wbuf.WriteString("<")
+				pw.WriteTo(wbuf)
+				args = append(args, c.createdAt)
+			case qtypes.NumericQueryType_LESS_EQUAL:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tableUserGroupsColumnCreatedAt)
+				wbuf.WriteString("<=")
+				pw.WriteTo(wbuf)
+				args = append(args, c.createdAt)
+			case qtypes.NumericQueryType_IN:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tableUserGroupsColumnCreatedAt)
+				wbuf.WriteString(" IN ")
+				pw.WriteTo(wbuf)
+				args = append(args, c.createdAt)
+			case qtypes.NumericQueryType_BETWEEN:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
 				createdAtt2 := c.createdAt.Values[1]
 				if createdAtt2 != nil {
 					createdAt2, err := ptypes.Timestamp(createdAtt2)
@@ -1592,8 +3155,15 @@ func (r *userGroupsRepository) Find(c *userGroupsCriteria) ([]*userGroupsEntity,
 						return nil, err
 					}
 
-					where.AddExpr(tableUserGroupsColumnCreatedAt, pqcomp.GreaterThan, createdAt1)
-					where.AddExpr(tableUserGroupsColumnCreatedAt, pqcomp.LessThan, createdAt2)
+					wbuf.WriteString(tableUserGroupsColumnCreatedAt)
+					wbuf.WriteString(" > ")
+					pw.WriteTo(wbuf)
+					args = append(args, createdAt1)
+
+					wbuf.WriteString(tableUserGroupsColumnCreatedAt)
+					wbuf.WriteString(" > ")
+					pw.WriteTo(wbuf)
+					args = append(args, createdAt2)
 				}
 			}
 		}
@@ -1601,61 +3171,209 @@ func (r *userGroupsRepository) Find(c *userGroupsCriteria) ([]*userGroupsEntity,
 
 	if c.createdBy != nil && c.createdBy.Valid {
 		switch c.createdBy.Type {
-		case protot.NumericQueryType_NOT_A_NUMBER:
+		case qtypes.NumericQueryType_NOT_A_NUMBER:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserGroupsColumnCreatedBy)
 			if c.createdBy.Negation {
-				where.AddExpr(tableUserGroupsColumnCreatedBy, pqcomp.IsNotNull, "")
+				wbuf.WriteString(" IS NOT NULL ")
 			} else {
-				where.AddExpr(tableUserGroupsColumnCreatedBy, pqcomp.IsNull, "")
+				wbuf.WriteString(" IS NULL ")
 			}
-		case protot.NumericQueryType_EQUAL:
-			where.AddExpr(tableUserGroupsColumnCreatedBy, pqcomp.Equal, c.createdBy.Value())
-		case protot.NumericQueryType_NOT_EQUAL:
-			where.AddExpr(tableUserGroupsColumnCreatedBy, pqcomp.NotEqual, c.createdBy.Value())
-		case protot.NumericQueryType_GREATER:
-			where.AddExpr(tableUserGroupsColumnCreatedBy, pqcomp.GreaterThan, c.createdBy.Value())
-		case protot.NumericQueryType_GREATER_EQUAL:
-			where.AddExpr(tableUserGroupsColumnCreatedBy, pqcomp.GreaterThanOrEqual, c.createdBy.Value())
-		case protot.NumericQueryType_LESS:
-			where.AddExpr(tableUserGroupsColumnCreatedBy, pqcomp.LessThan, c.createdBy.Value())
-		case protot.NumericQueryType_LESS_EQUAL:
-			where.AddExpr(tableUserGroupsColumnCreatedBy, pqcomp.LessThanOrEqual, c.createdBy.Value())
-		case protot.NumericQueryType_IN:
+		case qtypes.NumericQueryType_EQUAL:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserGroupsColumnCreatedBy)
+			wbuf.WriteString("=")
+			pw.WriteTo(wbuf)
+			args = append(args, c.createdBy)
+		case qtypes.NumericQueryType_NOT_EQUAL:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserGroupsColumnCreatedBy)
+			wbuf.WriteString(" <> ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.createdBy)
+		case qtypes.NumericQueryType_GREATER:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserGroupsColumnCreatedBy)
+			wbuf.WriteString(" > ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.createdBy)
+		case qtypes.NumericQueryType_GREATER_EQUAL:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserGroupsColumnCreatedBy)
+			wbuf.WriteString(" >= ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.createdBy)
+		case qtypes.NumericQueryType_LESS:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserGroupsColumnCreatedBy)
+			wbuf.WriteString(" < ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.createdBy)
+		case qtypes.NumericQueryType_LESS_EQUAL:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserGroupsColumnCreatedBy)
+			wbuf.WriteString(" >= ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.createdBy)
+		case qtypes.NumericQueryType_IN:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserGroupsColumnCreatedBy)
+			wbuf.WriteString(" IN ")
 			for _, v := range c.createdBy.Values {
-				where.AddExpr(tableUserGroupsColumnCreatedBy, pqcomp.In, v)
+				pw.WriteTo(wbuf)
+				args = append(args, v)
 			}
-		case protot.NumericQueryType_BETWEEN:
-			where.AddExpr(tableUserGroupsColumnCreatedBy, pqcomp.GreaterThan, c.createdBy.Values[0])
-			where.AddExpr(tableUserGroupsColumnCreatedBy, pqcomp.LessThan, c.createdBy.Values[1])
+		case qtypes.NumericQueryType_BETWEEN:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserGroupsColumnCreatedBy)
+			wbuf.WriteString(" > ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.createdBy.Values[0])
+
+			wbuf.WriteString(tableUserGroupsColumnCreatedBy)
+			wbuf.WriteString(" > ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.createdBy.Values[1])
 		}
 	}
 
 	if c.groupID != nil && c.groupID.Valid {
 		switch c.groupID.Type {
-		case protot.NumericQueryType_NOT_A_NUMBER:
+		case qtypes.NumericQueryType_NOT_A_NUMBER:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserGroupsColumnGroupID)
 			if c.groupID.Negation {
-				where.AddExpr(tableUserGroupsColumnGroupID, pqcomp.IsNotNull, "")
+				wbuf.WriteString(" IS NOT NULL ")
 			} else {
-				where.AddExpr(tableUserGroupsColumnGroupID, pqcomp.IsNull, "")
+				wbuf.WriteString(" IS NULL ")
 			}
-		case protot.NumericQueryType_EQUAL:
-			where.AddExpr(tableUserGroupsColumnGroupID, pqcomp.Equal, c.groupID.Value())
-		case protot.NumericQueryType_NOT_EQUAL:
-			where.AddExpr(tableUserGroupsColumnGroupID, pqcomp.NotEqual, c.groupID.Value())
-		case protot.NumericQueryType_GREATER:
-			where.AddExpr(tableUserGroupsColumnGroupID, pqcomp.GreaterThan, c.groupID.Value())
-		case protot.NumericQueryType_GREATER_EQUAL:
-			where.AddExpr(tableUserGroupsColumnGroupID, pqcomp.GreaterThanOrEqual, c.groupID.Value())
-		case protot.NumericQueryType_LESS:
-			where.AddExpr(tableUserGroupsColumnGroupID, pqcomp.LessThan, c.groupID.Value())
-		case protot.NumericQueryType_LESS_EQUAL:
-			where.AddExpr(tableUserGroupsColumnGroupID, pqcomp.LessThanOrEqual, c.groupID.Value())
-		case protot.NumericQueryType_IN:
+		case qtypes.NumericQueryType_EQUAL:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserGroupsColumnGroupID)
+			wbuf.WriteString("=")
+			pw.WriteTo(wbuf)
+			args = append(args, c.groupID)
+		case qtypes.NumericQueryType_NOT_EQUAL:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserGroupsColumnGroupID)
+			wbuf.WriteString(" <> ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.groupID)
+		case qtypes.NumericQueryType_GREATER:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserGroupsColumnGroupID)
+			wbuf.WriteString(" > ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.groupID)
+		case qtypes.NumericQueryType_GREATER_EQUAL:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserGroupsColumnGroupID)
+			wbuf.WriteString(" >= ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.groupID)
+		case qtypes.NumericQueryType_LESS:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserGroupsColumnGroupID)
+			wbuf.WriteString(" < ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.groupID)
+		case qtypes.NumericQueryType_LESS_EQUAL:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserGroupsColumnGroupID)
+			wbuf.WriteString(" >= ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.groupID)
+		case qtypes.NumericQueryType_IN:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserGroupsColumnGroupID)
+			wbuf.WriteString(" IN ")
 			for _, v := range c.groupID.Values {
-				where.AddExpr(tableUserGroupsColumnGroupID, pqcomp.In, v)
+				pw.WriteTo(wbuf)
+				args = append(args, v)
 			}
-		case protot.NumericQueryType_BETWEEN:
-			where.AddExpr(tableUserGroupsColumnGroupID, pqcomp.GreaterThan, c.groupID.Values[0])
-			where.AddExpr(tableUserGroupsColumnGroupID, pqcomp.LessThan, c.groupID.Values[1])
+		case qtypes.NumericQueryType_BETWEEN:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserGroupsColumnGroupID)
+			wbuf.WriteString(" > ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.groupID.Values[0])
+
+			wbuf.WriteString(tableUserGroupsColumnGroupID)
+			wbuf.WriteString(" > ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.groupID.Values[1])
 		}
 	}
 
@@ -1668,27 +3386,94 @@ func (r *userGroupsRepository) Find(c *userGroupsCriteria) ([]*userGroupsEntity,
 			}
 
 			switch c.updatedAt.Type {
-			case protot.NumericQueryType_NOT_A_NUMBER:
-				if c.updatedAt.Negation {
-					where.AddExpr(tableUserGroupsColumnUpdatedAt, pqcomp.IsNotNull, "")
-				} else {
-					where.AddExpr(tableUserGroupsColumnUpdatedAt, pqcomp.IsNull, "")
+			case qtypes.NumericQueryType_NOT_A_NUMBER:
+				if dirty {
+					wbuf.WriteString(" AND ")
 				}
-			case protot.NumericQueryType_EQUAL:
-				where.AddExpr(tableUserGroupsColumnUpdatedAt, pqcomp.Equal, updatedAt1)
-			case protot.NumericQueryType_NOT_EQUAL:
-				where.AddExpr(tableUserGroupsColumnUpdatedAt, pqcomp.NotEqual, updatedAt1)
-			case protot.NumericQueryType_GREATER:
-				where.AddExpr(tableUserGroupsColumnUpdatedAt, pqcomp.GreaterThan, updatedAt1)
-			case protot.NumericQueryType_GREATER_EQUAL:
-				where.AddExpr(tableUserGroupsColumnUpdatedAt, pqcomp.GreaterThanOrEqual, updatedAt1)
-			case protot.NumericQueryType_LESS:
-				where.AddExpr(tableUserGroupsColumnUpdatedAt, pqcomp.LessThan, updatedAt1)
-			case protot.NumericQueryType_LESS_EQUAL:
-				where.AddExpr(tableUserGroupsColumnUpdatedAt, pqcomp.LessThanOrEqual, updatedAt1)
-			case protot.NumericQueryType_IN:
-				where.AddExpr(tableUserGroupsColumnUpdatedAt, pqcomp.In, updatedAt1)
-			case protot.NumericQueryType_BETWEEN:
+				dirty = true
+
+				wbuf.WriteString(tableUserGroupsColumnUpdatedAt)
+				if c.updatedAt.Negation {
+					wbuf.WriteString(" IS NOT NULL ")
+				} else {
+					wbuf.WriteString(" IS NULL ")
+				}
+			case qtypes.NumericQueryType_EQUAL:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tableUserGroupsColumnUpdatedAt)
+				wbuf.WriteString("=")
+				pw.WriteTo(wbuf)
+				args = append(args, c.updatedAt)
+			case qtypes.NumericQueryType_NOT_EQUAL:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tableUserGroupsColumnUpdatedAt)
+				wbuf.WriteString("!=")
+				pw.WriteTo(wbuf)
+				args = append(args, c.updatedAt)
+			case qtypes.NumericQueryType_GREATER:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tableUserGroupsColumnUpdatedAt)
+				wbuf.WriteString(">")
+				pw.WriteTo(wbuf)
+				args = append(args, c.updatedAt)
+			case qtypes.NumericQueryType_GREATER_EQUAL:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tableUserGroupsColumnUpdatedAt)
+				wbuf.WriteString(">=")
+				pw.WriteTo(wbuf)
+				args = append(args, c.updatedAt)
+			case qtypes.NumericQueryType_LESS:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tableUserGroupsColumnUpdatedAt)
+				wbuf.WriteString("<")
+				pw.WriteTo(wbuf)
+				args = append(args, c.updatedAt)
+			case qtypes.NumericQueryType_LESS_EQUAL:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tableUserGroupsColumnUpdatedAt)
+				wbuf.WriteString("<=")
+				pw.WriteTo(wbuf)
+				args = append(args, c.updatedAt)
+			case qtypes.NumericQueryType_IN:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tableUserGroupsColumnUpdatedAt)
+				wbuf.WriteString(" IN ")
+				pw.WriteTo(wbuf)
+				args = append(args, c.updatedAt)
+			case qtypes.NumericQueryType_BETWEEN:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
 				updatedAtt2 := c.updatedAt.Values[1]
 				if updatedAtt2 != nil {
 					updatedAt2, err := ptypes.Timestamp(updatedAtt2)
@@ -1696,8 +3481,15 @@ func (r *userGroupsRepository) Find(c *userGroupsCriteria) ([]*userGroupsEntity,
 						return nil, err
 					}
 
-					where.AddExpr(tableUserGroupsColumnUpdatedAt, pqcomp.GreaterThan, updatedAt1)
-					where.AddExpr(tableUserGroupsColumnUpdatedAt, pqcomp.LessThan, updatedAt2)
+					wbuf.WriteString(tableUserGroupsColumnUpdatedAt)
+					wbuf.WriteString(" > ")
+					pw.WriteTo(wbuf)
+					args = append(args, updatedAt1)
+
+					wbuf.WriteString(tableUserGroupsColumnUpdatedAt)
+					wbuf.WriteString(" > ")
+					pw.WriteTo(wbuf)
+					args = append(args, updatedAt2)
 				}
 			}
 		}
@@ -1705,65 +3497,230 @@ func (r *userGroupsRepository) Find(c *userGroupsCriteria) ([]*userGroupsEntity,
 
 	if c.updatedBy != nil && c.updatedBy.Valid {
 		switch c.updatedBy.Type {
-		case protot.NumericQueryType_NOT_A_NUMBER:
+		case qtypes.NumericQueryType_NOT_A_NUMBER:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserGroupsColumnUpdatedBy)
 			if c.updatedBy.Negation {
-				where.AddExpr(tableUserGroupsColumnUpdatedBy, pqcomp.IsNotNull, "")
+				wbuf.WriteString(" IS NOT NULL ")
 			} else {
-				where.AddExpr(tableUserGroupsColumnUpdatedBy, pqcomp.IsNull, "")
+				wbuf.WriteString(" IS NULL ")
 			}
-		case protot.NumericQueryType_EQUAL:
-			where.AddExpr(tableUserGroupsColumnUpdatedBy, pqcomp.Equal, c.updatedBy.Value())
-		case protot.NumericQueryType_NOT_EQUAL:
-			where.AddExpr(tableUserGroupsColumnUpdatedBy, pqcomp.NotEqual, c.updatedBy.Value())
-		case protot.NumericQueryType_GREATER:
-			where.AddExpr(tableUserGroupsColumnUpdatedBy, pqcomp.GreaterThan, c.updatedBy.Value())
-		case protot.NumericQueryType_GREATER_EQUAL:
-			where.AddExpr(tableUserGroupsColumnUpdatedBy, pqcomp.GreaterThanOrEqual, c.updatedBy.Value())
-		case protot.NumericQueryType_LESS:
-			where.AddExpr(tableUserGroupsColumnUpdatedBy, pqcomp.LessThan, c.updatedBy.Value())
-		case protot.NumericQueryType_LESS_EQUAL:
-			where.AddExpr(tableUserGroupsColumnUpdatedBy, pqcomp.LessThanOrEqual, c.updatedBy.Value())
-		case protot.NumericQueryType_IN:
+		case qtypes.NumericQueryType_EQUAL:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserGroupsColumnUpdatedBy)
+			wbuf.WriteString("=")
+			pw.WriteTo(wbuf)
+			args = append(args, c.updatedBy)
+		case qtypes.NumericQueryType_NOT_EQUAL:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserGroupsColumnUpdatedBy)
+			wbuf.WriteString(" <> ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.updatedBy)
+		case qtypes.NumericQueryType_GREATER:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserGroupsColumnUpdatedBy)
+			wbuf.WriteString(" > ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.updatedBy)
+		case qtypes.NumericQueryType_GREATER_EQUAL:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserGroupsColumnUpdatedBy)
+			wbuf.WriteString(" >= ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.updatedBy)
+		case qtypes.NumericQueryType_LESS:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserGroupsColumnUpdatedBy)
+			wbuf.WriteString(" < ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.updatedBy)
+		case qtypes.NumericQueryType_LESS_EQUAL:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserGroupsColumnUpdatedBy)
+			wbuf.WriteString(" >= ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.updatedBy)
+		case qtypes.NumericQueryType_IN:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserGroupsColumnUpdatedBy)
+			wbuf.WriteString(" IN ")
 			for _, v := range c.updatedBy.Values {
-				where.AddExpr(tableUserGroupsColumnUpdatedBy, pqcomp.In, v)
+				pw.WriteTo(wbuf)
+				args = append(args, v)
 			}
-		case protot.NumericQueryType_BETWEEN:
-			where.AddExpr(tableUserGroupsColumnUpdatedBy, pqcomp.GreaterThan, c.updatedBy.Values[0])
-			where.AddExpr(tableUserGroupsColumnUpdatedBy, pqcomp.LessThan, c.updatedBy.Values[1])
+		case qtypes.NumericQueryType_BETWEEN:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserGroupsColumnUpdatedBy)
+			wbuf.WriteString(" > ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.updatedBy.Values[0])
+
+			wbuf.WriteString(tableUserGroupsColumnUpdatedBy)
+			wbuf.WriteString(" > ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.updatedBy.Values[1])
 		}
 	}
 
 	if c.userID != nil && c.userID.Valid {
 		switch c.userID.Type {
-		case protot.NumericQueryType_NOT_A_NUMBER:
+		case qtypes.NumericQueryType_NOT_A_NUMBER:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserGroupsColumnUserID)
 			if c.userID.Negation {
-				where.AddExpr(tableUserGroupsColumnUserID, pqcomp.IsNotNull, "")
+				wbuf.WriteString(" IS NOT NULL ")
 			} else {
-				where.AddExpr(tableUserGroupsColumnUserID, pqcomp.IsNull, "")
+				wbuf.WriteString(" IS NULL ")
 			}
-		case protot.NumericQueryType_EQUAL:
-			where.AddExpr(tableUserGroupsColumnUserID, pqcomp.Equal, c.userID.Value())
-		case protot.NumericQueryType_NOT_EQUAL:
-			where.AddExpr(tableUserGroupsColumnUserID, pqcomp.NotEqual, c.userID.Value())
-		case protot.NumericQueryType_GREATER:
-			where.AddExpr(tableUserGroupsColumnUserID, pqcomp.GreaterThan, c.userID.Value())
-		case protot.NumericQueryType_GREATER_EQUAL:
-			where.AddExpr(tableUserGroupsColumnUserID, pqcomp.GreaterThanOrEqual, c.userID.Value())
-		case protot.NumericQueryType_LESS:
-			where.AddExpr(tableUserGroupsColumnUserID, pqcomp.LessThan, c.userID.Value())
-		case protot.NumericQueryType_LESS_EQUAL:
-			where.AddExpr(tableUserGroupsColumnUserID, pqcomp.LessThanOrEqual, c.userID.Value())
-		case protot.NumericQueryType_IN:
+		case qtypes.NumericQueryType_EQUAL:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserGroupsColumnUserID)
+			wbuf.WriteString("=")
+			pw.WriteTo(wbuf)
+			args = append(args, c.userID)
+		case qtypes.NumericQueryType_NOT_EQUAL:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserGroupsColumnUserID)
+			wbuf.WriteString(" <> ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.userID)
+		case qtypes.NumericQueryType_GREATER:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserGroupsColumnUserID)
+			wbuf.WriteString(" > ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.userID)
+		case qtypes.NumericQueryType_GREATER_EQUAL:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserGroupsColumnUserID)
+			wbuf.WriteString(" >= ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.userID)
+		case qtypes.NumericQueryType_LESS:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserGroupsColumnUserID)
+			wbuf.WriteString(" < ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.userID)
+		case qtypes.NumericQueryType_LESS_EQUAL:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserGroupsColumnUserID)
+			wbuf.WriteString(" >= ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.userID)
+		case qtypes.NumericQueryType_IN:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserGroupsColumnUserID)
+			wbuf.WriteString(" IN ")
 			for _, v := range c.userID.Values {
-				where.AddExpr(tableUserGroupsColumnUserID, pqcomp.In, v)
+				pw.WriteTo(wbuf)
+				args = append(args, v)
 			}
-		case protot.NumericQueryType_BETWEEN:
-			where.AddExpr(tableUserGroupsColumnUserID, pqcomp.GreaterThan, c.userID.Values[0])
-			where.AddExpr(tableUserGroupsColumnUserID, pqcomp.LessThan, c.userID.Values[1])
+		case qtypes.NumericQueryType_BETWEEN:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserGroupsColumnUserID)
+			wbuf.WriteString(" > ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.userID.Values[0])
+
+			wbuf.WriteString(tableUserGroupsColumnUserID)
+			wbuf.WriteString(" > ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.userID.Values[1])
 		}
 	}
 
-	rows, err := findQueryComp(r.db, r.table, comp, where, c.sort, r.columns)
+	fmt.Println("is dirty", dirty)
+	if dirty {
+		if _, err := qbuf.WriteString(" WHERE "); err != nil {
+			return nil, err
+		}
+		if _, err := wbuf.WriteTo(qbuf); err != nil {
+			return nil, err
+		}
+	}
+
+	qbuf.WriteString(" OFFSET ")
+	pw.WriteTo(qbuf)
+	args = append(args, c.offset)
+	qbuf.WriteString(" LIMIT ")
+	pw.WriteTo(qbuf)
+	args = append(args, c.limit)
+
+	rows, err := r.db.Query(qbuf.String(), args...)
 	if err != nil {
 		return nil, err
 	}
@@ -1875,29 +3832,36 @@ var (
 
 type groupPermissionsEntity struct {
 	CreatedAt           time.Time
-	CreatedBy           *nilt.Int64
+	CreatedBy           *ntypes.Int64
 	GroupID             int64
 	PermissionAction    string
 	PermissionModule    string
 	PermissionSubsystem string
 	UpdatedAt           *time.Time
-	UpdatedBy           *nilt.Int64
+	UpdatedBy           *ntypes.Int64
 	Group               *groupEntity
 	Permission          *permissionEntity
-	Author              *userEntity
-	Modifier            *userEntity
+	Author              []*userEntity
+	Modifier            []*userEntity
 }
 type groupPermissionsCriteria struct {
-	offset, limit       int64
-	sort                map[string]bool
-	createdAt           *protot.QueryTimestamp
-	createdBy           *protot.QueryInt64
-	groupID             *protot.QueryInt64
-	permissionAction    *protot.QueryString
-	permissionModule    *protot.QueryString
-	permissionSubsystem *protot.QueryString
-	updatedAt           *protot.QueryTimestamp
-	updatedBy           *protot.QueryInt64
+	offset, limit int64
+	sort          map[string]bool
+	createdAt     *qtypes.Timestamp
+
+	createdBy *qtypes.Int64
+
+	groupID *qtypes.Int64
+
+	permissionAction *qtypes.String
+
+	permissionModule *qtypes.String
+
+	permissionSubsystem *qtypes.String
+
+	updatedAt *qtypes.Timestamp
+
+	updatedBy *qtypes.Int64
 }
 
 type groupPermissionsRepository struct {
@@ -1907,11 +3871,16 @@ type groupPermissionsRepository struct {
 }
 
 func (r *groupPermissionsRepository) Find(c *groupPermissionsCriteria) ([]*groupPermissionsEntity, error) {
-	comp := pqcomp.New(2, 0, 1)
-	comp.AddArg(c.offset)
-	comp.AddArg(c.limit)
+	wbuf := bytes.NewBuffer(nil)
+	qbuf := bytes.NewBuffer(nil)
+	qbuf.WriteString("SELECT ")
+	qbuf.WriteString(strings.Join(r.columns, ", "))
+	qbuf.WriteString(" FROM ")
+	qbuf.WriteString(r.table)
 
-	where := comp.Compose(8)
+	pw := pqt.NewPlaceholderWriter()
+	args := make([]interface{}, 0)
+	dirty := false
 
 	if c.createdAt != nil && c.createdAt.Valid {
 		createdAtt1 := c.createdAt.Value()
@@ -1922,27 +3891,94 @@ func (r *groupPermissionsRepository) Find(c *groupPermissionsCriteria) ([]*group
 			}
 
 			switch c.createdAt.Type {
-			case protot.NumericQueryType_NOT_A_NUMBER:
-				if c.createdAt.Negation {
-					where.AddExpr(tableGroupPermissionsColumnCreatedAt, pqcomp.IsNotNull, "")
-				} else {
-					where.AddExpr(tableGroupPermissionsColumnCreatedAt, pqcomp.IsNull, "")
+			case qtypes.NumericQueryType_NOT_A_NUMBER:
+				if dirty {
+					wbuf.WriteString(" AND ")
 				}
-			case protot.NumericQueryType_EQUAL:
-				where.AddExpr(tableGroupPermissionsColumnCreatedAt, pqcomp.Equal, createdAt1)
-			case protot.NumericQueryType_NOT_EQUAL:
-				where.AddExpr(tableGroupPermissionsColumnCreatedAt, pqcomp.NotEqual, createdAt1)
-			case protot.NumericQueryType_GREATER:
-				where.AddExpr(tableGroupPermissionsColumnCreatedAt, pqcomp.GreaterThan, createdAt1)
-			case protot.NumericQueryType_GREATER_EQUAL:
-				where.AddExpr(tableGroupPermissionsColumnCreatedAt, pqcomp.GreaterThanOrEqual, createdAt1)
-			case protot.NumericQueryType_LESS:
-				where.AddExpr(tableGroupPermissionsColumnCreatedAt, pqcomp.LessThan, createdAt1)
-			case protot.NumericQueryType_LESS_EQUAL:
-				where.AddExpr(tableGroupPermissionsColumnCreatedAt, pqcomp.LessThanOrEqual, createdAt1)
-			case protot.NumericQueryType_IN:
-				where.AddExpr(tableGroupPermissionsColumnCreatedAt, pqcomp.In, createdAt1)
-			case protot.NumericQueryType_BETWEEN:
+				dirty = true
+
+				wbuf.WriteString(tableGroupPermissionsColumnCreatedAt)
+				if c.createdAt.Negation {
+					wbuf.WriteString(" IS NOT NULL ")
+				} else {
+					wbuf.WriteString(" IS NULL ")
+				}
+			case qtypes.NumericQueryType_EQUAL:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tableGroupPermissionsColumnCreatedAt)
+				wbuf.WriteString("=")
+				pw.WriteTo(wbuf)
+				args = append(args, c.createdAt)
+			case qtypes.NumericQueryType_NOT_EQUAL:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tableGroupPermissionsColumnCreatedAt)
+				wbuf.WriteString("!=")
+				pw.WriteTo(wbuf)
+				args = append(args, c.createdAt)
+			case qtypes.NumericQueryType_GREATER:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tableGroupPermissionsColumnCreatedAt)
+				wbuf.WriteString(">")
+				pw.WriteTo(wbuf)
+				args = append(args, c.createdAt)
+			case qtypes.NumericQueryType_GREATER_EQUAL:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tableGroupPermissionsColumnCreatedAt)
+				wbuf.WriteString(">=")
+				pw.WriteTo(wbuf)
+				args = append(args, c.createdAt)
+			case qtypes.NumericQueryType_LESS:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tableGroupPermissionsColumnCreatedAt)
+				wbuf.WriteString("<")
+				pw.WriteTo(wbuf)
+				args = append(args, c.createdAt)
+			case qtypes.NumericQueryType_LESS_EQUAL:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tableGroupPermissionsColumnCreatedAt)
+				wbuf.WriteString("<=")
+				pw.WriteTo(wbuf)
+				args = append(args, c.createdAt)
+			case qtypes.NumericQueryType_IN:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tableGroupPermissionsColumnCreatedAt)
+				wbuf.WriteString(" IN ")
+				pw.WriteTo(wbuf)
+				args = append(args, c.createdAt)
+			case qtypes.NumericQueryType_BETWEEN:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
 				createdAtt2 := c.createdAt.Values[1]
 				if createdAtt2 != nil {
 					createdAt2, err := ptypes.Timestamp(createdAtt2)
@@ -1950,8 +3986,15 @@ func (r *groupPermissionsRepository) Find(c *groupPermissionsCriteria) ([]*group
 						return nil, err
 					}
 
-					where.AddExpr(tableGroupPermissionsColumnCreatedAt, pqcomp.GreaterThan, createdAt1)
-					where.AddExpr(tableGroupPermissionsColumnCreatedAt, pqcomp.LessThan, createdAt2)
+					wbuf.WriteString(tableGroupPermissionsColumnCreatedAt)
+					wbuf.WriteString(" > ")
+					pw.WriteTo(wbuf)
+					args = append(args, createdAt1)
+
+					wbuf.WriteString(tableGroupPermissionsColumnCreatedAt)
+					wbuf.WriteString(" > ")
+					pw.WriteTo(wbuf)
+					args = append(args, createdAt2)
 				}
 			}
 		}
@@ -1959,118 +4002,380 @@ func (r *groupPermissionsRepository) Find(c *groupPermissionsCriteria) ([]*group
 
 	if c.createdBy != nil && c.createdBy.Valid {
 		switch c.createdBy.Type {
-		case protot.NumericQueryType_NOT_A_NUMBER:
+		case qtypes.NumericQueryType_NOT_A_NUMBER:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableGroupPermissionsColumnCreatedBy)
 			if c.createdBy.Negation {
-				where.AddExpr(tableGroupPermissionsColumnCreatedBy, pqcomp.IsNotNull, "")
+				wbuf.WriteString(" IS NOT NULL ")
 			} else {
-				where.AddExpr(tableGroupPermissionsColumnCreatedBy, pqcomp.IsNull, "")
+				wbuf.WriteString(" IS NULL ")
 			}
-		case protot.NumericQueryType_EQUAL:
-			where.AddExpr(tableGroupPermissionsColumnCreatedBy, pqcomp.Equal, c.createdBy.Value())
-		case protot.NumericQueryType_NOT_EQUAL:
-			where.AddExpr(tableGroupPermissionsColumnCreatedBy, pqcomp.NotEqual, c.createdBy.Value())
-		case protot.NumericQueryType_GREATER:
-			where.AddExpr(tableGroupPermissionsColumnCreatedBy, pqcomp.GreaterThan, c.createdBy.Value())
-		case protot.NumericQueryType_GREATER_EQUAL:
-			where.AddExpr(tableGroupPermissionsColumnCreatedBy, pqcomp.GreaterThanOrEqual, c.createdBy.Value())
-		case protot.NumericQueryType_LESS:
-			where.AddExpr(tableGroupPermissionsColumnCreatedBy, pqcomp.LessThan, c.createdBy.Value())
-		case protot.NumericQueryType_LESS_EQUAL:
-			where.AddExpr(tableGroupPermissionsColumnCreatedBy, pqcomp.LessThanOrEqual, c.createdBy.Value())
-		case protot.NumericQueryType_IN:
+		case qtypes.NumericQueryType_EQUAL:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableGroupPermissionsColumnCreatedBy)
+			wbuf.WriteString("=")
+			pw.WriteTo(wbuf)
+			args = append(args, c.createdBy)
+		case qtypes.NumericQueryType_NOT_EQUAL:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableGroupPermissionsColumnCreatedBy)
+			wbuf.WriteString(" <> ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.createdBy)
+		case qtypes.NumericQueryType_GREATER:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableGroupPermissionsColumnCreatedBy)
+			wbuf.WriteString(" > ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.createdBy)
+		case qtypes.NumericQueryType_GREATER_EQUAL:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableGroupPermissionsColumnCreatedBy)
+			wbuf.WriteString(" >= ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.createdBy)
+		case qtypes.NumericQueryType_LESS:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableGroupPermissionsColumnCreatedBy)
+			wbuf.WriteString(" < ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.createdBy)
+		case qtypes.NumericQueryType_LESS_EQUAL:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableGroupPermissionsColumnCreatedBy)
+			wbuf.WriteString(" >= ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.createdBy)
+		case qtypes.NumericQueryType_IN:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableGroupPermissionsColumnCreatedBy)
+			wbuf.WriteString(" IN ")
 			for _, v := range c.createdBy.Values {
-				where.AddExpr(tableGroupPermissionsColumnCreatedBy, pqcomp.In, v)
+				pw.WriteTo(wbuf)
+				args = append(args, v)
 			}
-		case protot.NumericQueryType_BETWEEN:
-			where.AddExpr(tableGroupPermissionsColumnCreatedBy, pqcomp.GreaterThan, c.createdBy.Values[0])
-			where.AddExpr(tableGroupPermissionsColumnCreatedBy, pqcomp.LessThan, c.createdBy.Values[1])
+		case qtypes.NumericQueryType_BETWEEN:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableGroupPermissionsColumnCreatedBy)
+			wbuf.WriteString(" > ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.createdBy.Values[0])
+
+			wbuf.WriteString(tableGroupPermissionsColumnCreatedBy)
+			wbuf.WriteString(" > ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.createdBy.Values[1])
 		}
 	}
 
 	if c.groupID != nil && c.groupID.Valid {
 		switch c.groupID.Type {
-		case protot.NumericQueryType_NOT_A_NUMBER:
+		case qtypes.NumericQueryType_NOT_A_NUMBER:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableGroupPermissionsColumnGroupID)
 			if c.groupID.Negation {
-				where.AddExpr(tableGroupPermissionsColumnGroupID, pqcomp.IsNotNull, "")
+				wbuf.WriteString(" IS NOT NULL ")
 			} else {
-				where.AddExpr(tableGroupPermissionsColumnGroupID, pqcomp.IsNull, "")
+				wbuf.WriteString(" IS NULL ")
 			}
-		case protot.NumericQueryType_EQUAL:
-			where.AddExpr(tableGroupPermissionsColumnGroupID, pqcomp.Equal, c.groupID.Value())
-		case protot.NumericQueryType_NOT_EQUAL:
-			where.AddExpr(tableGroupPermissionsColumnGroupID, pqcomp.NotEqual, c.groupID.Value())
-		case protot.NumericQueryType_GREATER:
-			where.AddExpr(tableGroupPermissionsColumnGroupID, pqcomp.GreaterThan, c.groupID.Value())
-		case protot.NumericQueryType_GREATER_EQUAL:
-			where.AddExpr(tableGroupPermissionsColumnGroupID, pqcomp.GreaterThanOrEqual, c.groupID.Value())
-		case protot.NumericQueryType_LESS:
-			where.AddExpr(tableGroupPermissionsColumnGroupID, pqcomp.LessThan, c.groupID.Value())
-		case protot.NumericQueryType_LESS_EQUAL:
-			where.AddExpr(tableGroupPermissionsColumnGroupID, pqcomp.LessThanOrEqual, c.groupID.Value())
-		case protot.NumericQueryType_IN:
+		case qtypes.NumericQueryType_EQUAL:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableGroupPermissionsColumnGroupID)
+			wbuf.WriteString("=")
+			pw.WriteTo(wbuf)
+			args = append(args, c.groupID)
+		case qtypes.NumericQueryType_NOT_EQUAL:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableGroupPermissionsColumnGroupID)
+			wbuf.WriteString(" <> ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.groupID)
+		case qtypes.NumericQueryType_GREATER:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableGroupPermissionsColumnGroupID)
+			wbuf.WriteString(" > ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.groupID)
+		case qtypes.NumericQueryType_GREATER_EQUAL:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableGroupPermissionsColumnGroupID)
+			wbuf.WriteString(" >= ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.groupID)
+		case qtypes.NumericQueryType_LESS:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableGroupPermissionsColumnGroupID)
+			wbuf.WriteString(" < ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.groupID)
+		case qtypes.NumericQueryType_LESS_EQUAL:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableGroupPermissionsColumnGroupID)
+			wbuf.WriteString(" >= ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.groupID)
+		case qtypes.NumericQueryType_IN:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableGroupPermissionsColumnGroupID)
+			wbuf.WriteString(" IN ")
 			for _, v := range c.groupID.Values {
-				where.AddExpr(tableGroupPermissionsColumnGroupID, pqcomp.In, v)
+				pw.WriteTo(wbuf)
+				args = append(args, v)
 			}
-		case protot.NumericQueryType_BETWEEN:
-			where.AddExpr(tableGroupPermissionsColumnGroupID, pqcomp.GreaterThan, c.groupID.Values[0])
-			where.AddExpr(tableGroupPermissionsColumnGroupID, pqcomp.LessThan, c.groupID.Values[1])
+		case qtypes.NumericQueryType_BETWEEN:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableGroupPermissionsColumnGroupID)
+			wbuf.WriteString(" > ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.groupID.Values[0])
+
+			wbuf.WriteString(tableGroupPermissionsColumnGroupID)
+			wbuf.WriteString(" > ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.groupID.Values[1])
 		}
 	}
 
 	if c.permissionAction != nil && c.permissionAction.Valid {
 		switch c.permissionAction.Type {
-		case protot.TextQueryType_NOT_A_TEXT:
-			if c.permissionAction.Negation {
-				where.AddExpr(tableGroupPermissionsColumnPermissionAction, pqcomp.IsNotNull, "")
-			} else {
-				where.AddExpr(tableGroupPermissionsColumnPermissionAction, pqcomp.IsNull, "")
+		case qtypes.TextQueryType_NOT_A_TEXT:
+			if dirty {
+				wbuf.WriteString(" AND ")
 			}
-		case protot.TextQueryType_EXACT:
-			where.AddExpr(tableGroupPermissionsColumnPermissionAction, pqcomp.Equal, c.permissionAction.Value())
-		case protot.TextQueryType_SUBSTRING:
-			where.AddExpr(tableGroupPermissionsColumnPermissionAction, pqcomp.Like, "%"+c.permissionAction.Value()+"%")
-		case protot.TextQueryType_HAS_PREFIX:
-			where.AddExpr(tableGroupPermissionsColumnPermissionAction, pqcomp.Like, c.permissionAction.Value()+"%")
-		case protot.TextQueryType_HAS_SUFFIX:
-			where.AddExpr(tableGroupPermissionsColumnPermissionAction, pqcomp.Like, "%"+c.permissionAction.Value())
+			dirty = true
+
+			wbuf.WriteString(tableGroupPermissionsColumnPermissionAction)
+			if c.permissionAction.Negation {
+				wbuf.WriteString(" IS NOT NULL ")
+			} else {
+				wbuf.WriteString(" IS NULL ")
+			}
+		case qtypes.TextQueryType_EXACT:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableGroupPermissionsColumnPermissionAction)
+			wbuf.WriteString("=")
+			pw.WriteTo(wbuf)
+			args = append(args, c.permissionAction.Value())
+		case qtypes.TextQueryType_SUBSTRING:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableGroupPermissionsColumnPermissionAction)
+			wbuf.WriteString(" LIKE ")
+			pw.WriteTo(wbuf)
+			args = append(args, fmt.Sprintf("%%%s%%", c.permissionAction.Value()))
+		case qtypes.TextQueryType_HAS_PREFIX:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableGroupPermissionsColumnPermissionAction)
+			wbuf.WriteString(" LIKE ")
+			pw.WriteTo(wbuf)
+			args = append(args, fmt.Sprintf("%s%%", c.permissionAction.Value()))
+		case qtypes.TextQueryType_HAS_SUFFIX:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableGroupPermissionsColumnPermissionAction)
+			wbuf.WriteString(" LIKE ")
+			pw.WriteTo(wbuf)
+			args = append(args, fmt.Sprintf("%%%s", c.permissionAction.Value()))
 		}
 	}
 
 	if c.permissionModule != nil && c.permissionModule.Valid {
 		switch c.permissionModule.Type {
-		case protot.TextQueryType_NOT_A_TEXT:
-			if c.permissionModule.Negation {
-				where.AddExpr(tableGroupPermissionsColumnPermissionModule, pqcomp.IsNotNull, "")
-			} else {
-				where.AddExpr(tableGroupPermissionsColumnPermissionModule, pqcomp.IsNull, "")
+		case qtypes.TextQueryType_NOT_A_TEXT:
+			if dirty {
+				wbuf.WriteString(" AND ")
 			}
-		case protot.TextQueryType_EXACT:
-			where.AddExpr(tableGroupPermissionsColumnPermissionModule, pqcomp.Equal, c.permissionModule.Value())
-		case protot.TextQueryType_SUBSTRING:
-			where.AddExpr(tableGroupPermissionsColumnPermissionModule, pqcomp.Like, "%"+c.permissionModule.Value()+"%")
-		case protot.TextQueryType_HAS_PREFIX:
-			where.AddExpr(tableGroupPermissionsColumnPermissionModule, pqcomp.Like, c.permissionModule.Value()+"%")
-		case protot.TextQueryType_HAS_SUFFIX:
-			where.AddExpr(tableGroupPermissionsColumnPermissionModule, pqcomp.Like, "%"+c.permissionModule.Value())
+			dirty = true
+
+			wbuf.WriteString(tableGroupPermissionsColumnPermissionModule)
+			if c.permissionModule.Negation {
+				wbuf.WriteString(" IS NOT NULL ")
+			} else {
+				wbuf.WriteString(" IS NULL ")
+			}
+		case qtypes.TextQueryType_EXACT:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableGroupPermissionsColumnPermissionModule)
+			wbuf.WriteString("=")
+			pw.WriteTo(wbuf)
+			args = append(args, c.permissionModule.Value())
+		case qtypes.TextQueryType_SUBSTRING:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableGroupPermissionsColumnPermissionModule)
+			wbuf.WriteString(" LIKE ")
+			pw.WriteTo(wbuf)
+			args = append(args, fmt.Sprintf("%%%s%%", c.permissionModule.Value()))
+		case qtypes.TextQueryType_HAS_PREFIX:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableGroupPermissionsColumnPermissionModule)
+			wbuf.WriteString(" LIKE ")
+			pw.WriteTo(wbuf)
+			args = append(args, fmt.Sprintf("%s%%", c.permissionModule.Value()))
+		case qtypes.TextQueryType_HAS_SUFFIX:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableGroupPermissionsColumnPermissionModule)
+			wbuf.WriteString(" LIKE ")
+			pw.WriteTo(wbuf)
+			args = append(args, fmt.Sprintf("%%%s", c.permissionModule.Value()))
 		}
 	}
 
 	if c.permissionSubsystem != nil && c.permissionSubsystem.Valid {
 		switch c.permissionSubsystem.Type {
-		case protot.TextQueryType_NOT_A_TEXT:
-			if c.permissionSubsystem.Negation {
-				where.AddExpr(tableGroupPermissionsColumnPermissionSubsystem, pqcomp.IsNotNull, "")
-			} else {
-				where.AddExpr(tableGroupPermissionsColumnPermissionSubsystem, pqcomp.IsNull, "")
+		case qtypes.TextQueryType_NOT_A_TEXT:
+			if dirty {
+				wbuf.WriteString(" AND ")
 			}
-		case protot.TextQueryType_EXACT:
-			where.AddExpr(tableGroupPermissionsColumnPermissionSubsystem, pqcomp.Equal, c.permissionSubsystem.Value())
-		case protot.TextQueryType_SUBSTRING:
-			where.AddExpr(tableGroupPermissionsColumnPermissionSubsystem, pqcomp.Like, "%"+c.permissionSubsystem.Value()+"%")
-		case protot.TextQueryType_HAS_PREFIX:
-			where.AddExpr(tableGroupPermissionsColumnPermissionSubsystem, pqcomp.Like, c.permissionSubsystem.Value()+"%")
-		case protot.TextQueryType_HAS_SUFFIX:
-			where.AddExpr(tableGroupPermissionsColumnPermissionSubsystem, pqcomp.Like, "%"+c.permissionSubsystem.Value())
+			dirty = true
+
+			wbuf.WriteString(tableGroupPermissionsColumnPermissionSubsystem)
+			if c.permissionSubsystem.Negation {
+				wbuf.WriteString(" IS NOT NULL ")
+			} else {
+				wbuf.WriteString(" IS NULL ")
+			}
+		case qtypes.TextQueryType_EXACT:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableGroupPermissionsColumnPermissionSubsystem)
+			wbuf.WriteString("=")
+			pw.WriteTo(wbuf)
+			args = append(args, c.permissionSubsystem.Value())
+		case qtypes.TextQueryType_SUBSTRING:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableGroupPermissionsColumnPermissionSubsystem)
+			wbuf.WriteString(" LIKE ")
+			pw.WriteTo(wbuf)
+			args = append(args, fmt.Sprintf("%%%s%%", c.permissionSubsystem.Value()))
+		case qtypes.TextQueryType_HAS_PREFIX:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableGroupPermissionsColumnPermissionSubsystem)
+			wbuf.WriteString(" LIKE ")
+			pw.WriteTo(wbuf)
+			args = append(args, fmt.Sprintf("%s%%", c.permissionSubsystem.Value()))
+		case qtypes.TextQueryType_HAS_SUFFIX:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableGroupPermissionsColumnPermissionSubsystem)
+			wbuf.WriteString(" LIKE ")
+			pw.WriteTo(wbuf)
+			args = append(args, fmt.Sprintf("%%%s", c.permissionSubsystem.Value()))
 		}
 	}
 
@@ -2083,27 +4388,94 @@ func (r *groupPermissionsRepository) Find(c *groupPermissionsCriteria) ([]*group
 			}
 
 			switch c.updatedAt.Type {
-			case protot.NumericQueryType_NOT_A_NUMBER:
-				if c.updatedAt.Negation {
-					where.AddExpr(tableGroupPermissionsColumnUpdatedAt, pqcomp.IsNotNull, "")
-				} else {
-					where.AddExpr(tableGroupPermissionsColumnUpdatedAt, pqcomp.IsNull, "")
+			case qtypes.NumericQueryType_NOT_A_NUMBER:
+				if dirty {
+					wbuf.WriteString(" AND ")
 				}
-			case protot.NumericQueryType_EQUAL:
-				where.AddExpr(tableGroupPermissionsColumnUpdatedAt, pqcomp.Equal, updatedAt1)
-			case protot.NumericQueryType_NOT_EQUAL:
-				where.AddExpr(tableGroupPermissionsColumnUpdatedAt, pqcomp.NotEqual, updatedAt1)
-			case protot.NumericQueryType_GREATER:
-				where.AddExpr(tableGroupPermissionsColumnUpdatedAt, pqcomp.GreaterThan, updatedAt1)
-			case protot.NumericQueryType_GREATER_EQUAL:
-				where.AddExpr(tableGroupPermissionsColumnUpdatedAt, pqcomp.GreaterThanOrEqual, updatedAt1)
-			case protot.NumericQueryType_LESS:
-				where.AddExpr(tableGroupPermissionsColumnUpdatedAt, pqcomp.LessThan, updatedAt1)
-			case protot.NumericQueryType_LESS_EQUAL:
-				where.AddExpr(tableGroupPermissionsColumnUpdatedAt, pqcomp.LessThanOrEqual, updatedAt1)
-			case protot.NumericQueryType_IN:
-				where.AddExpr(tableGroupPermissionsColumnUpdatedAt, pqcomp.In, updatedAt1)
-			case protot.NumericQueryType_BETWEEN:
+				dirty = true
+
+				wbuf.WriteString(tableGroupPermissionsColumnUpdatedAt)
+				if c.updatedAt.Negation {
+					wbuf.WriteString(" IS NOT NULL ")
+				} else {
+					wbuf.WriteString(" IS NULL ")
+				}
+			case qtypes.NumericQueryType_EQUAL:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tableGroupPermissionsColumnUpdatedAt)
+				wbuf.WriteString("=")
+				pw.WriteTo(wbuf)
+				args = append(args, c.updatedAt)
+			case qtypes.NumericQueryType_NOT_EQUAL:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tableGroupPermissionsColumnUpdatedAt)
+				wbuf.WriteString("!=")
+				pw.WriteTo(wbuf)
+				args = append(args, c.updatedAt)
+			case qtypes.NumericQueryType_GREATER:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tableGroupPermissionsColumnUpdatedAt)
+				wbuf.WriteString(">")
+				pw.WriteTo(wbuf)
+				args = append(args, c.updatedAt)
+			case qtypes.NumericQueryType_GREATER_EQUAL:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tableGroupPermissionsColumnUpdatedAt)
+				wbuf.WriteString(">=")
+				pw.WriteTo(wbuf)
+				args = append(args, c.updatedAt)
+			case qtypes.NumericQueryType_LESS:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tableGroupPermissionsColumnUpdatedAt)
+				wbuf.WriteString("<")
+				pw.WriteTo(wbuf)
+				args = append(args, c.updatedAt)
+			case qtypes.NumericQueryType_LESS_EQUAL:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tableGroupPermissionsColumnUpdatedAt)
+				wbuf.WriteString("<=")
+				pw.WriteTo(wbuf)
+				args = append(args, c.updatedAt)
+			case qtypes.NumericQueryType_IN:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tableGroupPermissionsColumnUpdatedAt)
+				wbuf.WriteString(" IN ")
+				pw.WriteTo(wbuf)
+				args = append(args, c.updatedAt)
+			case qtypes.NumericQueryType_BETWEEN:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
 				updatedAtt2 := c.updatedAt.Values[1]
 				if updatedAtt2 != nil {
 					updatedAt2, err := ptypes.Timestamp(updatedAtt2)
@@ -2111,8 +4483,15 @@ func (r *groupPermissionsRepository) Find(c *groupPermissionsCriteria) ([]*group
 						return nil, err
 					}
 
-					where.AddExpr(tableGroupPermissionsColumnUpdatedAt, pqcomp.GreaterThan, updatedAt1)
-					where.AddExpr(tableGroupPermissionsColumnUpdatedAt, pqcomp.LessThan, updatedAt2)
+					wbuf.WriteString(tableGroupPermissionsColumnUpdatedAt)
+					wbuf.WriteString(" > ")
+					pw.WriteTo(wbuf)
+					args = append(args, updatedAt1)
+
+					wbuf.WriteString(tableGroupPermissionsColumnUpdatedAt)
+					wbuf.WriteString(" > ")
+					pw.WriteTo(wbuf)
+					args = append(args, updatedAt2)
 				}
 			}
 		}
@@ -2120,35 +4499,126 @@ func (r *groupPermissionsRepository) Find(c *groupPermissionsCriteria) ([]*group
 
 	if c.updatedBy != nil && c.updatedBy.Valid {
 		switch c.updatedBy.Type {
-		case protot.NumericQueryType_NOT_A_NUMBER:
+		case qtypes.NumericQueryType_NOT_A_NUMBER:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableGroupPermissionsColumnUpdatedBy)
 			if c.updatedBy.Negation {
-				where.AddExpr(tableGroupPermissionsColumnUpdatedBy, pqcomp.IsNotNull, "")
+				wbuf.WriteString(" IS NOT NULL ")
 			} else {
-				where.AddExpr(tableGroupPermissionsColumnUpdatedBy, pqcomp.IsNull, "")
+				wbuf.WriteString(" IS NULL ")
 			}
-		case protot.NumericQueryType_EQUAL:
-			where.AddExpr(tableGroupPermissionsColumnUpdatedBy, pqcomp.Equal, c.updatedBy.Value())
-		case protot.NumericQueryType_NOT_EQUAL:
-			where.AddExpr(tableGroupPermissionsColumnUpdatedBy, pqcomp.NotEqual, c.updatedBy.Value())
-		case protot.NumericQueryType_GREATER:
-			where.AddExpr(tableGroupPermissionsColumnUpdatedBy, pqcomp.GreaterThan, c.updatedBy.Value())
-		case protot.NumericQueryType_GREATER_EQUAL:
-			where.AddExpr(tableGroupPermissionsColumnUpdatedBy, pqcomp.GreaterThanOrEqual, c.updatedBy.Value())
-		case protot.NumericQueryType_LESS:
-			where.AddExpr(tableGroupPermissionsColumnUpdatedBy, pqcomp.LessThan, c.updatedBy.Value())
-		case protot.NumericQueryType_LESS_EQUAL:
-			where.AddExpr(tableGroupPermissionsColumnUpdatedBy, pqcomp.LessThanOrEqual, c.updatedBy.Value())
-		case protot.NumericQueryType_IN:
+		case qtypes.NumericQueryType_EQUAL:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableGroupPermissionsColumnUpdatedBy)
+			wbuf.WriteString("=")
+			pw.WriteTo(wbuf)
+			args = append(args, c.updatedBy)
+		case qtypes.NumericQueryType_NOT_EQUAL:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableGroupPermissionsColumnUpdatedBy)
+			wbuf.WriteString(" <> ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.updatedBy)
+		case qtypes.NumericQueryType_GREATER:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableGroupPermissionsColumnUpdatedBy)
+			wbuf.WriteString(" > ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.updatedBy)
+		case qtypes.NumericQueryType_GREATER_EQUAL:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableGroupPermissionsColumnUpdatedBy)
+			wbuf.WriteString(" >= ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.updatedBy)
+		case qtypes.NumericQueryType_LESS:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableGroupPermissionsColumnUpdatedBy)
+			wbuf.WriteString(" < ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.updatedBy)
+		case qtypes.NumericQueryType_LESS_EQUAL:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableGroupPermissionsColumnUpdatedBy)
+			wbuf.WriteString(" >= ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.updatedBy)
+		case qtypes.NumericQueryType_IN:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableGroupPermissionsColumnUpdatedBy)
+			wbuf.WriteString(" IN ")
 			for _, v := range c.updatedBy.Values {
-				where.AddExpr(tableGroupPermissionsColumnUpdatedBy, pqcomp.In, v)
+				pw.WriteTo(wbuf)
+				args = append(args, v)
 			}
-		case protot.NumericQueryType_BETWEEN:
-			where.AddExpr(tableGroupPermissionsColumnUpdatedBy, pqcomp.GreaterThan, c.updatedBy.Values[0])
-			where.AddExpr(tableGroupPermissionsColumnUpdatedBy, pqcomp.LessThan, c.updatedBy.Values[1])
+		case qtypes.NumericQueryType_BETWEEN:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableGroupPermissionsColumnUpdatedBy)
+			wbuf.WriteString(" > ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.updatedBy.Values[0])
+
+			wbuf.WriteString(tableGroupPermissionsColumnUpdatedBy)
+			wbuf.WriteString(" > ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.updatedBy.Values[1])
 		}
 	}
 
-	rows, err := findQueryComp(r.db, r.table, comp, where, c.sort, r.columns)
+	fmt.Println("is dirty", dirty)
+	if dirty {
+		if _, err := qbuf.WriteString(" WHERE "); err != nil {
+			return nil, err
+		}
+		if _, err := wbuf.WriteTo(qbuf); err != nil {
+			return nil, err
+		}
+	}
+
+	qbuf.WriteString(" OFFSET ")
+	pw.WriteTo(qbuf)
+	args = append(args, c.offset)
+	qbuf.WriteString(" LIMIT ")
+	pw.WriteTo(qbuf)
+	args = append(args, c.limit)
+
+	rows, err := r.db.Query(qbuf.String(), args...)
 	if err != nil {
 		return nil, err
 	}
@@ -2266,29 +4736,36 @@ var (
 
 type userPermissionsEntity struct {
 	CreatedAt           time.Time
-	CreatedBy           *nilt.Int64
+	CreatedBy           *ntypes.Int64
 	PermissionAction    string
 	PermissionModule    string
 	PermissionSubsystem string
 	UpdatedAt           *time.Time
-	UpdatedBy           *nilt.Int64
+	UpdatedBy           *ntypes.Int64
 	UserID              int64
 	User                *userEntity
 	Permission          *permissionEntity
-	Author              *userEntity
-	Modifier            *userEntity
+	Author              []*userEntity
+	Modifier            []*userEntity
 }
 type userPermissionsCriteria struct {
-	offset, limit       int64
-	sort                map[string]bool
-	createdAt           *protot.QueryTimestamp
-	createdBy           *protot.QueryInt64
-	permissionAction    *protot.QueryString
-	permissionModule    *protot.QueryString
-	permissionSubsystem *protot.QueryString
-	updatedAt           *protot.QueryTimestamp
-	updatedBy           *protot.QueryInt64
-	userID              *protot.QueryInt64
+	offset, limit int64
+	sort          map[string]bool
+	createdAt     *qtypes.Timestamp
+
+	createdBy *qtypes.Int64
+
+	permissionAction *qtypes.String
+
+	permissionModule *qtypes.String
+
+	permissionSubsystem *qtypes.String
+
+	updatedAt *qtypes.Timestamp
+
+	updatedBy *qtypes.Int64
+
+	userID *qtypes.Int64
 }
 
 type userPermissionsRepository struct {
@@ -2298,11 +4775,16 @@ type userPermissionsRepository struct {
 }
 
 func (r *userPermissionsRepository) Find(c *userPermissionsCriteria) ([]*userPermissionsEntity, error) {
-	comp := pqcomp.New(2, 0, 1)
-	comp.AddArg(c.offset)
-	comp.AddArg(c.limit)
+	wbuf := bytes.NewBuffer(nil)
+	qbuf := bytes.NewBuffer(nil)
+	qbuf.WriteString("SELECT ")
+	qbuf.WriteString(strings.Join(r.columns, ", "))
+	qbuf.WriteString(" FROM ")
+	qbuf.WriteString(r.table)
 
-	where := comp.Compose(8)
+	pw := pqt.NewPlaceholderWriter()
+	args := make([]interface{}, 0)
+	dirty := false
 
 	if c.createdAt != nil && c.createdAt.Valid {
 		createdAtt1 := c.createdAt.Value()
@@ -2313,27 +4795,94 @@ func (r *userPermissionsRepository) Find(c *userPermissionsCriteria) ([]*userPer
 			}
 
 			switch c.createdAt.Type {
-			case protot.NumericQueryType_NOT_A_NUMBER:
-				if c.createdAt.Negation {
-					where.AddExpr(tableUserPermissionsColumnCreatedAt, pqcomp.IsNotNull, "")
-				} else {
-					where.AddExpr(tableUserPermissionsColumnCreatedAt, pqcomp.IsNull, "")
+			case qtypes.NumericQueryType_NOT_A_NUMBER:
+				if dirty {
+					wbuf.WriteString(" AND ")
 				}
-			case protot.NumericQueryType_EQUAL:
-				where.AddExpr(tableUserPermissionsColumnCreatedAt, pqcomp.Equal, createdAt1)
-			case protot.NumericQueryType_NOT_EQUAL:
-				where.AddExpr(tableUserPermissionsColumnCreatedAt, pqcomp.NotEqual, createdAt1)
-			case protot.NumericQueryType_GREATER:
-				where.AddExpr(tableUserPermissionsColumnCreatedAt, pqcomp.GreaterThan, createdAt1)
-			case protot.NumericQueryType_GREATER_EQUAL:
-				where.AddExpr(tableUserPermissionsColumnCreatedAt, pqcomp.GreaterThanOrEqual, createdAt1)
-			case protot.NumericQueryType_LESS:
-				where.AddExpr(tableUserPermissionsColumnCreatedAt, pqcomp.LessThan, createdAt1)
-			case protot.NumericQueryType_LESS_EQUAL:
-				where.AddExpr(tableUserPermissionsColumnCreatedAt, pqcomp.LessThanOrEqual, createdAt1)
-			case protot.NumericQueryType_IN:
-				where.AddExpr(tableUserPermissionsColumnCreatedAt, pqcomp.In, createdAt1)
-			case protot.NumericQueryType_BETWEEN:
+				dirty = true
+
+				wbuf.WriteString(tableUserPermissionsColumnCreatedAt)
+				if c.createdAt.Negation {
+					wbuf.WriteString(" IS NOT NULL ")
+				} else {
+					wbuf.WriteString(" IS NULL ")
+				}
+			case qtypes.NumericQueryType_EQUAL:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tableUserPermissionsColumnCreatedAt)
+				wbuf.WriteString("=")
+				pw.WriteTo(wbuf)
+				args = append(args, c.createdAt)
+			case qtypes.NumericQueryType_NOT_EQUAL:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tableUserPermissionsColumnCreatedAt)
+				wbuf.WriteString("!=")
+				pw.WriteTo(wbuf)
+				args = append(args, c.createdAt)
+			case qtypes.NumericQueryType_GREATER:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tableUserPermissionsColumnCreatedAt)
+				wbuf.WriteString(">")
+				pw.WriteTo(wbuf)
+				args = append(args, c.createdAt)
+			case qtypes.NumericQueryType_GREATER_EQUAL:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tableUserPermissionsColumnCreatedAt)
+				wbuf.WriteString(">=")
+				pw.WriteTo(wbuf)
+				args = append(args, c.createdAt)
+			case qtypes.NumericQueryType_LESS:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tableUserPermissionsColumnCreatedAt)
+				wbuf.WriteString("<")
+				pw.WriteTo(wbuf)
+				args = append(args, c.createdAt)
+			case qtypes.NumericQueryType_LESS_EQUAL:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tableUserPermissionsColumnCreatedAt)
+				wbuf.WriteString("<=")
+				pw.WriteTo(wbuf)
+				args = append(args, c.createdAt)
+			case qtypes.NumericQueryType_IN:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tableUserPermissionsColumnCreatedAt)
+				wbuf.WriteString(" IN ")
+				pw.WriteTo(wbuf)
+				args = append(args, c.createdAt)
+			case qtypes.NumericQueryType_BETWEEN:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
 				createdAtt2 := c.createdAt.Values[1]
 				if createdAtt2 != nil {
 					createdAt2, err := ptypes.Timestamp(createdAtt2)
@@ -2341,8 +4890,15 @@ func (r *userPermissionsRepository) Find(c *userPermissionsCriteria) ([]*userPer
 						return nil, err
 					}
 
-					where.AddExpr(tableUserPermissionsColumnCreatedAt, pqcomp.GreaterThan, createdAt1)
-					where.AddExpr(tableUserPermissionsColumnCreatedAt, pqcomp.LessThan, createdAt2)
+					wbuf.WriteString(tableUserPermissionsColumnCreatedAt)
+					wbuf.WriteString(" > ")
+					pw.WriteTo(wbuf)
+					args = append(args, createdAt1)
+
+					wbuf.WriteString(tableUserPermissionsColumnCreatedAt)
+					wbuf.WriteString(" > ")
+					pw.WriteTo(wbuf)
+					args = append(args, createdAt2)
 				}
 			}
 		}
@@ -2350,88 +4906,276 @@ func (r *userPermissionsRepository) Find(c *userPermissionsCriteria) ([]*userPer
 
 	if c.createdBy != nil && c.createdBy.Valid {
 		switch c.createdBy.Type {
-		case protot.NumericQueryType_NOT_A_NUMBER:
+		case qtypes.NumericQueryType_NOT_A_NUMBER:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserPermissionsColumnCreatedBy)
 			if c.createdBy.Negation {
-				where.AddExpr(tableUserPermissionsColumnCreatedBy, pqcomp.IsNotNull, "")
+				wbuf.WriteString(" IS NOT NULL ")
 			} else {
-				where.AddExpr(tableUserPermissionsColumnCreatedBy, pqcomp.IsNull, "")
+				wbuf.WriteString(" IS NULL ")
 			}
-		case protot.NumericQueryType_EQUAL:
-			where.AddExpr(tableUserPermissionsColumnCreatedBy, pqcomp.Equal, c.createdBy.Value())
-		case protot.NumericQueryType_NOT_EQUAL:
-			where.AddExpr(tableUserPermissionsColumnCreatedBy, pqcomp.NotEqual, c.createdBy.Value())
-		case protot.NumericQueryType_GREATER:
-			where.AddExpr(tableUserPermissionsColumnCreatedBy, pqcomp.GreaterThan, c.createdBy.Value())
-		case protot.NumericQueryType_GREATER_EQUAL:
-			where.AddExpr(tableUserPermissionsColumnCreatedBy, pqcomp.GreaterThanOrEqual, c.createdBy.Value())
-		case protot.NumericQueryType_LESS:
-			where.AddExpr(tableUserPermissionsColumnCreatedBy, pqcomp.LessThan, c.createdBy.Value())
-		case protot.NumericQueryType_LESS_EQUAL:
-			where.AddExpr(tableUserPermissionsColumnCreatedBy, pqcomp.LessThanOrEqual, c.createdBy.Value())
-		case protot.NumericQueryType_IN:
+		case qtypes.NumericQueryType_EQUAL:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserPermissionsColumnCreatedBy)
+			wbuf.WriteString("=")
+			pw.WriteTo(wbuf)
+			args = append(args, c.createdBy)
+		case qtypes.NumericQueryType_NOT_EQUAL:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserPermissionsColumnCreatedBy)
+			wbuf.WriteString(" <> ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.createdBy)
+		case qtypes.NumericQueryType_GREATER:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserPermissionsColumnCreatedBy)
+			wbuf.WriteString(" > ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.createdBy)
+		case qtypes.NumericQueryType_GREATER_EQUAL:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserPermissionsColumnCreatedBy)
+			wbuf.WriteString(" >= ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.createdBy)
+		case qtypes.NumericQueryType_LESS:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserPermissionsColumnCreatedBy)
+			wbuf.WriteString(" < ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.createdBy)
+		case qtypes.NumericQueryType_LESS_EQUAL:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserPermissionsColumnCreatedBy)
+			wbuf.WriteString(" >= ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.createdBy)
+		case qtypes.NumericQueryType_IN:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserPermissionsColumnCreatedBy)
+			wbuf.WriteString(" IN ")
 			for _, v := range c.createdBy.Values {
-				where.AddExpr(tableUserPermissionsColumnCreatedBy, pqcomp.In, v)
+				pw.WriteTo(wbuf)
+				args = append(args, v)
 			}
-		case protot.NumericQueryType_BETWEEN:
-			where.AddExpr(tableUserPermissionsColumnCreatedBy, pqcomp.GreaterThan, c.createdBy.Values[0])
-			where.AddExpr(tableUserPermissionsColumnCreatedBy, pqcomp.LessThan, c.createdBy.Values[1])
+		case qtypes.NumericQueryType_BETWEEN:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserPermissionsColumnCreatedBy)
+			wbuf.WriteString(" > ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.createdBy.Values[0])
+
+			wbuf.WriteString(tableUserPermissionsColumnCreatedBy)
+			wbuf.WriteString(" > ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.createdBy.Values[1])
 		}
 	}
 
 	if c.permissionAction != nil && c.permissionAction.Valid {
 		switch c.permissionAction.Type {
-		case protot.TextQueryType_NOT_A_TEXT:
-			if c.permissionAction.Negation {
-				where.AddExpr(tableUserPermissionsColumnPermissionAction, pqcomp.IsNotNull, "")
-			} else {
-				where.AddExpr(tableUserPermissionsColumnPermissionAction, pqcomp.IsNull, "")
+		case qtypes.TextQueryType_NOT_A_TEXT:
+			if dirty {
+				wbuf.WriteString(" AND ")
 			}
-		case protot.TextQueryType_EXACT:
-			where.AddExpr(tableUserPermissionsColumnPermissionAction, pqcomp.Equal, c.permissionAction.Value())
-		case protot.TextQueryType_SUBSTRING:
-			where.AddExpr(tableUserPermissionsColumnPermissionAction, pqcomp.Like, "%"+c.permissionAction.Value()+"%")
-		case protot.TextQueryType_HAS_PREFIX:
-			where.AddExpr(tableUserPermissionsColumnPermissionAction, pqcomp.Like, c.permissionAction.Value()+"%")
-		case protot.TextQueryType_HAS_SUFFIX:
-			where.AddExpr(tableUserPermissionsColumnPermissionAction, pqcomp.Like, "%"+c.permissionAction.Value())
+			dirty = true
+
+			wbuf.WriteString(tableUserPermissionsColumnPermissionAction)
+			if c.permissionAction.Negation {
+				wbuf.WriteString(" IS NOT NULL ")
+			} else {
+				wbuf.WriteString(" IS NULL ")
+			}
+		case qtypes.TextQueryType_EXACT:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserPermissionsColumnPermissionAction)
+			wbuf.WriteString("=")
+			pw.WriteTo(wbuf)
+			args = append(args, c.permissionAction.Value())
+		case qtypes.TextQueryType_SUBSTRING:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserPermissionsColumnPermissionAction)
+			wbuf.WriteString(" LIKE ")
+			pw.WriteTo(wbuf)
+			args = append(args, fmt.Sprintf("%%%s%%", c.permissionAction.Value()))
+		case qtypes.TextQueryType_HAS_PREFIX:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserPermissionsColumnPermissionAction)
+			wbuf.WriteString(" LIKE ")
+			pw.WriteTo(wbuf)
+			args = append(args, fmt.Sprintf("%s%%", c.permissionAction.Value()))
+		case qtypes.TextQueryType_HAS_SUFFIX:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserPermissionsColumnPermissionAction)
+			wbuf.WriteString(" LIKE ")
+			pw.WriteTo(wbuf)
+			args = append(args, fmt.Sprintf("%%%s", c.permissionAction.Value()))
 		}
 	}
 
 	if c.permissionModule != nil && c.permissionModule.Valid {
 		switch c.permissionModule.Type {
-		case protot.TextQueryType_NOT_A_TEXT:
-			if c.permissionModule.Negation {
-				where.AddExpr(tableUserPermissionsColumnPermissionModule, pqcomp.IsNotNull, "")
-			} else {
-				where.AddExpr(tableUserPermissionsColumnPermissionModule, pqcomp.IsNull, "")
+		case qtypes.TextQueryType_NOT_A_TEXT:
+			if dirty {
+				wbuf.WriteString(" AND ")
 			}
-		case protot.TextQueryType_EXACT:
-			where.AddExpr(tableUserPermissionsColumnPermissionModule, pqcomp.Equal, c.permissionModule.Value())
-		case protot.TextQueryType_SUBSTRING:
-			where.AddExpr(tableUserPermissionsColumnPermissionModule, pqcomp.Like, "%"+c.permissionModule.Value()+"%")
-		case protot.TextQueryType_HAS_PREFIX:
-			where.AddExpr(tableUserPermissionsColumnPermissionModule, pqcomp.Like, c.permissionModule.Value()+"%")
-		case protot.TextQueryType_HAS_SUFFIX:
-			where.AddExpr(tableUserPermissionsColumnPermissionModule, pqcomp.Like, "%"+c.permissionModule.Value())
+			dirty = true
+
+			wbuf.WriteString(tableUserPermissionsColumnPermissionModule)
+			if c.permissionModule.Negation {
+				wbuf.WriteString(" IS NOT NULL ")
+			} else {
+				wbuf.WriteString(" IS NULL ")
+			}
+		case qtypes.TextQueryType_EXACT:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserPermissionsColumnPermissionModule)
+			wbuf.WriteString("=")
+			pw.WriteTo(wbuf)
+			args = append(args, c.permissionModule.Value())
+		case qtypes.TextQueryType_SUBSTRING:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserPermissionsColumnPermissionModule)
+			wbuf.WriteString(" LIKE ")
+			pw.WriteTo(wbuf)
+			args = append(args, fmt.Sprintf("%%%s%%", c.permissionModule.Value()))
+		case qtypes.TextQueryType_HAS_PREFIX:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserPermissionsColumnPermissionModule)
+			wbuf.WriteString(" LIKE ")
+			pw.WriteTo(wbuf)
+			args = append(args, fmt.Sprintf("%s%%", c.permissionModule.Value()))
+		case qtypes.TextQueryType_HAS_SUFFIX:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserPermissionsColumnPermissionModule)
+			wbuf.WriteString(" LIKE ")
+			pw.WriteTo(wbuf)
+			args = append(args, fmt.Sprintf("%%%s", c.permissionModule.Value()))
 		}
 	}
 
 	if c.permissionSubsystem != nil && c.permissionSubsystem.Valid {
 		switch c.permissionSubsystem.Type {
-		case protot.TextQueryType_NOT_A_TEXT:
-			if c.permissionSubsystem.Negation {
-				where.AddExpr(tableUserPermissionsColumnPermissionSubsystem, pqcomp.IsNotNull, "")
-			} else {
-				where.AddExpr(tableUserPermissionsColumnPermissionSubsystem, pqcomp.IsNull, "")
+		case qtypes.TextQueryType_NOT_A_TEXT:
+			if dirty {
+				wbuf.WriteString(" AND ")
 			}
-		case protot.TextQueryType_EXACT:
-			where.AddExpr(tableUserPermissionsColumnPermissionSubsystem, pqcomp.Equal, c.permissionSubsystem.Value())
-		case protot.TextQueryType_SUBSTRING:
-			where.AddExpr(tableUserPermissionsColumnPermissionSubsystem, pqcomp.Like, "%"+c.permissionSubsystem.Value()+"%")
-		case protot.TextQueryType_HAS_PREFIX:
-			where.AddExpr(tableUserPermissionsColumnPermissionSubsystem, pqcomp.Like, c.permissionSubsystem.Value()+"%")
-		case protot.TextQueryType_HAS_SUFFIX:
-			where.AddExpr(tableUserPermissionsColumnPermissionSubsystem, pqcomp.Like, "%"+c.permissionSubsystem.Value())
+			dirty = true
+
+			wbuf.WriteString(tableUserPermissionsColumnPermissionSubsystem)
+			if c.permissionSubsystem.Negation {
+				wbuf.WriteString(" IS NOT NULL ")
+			} else {
+				wbuf.WriteString(" IS NULL ")
+			}
+		case qtypes.TextQueryType_EXACT:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserPermissionsColumnPermissionSubsystem)
+			wbuf.WriteString("=")
+			pw.WriteTo(wbuf)
+			args = append(args, c.permissionSubsystem.Value())
+		case qtypes.TextQueryType_SUBSTRING:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserPermissionsColumnPermissionSubsystem)
+			wbuf.WriteString(" LIKE ")
+			pw.WriteTo(wbuf)
+			args = append(args, fmt.Sprintf("%%%s%%", c.permissionSubsystem.Value()))
+		case qtypes.TextQueryType_HAS_PREFIX:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserPermissionsColumnPermissionSubsystem)
+			wbuf.WriteString(" LIKE ")
+			pw.WriteTo(wbuf)
+			args = append(args, fmt.Sprintf("%s%%", c.permissionSubsystem.Value()))
+		case qtypes.TextQueryType_HAS_SUFFIX:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserPermissionsColumnPermissionSubsystem)
+			wbuf.WriteString(" LIKE ")
+			pw.WriteTo(wbuf)
+			args = append(args, fmt.Sprintf("%%%s", c.permissionSubsystem.Value()))
 		}
 	}
 
@@ -2444,27 +5188,94 @@ func (r *userPermissionsRepository) Find(c *userPermissionsCriteria) ([]*userPer
 			}
 
 			switch c.updatedAt.Type {
-			case protot.NumericQueryType_NOT_A_NUMBER:
-				if c.updatedAt.Negation {
-					where.AddExpr(tableUserPermissionsColumnUpdatedAt, pqcomp.IsNotNull, "")
-				} else {
-					where.AddExpr(tableUserPermissionsColumnUpdatedAt, pqcomp.IsNull, "")
+			case qtypes.NumericQueryType_NOT_A_NUMBER:
+				if dirty {
+					wbuf.WriteString(" AND ")
 				}
-			case protot.NumericQueryType_EQUAL:
-				where.AddExpr(tableUserPermissionsColumnUpdatedAt, pqcomp.Equal, updatedAt1)
-			case protot.NumericQueryType_NOT_EQUAL:
-				where.AddExpr(tableUserPermissionsColumnUpdatedAt, pqcomp.NotEqual, updatedAt1)
-			case protot.NumericQueryType_GREATER:
-				where.AddExpr(tableUserPermissionsColumnUpdatedAt, pqcomp.GreaterThan, updatedAt1)
-			case protot.NumericQueryType_GREATER_EQUAL:
-				where.AddExpr(tableUserPermissionsColumnUpdatedAt, pqcomp.GreaterThanOrEqual, updatedAt1)
-			case protot.NumericQueryType_LESS:
-				where.AddExpr(tableUserPermissionsColumnUpdatedAt, pqcomp.LessThan, updatedAt1)
-			case protot.NumericQueryType_LESS_EQUAL:
-				where.AddExpr(tableUserPermissionsColumnUpdatedAt, pqcomp.LessThanOrEqual, updatedAt1)
-			case protot.NumericQueryType_IN:
-				where.AddExpr(tableUserPermissionsColumnUpdatedAt, pqcomp.In, updatedAt1)
-			case protot.NumericQueryType_BETWEEN:
+				dirty = true
+
+				wbuf.WriteString(tableUserPermissionsColumnUpdatedAt)
+				if c.updatedAt.Negation {
+					wbuf.WriteString(" IS NOT NULL ")
+				} else {
+					wbuf.WriteString(" IS NULL ")
+				}
+			case qtypes.NumericQueryType_EQUAL:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tableUserPermissionsColumnUpdatedAt)
+				wbuf.WriteString("=")
+				pw.WriteTo(wbuf)
+				args = append(args, c.updatedAt)
+			case qtypes.NumericQueryType_NOT_EQUAL:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tableUserPermissionsColumnUpdatedAt)
+				wbuf.WriteString("!=")
+				pw.WriteTo(wbuf)
+				args = append(args, c.updatedAt)
+			case qtypes.NumericQueryType_GREATER:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tableUserPermissionsColumnUpdatedAt)
+				wbuf.WriteString(">")
+				pw.WriteTo(wbuf)
+				args = append(args, c.updatedAt)
+			case qtypes.NumericQueryType_GREATER_EQUAL:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tableUserPermissionsColumnUpdatedAt)
+				wbuf.WriteString(">=")
+				pw.WriteTo(wbuf)
+				args = append(args, c.updatedAt)
+			case qtypes.NumericQueryType_LESS:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tableUserPermissionsColumnUpdatedAt)
+				wbuf.WriteString("<")
+				pw.WriteTo(wbuf)
+				args = append(args, c.updatedAt)
+			case qtypes.NumericQueryType_LESS_EQUAL:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tableUserPermissionsColumnUpdatedAt)
+				wbuf.WriteString("<=")
+				pw.WriteTo(wbuf)
+				args = append(args, c.updatedAt)
+			case qtypes.NumericQueryType_IN:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
+				wbuf.WriteString(tableUserPermissionsColumnUpdatedAt)
+				wbuf.WriteString(" IN ")
+				pw.WriteTo(wbuf)
+				args = append(args, c.updatedAt)
+			case qtypes.NumericQueryType_BETWEEN:
+				if dirty {
+					wbuf.WriteString(" AND ")
+				}
+				dirty = true
+
 				updatedAtt2 := c.updatedAt.Values[1]
 				if updatedAtt2 != nil {
 					updatedAt2, err := ptypes.Timestamp(updatedAtt2)
@@ -2472,8 +5283,15 @@ func (r *userPermissionsRepository) Find(c *userPermissionsCriteria) ([]*userPer
 						return nil, err
 					}
 
-					where.AddExpr(tableUserPermissionsColumnUpdatedAt, pqcomp.GreaterThan, updatedAt1)
-					where.AddExpr(tableUserPermissionsColumnUpdatedAt, pqcomp.LessThan, updatedAt2)
+					wbuf.WriteString(tableUserPermissionsColumnUpdatedAt)
+					wbuf.WriteString(" > ")
+					pw.WriteTo(wbuf)
+					args = append(args, updatedAt1)
+
+					wbuf.WriteString(tableUserPermissionsColumnUpdatedAt)
+					wbuf.WriteString(" > ")
+					pw.WriteTo(wbuf)
+					args = append(args, updatedAt2)
 				}
 			}
 		}
@@ -2481,65 +5299,230 @@ func (r *userPermissionsRepository) Find(c *userPermissionsCriteria) ([]*userPer
 
 	if c.updatedBy != nil && c.updatedBy.Valid {
 		switch c.updatedBy.Type {
-		case protot.NumericQueryType_NOT_A_NUMBER:
+		case qtypes.NumericQueryType_NOT_A_NUMBER:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserPermissionsColumnUpdatedBy)
 			if c.updatedBy.Negation {
-				where.AddExpr(tableUserPermissionsColumnUpdatedBy, pqcomp.IsNotNull, "")
+				wbuf.WriteString(" IS NOT NULL ")
 			} else {
-				where.AddExpr(tableUserPermissionsColumnUpdatedBy, pqcomp.IsNull, "")
+				wbuf.WriteString(" IS NULL ")
 			}
-		case protot.NumericQueryType_EQUAL:
-			where.AddExpr(tableUserPermissionsColumnUpdatedBy, pqcomp.Equal, c.updatedBy.Value())
-		case protot.NumericQueryType_NOT_EQUAL:
-			where.AddExpr(tableUserPermissionsColumnUpdatedBy, pqcomp.NotEqual, c.updatedBy.Value())
-		case protot.NumericQueryType_GREATER:
-			where.AddExpr(tableUserPermissionsColumnUpdatedBy, pqcomp.GreaterThan, c.updatedBy.Value())
-		case protot.NumericQueryType_GREATER_EQUAL:
-			where.AddExpr(tableUserPermissionsColumnUpdatedBy, pqcomp.GreaterThanOrEqual, c.updatedBy.Value())
-		case protot.NumericQueryType_LESS:
-			where.AddExpr(tableUserPermissionsColumnUpdatedBy, pqcomp.LessThan, c.updatedBy.Value())
-		case protot.NumericQueryType_LESS_EQUAL:
-			where.AddExpr(tableUserPermissionsColumnUpdatedBy, pqcomp.LessThanOrEqual, c.updatedBy.Value())
-		case protot.NumericQueryType_IN:
+		case qtypes.NumericQueryType_EQUAL:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserPermissionsColumnUpdatedBy)
+			wbuf.WriteString("=")
+			pw.WriteTo(wbuf)
+			args = append(args, c.updatedBy)
+		case qtypes.NumericQueryType_NOT_EQUAL:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserPermissionsColumnUpdatedBy)
+			wbuf.WriteString(" <> ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.updatedBy)
+		case qtypes.NumericQueryType_GREATER:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserPermissionsColumnUpdatedBy)
+			wbuf.WriteString(" > ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.updatedBy)
+		case qtypes.NumericQueryType_GREATER_EQUAL:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserPermissionsColumnUpdatedBy)
+			wbuf.WriteString(" >= ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.updatedBy)
+		case qtypes.NumericQueryType_LESS:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserPermissionsColumnUpdatedBy)
+			wbuf.WriteString(" < ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.updatedBy)
+		case qtypes.NumericQueryType_LESS_EQUAL:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserPermissionsColumnUpdatedBy)
+			wbuf.WriteString(" >= ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.updatedBy)
+		case qtypes.NumericQueryType_IN:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserPermissionsColumnUpdatedBy)
+			wbuf.WriteString(" IN ")
 			for _, v := range c.updatedBy.Values {
-				where.AddExpr(tableUserPermissionsColumnUpdatedBy, pqcomp.In, v)
+				pw.WriteTo(wbuf)
+				args = append(args, v)
 			}
-		case protot.NumericQueryType_BETWEEN:
-			where.AddExpr(tableUserPermissionsColumnUpdatedBy, pqcomp.GreaterThan, c.updatedBy.Values[0])
-			where.AddExpr(tableUserPermissionsColumnUpdatedBy, pqcomp.LessThan, c.updatedBy.Values[1])
+		case qtypes.NumericQueryType_BETWEEN:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserPermissionsColumnUpdatedBy)
+			wbuf.WriteString(" > ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.updatedBy.Values[0])
+
+			wbuf.WriteString(tableUserPermissionsColumnUpdatedBy)
+			wbuf.WriteString(" > ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.updatedBy.Values[1])
 		}
 	}
 
 	if c.userID != nil && c.userID.Valid {
 		switch c.userID.Type {
-		case protot.NumericQueryType_NOT_A_NUMBER:
+		case qtypes.NumericQueryType_NOT_A_NUMBER:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserPermissionsColumnUserID)
 			if c.userID.Negation {
-				where.AddExpr(tableUserPermissionsColumnUserID, pqcomp.IsNotNull, "")
+				wbuf.WriteString(" IS NOT NULL ")
 			} else {
-				where.AddExpr(tableUserPermissionsColumnUserID, pqcomp.IsNull, "")
+				wbuf.WriteString(" IS NULL ")
 			}
-		case protot.NumericQueryType_EQUAL:
-			where.AddExpr(tableUserPermissionsColumnUserID, pqcomp.Equal, c.userID.Value())
-		case protot.NumericQueryType_NOT_EQUAL:
-			where.AddExpr(tableUserPermissionsColumnUserID, pqcomp.NotEqual, c.userID.Value())
-		case protot.NumericQueryType_GREATER:
-			where.AddExpr(tableUserPermissionsColumnUserID, pqcomp.GreaterThan, c.userID.Value())
-		case protot.NumericQueryType_GREATER_EQUAL:
-			where.AddExpr(tableUserPermissionsColumnUserID, pqcomp.GreaterThanOrEqual, c.userID.Value())
-		case protot.NumericQueryType_LESS:
-			where.AddExpr(tableUserPermissionsColumnUserID, pqcomp.LessThan, c.userID.Value())
-		case protot.NumericQueryType_LESS_EQUAL:
-			where.AddExpr(tableUserPermissionsColumnUserID, pqcomp.LessThanOrEqual, c.userID.Value())
-		case protot.NumericQueryType_IN:
+		case qtypes.NumericQueryType_EQUAL:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserPermissionsColumnUserID)
+			wbuf.WriteString("=")
+			pw.WriteTo(wbuf)
+			args = append(args, c.userID)
+		case qtypes.NumericQueryType_NOT_EQUAL:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserPermissionsColumnUserID)
+			wbuf.WriteString(" <> ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.userID)
+		case qtypes.NumericQueryType_GREATER:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserPermissionsColumnUserID)
+			wbuf.WriteString(" > ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.userID)
+		case qtypes.NumericQueryType_GREATER_EQUAL:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserPermissionsColumnUserID)
+			wbuf.WriteString(" >= ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.userID)
+		case qtypes.NumericQueryType_LESS:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserPermissionsColumnUserID)
+			wbuf.WriteString(" < ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.userID)
+		case qtypes.NumericQueryType_LESS_EQUAL:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserPermissionsColumnUserID)
+			wbuf.WriteString(" >= ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.userID)
+		case qtypes.NumericQueryType_IN:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserPermissionsColumnUserID)
+			wbuf.WriteString(" IN ")
 			for _, v := range c.userID.Values {
-				where.AddExpr(tableUserPermissionsColumnUserID, pqcomp.In, v)
+				pw.WriteTo(wbuf)
+				args = append(args, v)
 			}
-		case protot.NumericQueryType_BETWEEN:
-			where.AddExpr(tableUserPermissionsColumnUserID, pqcomp.GreaterThan, c.userID.Values[0])
-			where.AddExpr(tableUserPermissionsColumnUserID, pqcomp.LessThan, c.userID.Values[1])
+		case qtypes.NumericQueryType_BETWEEN:
+			if dirty {
+				wbuf.WriteString(" AND ")
+			}
+			dirty = true
+
+			wbuf.WriteString(tableUserPermissionsColumnUserID)
+			wbuf.WriteString(" > ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.userID.Values[0])
+
+			wbuf.WriteString(tableUserPermissionsColumnUserID)
+			wbuf.WriteString(" > ")
+			pw.WriteTo(wbuf)
+			args = append(args, c.userID.Values[1])
 		}
 	}
 
-	rows, err := findQueryComp(r.db, r.table, comp, where, c.sort, r.columns)
+	fmt.Println("is dirty", dirty)
+	if dirty {
+		if _, err := qbuf.WriteString(" WHERE "); err != nil {
+			return nil, err
+		}
+		if _, err := wbuf.WriteTo(qbuf); err != nil {
+			return nil, err
+		}
+	}
+
+	qbuf.WriteString(" OFFSET ")
+	pw.WriteTo(qbuf)
+	args = append(args, c.offset)
+	qbuf.WriteString(" LIMIT ")
+	pw.WriteTo(qbuf)
+	args = append(args, c.limit)
+
+	rows, err := r.db.Query(qbuf.String(), args...)
 	if err != nil {
 		return nil, err
 	}

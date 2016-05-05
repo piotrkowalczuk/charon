@@ -3,20 +3,20 @@ package charon
 import (
 	"strconv"
 
-	"github.com/piotrkowalczuk/nilt"
+	"github.com/piotrkowalczuk/ntypes"
 )
 
-func nilString(ns *nilt.String) nilt.String {
+func nilString(ns *ntypes.String) ntypes.String {
 	if ns == nil {
-		return nilt.String{}
+		return ntypes.String{}
 	}
 
 	return *ns
 }
 
-func nilBool(nb *nilt.Bool) nilt.Bool {
+func nilBool(nb *ntypes.Bool) ntypes.Bool {
 	if nb == nil {
-		return nilt.Bool{}
+		return ntypes.Bool{}
 	}
 
 	return *nb
