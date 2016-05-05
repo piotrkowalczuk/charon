@@ -16,10 +16,13 @@ import (
 )
 
 const (
+	// EnvironmentProduction ...
 	EnvironmentProduction = "prod"
-	EnvironmentTest       = "test"
+	// EnvironmentTest ...
+	EnvironmentTest = "test"
 )
 
+// DaemonOpts ...
 type DaemonOpts struct {
 	Environment        string
 	Namespace          string
@@ -36,6 +39,7 @@ type DaemonOpts struct {
 	DebugListener      net.Listener
 }
 
+// Daemon ...
 type Daemon struct {
 	opts          *DaemonOpts
 	monitor       *monitoring
@@ -57,6 +61,7 @@ func NewDaemon(opts *DaemonOpts) *Daemon {
 	return d
 }
 
+// Run ...
 func (d *Daemon) Run() (err error) {
 	var (
 		mnemosyneClient mnemosyne.Mnemosyne

@@ -336,7 +336,7 @@ func setPermissions(db *sql.DB, table, columnID, columnSubsystem, columnModule, 
 	query := bytes.NewBufferString(`DELETE FROM ` + table + ` WHERE ` + columnID + ` = $1`)
 	if len(in) > 0 {
 		fmt.Fprint(query, ` AND (`+columnSubsystem+`, `+columnModule+`, `+columnAction+`) NOT IN (`)
-		for i, _ := range in {
+		for i := range in {
 			if i != 0 {
 				fmt.Fprint(query, ", ")
 			}

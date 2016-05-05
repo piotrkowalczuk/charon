@@ -225,8 +225,8 @@ func (gr *groupRepository) IsGranted(id int64, p Permission) (bool, error) {
 }
 
 // SetPermissions implements GroupRepository interface.
-func (ur *groupRepository) SetPermissions(id int64, p ...Permission) (int64, int64, error) {
-	return setPermissions(ur.db, tableGroupPermissions,
+func (gr *groupRepository) SetPermissions(id int64, p ...Permission) (int64, int64, error) {
+	return setPermissions(gr.db, tableGroupPermissions,
 		tableUserPermissionsColumnUserID,
 		tableUserPermissionsColumnPermissionSubsystem,
 		tableUserPermissionsColumnPermissionModule,

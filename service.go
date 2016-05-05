@@ -71,6 +71,7 @@ func initPermissionRegistry(r permissionProvider, permissions Permissions, logge
 }
 
 const (
+	// MonitoringEnginePrometheus ...
 	MonitoringEnginePrometheus = "prometheus"
 )
 
