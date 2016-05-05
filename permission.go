@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"database/sql"
 	"errors"
-	"fmt"
 	"strings"
 	"sync"
 )
@@ -146,7 +145,7 @@ func (p Permission) Permission() string {
 	return string(p)
 }
 
-// MarshalJSON implements json.Marshaller interface.
+// MarshalJSON implements json Marshaller interface.
 func (p Permission) MarshalJSON() ([]byte, error) {
 	if len(p) == 0 {
 		return []byte(`""`), nil
@@ -158,16 +157,9 @@ func (p Permission) MarshalJSON() ([]byte, error) {
 	return b, nil
 }
 
-// UnmarshalJSON implements json.Unmarshaler interface.
-func (p *Permission) UnmarshalJSON(src interface{}) error {
-	switch s := src.(type) {
-	case string:
-		*p = Permission(s)
-	case []byte:
-		*p = Permission(s)
-	default:
-		return fmt.Errorf("charon: permission expects string or slice of bytes, got %T", src)
-	}
+// UnmarshalJSON implements json Unmarshaler interface.
+func (p *Permission) UnmarshalJSON(b []byte) error {
+	*p = Permission(string(b))
 
 	return nil
 }

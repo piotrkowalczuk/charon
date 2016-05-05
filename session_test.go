@@ -14,7 +14,7 @@ func TestUserIDFromSessionSubjectID(t *testing.T) {
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 		} else if userID != expected {
-			t.Errorf("wrong user id retrieved from session subject id expected %s, got %s", expected, userID)
+			t.Errorf("wrong user id retrieved from session subject id expected %d, got %d", expected, userID)
 		}
 	}
 
