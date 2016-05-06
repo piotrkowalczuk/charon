@@ -95,7 +95,7 @@ type userProvider interface {
 	SetPermissions(id int64, permissions ...charon.Permission) (int64, int64, error)
 }
 
-func newUserRepository(dbPool *sql.DB) userProvider {
+func newuserProvider(dbPool *sql.DB) userProvider {
 	return &userRepository{
 		db:      dbPool,
 		table:   tableUser,
@@ -103,7 +103,7 @@ func newUserRepository(dbPool *sql.DB) userProvider {
 	}
 }
 
-// Create implements UserRepository interface.
+// Create implements userProvider interface.
 func (ur *userRepository) Create(username string, password []byte, firstName, lastName string, confirmationToken []byte, isSuperuser, isStaff, isActive, isConfirmed bool) (*userEntity, error) {
 	if isSuperuser {
 		isStaff = true
@@ -125,12 +125,12 @@ func (ur *userRepository) Create(username string, password []byte, firstName, la
 	return ur.Insert(entity)
 }
 
-// CreateSuperuser implements UserRepository interface.
+// CreateSuperuser implements userProvider interface.
 func (ur *userRepository) CreateSuperuser(username string, password []byte, firstName, lastName string) (*userEntity, error) {
 	return ur.Create(username, password, firstName, lastName, []byte(UserConfirmationTokenUsed), true, false, true, true)
 }
 
-// Count implements UserRepository interface.
+// Count implements userProvider interface.
 func (ur *userRepository) Count() (n int64, err error) {
 	err = ur.db.QueryRow("SELECT COUNT(*) FROM " + tableUser).Scan(&n)
 
@@ -219,7 +219,7 @@ func (ur *userRepository) findOneBy(fieldName string, value interface{}) (*userE
 	return &user, nil
 }
 
-// UpdateLastLoginAt implements UserRepository interface.
+// UpdateLastLoginAt implements userProvider interface.
 func (ur *userRepository) UpdateLastLoginAt(userID int64) (int64, error) {
 	query := `
 		UPDATE ` + ur.table + `
@@ -238,7 +238,7 @@ func (ur *userRepository) UpdateLastLoginAt(userID int64) (int64, error) {
 	return result.RowsAffected()
 }
 
-// Exists implements UserRepository interface.
+// Exists implements userProvider interface.
 func (ur *userRepository) Exists(userID int64) (bool, error) {
 	query := `
 		SELECT EXISTS(
@@ -256,7 +256,7 @@ func (ur *userRepository) Exists(userID int64) (bool, error) {
 	return exists, nil
 }
 
-// IsGranted implements UserRepository interface.
+// IsGranted implements userProvider interface.
 func (ur *userRepository) IsGranted(id int64, p charon.Permission) (bool, error) {
 	var exists bool
 	subsystem, module, action := p.Split()
@@ -273,7 +273,7 @@ func (ur *userRepository) IsGranted(id int64, p charon.Permission) (bool, error)
 	return exists, nil
 }
 
-// SetPermissions implements UserRepository interface.
+// SetPermissions implements userProvider interface.
 func (ur *userRepository) SetPermissions(id int64, p ...charon.Permission) (int64, int64, error) {
 	return setPermissions(ur.db, tableUserPermissions,
 		tableUserPermissionsColumnUserID,
@@ -282,7 +282,7 @@ func (ur *userRepository) SetPermissions(id int64, p ...charon.Permission) (int6
 		tableUserPermissionsColumnPermissionAction, id, p)
 }
 
-func createDumyTestUser(repo userProvider, hasher charon.PasswordHasher) (*userEntity, error) {
+func createDummyTestUser(repo userProvider, hasher charon.PasswordHasher) (*userEntity, error) {
 	password, err := hasher.Hash([]byte("test"))
 	if err != nil {
 		return nil, err

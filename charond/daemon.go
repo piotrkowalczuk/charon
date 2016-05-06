@@ -117,7 +117,7 @@ func (d *Daemon) Run() (err error) {
 
 	repos := newRepositories(postgres)
 	if d.opts.Environment == EnvironmentTest {
-		if _, err = createDumyTestUser(repos.user, passwordHasher); err != nil {
+		if _, err = createDummyTestUser(repos.user, passwordHasher); err != nil {
 			return
 		}
 		sklog.Info(d.logger, "test super user has been created")
