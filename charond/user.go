@@ -95,7 +95,7 @@ type userProvider interface {
 	SetPermissions(id int64, permissions ...charon.Permission) (int64, int64, error)
 }
 
-func newuserProvider(dbPool *sql.DB) userProvider {
+func newUserRepository(dbPool *sql.DB) userProvider {
 	return &userRepository{
 		db:      dbPool,
 		table:   tableUser,
