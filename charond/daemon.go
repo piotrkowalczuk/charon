@@ -2,9 +2,13 @@ package charond
 
 import (
 	"errors"
+	"io"
 	"net"
 	"net/http"
 	"os"
+	"testing"
+
+	"golang.org/x/crypto/bcrypt"
 
 	"github.com/go-kit/kit/log"
 	"github.com/piotrkowalczuk/charon"
@@ -40,6 +44,11 @@ type DaemonOpts struct {
 	DebugListener      net.Listener
 }
 
+type TestDaemonOpts struct {
+	MnemosyneAddress string
+	PostgresAddress  string
+}
+
 // Daemon ...
 type Daemon struct {
 	opts          *DaemonOpts
@@ -60,6 +69,33 @@ func NewDaemon(opts *DaemonOpts) *Daemon {
 	}
 
 	return d
+}
+
+// TestDaemon returns address of fully started in-memory daemon and closer to close it.
+func TestDaemon(t *testing.T, opts *TestDaemonOpts) (net.Addr, io.Closer) {
+	l, err := net.Listen("tcp", "127.0.0.1:0") // any available address
+	if err != nil {
+		t.Fatalf("charon daemon tcp listener setup error: %s", err.Error())
+	}
+
+	logger := sklog.NewTestLogger(t)
+	grpclog.SetLogger(sklog.NewGRPCLogger(logger))
+
+	d := NewDaemon(&DaemonOpts{
+		Namespace:          "charon_test",
+		Environment:        EnvironmentTest,
+		MonitoringEngine:   MonitoringEnginePrometheus,
+		MnemosyneAddress:   opts.MnemosyneAddress,
+		Logger:             logger,
+		PostgresAddress:    opts.PostgresAddress,
+		RPCListener:        l,
+		PasswordBCryptCost: bcrypt.MinCost,
+	})
+	if err := d.Run(); err != nil {
+		t.Fatalf("charon daemon start error: %s", err.Error())
+	}
+
+	return d.Addr(), d
 }
 
 // Run ...

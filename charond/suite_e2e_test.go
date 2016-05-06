@@ -2,6 +2,9 @@ package charond
 
 import (
 	"database/sql"
+	"fmt"
+	"io"
+	"net"
 	"os"
 	"testing"
 	"time"
@@ -10,6 +13,7 @@ import (
 	_ "github.com/lib/pq"
 	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/mnemosyne"
+	"github.com/piotrkowalczuk/mnemosyne/mnemosyned"
 	"github.com/piotrkowalczuk/sklog"
 	"golang.org/x/crypto/bcrypt"
 	"google.golang.org/grpc"
@@ -17,17 +21,16 @@ import (
 )
 
 type endToEndSuite struct {
-	db             *sql.DB
-	hasher         charon.PasswordHasher
-	userRepository userProvider
+	db     *sql.DB
+	hasher charon.PasswordHasher
 
 	charon       charon.RPCClient
+	charonCloser io.Closer
 	charonConn   *grpc.ClientConn
-	charonDaemon *Daemon
 
 	mnemosyne       mnemosyne.RPCClient
 	mnemosyneConn   *grpc.ClientConn
-	mnemosyneDaemon *mnemosyne.Daemon
+	mnemosyneCloser io.Closer
 }
 
 func (etes *endToEndSuite) setup(t *testing.T) {
@@ -35,42 +38,28 @@ func (etes *endToEndSuite) setup(t *testing.T) {
 		t.Skip("e2e suite ignored in short mode")
 	}
 
-	var err error
+	var (
+		err                       error
+		mnemosyneAddr, charonAddr net.Addr
+	)
 
-	mnemosyneTCP := listenTCP(t)
-	charonTCP := listenTCP(t)
 	logger := sklog.NewTestLogger(t)
 	_ = klog.NewJSONLogger(os.Stdout)
 	grpclog.SetLogger(sklog.NewGRPCLogger(logger))
 
-	etes.mnemosyneDaemon = mnemosyne.NewDaemon(&mnemosyne.DaemonOpts{
-		Namespace:              "mnemosyne",
-		MonitoringEngine:       mnemosyne.MonitoringEnginePrometheus,
+	mnemosyneAddr, etes.mnemosyneCloser = mnemosyned.TestDaemon(t, &mnemosyned.TestDaemonOpts{
 		StoragePostgresAddress: testPostgresAddress,
-		Logger:                 logger,
-		RPCListener:            mnemosyneTCP,
 	})
-	if err = etes.mnemosyneDaemon.Run(); err != nil {
-		t.Fatalf("mnemosyne daemon start error: %s", err.Error())
-	}
-	t.Logf("mnemosyne deamon running on: %s", etes.mnemosyneDaemon.Addr().String())
+	t.Logf("mnemosyne deamon running on: %s", mnemosyneAddr.String())
 
-	etes.charonDaemon = NewDaemon(&DaemonOpts{
-		Namespace:          "charon",
-		MonitoringEngine:   MonitoringEnginePrometheus,
-		MnemosyneAddress:   etes.mnemosyneDaemon.Addr().String(),
-		Logger:             logger,
-		PostgresAddress:    testPostgresAddress,
-		RPCListener:        charonTCP,
-		PasswordBCryptCost: bcrypt.MinCost,
+	charonAddr, etes.charonCloser = TestDaemon(t, &TestDaemonOpts{
+		PostgresAddress:  testPostgresAddress,
+		MnemosyneAddress: mnemosyneAddr.String(),
 	})
-	if err = etes.charonDaemon.Run(); err != nil {
-		t.Fatalf("charon daemon start error: %s", err.Error())
-	}
-	t.Logf("charon deamon running on: %s", etes.charonDaemon.Addr().String())
+	t.Logf("charon deamon running on: %s", charonAddr.String())
 
 	if etes.mnemosyneConn, err = grpc.Dial(
-		mnemosyneTCP.Addr().String(),
+		mnemosyneAddr.String(),
 		grpc.WithInsecure(),
 		grpc.WithBlock(),
 		grpc.WithTimeout(2*time.Second),
@@ -78,7 +67,7 @@ func (etes *endToEndSuite) setup(t *testing.T) {
 		t.Fatalf("mnemosyne grpc connection error: %s", err.Error())
 	}
 	if etes.charonConn, err = grpc.Dial(
-		charonTCP.Addr().String(),
+		charonAddr.String(),
 		grpc.WithInsecure(),
 		grpc.WithBlock(),
 		grpc.WithTimeout(2*time.Second),
@@ -97,14 +86,10 @@ func (etes *endToEndSuite) setup(t *testing.T) {
 
 	etes.charon = charon.NewRPCClient(etes.charonConn)
 	etes.mnemosyne = mnemosyne.NewRPCClient(etes.mnemosyneConn)
-	etes.userRepository = newUserRepository(etes.db)
-
-	if _, err = createDumyTestUser(etes.userRepository, etes.hasher); err != nil {
-		t.Fatalf("dummy user error: %s", err.Error())
-	}
 }
 
 func (etes *endToEndSuite) teardown(t *testing.T) {
+	fmt.Println("KURWA")
 	grpcClose := func(conn *grpc.ClientConn) error {
 		state, err := conn.State()
 		if err != nil {
@@ -118,23 +103,24 @@ func (etes *endToEndSuite) teardown(t *testing.T) {
 		return nil
 	}
 
+	fmt.Println("KURWA1")
 	if err := teardownDatabase(etes.db); err != nil {
 		t.Errorf("e2e suite database teardown error: %s", err.Error())
 	}
+	fmt.Println("KURWA2")
+	t.Logf("successfull teardown!!")
 	if err := grpcClose(etes.mnemosyneConn); err != nil {
 		t.Errorf("e2e suite mnemosyne conn close error: %s", err.Error())
 	}
 	if err := grpcClose(etes.charonConn); err != nil {
 		t.Errorf("e2e suite charon conn close error: %s", err.Error())
 	}
-
-	if err := etes.mnemosyneDaemon.Close(); err != nil {
-		t.Errorf("e2e suite mnemosyne daemon close error: %s", err.Error())
+	if err := etes.mnemosyneCloser.Close(); err != nil {
+		t.Errorf("e2e suite mnemosyne closer close error: %s", err.Error())
 	}
-	if err := etes.charonDaemon.Close(); err != nil {
-		t.Errorf("e2e suite charon daemon close error: %s", err.Error())
+	if err := etes.charonCloser.Close(); err != nil {
+		t.Errorf("e2e suite charon closer close error: %s", err.Error())
 	}
-
 	if err := etes.db.Close(); err != nil {
 		t.Errorf("e2e suite database conn close error: %s", err.Error())
 	}

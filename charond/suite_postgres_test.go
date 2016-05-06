@@ -34,8 +34,11 @@ func (ps *postgresSuite) setup(t *testing.T) {
 func (ps *postgresSuite) teardown(t *testing.T) {
 	var err error
 
+	if err = teardownDatabase(ps.db); err != nil {
+		t.Fatalf("postgres suite database teardown error: %s", err.Error())
+	}
 	if err = ps.db.Close(); err != nil {
-		t.Fatal(err)
+		t.Fatal("postgres suite teardown database connection error: %s", err.Error())
 	}
 }
 
