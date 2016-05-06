@@ -13,7 +13,7 @@ import (
 	"github.com/piotrkowalczuk/pqcomp"
 )
 
-func (ge *groupEntity) Message() (*charon.Group, error) {
+func (ge *groupEntity) message() (*charon.Group, error) {
 	var (
 		err                  error
 		createdAt, updatedAt *pbts.Timestamp

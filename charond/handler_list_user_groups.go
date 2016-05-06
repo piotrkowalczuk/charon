@@ -43,7 +43,7 @@ func (lugh *listUserGroupsHandler) response(ents []*groupEntity) (*charon.ListUs
 		msg *charon.Group
 	)
 	for _, e := range ents {
-		if msg, err = e.Message(); err != nil {
+		if msg, err = e.message(); err != nil {
 			return nil, err
 		}
 		resp.Groups = append(resp.Groups, msg)

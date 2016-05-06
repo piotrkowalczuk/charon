@@ -61,7 +61,7 @@ func (guh *getUserHandler) firewall(req *charon.GetUserRequest, act *actor, ent 
 }
 
 func (guh *getUserHandler) response(ent *userEntity) (*charon.GetUserResponse, error) {
-	msg, err := ent.Message()
+	msg, err := ent.message()
 	if err != nil {
 		return nil, err
 	}

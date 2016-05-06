@@ -85,7 +85,7 @@ func (muh *modifyUserHandler) firewall(req *charon.ModifyUserRequest, entity *us
 }
 
 func (muh *modifyUserHandler) response(u *userEntity) (*charon.ModifyUserResponse, error) {
-	msg, err := u.Message()
+	msg, err := u.message()
 	if err != nil {
 		return nil, err
 	}

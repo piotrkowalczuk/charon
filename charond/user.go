@@ -21,8 +21,7 @@ func (ue *userEntity) String() string {
 	return ue.FirstName + " " + ue.LastName
 }
 
-// Message allocates new corresponding protobuf message.
-func (ue *userEntity) Message() (*charon.User, error) {
+func (ue *userEntity) message() (*charon.User, error) {
 	var (
 		err                  error
 		createdAt, updatedAt *pbts.Timestamp

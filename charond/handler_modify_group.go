@@ -29,7 +29,7 @@ func (mgh *modifyGroupHandler) handle(ctx context.Context, req *charon.ModifyGro
 }
 
 func (mgh *modifyGroupHandler) response(g *groupEntity) (*charon.ModifyGroupResponse, error) {
-	msg, err := g.Message()
+	msg, err := g.message()
 	if err != nil {
 		return nil, err
 	}

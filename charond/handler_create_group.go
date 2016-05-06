@@ -46,7 +46,7 @@ func (cgh *createGroupHandler) firewall(req *charon.CreateGroupRequest, act *act
 }
 
 func (cgh *createGroupHandler) response(ent *groupEntity) (*charon.CreateGroupResponse, error) {
-	msg, err := ent.Message()
+	msg, err := ent.message()
 	if err != nil {
 		return nil, err
 	}

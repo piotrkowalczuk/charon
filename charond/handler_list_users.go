@@ -86,7 +86,7 @@ func (luh *listUsersHandler) response(ents []*userEntity) (*charon.ListUsersResp
 		msg *charon.User
 	)
 	for _, e := range ents {
-		if msg, err = e.Message(); err != nil {
+		if msg, err = e.message(); err != nil {
 			return nil, err
 		}
 		resp.Users = append(resp.Users, msg)

@@ -2,7 +2,6 @@ package charond
 
 import (
 	"database/sql"
-	"fmt"
 	"io"
 	"net"
 	"os"
@@ -89,7 +88,6 @@ func (etes *endToEndSuite) setup(t *testing.T) {
 }
 
 func (etes *endToEndSuite) teardown(t *testing.T) {
-	fmt.Println("KURWA")
 	grpcClose := func(conn *grpc.ClientConn) error {
 		state, err := conn.State()
 		if err != nil {
@@ -103,12 +101,9 @@ func (etes *endToEndSuite) teardown(t *testing.T) {
 		return nil
 	}
 
-	fmt.Println("KURWA1")
 	if err := teardownDatabase(etes.db); err != nil {
 		t.Errorf("e2e suite database teardown error: %s", err.Error())
 	}
-	fmt.Println("KURWA2")
-	t.Logf("successfull teardown!!")
 	if err := grpcClose(etes.mnemosyneConn); err != nil {
 		t.Errorf("e2e suite mnemosyne conn close error: %s", err.Error())
 	}

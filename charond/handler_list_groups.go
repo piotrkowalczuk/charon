@@ -51,7 +51,7 @@ func (lgh *listGroupsHandler) response(ents []*groupEntity) (*charon.ListGroupsR
 		msg *charon.Group
 	)
 	for _, e := range ents {
-		if msg, err = e.Message(); err != nil {
+		if msg, err = e.message(); err != nil {
 			return nil, err
 		}
 		resp.Groups = append(resp.Groups, msg)

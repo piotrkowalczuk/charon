@@ -89,7 +89,7 @@ func (cuh *createUserHandler) firewall(req *charon.CreateUserRequest, act *actor
 }
 
 func (cuh *createUserHandler) response(ent *userEntity) (*charon.CreateUserResponse, error) {
-	msg, err := ent.Message()
+	msg, err := ent.message()
 	if err != nil {
 		return nil, err
 	}

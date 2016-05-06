@@ -48,7 +48,7 @@ func (ggh *getGroupHandler) firewall(req *charon.GetGroupRequest, act *actor) er
 }
 
 func (ggh *getGroupHandler) response(ent *groupEntity) (*charon.GetGroupResponse, error) {
-	msg, err := ent.Message()
+	msg, err := ent.message()
 	if err != nil {
 		return nil, err
 	}
