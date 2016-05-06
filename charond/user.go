@@ -17,8 +17,16 @@ const (
 )
 
 // String return concatenated first and last name of the user.
+// Implements fmt Stringer interface.
 func (ue *userEntity) String() string {
-	return ue.FirstName + " " + ue.LastName
+	switch {
+	case ue.FirstName == "":
+		return ue.LastName
+	case ue.LastName == "":
+		return ue.FirstName
+	default:
+		return ue.FirstName + " " + ue.LastName
+	}
 }
 
 func (ue *userEntity) message() (*charon.User, error) {

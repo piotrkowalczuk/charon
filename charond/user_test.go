@@ -28,6 +28,27 @@ var (
 	}
 )
 
+func TestUserEntity_String(t *testing.T) {
+	cases := map[string]userEntity{
+		"John Snow": {
+			FirstName: "John",
+			LastName:  "Snow",
+		},
+		"Snow": {
+			LastName: "Snow",
+		},
+		"John": {
+			FirstName: "John",
+		},
+	}
+
+	for expected, c := range cases {
+		if c.String() != expected {
+			t.Errorf("wrong output, expected %s but got %s", expected, c.String())
+		}
+	}
+}
+
 func TestUserRepository_Create(t *testing.T) {
 	suite := &postgresSuite{}
 	suite.setup(t)
