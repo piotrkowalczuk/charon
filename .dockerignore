@@ -1,0 +1,8 @@
+*/temp*
+*/*/temp*
+temp?
+.dist
+**/*.md
+*.o
+*.a
+*.so

@@ -90,13 +90,9 @@ test-short:
 	@${CMD_TEST} -short ${PACKAGE_TEST}
 
 get:
+	@go get github.com/Masterminds/glide
 	@go get github.com/smartystreets/goconvey/convey
-	@go get ${PACKAGE}
-	@go get ${PACKAGE_TEST}
-	@go get ${PACKAGE_DAEMON}
-	@go get ${PACKAGE_CMD_DAEMON}
-	@go get ${PACKAGE_CMD_CONTROL}
-	@go get ${PACKAGE_CMD_GENERATOR}
+	@glide install
 
 install: build
 	#install binary

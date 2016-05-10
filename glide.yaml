@@ -1,0 +1,43 @@
+package: github.com/piotrkowalczuk/charon
+import:
+- package: github.com/go-kit/kit
+  subpackages:
+  - log
+  - metrics
+  - metrics/prometheus
+- package: github.com/golang/protobuf
+  subpackages:
+  - proto
+  - ptypes
+  - ptypes/timestamp
+- package: github.com/lib/pq
+- package: github.com/pborman/uuid
+- package: github.com/piotrkowalczuk/mnemosyne
+- package: github.com/piotrkowalczuk/ntypes
+- package: github.com/piotrkowalczuk/pqcomp
+- package: github.com/piotrkowalczuk/pqt
+  subpackages:
+  - pqtgo
+  - pqtsql
+- package: github.com/piotrkowalczuk/qtypes
+- package: github.com/piotrkowalczuk/sklog
+- package: github.com/prometheus/client_golang
+  subpackages:
+  - prometheus
+- package: github.com/stretchr/testify
+  subpackages:
+  - mock
+- package: golang.org/x/crypto
+  subpackages:
+  - bcrypt
+- package: golang.org/x/net
+  subpackages:
+  - context
+- package: golang.org/x/oauth2
+- package: google.golang.org/grpc
+  subpackages:
+  - codes
+  - credentials
+  - grpclog
+  - metadata
+  - peer
