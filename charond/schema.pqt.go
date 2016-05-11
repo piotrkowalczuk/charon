@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/go-kit/kit/log"
 	"github.com/golang/protobuf/ptypes"
 	"github.com/piotrkowalczuk/ntypes"
 	"github.com/piotrkowalczuk/pqcomp"
@@ -117,6 +118,8 @@ type userRepository struct {
 	table   string
 	columns []string
 	db      *sql.DB
+	dbg     bool
+	log     log.Logger
 }
 
 func (r *userRepository) Find(c *userCriteria) ([]*userEntity, error) {
@@ -1100,9 +1103,11 @@ func (r *userRepository) Find(c *userCriteria) ([]*userEntity, error) {
 	pw.WriteTo(qbuf)
 	args.Add(c.limit)
 
-	fmt.Println("----QUERY-----")
-	fmt.Println(qbuf.String())
-	fmt.Println(args.Slice()...)
+	if r.dbg {
+		if err := r.log.Log("msg", qbuf.String(), "function", "Find"); err != nil {
+			return nil, err
+		}
+	}
 
 	rows, err := r.db.Query(qbuf.String(), args.Slice()...)
 	if err != nil {
@@ -1408,6 +1413,8 @@ type groupRepository struct {
 	table   string
 	columns []string
 	db      *sql.DB
+	dbg     bool
+	log     log.Logger
 }
 
 func (r *groupRepository) Find(c *groupCriteria) ([]*groupEntity, error) {
@@ -2144,9 +2151,11 @@ func (r *groupRepository) Find(c *groupCriteria) ([]*groupEntity, error) {
 	pw.WriteTo(qbuf)
 	args.Add(c.limit)
 
-	fmt.Println("----QUERY-----")
-	fmt.Println(qbuf.String())
-	fmt.Println(args.Slice()...)
+	if r.dbg {
+		if err := r.log.Log("msg", qbuf.String(), "function", "Find"); err != nil {
+			return nil, err
+		}
+	}
 
 	rows, err := r.db.Query(qbuf.String(), args.Slice()...)
 	if err != nil {
@@ -2375,6 +2384,8 @@ type permissionRepository struct {
 	table   string
 	columns []string
 	db      *sql.DB
+	dbg     bool
+	log     log.Logger
 }
 
 func (r *permissionRepository) Find(c *permissionCriteria) ([]*permissionEntity, error) {
@@ -2944,9 +2955,11 @@ func (r *permissionRepository) Find(c *permissionCriteria) ([]*permissionEntity,
 	pw.WriteTo(qbuf)
 	args.Add(c.limit)
 
-	fmt.Println("----QUERY-----")
-	fmt.Println(qbuf.String())
-	fmt.Println(args.Slice()...)
+	if r.dbg {
+		if err := r.log.Log("msg", qbuf.String(), "function", "Find"); err != nil {
+			return nil, err
+		}
+	}
 
 	rows, err := r.db.Query(qbuf.String(), args.Slice()...)
 	if err != nil {
@@ -3172,6 +3185,8 @@ type userGroupsRepository struct {
 	table   string
 	columns []string
 	db      *sql.DB
+	dbg     bool
+	log     log.Logger
 }
 
 func (r *userGroupsRepository) Find(c *userGroupsCriteria) ([]*userGroupsEntity, error) {
@@ -3906,9 +3921,11 @@ func (r *userGroupsRepository) Find(c *userGroupsCriteria) ([]*userGroupsEntity,
 	pw.WriteTo(qbuf)
 	args.Add(c.limit)
 
-	fmt.Println("----QUERY-----")
-	fmt.Println(qbuf.String())
-	fmt.Println(args.Slice()...)
+	if r.dbg {
+		if err := r.log.Log("msg", qbuf.String(), "function", "Find"); err != nil {
+			return nil, err
+		}
+	}
 
 	rows, err := r.db.Query(qbuf.String(), args.Slice()...)
 	if err != nil {
@@ -4058,6 +4075,8 @@ type groupPermissionsRepository struct {
 	table   string
 	columns []string
 	db      *sql.DB
+	dbg     bool
+	log     log.Logger
 }
 
 func (r *groupPermissionsRepository) Find(c *groupPermissionsCriteria) ([]*groupPermissionsEntity, error) {
@@ -4851,9 +4870,11 @@ func (r *groupPermissionsRepository) Find(c *groupPermissionsCriteria) ([]*group
 	pw.WriteTo(qbuf)
 	args.Add(c.limit)
 
-	fmt.Println("----QUERY-----")
-	fmt.Println(qbuf.String())
-	fmt.Println(args.Slice()...)
+	if r.dbg {
+		if err := r.log.Log("msg", qbuf.String(), "function", "Find"); err != nil {
+			return nil, err
+		}
+	}
 
 	rows, err := r.db.Query(qbuf.String(), args.Slice()...)
 	if err != nil {
@@ -5009,6 +5030,8 @@ type userPermissionsRepository struct {
 	table   string
 	columns []string
 	db      *sql.DB
+	dbg     bool
+	log     log.Logger
 }
 
 func (r *userPermissionsRepository) Find(c *userPermissionsCriteria) ([]*userPermissionsEntity, error) {
@@ -5802,9 +5825,11 @@ func (r *userPermissionsRepository) Find(c *userPermissionsCriteria) ([]*userPer
 	pw.WriteTo(qbuf)
 	args.Add(c.limit)
 
-	fmt.Println("----QUERY-----")
-	fmt.Println(qbuf.String())
-	fmt.Println(args.Slice()...)
+	if r.dbg {
+		if err := r.log.Log("msg", qbuf.String(), "function", "Find"); err != nil {
+			return nil, err
+		}
+	}
 
 	rows, err := r.db.Query(qbuf.String(), args.Slice()...)
 	if err != nil {
