@@ -22,11 +22,11 @@ func (sh *subjectHandler) handle(ctx context.Context, r *charon.SubjectRequest) 
 	)
 	if r.AccessToken == nil {
 		if ses, err = sh.session.FromContext(ctx); err != nil {
-			return nil, err
+			return nil, handleMnemosyneError(err)
 		}
 	} else {
 		if ses, err = sh.session.Get(ctx, *r.AccessToken); err != nil {
-			return nil, err
+			return nil, handleMnemosyneError(err)
 		}
 	}
 

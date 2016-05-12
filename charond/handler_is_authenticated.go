@@ -20,7 +20,7 @@ func (iah *isAuthenticatedHandler) handle(ctx context.Context, req *charon.IsAut
 
 	ses, err := iah.session.Get(ctx, *req.AccessToken)
 	if err != nil {
-		return nil, err
+		return nil, handleMnemosyneError(err)
 	}
 	uid, err := charon.SubjectID(ses.SubjectId).UserID()
 	if err != nil {

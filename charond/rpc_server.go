@@ -71,7 +71,9 @@ func (rs *rpcServer) Login(ctx context.Context, req *charon.LoginRequest) (*char
 	h.addRequest(1)
 
 	resp, err := h.handle(ctx, req)
-	h.handler.handle(err, "subject has been logged in")
+	if err = h.handler.handle(err, "subject has been logged in"); err != nil {
+		return nil, err
+	}
 
 	return resp, err
 }
@@ -84,7 +86,9 @@ func (rs *rpcServer) Logout(ctx context.Context, req *charon.LogoutRequest) (*ch
 	h.addRequest(1)
 
 	resp, err := h.handle(ctx, req)
-	h.handler.handle(err, "subject has been logged out")
+	if err = h.handler.handle(err, "subject has been logged out"); err != nil {
+		return nil, err
+	}
 
 	return resp, err
 }
@@ -97,7 +101,9 @@ func (rs *rpcServer) IsAuthenticated(ctx context.Context, req *charon.IsAuthenti
 	h.addRequest(1)
 
 	resp, err := h.handle(ctx, req)
-	h.handler.handle(err, "subject authentication status has been checked")
+	if err = h.handler.handle(err, "subject authentication status has been checked"); err != nil {
+		return nil, err
+	}
 
 	return resp, err
 }
@@ -110,7 +116,9 @@ func (rs *rpcServer) Subject(ctx context.Context, req *charon.SubjectRequest) (*
 	h.addRequest(1)
 
 	resp, err := h.handle(ctx, req)
-	h.handler.handle(err, "subject has been retrieved")
+	if err = h.handler.handle(err, "subject has been retrieved"); err != nil {
+		return nil, err
+	}
 
 	return resp, err
 }
@@ -123,7 +131,9 @@ func (rs *rpcServer) IsGranted(ctx context.Context, req *charon.IsGrantedRequest
 	h.addRequest(1)
 
 	resp, err := h.handle(ctx, req)
-	h.handler.handle(err, "permission has been checked")
+	if err = h.handler.handle(err, "permission has been checked"); err != nil {
+		return nil, err
+	}
 
 	return resp, err
 }
@@ -136,7 +146,9 @@ func (rs *rpcServer) BelongsTo(ctx context.Context, req *charon.BelongsToRequest
 	h.addRequest(1)
 
 	resp, err := h.handle(ctx, req)
-	h.handler.handle(err, "belonging to the group has been checked")
+	if err = h.handler.handle(err, "belonging to the group has been checked"); err != nil {
+		return nil, err
+	}
 
 	return resp, err
 }
@@ -149,7 +161,9 @@ func (rs *rpcServer) CreateGroup(ctx context.Context, req *charon.CreateGroupReq
 	h.addRequest(1)
 
 	resp, err := h.handle(ctx, req)
-	h.handler.handle(err, "group has been created")
+	if err = h.handler.handle(err, "group has been created"); err != nil {
+		return nil, err
+	}
 
 	return resp, err
 }
@@ -162,7 +176,9 @@ func (rs *rpcServer) ModifyGroup(ctx context.Context, req *charon.ModifyGroupReq
 	h.addRequest(1)
 
 	resp, err := h.handle(ctx, req)
-	h.handler.handle(err, "group has been created")
+	if err = h.handler.handle(err, "group has been created"); err != nil {
+		return nil, err
+	}
 
 	return resp, err
 }
@@ -175,7 +191,9 @@ func (rs *rpcServer) DeleteGroup(ctx context.Context, req *charon.DeleteGroupReq
 	h.addRequest(1)
 
 	resp, err := h.handle(ctx, req)
-	h.handler.handle(err, "group has been deleted")
+	if err = h.handler.handle(err, "group has been deleted"); err != nil {
+		return nil, err
+	}
 
 	return resp, err
 }
@@ -188,7 +206,9 @@ func (rs *rpcServer) GetGroup(ctx context.Context, req *charon.GetGroupRequest) 
 	h.addRequest(1)
 
 	resp, err := h.handle(ctx, req)
-	h.handler.handle(err, "group has been retrieved")
+	if err = h.handler.handle(err, "group has been retrieved"); err != nil {
+		return nil, err
+	}
 
 	return resp, err
 }
@@ -201,7 +221,9 @@ func (rs *rpcServer) ListGroups(ctx context.Context, req *charon.ListGroupsReque
 	h.addRequest(1)
 
 	resp, err := h.handle(ctx, req)
-	h.handler.handle(err, "list of groups has been retrieved")
+	if err = h.handler.handle(err, "list of groups has been retrieved"); err != nil {
+		return nil, err
+	}
 
 	return resp, err
 }
@@ -214,7 +236,9 @@ func (rs *rpcServer) ListGroupPermissions(ctx context.Context, req *charon.ListG
 	h.addRequest(1)
 
 	resp, err := h.handle(ctx, req)
-	h.handler.handle(err, "list of group permissions has been retrieved")
+	if err = h.handler.handle(err, "list of group permissions has been retrieved"); err != nil {
+		return nil, err
+	}
 
 	return resp, err
 }
@@ -227,7 +251,9 @@ func (rs *rpcServer) SetGroupPermissions(ctx context.Context, req *charon.SetGro
 	h.addRequest(1)
 
 	resp, err := h.handle(ctx, req)
-	h.handler.handle(err, "group permissions has been set")
+	if err = h.handler.handle(err, "group permissions has been set"); err != nil {
+		return nil, err
+	}
 
 	return resp, err
 }
@@ -240,7 +266,9 @@ func (rs *rpcServer) GetPermission(ctx context.Context, req *charon.GetPermissio
 	h.addRequest(1)
 
 	resp, err := h.handle(ctx, req)
-	h.handler.handle(err, "permission has been retrieved")
+	if err = h.handler.handle(err, "permission has been retrieved"); err != nil {
+		return nil, err
+	}
 
 	return resp, err
 }
@@ -254,7 +282,9 @@ func (rs *rpcServer) RegisterPermissions(ctx context.Context, req *charon.Regist
 	h.addRequest(1)
 
 	resp, err := h.handle(ctx, req)
-	h.handler.handle(err, "permissions has been registered")
+	if err = h.handler.handle(err, "permissions has been registered"); err != nil {
+		return nil, err
+	}
 
 	return resp, err
 }
@@ -267,7 +297,9 @@ func (rs *rpcServer) ListPermissions(ctx context.Context, req *charon.ListPermis
 	h.addRequest(1)
 
 	resp, err := h.handle(ctx, req)
-	h.handler.handle(err, "list of permissions has been retrieved")
+	if err = h.handler.handle(err, "list of permissions has been retrieved"); err != nil {
+		return nil, err
+	}
 
 	return resp, err
 }
@@ -281,7 +313,9 @@ func (rs *rpcServer) CreateUser(ctx context.Context, req *charon.CreateUserReque
 	h.addRequest(1)
 
 	resp, err := h.handle(ctx, req)
-	h.handler.handle(err, "user has been created")
+	if err = h.handler.handle(err, "user has been created"); err != nil {
+		return nil, err
+	}
 
 	return resp, err
 }
@@ -294,7 +328,9 @@ func (rs *rpcServer) ModifyUser(ctx context.Context, req *charon.ModifyUserReque
 	h.addRequest(1)
 
 	resp, err := h.handle(ctx, req)
-	h.handler.handle(err, "user has been modified")
+	if err = h.handler.handle(err, "user has been modified"); err != nil {
+		return nil, err
+	}
 
 	return resp, err
 }
@@ -307,7 +343,9 @@ func (rs *rpcServer) GetUser(ctx context.Context, req *charon.GetUserRequest) (*
 	h.addRequest(1)
 
 	resp, err := h.handle(ctx, req)
-	h.handler.handle(err, "user has been retrieved")
+	if err = h.handler.handle(err, "user has been retrieved"); err != nil {
+		return nil, err
+	}
 
 	return resp, err
 }
@@ -320,7 +358,9 @@ func (rs *rpcServer) ListUsers(ctx context.Context, req *charon.ListUsersRequest
 	h.addRequest(1)
 
 	resp, err := h.handle(ctx, req)
-	h.handler.handle(err, "list of users has been retrieved")
+	if err = h.handler.handle(err, "list of users has been retrieved"); err != nil {
+		return nil, err
+	}
 
 	return resp, err
 }
@@ -333,7 +373,9 @@ func (rs *rpcServer) DeleteUser(ctx context.Context, req *charon.DeleteUserReque
 	h.addRequest(1)
 
 	resp, err := h.handle(ctx, req)
-	h.handler.handle(err, "user has been deleted")
+	if err = h.handler.handle(err, "user has been deleted"); err != nil {
+		return nil, err
+	}
 
 	return resp, err
 }
@@ -346,7 +388,9 @@ func (rs *rpcServer) SetUserGroups(ctx context.Context, req *charon.SetUserGroup
 	h.addRequest(1)
 
 	resp, err := h.handle(ctx, req)
-	h.handler.handle(err, "user groups has been set")
+	if err = h.handler.handle(err, "user groups has been set"); err != nil {
+		return nil, err
+	}
 
 	return resp, err
 }
@@ -359,7 +403,9 @@ func (rs *rpcServer) ListUserGroups(ctx context.Context, req *charon.ListUserGro
 	h.addRequest(1)
 
 	resp, err := h.handle(ctx, req)
-	h.handler.handle(err, "list of user groups has been retrieved")
+	if err = h.handler.handle(err, "list of user groups has been retrieved"); err != nil {
+		return nil, err
+	}
 
 	return resp, err
 }
@@ -372,7 +418,9 @@ func (rs *rpcServer) SetUserPermissions(ctx context.Context, req *charon.SetUser
 	h.addRequest(1)
 
 	resp, err := h.handle(ctx, req)
-	h.handler.handle(err, "user permissions has been set")
+	if err = h.handler.handle(err, "user permissions has been set"); err != nil {
+		return nil, err
+	}
 
 	return resp, err
 }
@@ -385,7 +433,9 @@ func (rs *rpcServer) ListUserPermissions(ctx context.Context, req *charon.ListUs
 	h.addRequest(1)
 
 	resp, err := h.handle(ctx, req)
-	h.handler.handle(err, "list of user permissions has been retrieved")
+	if err = h.handler.handle(err, "list of user permissions has been retrieved"); err != nil {
+		return nil, err
+	}
 
 	return resp, err
 }

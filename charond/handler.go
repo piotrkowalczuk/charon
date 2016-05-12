@@ -1,6 +1,7 @@
 package charond
 
 import (
+	"errors"
 	"strings"
 
 	"database/sql"
@@ -12,6 +13,7 @@ import (
 	"github.com/piotrkowalczuk/sklog"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/peer"
 )
 
@@ -35,17 +37,26 @@ func newHandler(rs *rpcServer, ctx context.Context, endpoint string) *handler {
 	return h
 }
 
-func (h *handler) handle(err error, msg string) {
+func (h *handler) handle(err error, msg string) error {
 	if err != nil {
 		if h.monitor.enabled {
 			h.monitor.errors.With(metrics.Field{Key: "code", Value: grpc.Code(err).String()}).Add(1)
 		}
-		sklog.Error(h.logger, err)
+		sklog.Error(h.logger, errors.New(grpc.ErrorDesc(err)))
 
-		return
+		return grpc.Errorf(grpc.Code(err), "charond: %s", grpc.ErrorDesc(err))
 	}
 
 	sklog.Debug(h.logger, msg)
+	return nil
+}
+
+func handleMnemosyneError(err error) error {
+	if grpc.Code(err) == codes.NotFound {
+		return grpc.Errorf(codes.Unauthenticated, grpc.ErrorDesc(err))
+	}
+
+	return err
 }
 
 func (h *handler) loggerWith(keyval ...interface{}) {
@@ -70,6 +81,7 @@ func (h *handler) retrieveActor(ctx context.Context) (act *actor, err error) {
 				}, nil
 			}
 		}
+		err = handleMnemosyneError(err)
 		return
 	}
 	userID, err = charon.SubjectID(ses.SubjectId).UserID()
