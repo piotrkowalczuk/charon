@@ -1096,12 +1096,16 @@ func (r *userRepository) Find(c *userCriteria) ([]*userEntity, error) {
 		}
 	}
 
-	qbuf.WriteString(" OFFSET ")
-	pw.WriteTo(qbuf)
-	args.Add(c.offset)
-	qbuf.WriteString(" LIMIT ")
-	pw.WriteTo(qbuf)
-	args.Add(c.limit)
+	if c.offset > 0 {
+		qbuf.WriteString(" OFFSET ")
+		pw.WriteTo(qbuf)
+		args.Add(c.offset)
+	}
+	if c.limit > 0 {
+		qbuf.WriteString(" LIMIT ")
+		pw.WriteTo(qbuf)
+		args.Add(c.limit)
+	}
 
 	if r.dbg {
 		if err := r.log.Log("msg", qbuf.String(), "function", "Find"); err != nil {
@@ -2144,12 +2148,16 @@ func (r *groupRepository) Find(c *groupCriteria) ([]*groupEntity, error) {
 		}
 	}
 
-	qbuf.WriteString(" OFFSET ")
-	pw.WriteTo(qbuf)
-	args.Add(c.offset)
-	qbuf.WriteString(" LIMIT ")
-	pw.WriteTo(qbuf)
-	args.Add(c.limit)
+	if c.offset > 0 {
+		qbuf.WriteString(" OFFSET ")
+		pw.WriteTo(qbuf)
+		args.Add(c.offset)
+	}
+	if c.limit > 0 {
+		qbuf.WriteString(" LIMIT ")
+		pw.WriteTo(qbuf)
+		args.Add(c.limit)
+	}
 
 	if r.dbg {
 		if err := r.log.Log("msg", qbuf.String(), "function", "Find"); err != nil {
@@ -2948,12 +2956,16 @@ func (r *permissionRepository) Find(c *permissionCriteria) ([]*permissionEntity,
 		}
 	}
 
-	qbuf.WriteString(" OFFSET ")
-	pw.WriteTo(qbuf)
-	args.Add(c.offset)
-	qbuf.WriteString(" LIMIT ")
-	pw.WriteTo(qbuf)
-	args.Add(c.limit)
+	if c.offset > 0 {
+		qbuf.WriteString(" OFFSET ")
+		pw.WriteTo(qbuf)
+		args.Add(c.offset)
+	}
+	if c.limit > 0 {
+		qbuf.WriteString(" LIMIT ")
+		pw.WriteTo(qbuf)
+		args.Add(c.limit)
+	}
 
 	if r.dbg {
 		if err := r.log.Log("msg", qbuf.String(), "function", "Find"); err != nil {
@@ -3914,12 +3926,16 @@ func (r *userGroupsRepository) Find(c *userGroupsCriteria) ([]*userGroupsEntity,
 		}
 	}
 
-	qbuf.WriteString(" OFFSET ")
-	pw.WriteTo(qbuf)
-	args.Add(c.offset)
-	qbuf.WriteString(" LIMIT ")
-	pw.WriteTo(qbuf)
-	args.Add(c.limit)
+	if c.offset > 0 {
+		qbuf.WriteString(" OFFSET ")
+		pw.WriteTo(qbuf)
+		args.Add(c.offset)
+	}
+	if c.limit > 0 {
+		qbuf.WriteString(" LIMIT ")
+		pw.WriteTo(qbuf)
+		args.Add(c.limit)
+	}
 
 	if r.dbg {
 		if err := r.log.Log("msg", qbuf.String(), "function", "Find"); err != nil {
@@ -4863,12 +4879,16 @@ func (r *groupPermissionsRepository) Find(c *groupPermissionsCriteria) ([]*group
 		}
 	}
 
-	qbuf.WriteString(" OFFSET ")
-	pw.WriteTo(qbuf)
-	args.Add(c.offset)
-	qbuf.WriteString(" LIMIT ")
-	pw.WriteTo(qbuf)
-	args.Add(c.limit)
+	if c.offset > 0 {
+		qbuf.WriteString(" OFFSET ")
+		pw.WriteTo(qbuf)
+		args.Add(c.offset)
+	}
+	if c.limit > 0 {
+		qbuf.WriteString(" LIMIT ")
+		pw.WriteTo(qbuf)
+		args.Add(c.limit)
+	}
 
 	if r.dbg {
 		if err := r.log.Log("msg", qbuf.String(), "function", "Find"); err != nil {
@@ -5818,12 +5838,16 @@ func (r *userPermissionsRepository) Find(c *userPermissionsCriteria) ([]*userPer
 		}
 	}
 
-	qbuf.WriteString(" OFFSET ")
-	pw.WriteTo(qbuf)
-	args.Add(c.offset)
-	qbuf.WriteString(" LIMIT ")
-	pw.WriteTo(qbuf)
-	args.Add(c.limit)
+	if c.offset > 0 {
+		qbuf.WriteString(" OFFSET ")
+		pw.WriteTo(qbuf)
+		args.Add(c.offset)
+	}
+	if c.limit > 0 {
+		qbuf.WriteString(" LIMIT ")
+		pw.WriteTo(qbuf)
+		args.Add(c.limit)
+	}
 
 	if r.dbg {
 		if err := r.log.Log("msg", qbuf.String(), "function", "Find"); err != nil {
