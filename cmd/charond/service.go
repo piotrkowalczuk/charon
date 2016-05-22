@@ -4,7 +4,9 @@ import (
 	"io"
 	"io/ioutil"
 	stdlog "log"
+	"net"
 	"os"
+	"strconv"
 
 	"github.com/go-kit/kit/log"
 	_ "github.com/lib/pq"
@@ -31,7 +33,7 @@ func initLogger(adapter, format string, level int, context ...interface{}) log.L
 	case loggerAdapterNone:
 		a = ioutil.Discard
 	default:
-		stdlog.Fatal("mnemosyne: unsupported logger adapter")
+		stdlog.Fatal("charond: unsupported logger adapter")
 	}
 
 	switch format {
@@ -42,7 +44,7 @@ func initLogger(adapter, format string, level int, context ...interface{}) log.L
 	case loggerFormatLogFmt:
 		l = log.NewLogfmtLogger(a)
 	default:
-		stdlog.Fatal("mnemosyne: unsupported logger format")
+		stdlog.Fatal("charond: unsupported logger format")
 	}
 
 	l = log.NewContext(l).With(context...)
@@ -50,4 +52,13 @@ func initLogger(adapter, format string, level int, context ...interface{}) log.L
 	sklog.Info(l, "logger has been initialized successfully", "adapter", adapter, "format", format, "level", level)
 
 	return l
+}
+
+func initListener(logger log.Logger, host string, port int) net.Listener {
+	on := host + ":" + strconv.FormatInt(int64(port), 10)
+	listener, err := net.Listen("tcp", on)
+	if err != nil {
+		sklog.Fatal(logger, err)
+	}
+	return listener
 }

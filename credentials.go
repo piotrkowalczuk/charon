@@ -3,7 +3,8 @@ package charon
 import (
 	"fmt"
 
-	"github.com/piotrkowalczuk/mnemosyne"
+	"github.com/piotrkowalczuk/mnemosyne/mnemosynerpc"
+
 	"golang.org/x/net/context"
 	"google.golang.org/grpc/credentials"
 )
@@ -21,11 +22,11 @@ func NewCredentials(ts bool) credentials.Credentials {
 
 // GetRequestMetadata implements credentials.Credentials interface.
 func (c Credentials) GetRequestMetadata(ctx context.Context, uri ...string) (map[string]string, error) {
-	at, ok := mnemosyne.AccessTokenFromContext(ctx)
+	at, ok := mnemosynerpc.AccessTokenFromContext(ctx)
 	fmt.Println("GetRequestMetadata", at, ok)
 	if ok {
 		return map[string]string{
-			mnemosyne.AccessTokenMetadataKey: "Bearer " + at.Encode(),
+			mnemosynerpc.AccessTokenMetadataKey: "Bearer " + at.Encode(),
 		}, nil
 	}
 	// maybe someone already set metadata previously

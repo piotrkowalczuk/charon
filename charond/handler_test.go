@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/piotrkowalczuk/charon"
-	"github.com/piotrkowalczuk/mnemosyne"
+	"github.com/piotrkowalczuk/mnemosyne/mnemosynerpc"
 	"github.com/piotrkowalczuk/mnemosyne/mnemosynetest"
 	. "github.com/smartystreets/goconvey/convey"
 	"github.com/stretchr/testify/mock"
@@ -19,7 +19,7 @@ func TestHandler(t *testing.T) {
 		ctx context.Context
 		err error
 		act *actor
-		tkn mnemosyne.AccessToken
+		tkn mnemosynerpc.AccessToken
 	)
 
 	Convey("retrieveActor", t, func() {
@@ -47,10 +47,10 @@ func TestHandler(t *testing.T) {
 		})
 		Convey("As authenticated user", func() {
 			id = 7856282
-			tkn = mnemosyne.NewAccessToken([]byte("0000000001"), []byte("hash"))
-			ctx = mnemosyne.NewAccessTokenContext(context.Background(), tkn)
+			tkn = mnemosynerpc.NewAccessToken([]byte("0000000001"), []byte("hash"))
+			ctx = mnemosynerpc.NewAccessTokenContext(context.Background(), tkn)
 			sessionMock.On("FromContext", ctx).
-				Return(&mnemosyne.Session{
+				Return(&mnemosynerpc.Session{
 					AccessToken: &tkn,
 					SubjectId:   charon.SubjectIDFromInt64(id).String(),
 				}, nil).

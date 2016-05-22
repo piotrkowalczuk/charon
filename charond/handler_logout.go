@@ -16,7 +16,7 @@ func (lh *logoutHandler) handle(ctx context.Context, r *charon.LogoutRequest) (*
 		return nil, grpc.Errorf(codes.InvalidArgument, "charond: empty session id, logout aborted")
 	}
 
-	if err := lh.session.Abandon(ctx, *r.AccessToken); err != nil {
+	if err := lh.session.Abandon(ctx, r.AccessToken.Encode()); err != nil {
 		return nil, err
 	}
 

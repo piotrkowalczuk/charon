@@ -1,11 +1,8 @@
 package main
 
 import (
-	"net"
 	_ "net/http/pprof"
-	"strconv"
 
-	"github.com/go-kit/kit/log"
 	"github.com/piotrkowalczuk/charon/charond"
 	"github.com/piotrkowalczuk/sklog"
 	"google.golang.org/grpc/grpclog"
@@ -47,13 +44,4 @@ func main() {
 
 	done := make(chan struct{})
 	<-done
-}
-
-func initListener(logger log.Logger, host string, port int) net.Listener {
-	on := host + ":" + strconv.FormatInt(int64(port), 10)
-	listener, err := net.Listen("tcp", on)
-	if err != nil {
-		sklog.Fatal(logger, err)
-	}
-	return listener
 }

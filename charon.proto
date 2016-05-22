@@ -3,7 +3,7 @@ syntax = "proto3";
 package charon;
 
 import "github.com/golang/protobuf/ptypes/timestamp/timestamp.proto";
-import "github.com/piotrkowalczuk/mnemosyne/mnemosyne.proto";
+import "github.com/piotrkowalczuk/mnemosyne/mnemosynerpc/mnemosyne.proto";
 import "github.com/piotrkowalczuk/qtypes/qtypes.proto";
 import "github.com/piotrkowalczuk/ntypes/ntypes.proto";
 
@@ -60,20 +60,21 @@ service RPC {
 message LoginRequest {
     string username = 1;
     string password = 2;
+    string client = 3;
 }
 
 message LoginResponse {
-    mnemosyne.AccessToken access_token = 1;
+    mnemosynerpc.AccessToken access_token = 1;
 }
 
 message LogoutRequest {
-    mnemosyne.AccessToken access_token = 1;
+    mnemosynerpc.AccessToken access_token = 1;
 }
 
 message LogoutResponse {}
 
 message IsAuthenticatedRequest {
-    mnemosyne.AccessToken access_token = 1;
+    mnemosynerpc.AccessToken access_token = 1;
 }
 
 message IsAuthenticatedResponse {
@@ -99,7 +100,7 @@ message BelongsToResponse {
 }
 
 message SubjectRequest {
-    mnemosyne.AccessToken access_token = 1;
+    mnemosynerpc.AccessToken access_token = 1;
 }
 
 message SubjectResponse {

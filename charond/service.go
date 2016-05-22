@@ -11,11 +11,10 @@ import (
 	"github.com/piotrkowalczuk/mnemosyne"
 	"github.com/piotrkowalczuk/sklog"
 	stdprometheus "github.com/prometheus/client_golang/prometheus"
-	"google.golang.org/grpc"
 )
 
-func initPostgres(connectionString string, env string, logger log.Logger) (*sql.DB, error) {
-	postgres, err := sql.Open("postgres", connectionString)
+func initPostgres(address string, env string, logger log.Logger) (*sql.DB, error) {
+	postgres, err := sql.Open("postgres", address)
 	if err != nil {
 		return nil, err
 	}
@@ -31,23 +30,27 @@ func initPostgres(connectionString string, env string, logger log.Logger) (*sql.
 		return nil, err
 	}
 
-	sklog.Info(logger, "postgres connection has been established", "address", connectionString)
+	sklog.Info(logger, "postgres connection has been established", "address", address)
 
 	return postgres, nil
 }
 
-func initMnemosyne(address string, logger log.Logger) (*grpc.ClientConn, mnemosyne.Mnemosyne) {
+func initMnemosyne(address string, logger log.Logger) mnemosyne.Mnemosyne {
 	if address == "" {
-		sklog.Fatal(logger, errors.New("charond: missing mnemosyne address"))
+		sklog.Fatal(logger, errors.New("missing mnemosyne address"))
+
 	}
-	conn, err := grpc.Dial(address, grpc.WithInsecure(), grpc.WithUserAgent("charon"))
+	mnemo, err := mnemosyne.New(mnemosyne.MnemosyneOpts{
+		Addresses: []string{address},
+		UserAgent: "charon",
+	})
 	if err != nil {
 		sklog.Fatal(logger, err, "address", address)
 	}
 
 	sklog.Info(logger, "rpc connection to mnemosyne has been established", "address", address)
 
-	return conn, mnemosyne.New(conn, mnemosyne.MnemosyneOpts{})
+	return mnemo
 }
 
 func initPasswordHasher(cost int, logger log.Logger) charon.PasswordHasher {

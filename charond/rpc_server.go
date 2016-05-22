@@ -4,6 +4,7 @@ import (
 	"github.com/go-kit/kit/log"
 	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/mnemosyne"
+	"github.com/piotrkowalczuk/mnemosyne/mnemosynerpc"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/peer"
@@ -21,7 +22,7 @@ type rpcServer struct {
 
 type actor struct {
 	user        *userEntity
-	session     *mnemosyne.Session
+	session     *mnemosynerpc.Session
 	permissions charon.Permissions
 	isLocal     bool
 }

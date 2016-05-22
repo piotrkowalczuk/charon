@@ -48,9 +48,9 @@ func (lh *loginHandler) handle(ctx context.Context, r *charon.LoginRequest) (*ch
 		return nil, grpc.Errorf(codes.Unauthenticated, "charond: user is not active")
 	}
 
-	session, err := lh.session.Start(ctx, charon.SubjectIDFromInt64(user.ID).String(), map[string]string{
+	session, err := lh.session.Start(ctx, charon.SubjectIDFromInt64(user.ID).String(), r.Client, map[string]string{
 		"username":   user.Username,
-		"filht_name": user.FirstName,
+		"first_name": user.FirstName,
 		"last_name":  user.LastName,
 	})
 	if err != nil {

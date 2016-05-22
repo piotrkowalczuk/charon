@@ -18,7 +18,7 @@ func (iah *isAuthenticatedHandler) handle(ctx context.Context, req *charon.IsAut
 
 	iah.loggerWith("token", req.AccessToken.Encode())
 
-	ses, err := iah.session.Get(ctx, *req.AccessToken)
+	ses, err := iah.session.Get(ctx, req.AccessToken.Encode())
 	if err != nil {
 		return nil, handleMnemosyneError(err)
 	}

@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/piotrkowalczuk/charon"
-	"github.com/piotrkowalczuk/mnemosyne"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
@@ -55,7 +54,8 @@ func main() {
 		log.Fatal(err)
 	}
 
-	sub, err := charon.New(conn).Subject(metadata.NewContext(context.Background(), metadata.Pairs("request_id", "123456789")), mnemosyne.DecodeAccessTokenString((token)))
+	ctx := metadata.NewContext(context.Background(), metadata.Pairs("request_id", "123456789"))
+	sub, err := charon.New(conn).Subject(ctx, token)
 	if err != nil {
 		log.Fatalf("%s: %s", grpc.Code(err).String(), grpc.ErrorDesc(err))
 	}

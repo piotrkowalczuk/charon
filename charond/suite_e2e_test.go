@@ -11,8 +11,8 @@ import (
 	klog "github.com/go-kit/kit/log"
 	_ "github.com/lib/pq"
 	"github.com/piotrkowalczuk/charon"
-	"github.com/piotrkowalczuk/mnemosyne"
 	"github.com/piotrkowalczuk/mnemosyne/mnemosyned"
+	"github.com/piotrkowalczuk/mnemosyne/mnemosynerpc"
 	"github.com/piotrkowalczuk/sklog"
 	"golang.org/x/crypto/bcrypt"
 	"google.golang.org/grpc"
@@ -27,7 +27,7 @@ type endToEndSuite struct {
 	charonCloser io.Closer
 	charonConn   *grpc.ClientConn
 
-	mnemosyne       mnemosyne.RPCClient
+	mnemosyne       mnemosynerpc.RPCClient
 	mnemosyneConn   *grpc.ClientConn
 	mnemosyneCloser io.Closer
 }
@@ -46,12 +46,12 @@ func (etes *endToEndSuite) setup(t *testing.T) {
 	_ = klog.NewJSONLogger(os.Stdout)
 	grpclog.SetLogger(sklog.NewGRPCLogger(logger))
 
-	mnemosyneAddr, etes.mnemosyneCloser = mnemosyned.TestDaemon(t, &mnemosyned.TestDaemonOpts{
+	mnemosyneAddr, etes.mnemosyneCloser = mnemosyned.TestDaemon(t, mnemosyned.TestDaemonOpts{
 		StoragePostgresAddress: testPostgresAddress,
 	})
 	t.Logf("mnemosyne deamon running on: %s", mnemosyneAddr.String())
 
-	charonAddr, etes.charonCloser = TestDaemon(t, &TestDaemonOpts{
+	charonAddr, etes.charonCloser = TestDaemon(t, TestDaemonOpts{
 		PostgresAddress:  testPostgresAddress,
 		MnemosyneAddress: mnemosyneAddr.String(),
 	})
@@ -84,7 +84,7 @@ func (etes *endToEndSuite) setup(t *testing.T) {
 	}
 
 	etes.charon = charon.NewRPCClient(etes.charonConn)
-	etes.mnemosyne = mnemosyne.NewRPCClient(etes.mnemosyneConn)
+	etes.mnemosyne = mnemosynerpc.NewRPCClient(etes.mnemosyneConn)
 }
 
 func (etes *endToEndSuite) teardown(t *testing.T) {

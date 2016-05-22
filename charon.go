@@ -1,7 +1,7 @@
 package charon
 
 import (
-	"github.com/piotrkowalczuk/mnemosyne"
+	"github.com/piotrkowalczuk/mnemosyne/mnemosynerpc"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
@@ -26,11 +26,11 @@ func WithMetadata(kv ...string) CharonOption {
 // For more powerful low level API check RPCClient interface.
 type Charon interface {
 	IsGranted(context.Context, int64, Permission) (bool, error)
-	IsAuthenticated(context.Context, mnemosyne.AccessToken) (bool, error)
-	Subject(context.Context, mnemosyne.AccessToken) (*Subject, error)
+	IsAuthenticated(context.Context, string) (bool, error)
+	Subject(context.Context, string) (*Subject, error)
 	FromContext(context.Context) (*Subject, error)
-	Login(context.Context, string, string) (*mnemosyne.AccessToken, error)
-	Logout(context.Context, mnemosyne.AccessToken) error
+	Login(context.Context, string, string) (*mnemosynerpc.AccessToken, error)
+	Logout(context.Context, string) error
 }
 
 type charon struct {
@@ -67,8 +67,9 @@ func (c *charon) IsGranted(ctx context.Context, userID int64, perm Permission) (
 }
 
 // Subject implements Charon interface.
-func (c *charon) Subject(ctx context.Context, token mnemosyne.AccessToken) (*Subject, error) {
-	resp, err := c.client.Subject(ctx, &SubjectRequest{AccessToken: &token})
+func (c *charon) Subject(ctx context.Context, token string) (*Subject, error) {
+	at := mnemosynerpc.ParseAccessToken(token)
+	resp, err := c.client.Subject(ctx, &SubjectRequest{AccessToken: &at})
 	if err != nil {
 		return nil, err
 	}
@@ -101,9 +102,10 @@ func (c *charon) mapSubject(resp *SubjectResponse) *Subject {
 }
 
 // IsAuthenticated implements Charon interface.
-func (c *charon) IsAuthenticated(ctx context.Context, token mnemosyne.AccessToken) (bool, error) {
+func (c *charon) IsAuthenticated(ctx context.Context, token string) (bool, error) {
+	at := mnemosynerpc.ParseAccessToken(token)
 	res, err := c.client.IsAuthenticated(ctx, &IsAuthenticatedRequest{
-		AccessToken: &token,
+		AccessToken: &at,
 	})
 	if err != nil {
 		return false, err
@@ -113,7 +115,8 @@ func (c *charon) IsAuthenticated(ctx context.Context, token mnemosyne.AccessToke
 }
 
 // Login implements Charon interface.
-func (c *charon) Login(ctx context.Context, username, password string) (*mnemosyne.AccessToken, error) {
+// TODO: reimplement
+func (c *charon) Login(ctx context.Context, username, password string) (*mnemosynerpc.AccessToken, error) {
 	res, err := c.client.Login(ctx, &LoginRequest{
 		Username: username,
 		Password: password,
@@ -126,9 +129,10 @@ func (c *charon) Login(ctx context.Context, username, password string) (*mnemosy
 }
 
 // Logout implements Charon interface.
-func (c *charon) Logout(ctx context.Context, token mnemosyne.AccessToken) error {
+func (c *charon) Logout(ctx context.Context, token string) error {
+	at := mnemosynerpc.ParseAccessToken(token)
 	_, err := c.client.Logout(ctx, &LogoutRequest{
-		AccessToken: &token,
+		AccessToken: &at,
 	})
 	return err
 }

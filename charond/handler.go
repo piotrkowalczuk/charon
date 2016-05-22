@@ -10,6 +10,7 @@ import (
 	"github.com/go-kit/kit/metrics"
 	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/mnemosyne"
+	"github.com/piotrkowalczuk/mnemosyne/mnemosynerpc"
 	"github.com/piotrkowalczuk/sklog"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
@@ -67,7 +68,7 @@ func (h *handler) retrieveActor(ctx context.Context) (act *actor, err error) {
 	var (
 		userID   int64
 		entities []*permissionEntity
-		ses      *mnemosyne.Session
+		ses      *mnemosynerpc.Session
 	)
 
 	ses, err = h.session.FromContext(ctx)

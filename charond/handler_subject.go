@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/piotrkowalczuk/charon"
-	"github.com/piotrkowalczuk/mnemosyne"
+	"github.com/piotrkowalczuk/mnemosyne/mnemosynerpc"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -17,7 +17,7 @@ type subjectHandler struct {
 
 func (sh *subjectHandler) handle(ctx context.Context, r *charon.SubjectRequest) (*charon.SubjectResponse, error) {
 	var (
-		ses *mnemosyne.Session
+		ses *mnemosynerpc.Session
 		err error
 	)
 	if r.AccessToken == nil {
@@ -25,7 +25,7 @@ func (sh *subjectHandler) handle(ctx context.Context, r *charon.SubjectRequest) 
 			return nil, handleMnemosyneError(err)
 		}
 	} else {
-		if ses, err = sh.session.Get(ctx, *r.AccessToken); err != nil {
+		if ses, err = sh.session.Get(ctx, r.AccessToken.Encode()); err != nil {
 			return nil, handleMnemosyneError(err)
 		}
 	}

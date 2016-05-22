@@ -4,11 +4,10 @@ import (
 	"fmt"
 	"os"
 
-	"golang.org/x/net/context"
-
 	"github.com/piotrkowalczuk/charon"
-	"github.com/piotrkowalczuk/mnemosyne"
+	"github.com/piotrkowalczuk/mnemosyne/mnemosynerpc"
 	"github.com/piotrkowalczuk/ntypes"
+	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 )
@@ -48,7 +47,7 @@ func client() (client charon.RPCClient, ctx context.Context) {
 			os.Exit(1)
 		}
 
-		ctx = metadata.NewContext(ctx, metadata.Pairs(mnemosyne.AccessTokenMetadataKey, string(resp.AccessToken.Encode())))
+		ctx = metadata.NewContext(ctx, metadata.Pairs(mnemosynerpc.AccessTokenMetadataKey, resp.AccessToken.Encode()))
 	}
 
 	return

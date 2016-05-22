@@ -5,16 +5,16 @@ import (
 	"io"
 	"net"
 	"net/http"
+	"net/http/pprof"
 	"os"
 	"testing"
-
-	"golang.org/x/crypto/bcrypt"
 
 	"github.com/go-kit/kit/log"
 	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/mnemosyne"
 	"github.com/piotrkowalczuk/sklog"
 	"github.com/prometheus/client_golang/prometheus"
+	"golang.org/x/crypto/bcrypt"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/grpclog"
@@ -56,7 +56,7 @@ type Daemon struct {
 	logger        log.Logger
 	rpcListener   net.Listener
 	debugListener net.Listener
-	mnemosyneConn *grpc.ClientConn
+	mnemosyne     mnemosyne.Mnemosyne
 }
 
 // NewDaemon ...
@@ -72,7 +72,7 @@ func NewDaemon(opts *DaemonOpts) *Daemon {
 }
 
 // TestDaemon returns address of fully started in-memory daemon and closer to close it.
-func TestDaemon(t *testing.T, opts *TestDaemonOpts) (net.Addr, io.Closer) {
+func TestDaemon(t *testing.T, opts TestDaemonOpts) (net.Addr, io.Closer) {
 	l, err := net.Listen("tcp", "127.0.0.1:0") // any available address
 	if err != nil {
 		t.Fatalf("charon daemon tcp listener setup error: %s", err.Error())
@@ -100,10 +100,6 @@ func TestDaemon(t *testing.T, opts *TestDaemonOpts) (net.Addr, io.Closer) {
 
 // Run ...
 func (d *Daemon) Run() (err error) {
-	var (
-		mnemosyneClient mnemosyne.Mnemosyne
-	)
-
 	if err = d.initMonitoring(); err != nil {
 		return
 	}
@@ -113,7 +109,7 @@ func (d *Daemon) Run() (err error) {
 		return err
 	}
 	passwordHasher := initPasswordHasher(d.opts.PasswordBCryptCost, d.logger)
-	d.mnemosyneConn, mnemosyneClient = initMnemosyne(d.opts.MnemosyneAddress, d.logger)
+	d.mnemosyne = initMnemosyne(d.opts.MnemosyneAddress, d.logger)
 
 	repos := newRepositories(postgres)
 	if d.opts.Environment == EnvironmentTest {
@@ -138,7 +134,7 @@ func (d *Daemon) Run() (err error) {
 	gRPCServer := grpc.NewServer(opts...)
 	charonServer := &rpcServer{
 		logger:             d.logger,
-		session:            mnemosyneClient,
+		session:            d.mnemosyne,
 		passwordHasher:     passwordHasher,
 		permissionRegistry: permissionReg,
 		repository:         repos,
@@ -162,7 +158,14 @@ func (d *Daemon) Run() (err error) {
 		go func() {
 			sklog.Info(d.logger, "debug server is running", "address", d.debugListener.Addr().String(), "subsystem", d.opts.Subsystem, "namespace", d.opts.Namespace)
 			// TODO: implement keep alive
-			sklog.Error(d.logger, http.Serve(d.debugListener, nil))
+
+			mux := http.NewServeMux()
+			mux.Handle("/debug/pprof/", http.HandlerFunc(pprof.Index))
+			mux.Handle("/debug/pprof/cmdline", http.HandlerFunc(pprof.Cmdline))
+			mux.Handle("/debug/pprof/profile", http.HandlerFunc(pprof.Profile))
+			mux.Handle("/debug/pprof/symbol", http.HandlerFunc(pprof.Symbol))
+			mux.Handle("/debug/pprof/trace", http.HandlerFunc(pprof.Trace))
+			sklog.Error(d.logger, http.Serve(d.debugListener, mux))
 		}()
 	}
 
@@ -171,6 +174,9 @@ func (d *Daemon) Run() (err error) {
 
 // Close implements io.Closer interface.
 func (d *Daemon) Close() (err error) {
+	if err = d.mnemosyne.Close(); err != nil {
+		return
+	}
 	if err = d.rpcListener.Close(); err != nil {
 		return
 	}

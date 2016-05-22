@@ -2,7 +2,7 @@ package charontest
 
 import (
 	"github.com/piotrkowalczuk/charon"
-	"github.com/piotrkowalczuk/mnemosyne"
+	"github.com/piotrkowalczuk/mnemosyne/mnemosynerpc"
 	"github.com/stretchr/testify/mock"
 	"golang.org/x/net/context"
 )
@@ -18,14 +18,14 @@ func (c *Charon) IsGranted(ctx context.Context, userID int64, perm charon.Permis
 }
 
 // IsAuthenticated implements Charon interface.
-func (c *Charon) IsAuthenticated(ctx context.Context, token mnemosyne.AccessToken) (bool, error) {
+func (c *Charon) IsAuthenticated(ctx context.Context, token string) (bool, error) {
 	a := c.Called(ctx, token)
 
 	return a.Bool(0), a.Error(1)
 }
 
 // Subject implements Charon interface.
-func (c *Charon) Subject(ctx context.Context, token mnemosyne.AccessToken) (*charon.Subject, error) {
+func (c *Charon) Subject(ctx context.Context, token string) (*charon.Subject, error) {
 	a := c.Called(ctx, token)
 
 	subj, err := a.Get(0), a.Error(1)
@@ -49,7 +49,7 @@ func (c *Charon) FromContext(ctx context.Context) (*charon.Subject, error) {
 }
 
 // Login implements Charon interface.
-func (c *Charon) Login(ctx context.Context, username, password string) (*mnemosyne.AccessToken, error) {
+func (c *Charon) Login(ctx context.Context, username, password string) (*mnemosynerpc.AccessToken, error) {
 	a := c.Called(ctx, username, password)
 
 	ses, err := a.Get(0), a.Error(1)
@@ -57,11 +57,11 @@ func (c *Charon) Login(ctx context.Context, username, password string) (*mnemosy
 		return nil, err
 	}
 
-	return ses.(*mnemosyne.AccessToken), nil
+	return ses.(*mnemosynerpc.AccessToken), nil
 }
 
 // Logout implements Charon interface.
-func (c *Charon) Logout(ctx context.Context, token mnemosyne.AccessToken) error {
+func (c *Charon) Logout(ctx context.Context, token string) error {
 	a := c.Called(ctx, token)
 
 	return a.Error(0)
