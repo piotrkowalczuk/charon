@@ -29,8 +29,8 @@ func main() {
 	}
 }
 
-func client() (client charon.RPCClient, ctx context.Context) {
-	conn, err := grpc.Dial("localhost:8010", grpc.WithInsecure())
+func client(addr string) (client charon.RPCClient, ctx context.Context) {
+	conn, err := grpc.Dial(addr, grpc.WithInsecure())
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
@@ -54,7 +54,7 @@ func client() (client charon.RPCClient, ctx context.Context) {
 }
 
 func registerUser(config configuration) {
-	c, ctx := client()
+	c, ctx := client(config.address)
 	resp, err := c.CreateUser(ctx, &charon.CreateUserRequest{
 		Username:      config.register.username,
 		PlainPassword: config.register.password,

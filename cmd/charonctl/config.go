@@ -11,6 +11,7 @@ type configuration struct {
 	username string
 	password string
 	noauth   bool
+	address  string
 	register struct {
 		username  string
 		password  string
@@ -28,6 +29,7 @@ func (c *configuration) init() {
 	c.cl.BoolVar(&c.noauth, "noauth", false, "noauth")
 	c.cl.StringVar(&c.username, "username", "", "username")
 	c.cl.StringVar(&c.password, "password", "", "password")
+	c.cl.StringVar(&c.address, "address", "charon:8080", "charon address")
 	c.cl.StringVar(&c.register.username, "r.username", "", "username")
 	c.cl.StringVar(&c.register.password, "r.password", "", "password")
 	c.cl.StringVar(&c.register.firstName, "r.firstname", "", "first name")
