@@ -5,6 +5,8 @@ import (
 	"net"
 	"os"
 	"testing"
+
+	_ "github.com/lib/pq"
 )
 
 var (

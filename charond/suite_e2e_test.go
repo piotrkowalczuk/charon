@@ -9,7 +9,6 @@ import (
 	"time"
 
 	klog "github.com/go-kit/kit/log"
-	_ "github.com/lib/pq"
 	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/mnemosyne/mnemosyned"
 	"github.com/piotrkowalczuk/mnemosyne/mnemosynerpc"
