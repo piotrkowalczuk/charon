@@ -13,6 +13,8 @@ import:
 - package: github.com/lib/pq
 - package: github.com/pborman/uuid
 - package: github.com/piotrkowalczuk/mnemosyne
+  subpackages:
+  - mnemosynerpc
 - package: github.com/piotrkowalczuk/ntypes
 - package: github.com/piotrkowalczuk/pqcomp
 - package: github.com/piotrkowalczuk/pqt
