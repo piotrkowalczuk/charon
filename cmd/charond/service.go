@@ -9,7 +9,6 @@ import (
 	"strconv"
 
 	"github.com/go-kit/kit/log"
-	_ "github.com/lib/pq"
 	"github.com/piotrkowalczuk/sklog"
 )
 
