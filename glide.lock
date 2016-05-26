@@ -1,5 +1,5 @@
-hash: 6e87695b685dd9d0f73aeadd9921ae8cf537e1a0788b1d9061c2c152a891535f
-updated: 2016-05-26T11:19:22.774915445+02:00
+hash: e9449be2d5dafb7b67b26c86b6d3a9da536c9f7ca5af0cec7cffa6731a20857c
+updated: 2016-05-26T12:01:11.542923819+02:00
 imports:
 - name: github.com/beorn7/perks
   version: 3ac7bf7a47d159a033b107610db8a1b6575507a4
@@ -9,6 +9,10 @@ imports:
   version: 5215b55f46b2b919f50a1df0eaa5886afe4e3b3d
   subpackages:
   - spew
+- name: github.com/ernesto-jimenez/gogen
+  version: 6f83150fb39a1678d516c9af15dbb6b3e556d400
+  subpackages:
+  - imports
 - name: github.com/go-kit/kit
   version: 3122b441515cf7ceb82d0c89cbb25837395ac006
   subpackages:
@@ -51,7 +55,7 @@ imports:
 - name: github.com/piotrkowalczuk/pqcomp
   version: 631b19c36ded8bbe954cf8c15a0044c591033536
 - name: github.com/piotrkowalczuk/pqt
-  version: a376c7e3b869f0e3ee198fa1dca5521fe2220209
+  version: 9e00119f1ed2979df3fc61e6927aed7782931686
   subpackages:
   - pqtgo
   - pqtsql

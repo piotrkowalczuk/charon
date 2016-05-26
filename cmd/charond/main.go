@@ -1,6 +1,7 @@
 package main
 
 import (
+	_ "github.com/lib/pq"
 	"github.com/piotrkowalczuk/charon/charond"
 	"github.com/piotrkowalczuk/sklog"
 	"google.golang.org/grpc/grpclog"

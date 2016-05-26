@@ -70,8 +70,7 @@ install-generator:
 	@go install ${PACKAGE_CMD_GENERATOR}
 
 gen:
-	@go generate ./...
-	@goimports -w ./${SERVICE}d/schema.pqt.go
+	@go generate ./${SERVICE}d
 	@ls -al ${SERVICE}d | grep pqt
 
 run:

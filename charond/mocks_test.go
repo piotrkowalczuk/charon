@@ -4,11 +4,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/piotrkowalczuk/charon"
+	"github.com/piotrkowalczuk/ntypes"
 	"github.com/stretchr/testify/mock"
 )
-
-import "github.com/piotrkowalczuk/charon"
-import "github.com/piotrkowalczuk/ntypes"
 
 type mockGroupProvider struct {
 	mock.Mock

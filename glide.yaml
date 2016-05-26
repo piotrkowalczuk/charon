@@ -43,3 +43,6 @@ import:
   - grpclog
   - metadata
   - peer
+- package: github.com/ernesto-jimenez/gogen
+  subpackages:
+  - imports
