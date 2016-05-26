@@ -1,8 +1,6 @@
 package main
 
 import (
-	_ "net/http/pprof"
-
 	"github.com/piotrkowalczuk/charon/charond"
 	"github.com/piotrkowalczuk/sklog"
 	"google.golang.org/grpc/grpclog"

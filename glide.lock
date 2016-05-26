@@ -1,5 +1,5 @@
 hash: 6e87695b685dd9d0f73aeadd9921ae8cf537e1a0788b1d9061c2c152a891535f
-updated: 2016-05-26T10:54:35.950144839+02:00
+updated: 2016-05-26T11:19:22.774915445+02:00
 imports:
 - name: github.com/beorn7/perks
   version: 3ac7bf7a47d159a033b107610db8a1b6575507a4
@@ -43,7 +43,7 @@ imports:
 - name: github.com/pborman/uuid
   version: c55201b036063326c5b1b89ccfe45a184973d073
 - name: github.com/piotrkowalczuk/mnemosyne
-  version: 0f8833216501c3800b3adb1664ac15c6d97dbf06
+  version: ccead043c33663e4a1d6eef0991d19fc5fcb64fe
   subpackages:
   - mnemosynerpc
 - name: github.com/piotrkowalczuk/ntypes
