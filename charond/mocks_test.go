@@ -2,12 +2,12 @@ package charond
 
 import (
 	"testing"
-	"time"
 
 	"github.com/piotrkowalczuk/charon"
-	"github.com/piotrkowalczuk/ntypes"
 	"github.com/stretchr/testify/mock"
 )
+
+import "github.com/piotrkowalczuk/ntypes"
 
 type mockGroupProvider struct {
 	mock.Mock
@@ -709,13 +709,13 @@ func (_m *mockUserProvider) DeleteByID(id int64) (int64, error) {
 	return r0, r1
 }
 
-// UpdateByID provides a mock function with given fields: id, confirmationToken, createdAt, createdBy, firstName, isActive, isConfirmed, isStaff, isSuperuser, lastLoginAt, lastName, password, updatedAt, updatedBy, username
-func (_m *mockUserProvider) UpdateByID(id int64, confirmationToken []byte, createdAt *time.Time, createdBy *ntypes.Int64, firstName *ntypes.String, isActive *ntypes.Bool, isConfirmed *ntypes.Bool, isStaff *ntypes.Bool, isSuperuser *ntypes.Bool, lastLoginAt *time.Time, lastName *ntypes.String, password []byte, updatedAt *time.Time, updatedBy *ntypes.Int64, username *ntypes.String) (*userEntity, error) {
-	ret := _m.Called(id, confirmationToken, createdAt, createdBy, firstName, isActive, isConfirmed, isStaff, isSuperuser, lastLoginAt, lastName, password, updatedAt, updatedBy, username)
+// UpdateByID provides a mock function with given fields: _a0
+func (_m *mockUserProvider) UpdateByID(_a0 *userPatch) (*userEntity, error) {
+	ret := _m.Called(_a0)
 
 	var r0 *userEntity
-	if rf, ok := ret.Get(0).(func(int64, []byte, *time.Time, *ntypes.Int64, *ntypes.String, *ntypes.Bool, *ntypes.Bool, *ntypes.Bool, *ntypes.Bool, *time.Time, *ntypes.String, []byte, *time.Time, *ntypes.Int64, *ntypes.String) *userEntity); ok {
-		r0 = rf(id, confirmationToken, createdAt, createdBy, firstName, isActive, isConfirmed, isStaff, isSuperuser, lastLoginAt, lastName, password, updatedAt, updatedBy, username)
+	if rf, ok := ret.Get(0).(func(*userPatch) *userEntity); ok {
+		r0 = rf(_a0)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*userEntity)
@@ -723,8 +723,8 @@ func (_m *mockUserProvider) UpdateByID(id int64, confirmationToken []byte, creat
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(int64, []byte, *time.Time, *ntypes.Int64, *ntypes.String, *ntypes.Bool, *ntypes.Bool, *ntypes.Bool, *ntypes.Bool, *time.Time, *ntypes.String, []byte, *time.Time, *ntypes.Int64, *ntypes.String) error); ok {
-		r1 = rf(id, confirmationToken, createdAt, createdBy, firstName, isActive, isConfirmed, isStaff, isSuperuser, lastLoginAt, lastName, password, updatedAt, updatedBy, username)
+	if rf, ok := ret.Get(1).(func(*userPatch) error); ok {
+		r1 = rf(_a0)
 	} else {
 		r1 = ret.Error(1)
 	}

@@ -59,11 +59,17 @@ type groupProvider interface {
 	SetPermissions(id int64, permissions ...charon.Permission) (int64, int64, error)
 }
 
+type groupRepository struct {
+	groupRepositoryBase
+}
+
 func newGroupRepository(dbPool *sql.DB) groupProvider {
 	return &groupRepository{
-		db:      dbPool,
-		table:   tableGroup,
-		columns: tableGroupColumns,
+		groupRepositoryBase: groupRepositoryBase{
+			db:      dbPool,
+			table:   tableGroup,
+			columns: tableGroupColumns,
+		},
 	}
 }
 

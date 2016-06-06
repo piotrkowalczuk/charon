@@ -11,11 +11,17 @@ type userGroupsProvider interface {
 	Set(userID int64, groupIDs []int64) (int64, int64, error)
 }
 
+type userGroupsRepository struct {
+	userGroupsRepositoryBase
+}
+
 func newUserGroupsRepository(dbPool *sql.DB) userGroupsProvider {
 	return &userGroupsRepository{
-		db:      dbPool,
-		table:   tableUserGroups,
-		columns: tableUserGroupsColumns,
+		userGroupsRepositoryBase: userGroupsRepositoryBase{
+			db:      dbPool,
+			table:   tableUserGroups,
+			columns: tableUserGroupsColumns,
+		},
 	}
 }
 

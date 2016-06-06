@@ -3,12 +3,10 @@ package charond
 import (
 	"database/sql"
 	"strings"
-	"time"
 
 	"github.com/golang/protobuf/ptypes"
 	pbts "github.com/golang/protobuf/ptypes/timestamp"
 	"github.com/piotrkowalczuk/charon"
-	"github.com/piotrkowalczuk/ntypes"
 )
 
 const (
@@ -73,33 +71,23 @@ type userProvider interface {
 	FindOneByID(id int64) (*userEntity, error)
 	FindOneByUsername(username string) (*userEntity, error)
 	DeleteByID(id int64) (int64, error)
-	UpdateByID(
-		id int64,
-		confirmationToken []byte,
-		createdAt *time.Time,
-		createdBy *ntypes.Int64,
-		firstName *ntypes.String,
-		isActive *ntypes.Bool,
-		isConfirmed *ntypes.Bool,
-		isStaff *ntypes.Bool,
-		isSuperuser *ntypes.Bool,
-		lastLoginAt *time.Time,
-		lastName *ntypes.String,
-		password []byte,
-		updatedAt *time.Time,
-		updatedBy *ntypes.Int64,
-		username *ntypes.String,
-	) (*userEntity, error)
+	UpdateByID(*userPatch) (*userEntity, error)
 	RegistrationConfirmation(id int64, confirmationToken string) error
 	IsGranted(id int64, permission charon.Permission) (bool, error)
 	SetPermissions(id int64, permissions ...charon.Permission) (int64, int64, error)
 }
 
+type userRepository struct {
+	userRepositoryBase
+}
+
 func newUserRepository(dbPool *sql.DB) userProvider {
 	return &userRepository{
-		db:      dbPool,
-		table:   tableUser,
-		columns: tableUserColumns,
+		userRepositoryBase: userRepositoryBase{
+			db:      dbPool,
+			table:   tableGroup,
+			columns: tableGroupColumns,
+		},
 	}
 }
 

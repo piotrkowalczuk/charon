@@ -6,10 +6,16 @@ type groupPermissionsProvider interface {
 	Insert(entity *groupPermissionsEntity) (*groupPermissionsEntity, error)
 }
 
+type groupPermissionsRepository struct {
+	groupPermissionsRepositoryBase
+}
+
 func newGroupPermissionsRepository(dbPool *sql.DB) groupPermissionsProvider {
 	return &groupPermissionsRepository{
-		db:      dbPool,
-		table:   tableGroupPermissions,
-		columns: tableGroupPermissionsColumns,
+		groupPermissionsRepositoryBase{
+			db:      dbPool,
+			table:   tableGroupPermissions,
+			columns: tableGroupPermissionsColumns,
+		},
 	}
 }

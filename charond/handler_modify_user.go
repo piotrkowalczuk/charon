@@ -34,23 +34,18 @@ func (muh *modifyUserHandler) handle(ctx context.Context, req *charon.ModifyUser
 		return nil, grpc.Errorf(codes.PermissionDenied, "charond: "+hint)
 	}
 
-	ent, err = muh.repository.user.UpdateByID(
-		req.Id,
-		nil,
-		nil,
-		&ntypes.Int64{Int64: actor.user.ID, Valid: actor.user.ID != 0},
-		req.FirstName,
-		req.IsActive,
-		req.IsConfirmed,
-		req.IsStaff,
-		req.IsSuperuser,
-		nil,
-		req.LastName,
-		req.SecurePassword,
-		nil,
-		nil,
-		req.Username,
-	)
+	ent, err = muh.repository.user.UpdateByID(&userPatch{
+		firstName:   req.FirstName,
+		id:          req.Id,
+		isActive:    req.IsActive,
+		isConfirmed: req.IsConfirmed,
+		isStaff:     req.IsStaff,
+		isSuperuser: req.IsSuperuser,
+		lastName:    req.LastName,
+		password:    req.SecurePassword,
+		updatedBy:   &ntypes.Int64{Int64: actor.user.ID, Valid: actor.user.ID != 0},
+		username:    req.Username,
+	})
 	if err != nil {
 		switch pqt.ErrorConstraint(err) {
 		case tableUserConstraintUsernameUnique:

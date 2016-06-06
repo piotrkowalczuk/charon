@@ -75,72 +75,159 @@ type userEntity struct {
 	UpdatedAt         *time.Time
 	UpdatedBy         *ntypes.Int64
 	Username          string
-	Author            []*userEntity
-	Modifier          []*userEntity
+	Author            *userEntity
+	Modifier          *userEntity
 	Permission        []*permissionEntity
 	Group             []*groupEntity
 }
+
+func (e *userEntity) Prop(cn string) (interface{}, bool) {
+	switch cn {
+	case tableUserColumnConfirmationToken:
+		return &e.ConfirmationToken, true
+	case tableUserColumnCreatedAt:
+		return &e.CreatedAt, true
+	case tableUserColumnCreatedBy:
+		return &e.CreatedBy, true
+	case tableUserColumnFirstName:
+		return &e.FirstName, true
+	case tableUserColumnID:
+		return &e.ID, true
+	case tableUserColumnIsActive:
+		return &e.IsActive, true
+	case tableUserColumnIsConfirmed:
+		return &e.IsConfirmed, true
+	case tableUserColumnIsStaff:
+		return &e.IsStaff, true
+	case tableUserColumnIsSuperuser:
+		return &e.IsSuperuser, true
+	case tableUserColumnLastLoginAt:
+		return &e.LastLoginAt, true
+	case tableUserColumnLastName:
+		return &e.LastName, true
+	case tableUserColumnPassword:
+		return &e.Password, true
+	case tableUserColumnUpdatedAt:
+		return &e.UpdatedAt, true
+	case tableUserColumnUpdatedBy:
+		return &e.UpdatedBy, true
+	case tableUserColumnUsername:
+		return &e.Username, true
+	default:
+		return nil, false
+	}
+}
+func (e *userEntity) Props(cns ...string) ([]interface{}, error) {
+
+	res := make([]interface{}, 0, len(cns))
+	for _, cn := range cns {
+		if prop, ok := e.Prop(cn); ok {
+			res = append(res, prop)
+		} else {
+			return nil, fmt.Errorf("unexpected column provided: %s", cn)
+		}
+	}
+	return res, nil
+}
+
+// userIterator is not thread safe.
+type userIterator struct {
+	rows *sql.Rows
+	cols []string
+}
+
+func (i *userIterator) Next() bool {
+	return i.rows.Next()
+}
+
+func (i *userIterator) Close() error {
+	return i.rows.Close()
+}
+
+func (i *userIterator) Err() error {
+	return i.rows.Err()
+}
+
+// Columns is wrapper around sql.Rows.Columns method, that also cache outpu inside iterator.
+func (i *userIterator) Columns() ([]string, error) {
+	if i.cols == nil {
+		cols, err := i.rows.Columns()
+		if err != nil {
+			return nil, err
+		}
+		i.cols = cols
+	}
+	return i.cols, nil
+}
+
+// Ent is wrapper arround user method that makes iterator more generic.
+func (i *userIterator) Ent() (interface{}, error) {
+	return i.User()
+}
+
+func (i *userIterator) User() (*userEntity, error) {
+	var ent userEntity
+	cols, err := i.rows.Columns()
+	if err != nil {
+		return nil, err
+	}
+
+	props, err := ent.Props(cols...)
+	if err != nil {
+		return nil, err
+	}
+	if err := i.rows.Scan(props...); err != nil {
+		return nil, err
+	}
+	return &ent, nil
+}
+
 type userCriteria struct {
 	offset, limit     int64
 	sort              map[string]bool
 	confirmationToken []byte
-
-	createdAt *qtypes.Timestamp
-
-	createdBy *qtypes.Int64
-
-	firstName *qtypes.String
-
-	id *qtypes.Int64
-
-	isActive *ntypes.Bool
-
-	isConfirmed *ntypes.Bool
-
-	isStaff *ntypes.Bool
-
-	isSuperuser *ntypes.Bool
-
-	lastLoginAt *qtypes.Timestamp
-
-	lastName *qtypes.String
-
-	password []byte
-
-	updatedAt *qtypes.Timestamp
-
-	updatedBy *qtypes.Int64
-
-	username *qtypes.String
+	createdAt         *qtypes.Timestamp
+	createdBy         *qtypes.Int64
+	firstName         *qtypes.String
+	id                *qtypes.Int64
+	isActive          *ntypes.Bool
+	isConfirmed       *ntypes.Bool
+	isStaff           *ntypes.Bool
+	isSuperuser       *ntypes.Bool
+	lastLoginAt       *qtypes.Timestamp
+	lastName          *qtypes.String
+	password          []byte
+	updatedAt         *qtypes.Timestamp
+	updatedBy         *qtypes.Int64
+	username          *qtypes.String
 }
 
-type userRepository struct {
-	table   string
-	columns []string
-	db      *sql.DB
-	dbg     bool
-	log     log.Logger
-}
+func (c *userCriteria) WriteSQL(b *bytes.Buffer, pw *pqtgo.PlaceholderWriter, args *pqtgo.Arguments) (wr int64, err error) {
+	var (
+		wrt   int
+		wrt64 int64
+		dirty bool
+	)
 
-func (r *userRepository) Find(c *userCriteria) ([]*userEntity, error) {
 	wbuf := bytes.NewBuffer(nil)
-	qbuf := bytes.NewBuffer(nil)
-	qbuf.WriteString("SELECT ")
-	qbuf.WriteString(strings.Join(r.columns, ", "))
-	qbuf.WriteString(" FROM ")
-	qbuf.WriteString(r.table)
-
-	pw := pqtgo.NewPlaceholderWriter()
-	args := pqtgo.NewArguments(0)
-	dirty := false
 	if c.confirmationToken != nil {
 		if dirty {
 			wbuf.WriteString(" AND ")
 		}
 		dirty = true
-		wbuf.WriteString(tableUserColumnConfirmationToken)
-		wbuf.WriteString("=")
-		pw.WriteTo(wbuf)
+		if wrt, err = wbuf.WriteString(tableUserColumnConfirmationToken); err != nil {
+			return
+		}
+		wr += int64(wrt)
+		if wrt, err = wbuf.WriteString("="); err != nil {
+			return
+		}
+		wr += int64(wrt)
+		if wrt64, err = pw.WriteTo(wbuf); err != nil {
+			return
+		}
+		wr += wrt64
+
 		args.Add(c.confirmationToken)
 	}
 
@@ -149,9 +236,8 @@ func (r *userRepository) Find(c *userCriteria) ([]*userEntity, error) {
 		if createdAtt1 != nil {
 			createdAt1, err := ptypes.Timestamp(createdAtt1)
 			if err != nil {
-				return nil, err
+				return wr, err
 			}
-
 			switch c.createdAt.Type {
 			case qtypes.NumericQueryType_NOT_A_NUMBER:
 				if dirty {
@@ -172,17 +258,11 @@ func (r *userRepository) Find(c *userCriteria) ([]*userEntity, error) {
 				dirty = true
 
 				wbuf.WriteString(tableUserColumnCreatedAt)
-				wbuf.WriteString("=")
-				pw.WriteTo(wbuf)
-				args.Add(c.createdAt.Value())
-			case qtypes.NumericQueryType_NOT_EQUAL:
-				if dirty {
-					wbuf.WriteString(" AND ")
+				if c.createdAt.Negation {
+					wbuf.WriteString("<>")
+				} else {
+					wbuf.WriteString("=")
 				}
-				dirty = true
-
-				wbuf.WriteString(tableUserColumnCreatedAt)
-				wbuf.WriteString("!=")
 				pw.WriteTo(wbuf)
 				args.Add(c.createdAt.Value())
 			case qtypes.NumericQueryType_GREATER:
@@ -253,16 +333,13 @@ func (r *userRepository) Find(c *userCriteria) ([]*userEntity, error) {
 				if createdAtt2 != nil {
 					createdAt2, err := ptypes.Timestamp(createdAtt2)
 					if err != nil {
-						return nil, err
+						return wr, err
 					}
-
 					wbuf.WriteString(tableUserColumnCreatedAt)
 					wbuf.WriteString(" > ")
 					pw.WriteTo(wbuf)
 					args.Add(createdAt1)
-
 					wbuf.WriteString(" AND ")
-
 					wbuf.WriteString(tableUserColumnCreatedAt)
 					wbuf.WriteString(" < ")
 					pw.WriteTo(wbuf)
@@ -293,17 +370,11 @@ func (r *userRepository) Find(c *userCriteria) ([]*userEntity, error) {
 			dirty = true
 
 			wbuf.WriteString(tableUserColumnCreatedBy)
-			wbuf.WriteString("=")
-			pw.WriteTo(wbuf)
-			args.Add(c.createdBy.Value())
-		case qtypes.NumericQueryType_NOT_EQUAL:
-			if dirty {
-				wbuf.WriteString(" AND ")
+			if c.createdBy.Negation {
+				wbuf.WriteString(" <> ")
+			} else {
+				wbuf.WriteString("=")
 			}
-			dirty = true
-
-			wbuf.WriteString(tableUserColumnCreatedBy)
-			wbuf.WriteString(" <> ")
 			pw.WriteTo(wbuf)
 			args.Add(c.createdBy.Value())
 		case qtypes.NumericQueryType_GREATER:
@@ -313,7 +384,11 @@ func (r *userRepository) Find(c *userCriteria) ([]*userEntity, error) {
 			dirty = true
 
 			wbuf.WriteString(tableUserColumnCreatedBy)
-			wbuf.WriteString(" > ")
+			if c.createdBy.Negation {
+				wbuf.WriteString(" <= ")
+			} else {
+				wbuf.WriteString(" > ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.createdBy.Value())
 		case qtypes.NumericQueryType_GREATER_EQUAL:
@@ -323,7 +398,11 @@ func (r *userRepository) Find(c *userCriteria) ([]*userEntity, error) {
 			dirty = true
 
 			wbuf.WriteString(tableUserColumnCreatedBy)
-			wbuf.WriteString(" >= ")
+			if c.createdBy.Negation {
+				wbuf.WriteString(" < ")
+			} else {
+				wbuf.WriteString(" >= ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.createdBy.Value())
 		case qtypes.NumericQueryType_LESS:
@@ -333,7 +412,11 @@ func (r *userRepository) Find(c *userCriteria) ([]*userEntity, error) {
 			dirty = true
 
 			wbuf.WriteString(tableUserColumnCreatedBy)
-			wbuf.WriteString(" < ")
+			if c.createdBy.Negation {
+				wbuf.WriteString(" >= ")
+			} else {
+				wbuf.WriteString(" < ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.createdBy)
 		case qtypes.NumericQueryType_LESS_EQUAL:
@@ -343,7 +426,11 @@ func (r *userRepository) Find(c *userCriteria) ([]*userEntity, error) {
 			dirty = true
 
 			wbuf.WriteString(tableUserColumnCreatedBy)
-			wbuf.WriteString(" >= ")
+			if c.createdBy.Negation {
+				wbuf.WriteString(" > ")
+			} else {
+				wbuf.WriteString(" <= ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.createdBy.Value())
 		case qtypes.NumericQueryType_IN:
@@ -354,7 +441,11 @@ func (r *userRepository) Find(c *userCriteria) ([]*userEntity, error) {
 				dirty = true
 
 				wbuf.WriteString(tableUserColumnCreatedBy)
-				wbuf.WriteString(" IN (")
+				if c.createdBy.Negation {
+					wbuf.WriteString(" NOT IN (")
+				} else {
+					wbuf.WriteString(" IN (")
+				}
 				for i, v := range c.createdBy.Values {
 					if i != 0 {
 						wbuf.WriteString(",")
@@ -371,14 +462,20 @@ func (r *userRepository) Find(c *userCriteria) ([]*userEntity, error) {
 			dirty = true
 
 			wbuf.WriteString(tableUserColumnCreatedBy)
-			wbuf.WriteString(" > ")
+			if c.createdBy.Negation {
+				wbuf.WriteString(" <= ")
+			} else {
+				wbuf.WriteString(" > ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.createdBy.Values[0])
-
 			wbuf.WriteString(" AND ")
-
 			wbuf.WriteString(tableUserColumnCreatedBy)
-			wbuf.WriteString(" < ")
+			if c.createdBy.Negation {
+				wbuf.WriteString(" >= ")
+			} else {
+				wbuf.WriteString(" < ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.createdBy.Values[1])
 		}
@@ -405,7 +502,11 @@ func (r *userRepository) Find(c *userCriteria) ([]*userEntity, error) {
 			dirty = true
 
 			wbuf.WriteString(tableUserColumnFirstName)
-			wbuf.WriteString("=")
+			if c.firstName.Negation {
+				wbuf.WriteString(" <> ")
+			} else {
+				wbuf.WriteString(" = ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.firstName.Value())
 		case qtypes.TextQueryType_SUBSTRING:
@@ -415,7 +516,11 @@ func (r *userRepository) Find(c *userCriteria) ([]*userEntity, error) {
 			dirty = true
 
 			wbuf.WriteString(tableUserColumnFirstName)
-			wbuf.WriteString(" LIKE ")
+			if c.firstName.Negation {
+				wbuf.WriteString(" NOT LIKE ")
+			} else {
+				wbuf.WriteString(" LIKE ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(fmt.Sprintf("%%%s%%", c.firstName.Value()))
 		case qtypes.TextQueryType_HAS_PREFIX:
@@ -425,7 +530,11 @@ func (r *userRepository) Find(c *userCriteria) ([]*userEntity, error) {
 			dirty = true
 
 			wbuf.WriteString(tableUserColumnFirstName)
-			wbuf.WriteString(" LIKE ")
+			if c.firstName.Negation {
+				wbuf.WriteString(" NOT LIKE ")
+			} else {
+				wbuf.WriteString(" LIKE ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(fmt.Sprintf("%s%%", c.firstName.Value()))
 		case qtypes.TextQueryType_HAS_SUFFIX:
@@ -435,7 +544,11 @@ func (r *userRepository) Find(c *userCriteria) ([]*userEntity, error) {
 			dirty = true
 
 			wbuf.WriteString(tableUserColumnFirstName)
-			wbuf.WriteString(" LIKE ")
+			if c.firstName.Negation {
+				wbuf.WriteString(" NOT LIKE ")
+			} else {
+				wbuf.WriteString(" LIKE ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(fmt.Sprintf("%%%s", c.firstName.Value()))
 		}
@@ -462,17 +575,11 @@ func (r *userRepository) Find(c *userCriteria) ([]*userEntity, error) {
 			dirty = true
 
 			wbuf.WriteString(tableUserColumnID)
-			wbuf.WriteString("=")
-			pw.WriteTo(wbuf)
-			args.Add(c.id.Value())
-		case qtypes.NumericQueryType_NOT_EQUAL:
-			if dirty {
-				wbuf.WriteString(" AND ")
+			if c.id.Negation {
+				wbuf.WriteString(" <> ")
+			} else {
+				wbuf.WriteString("=")
 			}
-			dirty = true
-
-			wbuf.WriteString(tableUserColumnID)
-			wbuf.WriteString(" <> ")
 			pw.WriteTo(wbuf)
 			args.Add(c.id.Value())
 		case qtypes.NumericQueryType_GREATER:
@@ -482,7 +589,11 @@ func (r *userRepository) Find(c *userCriteria) ([]*userEntity, error) {
 			dirty = true
 
 			wbuf.WriteString(tableUserColumnID)
-			wbuf.WriteString(" > ")
+			if c.id.Negation {
+				wbuf.WriteString(" <= ")
+			} else {
+				wbuf.WriteString(" > ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.id.Value())
 		case qtypes.NumericQueryType_GREATER_EQUAL:
@@ -492,7 +603,11 @@ func (r *userRepository) Find(c *userCriteria) ([]*userEntity, error) {
 			dirty = true
 
 			wbuf.WriteString(tableUserColumnID)
-			wbuf.WriteString(" >= ")
+			if c.id.Negation {
+				wbuf.WriteString(" < ")
+			} else {
+				wbuf.WriteString(" >= ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.id.Value())
 		case qtypes.NumericQueryType_LESS:
@@ -502,7 +617,11 @@ func (r *userRepository) Find(c *userCriteria) ([]*userEntity, error) {
 			dirty = true
 
 			wbuf.WriteString(tableUserColumnID)
-			wbuf.WriteString(" < ")
+			if c.id.Negation {
+				wbuf.WriteString(" >= ")
+			} else {
+				wbuf.WriteString(" < ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.id)
 		case qtypes.NumericQueryType_LESS_EQUAL:
@@ -512,7 +631,11 @@ func (r *userRepository) Find(c *userCriteria) ([]*userEntity, error) {
 			dirty = true
 
 			wbuf.WriteString(tableUserColumnID)
-			wbuf.WriteString(" >= ")
+			if c.id.Negation {
+				wbuf.WriteString(" > ")
+			} else {
+				wbuf.WriteString(" <= ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.id.Value())
 		case qtypes.NumericQueryType_IN:
@@ -523,7 +646,11 @@ func (r *userRepository) Find(c *userCriteria) ([]*userEntity, error) {
 				dirty = true
 
 				wbuf.WriteString(tableUserColumnID)
-				wbuf.WriteString(" IN (")
+				if c.id.Negation {
+					wbuf.WriteString(" NOT IN (")
+				} else {
+					wbuf.WriteString(" IN (")
+				}
 				for i, v := range c.id.Values {
 					if i != 0 {
 						wbuf.WriteString(",")
@@ -540,14 +667,20 @@ func (r *userRepository) Find(c *userCriteria) ([]*userEntity, error) {
 			dirty = true
 
 			wbuf.WriteString(tableUserColumnID)
-			wbuf.WriteString(" > ")
+			if c.id.Negation {
+				wbuf.WriteString(" <= ")
+			} else {
+				wbuf.WriteString(" > ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.id.Values[0])
-
 			wbuf.WriteString(" AND ")
-
 			wbuf.WriteString(tableUserColumnID)
-			wbuf.WriteString(" < ")
+			if c.id.Negation {
+				wbuf.WriteString(" >= ")
+			} else {
+				wbuf.WriteString(" < ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.id.Values[1])
 		}
@@ -599,9 +732,8 @@ func (r *userRepository) Find(c *userCriteria) ([]*userEntity, error) {
 		if lastLoginAtt1 != nil {
 			lastLoginAt1, err := ptypes.Timestamp(lastLoginAtt1)
 			if err != nil {
-				return nil, err
+				return wr, err
 			}
-
 			switch c.lastLoginAt.Type {
 			case qtypes.NumericQueryType_NOT_A_NUMBER:
 				if dirty {
@@ -622,17 +754,11 @@ func (r *userRepository) Find(c *userCriteria) ([]*userEntity, error) {
 				dirty = true
 
 				wbuf.WriteString(tableUserColumnLastLoginAt)
-				wbuf.WriteString("=")
-				pw.WriteTo(wbuf)
-				args.Add(c.lastLoginAt.Value())
-			case qtypes.NumericQueryType_NOT_EQUAL:
-				if dirty {
-					wbuf.WriteString(" AND ")
+				if c.lastLoginAt.Negation {
+					wbuf.WriteString("<>")
+				} else {
+					wbuf.WriteString("=")
 				}
-				dirty = true
-
-				wbuf.WriteString(tableUserColumnLastLoginAt)
-				wbuf.WriteString("!=")
 				pw.WriteTo(wbuf)
 				args.Add(c.lastLoginAt.Value())
 			case qtypes.NumericQueryType_GREATER:
@@ -703,16 +829,13 @@ func (r *userRepository) Find(c *userCriteria) ([]*userEntity, error) {
 				if lastLoginAtt2 != nil {
 					lastLoginAt2, err := ptypes.Timestamp(lastLoginAtt2)
 					if err != nil {
-						return nil, err
+						return wr, err
 					}
-
 					wbuf.WriteString(tableUserColumnLastLoginAt)
 					wbuf.WriteString(" > ")
 					pw.WriteTo(wbuf)
 					args.Add(lastLoginAt1)
-
 					wbuf.WriteString(" AND ")
-
 					wbuf.WriteString(tableUserColumnLastLoginAt)
 					wbuf.WriteString(" < ")
 					pw.WriteTo(wbuf)
@@ -743,7 +866,11 @@ func (r *userRepository) Find(c *userCriteria) ([]*userEntity, error) {
 			dirty = true
 
 			wbuf.WriteString(tableUserColumnLastName)
-			wbuf.WriteString("=")
+			if c.lastName.Negation {
+				wbuf.WriteString(" <> ")
+			} else {
+				wbuf.WriteString(" = ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.lastName.Value())
 		case qtypes.TextQueryType_SUBSTRING:
@@ -753,7 +880,11 @@ func (r *userRepository) Find(c *userCriteria) ([]*userEntity, error) {
 			dirty = true
 
 			wbuf.WriteString(tableUserColumnLastName)
-			wbuf.WriteString(" LIKE ")
+			if c.lastName.Negation {
+				wbuf.WriteString(" NOT LIKE ")
+			} else {
+				wbuf.WriteString(" LIKE ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(fmt.Sprintf("%%%s%%", c.lastName.Value()))
 		case qtypes.TextQueryType_HAS_PREFIX:
@@ -763,7 +894,11 @@ func (r *userRepository) Find(c *userCriteria) ([]*userEntity, error) {
 			dirty = true
 
 			wbuf.WriteString(tableUserColumnLastName)
-			wbuf.WriteString(" LIKE ")
+			if c.lastName.Negation {
+				wbuf.WriteString(" NOT LIKE ")
+			} else {
+				wbuf.WriteString(" LIKE ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(fmt.Sprintf("%s%%", c.lastName.Value()))
 		case qtypes.TextQueryType_HAS_SUFFIX:
@@ -773,7 +908,11 @@ func (r *userRepository) Find(c *userCriteria) ([]*userEntity, error) {
 			dirty = true
 
 			wbuf.WriteString(tableUserColumnLastName)
-			wbuf.WriteString(" LIKE ")
+			if c.lastName.Negation {
+				wbuf.WriteString(" NOT LIKE ")
+			} else {
+				wbuf.WriteString(" LIKE ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(fmt.Sprintf("%%%s", c.lastName.Value()))
 		}
@@ -784,9 +923,19 @@ func (r *userRepository) Find(c *userCriteria) ([]*userEntity, error) {
 			wbuf.WriteString(" AND ")
 		}
 		dirty = true
-		wbuf.WriteString(tableUserColumnPassword)
-		wbuf.WriteString("=")
-		pw.WriteTo(wbuf)
+		if wrt, err = wbuf.WriteString(tableUserColumnPassword); err != nil {
+			return
+		}
+		wr += int64(wrt)
+		if wrt, err = wbuf.WriteString("="); err != nil {
+			return
+		}
+		wr += int64(wrt)
+		if wrt64, err = pw.WriteTo(wbuf); err != nil {
+			return
+		}
+		wr += wrt64
+
 		args.Add(c.password)
 	}
 
@@ -795,9 +944,8 @@ func (r *userRepository) Find(c *userCriteria) ([]*userEntity, error) {
 		if updatedAtt1 != nil {
 			updatedAt1, err := ptypes.Timestamp(updatedAtt1)
 			if err != nil {
-				return nil, err
+				return wr, err
 			}
-
 			switch c.updatedAt.Type {
 			case qtypes.NumericQueryType_NOT_A_NUMBER:
 				if dirty {
@@ -818,17 +966,11 @@ func (r *userRepository) Find(c *userCriteria) ([]*userEntity, error) {
 				dirty = true
 
 				wbuf.WriteString(tableUserColumnUpdatedAt)
-				wbuf.WriteString("=")
-				pw.WriteTo(wbuf)
-				args.Add(c.updatedAt.Value())
-			case qtypes.NumericQueryType_NOT_EQUAL:
-				if dirty {
-					wbuf.WriteString(" AND ")
+				if c.updatedAt.Negation {
+					wbuf.WriteString("<>")
+				} else {
+					wbuf.WriteString("=")
 				}
-				dirty = true
-
-				wbuf.WriteString(tableUserColumnUpdatedAt)
-				wbuf.WriteString("!=")
 				pw.WriteTo(wbuf)
 				args.Add(c.updatedAt.Value())
 			case qtypes.NumericQueryType_GREATER:
@@ -899,16 +1041,13 @@ func (r *userRepository) Find(c *userCriteria) ([]*userEntity, error) {
 				if updatedAtt2 != nil {
 					updatedAt2, err := ptypes.Timestamp(updatedAtt2)
 					if err != nil {
-						return nil, err
+						return wr, err
 					}
-
 					wbuf.WriteString(tableUserColumnUpdatedAt)
 					wbuf.WriteString(" > ")
 					pw.WriteTo(wbuf)
 					args.Add(updatedAt1)
-
 					wbuf.WriteString(" AND ")
-
 					wbuf.WriteString(tableUserColumnUpdatedAt)
 					wbuf.WriteString(" < ")
 					pw.WriteTo(wbuf)
@@ -939,17 +1078,11 @@ func (r *userRepository) Find(c *userCriteria) ([]*userEntity, error) {
 			dirty = true
 
 			wbuf.WriteString(tableUserColumnUpdatedBy)
-			wbuf.WriteString("=")
-			pw.WriteTo(wbuf)
-			args.Add(c.updatedBy.Value())
-		case qtypes.NumericQueryType_NOT_EQUAL:
-			if dirty {
-				wbuf.WriteString(" AND ")
+			if c.updatedBy.Negation {
+				wbuf.WriteString(" <> ")
+			} else {
+				wbuf.WriteString("=")
 			}
-			dirty = true
-
-			wbuf.WriteString(tableUserColumnUpdatedBy)
-			wbuf.WriteString(" <> ")
 			pw.WriteTo(wbuf)
 			args.Add(c.updatedBy.Value())
 		case qtypes.NumericQueryType_GREATER:
@@ -959,7 +1092,11 @@ func (r *userRepository) Find(c *userCriteria) ([]*userEntity, error) {
 			dirty = true
 
 			wbuf.WriteString(tableUserColumnUpdatedBy)
-			wbuf.WriteString(" > ")
+			if c.updatedBy.Negation {
+				wbuf.WriteString(" <= ")
+			} else {
+				wbuf.WriteString(" > ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.updatedBy.Value())
 		case qtypes.NumericQueryType_GREATER_EQUAL:
@@ -969,7 +1106,11 @@ func (r *userRepository) Find(c *userCriteria) ([]*userEntity, error) {
 			dirty = true
 
 			wbuf.WriteString(tableUserColumnUpdatedBy)
-			wbuf.WriteString(" >= ")
+			if c.updatedBy.Negation {
+				wbuf.WriteString(" < ")
+			} else {
+				wbuf.WriteString(" >= ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.updatedBy.Value())
 		case qtypes.NumericQueryType_LESS:
@@ -979,7 +1120,11 @@ func (r *userRepository) Find(c *userCriteria) ([]*userEntity, error) {
 			dirty = true
 
 			wbuf.WriteString(tableUserColumnUpdatedBy)
-			wbuf.WriteString(" < ")
+			if c.updatedBy.Negation {
+				wbuf.WriteString(" >= ")
+			} else {
+				wbuf.WriteString(" < ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.updatedBy)
 		case qtypes.NumericQueryType_LESS_EQUAL:
@@ -989,7 +1134,11 @@ func (r *userRepository) Find(c *userCriteria) ([]*userEntity, error) {
 			dirty = true
 
 			wbuf.WriteString(tableUserColumnUpdatedBy)
-			wbuf.WriteString(" >= ")
+			if c.updatedBy.Negation {
+				wbuf.WriteString(" > ")
+			} else {
+				wbuf.WriteString(" <= ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.updatedBy.Value())
 		case qtypes.NumericQueryType_IN:
@@ -1000,7 +1149,11 @@ func (r *userRepository) Find(c *userCriteria) ([]*userEntity, error) {
 				dirty = true
 
 				wbuf.WriteString(tableUserColumnUpdatedBy)
-				wbuf.WriteString(" IN (")
+				if c.updatedBy.Negation {
+					wbuf.WriteString(" NOT IN (")
+				} else {
+					wbuf.WriteString(" IN (")
+				}
 				for i, v := range c.updatedBy.Values {
 					if i != 0 {
 						wbuf.WriteString(",")
@@ -1017,14 +1170,20 @@ func (r *userRepository) Find(c *userCriteria) ([]*userEntity, error) {
 			dirty = true
 
 			wbuf.WriteString(tableUserColumnUpdatedBy)
-			wbuf.WriteString(" > ")
+			if c.updatedBy.Negation {
+				wbuf.WriteString(" <= ")
+			} else {
+				wbuf.WriteString(" > ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.updatedBy.Values[0])
-
 			wbuf.WriteString(" AND ")
-
 			wbuf.WriteString(tableUserColumnUpdatedBy)
-			wbuf.WriteString(" < ")
+			if c.updatedBy.Negation {
+				wbuf.WriteString(" >= ")
+			} else {
+				wbuf.WriteString(" < ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.updatedBy.Values[1])
 		}
@@ -1051,7 +1210,11 @@ func (r *userRepository) Find(c *userCriteria) ([]*userEntity, error) {
 			dirty = true
 
 			wbuf.WriteString(tableUserColumnUsername)
-			wbuf.WriteString("=")
+			if c.username.Negation {
+				wbuf.WriteString(" <> ")
+			} else {
+				wbuf.WriteString(" = ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.username.Value())
 		case qtypes.TextQueryType_SUBSTRING:
@@ -1061,7 +1224,11 @@ func (r *userRepository) Find(c *userCriteria) ([]*userEntity, error) {
 			dirty = true
 
 			wbuf.WriteString(tableUserColumnUsername)
-			wbuf.WriteString(" LIKE ")
+			if c.username.Negation {
+				wbuf.WriteString(" NOT LIKE ")
+			} else {
+				wbuf.WriteString(" LIKE ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(fmt.Sprintf("%%%s%%", c.username.Value()))
 		case qtypes.TextQueryType_HAS_PREFIX:
@@ -1071,7 +1238,11 @@ func (r *userRepository) Find(c *userCriteria) ([]*userEntity, error) {
 			dirty = true
 
 			wbuf.WriteString(tableUserColumnUsername)
-			wbuf.WriteString(" LIKE ")
+			if c.username.Negation {
+				wbuf.WriteString(" NOT LIKE ")
+			} else {
+				wbuf.WriteString(" LIKE ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(fmt.Sprintf("%s%%", c.username.Value()))
 		case qtypes.TextQueryType_HAS_SUFFIX:
@@ -1081,30 +1252,147 @@ func (r *userRepository) Find(c *userCriteria) ([]*userEntity, error) {
 			dirty = true
 
 			wbuf.WriteString(tableUserColumnUsername)
-			wbuf.WriteString(" LIKE ")
+			if c.username.Negation {
+				wbuf.WriteString(" NOT LIKE ")
+			} else {
+				wbuf.WriteString(" LIKE ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(fmt.Sprintf("%%%s", c.username.Value()))
 		}
 	}
 
 	if dirty {
-		if _, err := qbuf.WriteString(" WHERE "); err != nil {
-			return nil, err
+		if wrt, err = b.WriteString(" WHERE "); err != nil {
+			return
 		}
-		if _, err := wbuf.WriteTo(qbuf); err != nil {
-			return nil, err
+		wr += int64(wrt)
+		if wrt64, err = wbuf.WriteTo(b); err != nil {
+			return
 		}
+		wr += wrt64
 	}
 
 	if c.offset > 0 {
-		qbuf.WriteString(" OFFSET ")
-		pw.WriteTo(qbuf)
+		b.WriteString(" OFFSET ")
+		if wrt64, err = pw.WriteTo(b); err != nil {
+			return
+		}
+		wr += wrt64
 		args.Add(c.offset)
 	}
 	if c.limit > 0 {
-		qbuf.WriteString(" LIMIT ")
-		pw.WriteTo(qbuf)
+		b.WriteString(" LIMIT ")
+		if wrt64, err = pw.WriteTo(b); err != nil {
+			return
+		}
+		wr += wrt64
 		args.Add(c.limit)
+	}
+
+	return
+}
+
+type userPatch struct {
+	id                int64
+	confirmationToken []byte
+	createdAt         *time.Time
+	createdBy         *ntypes.Int64
+	firstName         *ntypes.String
+	isActive          *ntypes.Bool
+	isConfirmed       *ntypes.Bool
+	isStaff           *ntypes.Bool
+	isSuperuser       *ntypes.Bool
+	lastLoginAt       *time.Time
+	lastName          *ntypes.String
+	password          []byte
+	updatedAt         *time.Time
+	updatedBy         *ntypes.Int64
+	username          *ntypes.String
+}
+
+type userRepositoryBase struct {
+	table   string
+	columns []string
+	db      *sql.DB
+	dbg     bool
+	log     log.Logger
+}
+
+func ScanUserRows(rows *sql.Rows) ([]*userEntity, error) {
+	var (
+		entities []*userEntity
+		err      error
+	)
+	for rows.Next() {
+		var ent userEntity
+		err = rows.Scan(
+			&ent.ConfirmationToken,
+			&ent.CreatedAt,
+			&ent.CreatedBy,
+			&ent.FirstName,
+			&ent.ID,
+			&ent.IsActive,
+			&ent.IsConfirmed,
+			&ent.IsStaff,
+			&ent.IsSuperuser,
+			&ent.LastLoginAt,
+			&ent.LastName,
+			&ent.Password,
+			&ent.UpdatedAt,
+			&ent.UpdatedBy,
+			&ent.Username,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		entities = append(entities, &ent)
+	}
+	if rows.Err() != nil {
+		return nil, rows.Err()
+	}
+
+	return entities, nil
+}
+
+func (r *userRepositoryBase) Count(c *userCriteria) (int64, error) {
+
+	qbuf := bytes.NewBuffer(nil)
+	qbuf.WriteString("SELECT COUNT(*) FROM ")
+	qbuf.WriteString(r.table)
+	pw := pqtgo.NewPlaceholderWriter()
+	args := pqtgo.NewArguments(0)
+
+	if _, err := c.WriteSQL(qbuf, pw, args); err != nil {
+		return 0, err
+	}
+	if r.dbg {
+		if err := r.log.Log("msg", qbuf.String(), "function", "Count"); err != nil {
+			return 0, err
+		}
+	}
+
+	var count int64
+	err := r.db.QueryRow(qbuf.String(), args.Slice()...).Scan(&count)
+	if err != nil {
+		return 0, err
+	}
+	return count, nil
+}
+func (r *userRepositoryBase) Find(c *userCriteria) ([]*userEntity, error) {
+
+	qbuf := bytes.NewBuffer(nil)
+	qbuf.WriteString("SELECT ")
+	qbuf.WriteString(strings.Join(r.columns, ", "))
+	qbuf.WriteString(" FROM ")
+	qbuf.WriteString(r.table)
+
+	pw := pqtgo.NewPlaceholderWriter()
+	args := pqtgo.NewArguments(0)
+
+	if _, err := c.WriteSQL(qbuf, pw, args); err != nil {
+		return nil, err
 	}
 
 	if r.dbg {
@@ -1117,41 +1405,40 @@ func (r *userRepository) Find(c *userCriteria) ([]*userEntity, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	defer rows.Close()
 
-	var entities []*userEntity
-	for rows.Next() {
-		var entity userEntity
-		err = rows.Scan(
-			&entity.ConfirmationToken,
-			&entity.CreatedAt,
-			&entity.CreatedBy,
-			&entity.FirstName,
-			&entity.ID,
-			&entity.IsActive,
-			&entity.IsConfirmed,
-			&entity.IsStaff,
-			&entity.IsSuperuser,
-			&entity.LastLoginAt,
-			&entity.LastName,
-			&entity.Password,
-			&entity.UpdatedAt,
-			&entity.UpdatedBy,
-			&entity.Username,
-		)
-		if err != nil {
+	return ScanUserRows(rows)
+}
+func (r *userRepositoryBase) FindIter(c *userCriteria) (*userIterator, error) {
+
+	qbuf := bytes.NewBuffer(nil)
+	qbuf.WriteString("SELECT ")
+	qbuf.WriteString(strings.Join(r.columns, ", "))
+	qbuf.WriteString(" FROM ")
+	qbuf.WriteString(r.table)
+
+	pw := pqtgo.NewPlaceholderWriter()
+	args := pqtgo.NewArguments(0)
+
+	if _, err := c.WriteSQL(qbuf, pw, args); err != nil {
+		return nil, err
+	}
+
+	if r.dbg {
+		if err := r.log.Log("msg", qbuf.String(), "function", "Find"); err != nil {
 			return nil, err
 		}
-
-		entities = append(entities, &entity)
-	}
-	if rows.Err() != nil {
-		return nil, rows.Err()
 	}
 
-	return entities, nil
+	rows, err := r.db.Query(qbuf.String(), args.Slice()...)
+	if err != nil {
+		return nil, err
+	}
+
+	return &userIterator{rows: rows}, nil
 }
-func (r *userRepository) FindOneByID(id int64) (*userEntity, error) {
+func (r *userRepositoryBase) FindOneByID(id int64) (*userEntity, error) {
 	var (
 		query  string
 		entity userEntity
@@ -1195,7 +1482,7 @@ username
 
 	return &entity, nil
 }
-func (r *userRepository) Insert(e *userEntity) (*userEntity, error) {
+func (r *userRepositoryBase) Insert(e *userEntity) (*userEntity, error) {
 	insert := pqcomp.New(0, 15)
 	insert.AddExpr(tableUserColumnConfirmationToken, "", e.ConfirmationToken)
 	insert.AddExpr(tableUserColumnCreatedAt, "", e.CreatedAt)
@@ -1262,50 +1549,30 @@ func (r *userRepository) Insert(e *userEntity) (*userEntity, error) {
 
 	return e, nil
 }
-func (r *userRepository) UpdateByID(
-	id int64,
-	confirmationToken []byte,
-	createdAt *time.Time,
-	createdBy *ntypes.Int64,
-	firstName *ntypes.String,
-	isActive *ntypes.Bool,
-	isConfirmed *ntypes.Bool,
-	isStaff *ntypes.Bool,
-	isSuperuser *ntypes.Bool,
-	lastLoginAt *time.Time,
-	lastName *ntypes.String,
-	password []byte,
-	updatedAt *time.Time,
-	updatedBy *ntypes.Int64,
-	username *ntypes.String,
-) (*userEntity, error) {
+func (r *userRepositoryBase) UpdateByID(patch *userPatch) (*userEntity, error) {
 	update := pqcomp.New(0, 15)
-	update.AddExpr(tableUserColumnID, pqcomp.Equal, id)
-	update.AddExpr(tableUserColumnConfirmationToken, pqcomp.Equal, confirmationToken)
-	if createdAt != nil {
-		update.AddExpr(tableUserColumnCreatedAt, pqcomp.Equal, createdAt)
+	update.AddExpr(tableUserColumnID, pqcomp.Equal, patch.id)
+	update.AddExpr(tableUserColumnConfirmationToken, pqcomp.Equal, patch.confirmationToken)
+	if patch.createdAt != nil {
+		update.AddExpr(tableUserColumnCreatedAt, pqcomp.Equal, patch.createdAt)
 
 	}
-	update.AddExpr(tableUserColumnCreatedBy, pqcomp.Equal, createdBy)
-	update.AddExpr(tableUserColumnFirstName, pqcomp.Equal, firstName)
-
-	update.AddExpr(tableUserColumnIsActive, pqcomp.Equal, isActive)
-
-	update.AddExpr(tableUserColumnIsConfirmed, pqcomp.Equal, isConfirmed)
-
-	update.AddExpr(tableUserColumnIsStaff, pqcomp.Equal, isStaff)
-
-	update.AddExpr(tableUserColumnIsSuperuser, pqcomp.Equal, isSuperuser)
-	update.AddExpr(tableUserColumnLastLoginAt, pqcomp.Equal, lastLoginAt)
-	update.AddExpr(tableUserColumnLastName, pqcomp.Equal, lastName)
-	update.AddExpr(tableUserColumnPassword, pqcomp.Equal, password)
-	if updatedAt != nil {
-		update.AddExpr(tableUserColumnUpdatedAt, pqcomp.Equal, updatedAt)
+	update.AddExpr(tableUserColumnCreatedBy, pqcomp.Equal, patch.createdBy)
+	update.AddExpr(tableUserColumnFirstName, pqcomp.Equal, patch.firstName)
+	update.AddExpr(tableUserColumnIsActive, pqcomp.Equal, patch.isActive)
+	update.AddExpr(tableUserColumnIsConfirmed, pqcomp.Equal, patch.isConfirmed)
+	update.AddExpr(tableUserColumnIsStaff, pqcomp.Equal, patch.isStaff)
+	update.AddExpr(tableUserColumnIsSuperuser, pqcomp.Equal, patch.isSuperuser)
+	update.AddExpr(tableUserColumnLastLoginAt, pqcomp.Equal, patch.lastLoginAt)
+	update.AddExpr(tableUserColumnLastName, pqcomp.Equal, patch.lastName)
+	update.AddExpr(tableUserColumnPassword, pqcomp.Equal, patch.password)
+	if patch.updatedAt != nil {
+		update.AddExpr(tableUserColumnUpdatedAt, pqcomp.Equal, patch.updatedAt)
 	} else {
 		update.AddExpr(tableUserColumnUpdatedAt, pqcomp.Equal, "NOW()")
 	}
-	update.AddExpr(tableUserColumnUpdatedBy, pqcomp.Equal, updatedBy)
-	update.AddExpr(tableUserColumnUsername, pqcomp.Equal, username)
+	update.AddExpr(tableUserColumnUpdatedBy, pqcomp.Equal, patch.updatedBy)
+	update.AddExpr(tableUserColumnUsername, pqcomp.Equal, patch.username)
 
 	if update.Len() == 0 {
 		return nil, errors.New("charond: user update failure, nothing to update")
@@ -1343,8 +1610,7 @@ func (r *userRepository) UpdateByID(
 
 	return &e, nil
 }
-
-func (r *userRepository) DeleteByID(id int64) (int64, error) {
+func (r *userRepositoryBase) DeleteByID(id int64) (int64, error) {
 	query := "DELETE FROM charon.user WHERE id = $1"
 
 	res, err := r.db.Exec(query, id)
@@ -1390,57 +1656,125 @@ type groupEntity struct {
 	Name        string
 	UpdatedAt   *time.Time
 	UpdatedBy   *ntypes.Int64
-	Author      []*userEntity
-	Modifier    []*userEntity
+	Author      *userEntity
+	Modifier    *userEntity
 	Permission  []*permissionEntity
 	Users       []*userEntity
 }
+
+func (e *groupEntity) Prop(cn string) (interface{}, bool) {
+	switch cn {
+	case tableGroupColumnCreatedAt:
+		return &e.CreatedAt, true
+	case tableGroupColumnCreatedBy:
+		return &e.CreatedBy, true
+	case tableGroupColumnDescription:
+		return &e.Description, true
+	case tableGroupColumnID:
+		return &e.ID, true
+	case tableGroupColumnName:
+		return &e.Name, true
+	case tableGroupColumnUpdatedAt:
+		return &e.UpdatedAt, true
+	case tableGroupColumnUpdatedBy:
+		return &e.UpdatedBy, true
+	default:
+		return nil, false
+	}
+}
+func (e *groupEntity) Props(cns ...string) ([]interface{}, error) {
+
+	res := make([]interface{}, 0, len(cns))
+	for _, cn := range cns {
+		if prop, ok := e.Prop(cn); ok {
+			res = append(res, prop)
+		} else {
+			return nil, fmt.Errorf("unexpected column provided: %s", cn)
+		}
+	}
+	return res, nil
+}
+
+// groupIterator is not thread safe.
+type groupIterator struct {
+	rows *sql.Rows
+	cols []string
+}
+
+func (i *groupIterator) Next() bool {
+	return i.rows.Next()
+}
+
+func (i *groupIterator) Close() error {
+	return i.rows.Close()
+}
+
+func (i *groupIterator) Err() error {
+	return i.rows.Err()
+}
+
+// Columns is wrapper around sql.Rows.Columns method, that also cache outpu inside iterator.
+func (i *groupIterator) Columns() ([]string, error) {
+	if i.cols == nil {
+		cols, err := i.rows.Columns()
+		if err != nil {
+			return nil, err
+		}
+		i.cols = cols
+	}
+	return i.cols, nil
+}
+
+// Ent is wrapper arround group method that makes iterator more generic.
+func (i *groupIterator) Ent() (interface{}, error) {
+	return i.Group()
+}
+
+func (i *groupIterator) Group() (*groupEntity, error) {
+	var ent groupEntity
+	cols, err := i.rows.Columns()
+	if err != nil {
+		return nil, err
+	}
+
+	props, err := ent.Props(cols...)
+	if err != nil {
+		return nil, err
+	}
+	if err := i.rows.Scan(props...); err != nil {
+		return nil, err
+	}
+	return &ent, nil
+}
+
 type groupCriteria struct {
 	offset, limit int64
 	sort          map[string]bool
 	createdAt     *qtypes.Timestamp
-
-	createdBy *qtypes.Int64
-
-	description *qtypes.String
-
-	id *qtypes.Int64
-
-	name *qtypes.String
-
-	updatedAt *qtypes.Timestamp
-
-	updatedBy *qtypes.Int64
+	createdBy     *qtypes.Int64
+	description   *qtypes.String
+	id            *qtypes.Int64
+	name          *qtypes.String
+	updatedAt     *qtypes.Timestamp
+	updatedBy     *qtypes.Int64
 }
 
-type groupRepository struct {
-	table   string
-	columns []string
-	db      *sql.DB
-	dbg     bool
-	log     log.Logger
-}
+func (c *groupCriteria) WriteSQL(b *bytes.Buffer, pw *pqtgo.PlaceholderWriter, args *pqtgo.Arguments) (wr int64, err error) {
+	var (
+		wrt   int
+		wrt64 int64
+		dirty bool
+	)
 
-func (r *groupRepository) Find(c *groupCriteria) ([]*groupEntity, error) {
 	wbuf := bytes.NewBuffer(nil)
-	qbuf := bytes.NewBuffer(nil)
-	qbuf.WriteString("SELECT ")
-	qbuf.WriteString(strings.Join(r.columns, ", "))
-	qbuf.WriteString(" FROM ")
-	qbuf.WriteString(r.table)
-
-	pw := pqtgo.NewPlaceholderWriter()
-	args := pqtgo.NewArguments(0)
-	dirty := false
 
 	if c.createdAt != nil && c.createdAt.Valid {
 		createdAtt1 := c.createdAt.Value()
 		if createdAtt1 != nil {
 			createdAt1, err := ptypes.Timestamp(createdAtt1)
 			if err != nil {
-				return nil, err
+				return wr, err
 			}
-
 			switch c.createdAt.Type {
 			case qtypes.NumericQueryType_NOT_A_NUMBER:
 				if dirty {
@@ -1461,17 +1795,11 @@ func (r *groupRepository) Find(c *groupCriteria) ([]*groupEntity, error) {
 				dirty = true
 
 				wbuf.WriteString(tableGroupColumnCreatedAt)
-				wbuf.WriteString("=")
-				pw.WriteTo(wbuf)
-				args.Add(c.createdAt.Value())
-			case qtypes.NumericQueryType_NOT_EQUAL:
-				if dirty {
-					wbuf.WriteString(" AND ")
+				if c.createdAt.Negation {
+					wbuf.WriteString("<>")
+				} else {
+					wbuf.WriteString("=")
 				}
-				dirty = true
-
-				wbuf.WriteString(tableGroupColumnCreatedAt)
-				wbuf.WriteString("!=")
 				pw.WriteTo(wbuf)
 				args.Add(c.createdAt.Value())
 			case qtypes.NumericQueryType_GREATER:
@@ -1542,16 +1870,13 @@ func (r *groupRepository) Find(c *groupCriteria) ([]*groupEntity, error) {
 				if createdAtt2 != nil {
 					createdAt2, err := ptypes.Timestamp(createdAtt2)
 					if err != nil {
-						return nil, err
+						return wr, err
 					}
-
 					wbuf.WriteString(tableGroupColumnCreatedAt)
 					wbuf.WriteString(" > ")
 					pw.WriteTo(wbuf)
 					args.Add(createdAt1)
-
 					wbuf.WriteString(" AND ")
-
 					wbuf.WriteString(tableGroupColumnCreatedAt)
 					wbuf.WriteString(" < ")
 					pw.WriteTo(wbuf)
@@ -1582,17 +1907,11 @@ func (r *groupRepository) Find(c *groupCriteria) ([]*groupEntity, error) {
 			dirty = true
 
 			wbuf.WriteString(tableGroupColumnCreatedBy)
-			wbuf.WriteString("=")
-			pw.WriteTo(wbuf)
-			args.Add(c.createdBy.Value())
-		case qtypes.NumericQueryType_NOT_EQUAL:
-			if dirty {
-				wbuf.WriteString(" AND ")
+			if c.createdBy.Negation {
+				wbuf.WriteString(" <> ")
+			} else {
+				wbuf.WriteString("=")
 			}
-			dirty = true
-
-			wbuf.WriteString(tableGroupColumnCreatedBy)
-			wbuf.WriteString(" <> ")
 			pw.WriteTo(wbuf)
 			args.Add(c.createdBy.Value())
 		case qtypes.NumericQueryType_GREATER:
@@ -1602,7 +1921,11 @@ func (r *groupRepository) Find(c *groupCriteria) ([]*groupEntity, error) {
 			dirty = true
 
 			wbuf.WriteString(tableGroupColumnCreatedBy)
-			wbuf.WriteString(" > ")
+			if c.createdBy.Negation {
+				wbuf.WriteString(" <= ")
+			} else {
+				wbuf.WriteString(" > ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.createdBy.Value())
 		case qtypes.NumericQueryType_GREATER_EQUAL:
@@ -1612,7 +1935,11 @@ func (r *groupRepository) Find(c *groupCriteria) ([]*groupEntity, error) {
 			dirty = true
 
 			wbuf.WriteString(tableGroupColumnCreatedBy)
-			wbuf.WriteString(" >= ")
+			if c.createdBy.Negation {
+				wbuf.WriteString(" < ")
+			} else {
+				wbuf.WriteString(" >= ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.createdBy.Value())
 		case qtypes.NumericQueryType_LESS:
@@ -1622,7 +1949,11 @@ func (r *groupRepository) Find(c *groupCriteria) ([]*groupEntity, error) {
 			dirty = true
 
 			wbuf.WriteString(tableGroupColumnCreatedBy)
-			wbuf.WriteString(" < ")
+			if c.createdBy.Negation {
+				wbuf.WriteString(" >= ")
+			} else {
+				wbuf.WriteString(" < ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.createdBy)
 		case qtypes.NumericQueryType_LESS_EQUAL:
@@ -1632,7 +1963,11 @@ func (r *groupRepository) Find(c *groupCriteria) ([]*groupEntity, error) {
 			dirty = true
 
 			wbuf.WriteString(tableGroupColumnCreatedBy)
-			wbuf.WriteString(" >= ")
+			if c.createdBy.Negation {
+				wbuf.WriteString(" > ")
+			} else {
+				wbuf.WriteString(" <= ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.createdBy.Value())
 		case qtypes.NumericQueryType_IN:
@@ -1643,7 +1978,11 @@ func (r *groupRepository) Find(c *groupCriteria) ([]*groupEntity, error) {
 				dirty = true
 
 				wbuf.WriteString(tableGroupColumnCreatedBy)
-				wbuf.WriteString(" IN (")
+				if c.createdBy.Negation {
+					wbuf.WriteString(" NOT IN (")
+				} else {
+					wbuf.WriteString(" IN (")
+				}
 				for i, v := range c.createdBy.Values {
 					if i != 0 {
 						wbuf.WriteString(",")
@@ -1660,14 +1999,20 @@ func (r *groupRepository) Find(c *groupCriteria) ([]*groupEntity, error) {
 			dirty = true
 
 			wbuf.WriteString(tableGroupColumnCreatedBy)
-			wbuf.WriteString(" > ")
+			if c.createdBy.Negation {
+				wbuf.WriteString(" <= ")
+			} else {
+				wbuf.WriteString(" > ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.createdBy.Values[0])
-
 			wbuf.WriteString(" AND ")
-
 			wbuf.WriteString(tableGroupColumnCreatedBy)
-			wbuf.WriteString(" < ")
+			if c.createdBy.Negation {
+				wbuf.WriteString(" >= ")
+			} else {
+				wbuf.WriteString(" < ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.createdBy.Values[1])
 		}
@@ -1694,7 +2039,11 @@ func (r *groupRepository) Find(c *groupCriteria) ([]*groupEntity, error) {
 			dirty = true
 
 			wbuf.WriteString(tableGroupColumnDescription)
-			wbuf.WriteString("=")
+			if c.description.Negation {
+				wbuf.WriteString(" <> ")
+			} else {
+				wbuf.WriteString(" = ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.description.Value())
 		case qtypes.TextQueryType_SUBSTRING:
@@ -1704,7 +2053,11 @@ func (r *groupRepository) Find(c *groupCriteria) ([]*groupEntity, error) {
 			dirty = true
 
 			wbuf.WriteString(tableGroupColumnDescription)
-			wbuf.WriteString(" LIKE ")
+			if c.description.Negation {
+				wbuf.WriteString(" NOT LIKE ")
+			} else {
+				wbuf.WriteString(" LIKE ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(fmt.Sprintf("%%%s%%", c.description.Value()))
 		case qtypes.TextQueryType_HAS_PREFIX:
@@ -1714,7 +2067,11 @@ func (r *groupRepository) Find(c *groupCriteria) ([]*groupEntity, error) {
 			dirty = true
 
 			wbuf.WriteString(tableGroupColumnDescription)
-			wbuf.WriteString(" LIKE ")
+			if c.description.Negation {
+				wbuf.WriteString(" NOT LIKE ")
+			} else {
+				wbuf.WriteString(" LIKE ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(fmt.Sprintf("%s%%", c.description.Value()))
 		case qtypes.TextQueryType_HAS_SUFFIX:
@@ -1724,7 +2081,11 @@ func (r *groupRepository) Find(c *groupCriteria) ([]*groupEntity, error) {
 			dirty = true
 
 			wbuf.WriteString(tableGroupColumnDescription)
-			wbuf.WriteString(" LIKE ")
+			if c.description.Negation {
+				wbuf.WriteString(" NOT LIKE ")
+			} else {
+				wbuf.WriteString(" LIKE ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(fmt.Sprintf("%%%s", c.description.Value()))
 		}
@@ -1751,17 +2112,11 @@ func (r *groupRepository) Find(c *groupCriteria) ([]*groupEntity, error) {
 			dirty = true
 
 			wbuf.WriteString(tableGroupColumnID)
-			wbuf.WriteString("=")
-			pw.WriteTo(wbuf)
-			args.Add(c.id.Value())
-		case qtypes.NumericQueryType_NOT_EQUAL:
-			if dirty {
-				wbuf.WriteString(" AND ")
+			if c.id.Negation {
+				wbuf.WriteString(" <> ")
+			} else {
+				wbuf.WriteString("=")
 			}
-			dirty = true
-
-			wbuf.WriteString(tableGroupColumnID)
-			wbuf.WriteString(" <> ")
 			pw.WriteTo(wbuf)
 			args.Add(c.id.Value())
 		case qtypes.NumericQueryType_GREATER:
@@ -1771,7 +2126,11 @@ func (r *groupRepository) Find(c *groupCriteria) ([]*groupEntity, error) {
 			dirty = true
 
 			wbuf.WriteString(tableGroupColumnID)
-			wbuf.WriteString(" > ")
+			if c.id.Negation {
+				wbuf.WriteString(" <= ")
+			} else {
+				wbuf.WriteString(" > ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.id.Value())
 		case qtypes.NumericQueryType_GREATER_EQUAL:
@@ -1781,7 +2140,11 @@ func (r *groupRepository) Find(c *groupCriteria) ([]*groupEntity, error) {
 			dirty = true
 
 			wbuf.WriteString(tableGroupColumnID)
-			wbuf.WriteString(" >= ")
+			if c.id.Negation {
+				wbuf.WriteString(" < ")
+			} else {
+				wbuf.WriteString(" >= ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.id.Value())
 		case qtypes.NumericQueryType_LESS:
@@ -1791,7 +2154,11 @@ func (r *groupRepository) Find(c *groupCriteria) ([]*groupEntity, error) {
 			dirty = true
 
 			wbuf.WriteString(tableGroupColumnID)
-			wbuf.WriteString(" < ")
+			if c.id.Negation {
+				wbuf.WriteString(" >= ")
+			} else {
+				wbuf.WriteString(" < ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.id)
 		case qtypes.NumericQueryType_LESS_EQUAL:
@@ -1801,7 +2168,11 @@ func (r *groupRepository) Find(c *groupCriteria) ([]*groupEntity, error) {
 			dirty = true
 
 			wbuf.WriteString(tableGroupColumnID)
-			wbuf.WriteString(" >= ")
+			if c.id.Negation {
+				wbuf.WriteString(" > ")
+			} else {
+				wbuf.WriteString(" <= ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.id.Value())
 		case qtypes.NumericQueryType_IN:
@@ -1812,7 +2183,11 @@ func (r *groupRepository) Find(c *groupCriteria) ([]*groupEntity, error) {
 				dirty = true
 
 				wbuf.WriteString(tableGroupColumnID)
-				wbuf.WriteString(" IN (")
+				if c.id.Negation {
+					wbuf.WriteString(" NOT IN (")
+				} else {
+					wbuf.WriteString(" IN (")
+				}
 				for i, v := range c.id.Values {
 					if i != 0 {
 						wbuf.WriteString(",")
@@ -1829,14 +2204,20 @@ func (r *groupRepository) Find(c *groupCriteria) ([]*groupEntity, error) {
 			dirty = true
 
 			wbuf.WriteString(tableGroupColumnID)
-			wbuf.WriteString(" > ")
+			if c.id.Negation {
+				wbuf.WriteString(" <= ")
+			} else {
+				wbuf.WriteString(" > ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.id.Values[0])
-
 			wbuf.WriteString(" AND ")
-
 			wbuf.WriteString(tableGroupColumnID)
-			wbuf.WriteString(" < ")
+			if c.id.Negation {
+				wbuf.WriteString(" >= ")
+			} else {
+				wbuf.WriteString(" < ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.id.Values[1])
 		}
@@ -1863,7 +2244,11 @@ func (r *groupRepository) Find(c *groupCriteria) ([]*groupEntity, error) {
 			dirty = true
 
 			wbuf.WriteString(tableGroupColumnName)
-			wbuf.WriteString("=")
+			if c.name.Negation {
+				wbuf.WriteString(" <> ")
+			} else {
+				wbuf.WriteString(" = ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.name.Value())
 		case qtypes.TextQueryType_SUBSTRING:
@@ -1873,7 +2258,11 @@ func (r *groupRepository) Find(c *groupCriteria) ([]*groupEntity, error) {
 			dirty = true
 
 			wbuf.WriteString(tableGroupColumnName)
-			wbuf.WriteString(" LIKE ")
+			if c.name.Negation {
+				wbuf.WriteString(" NOT LIKE ")
+			} else {
+				wbuf.WriteString(" LIKE ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(fmt.Sprintf("%%%s%%", c.name.Value()))
 		case qtypes.TextQueryType_HAS_PREFIX:
@@ -1883,7 +2272,11 @@ func (r *groupRepository) Find(c *groupCriteria) ([]*groupEntity, error) {
 			dirty = true
 
 			wbuf.WriteString(tableGroupColumnName)
-			wbuf.WriteString(" LIKE ")
+			if c.name.Negation {
+				wbuf.WriteString(" NOT LIKE ")
+			} else {
+				wbuf.WriteString(" LIKE ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(fmt.Sprintf("%s%%", c.name.Value()))
 		case qtypes.TextQueryType_HAS_SUFFIX:
@@ -1893,7 +2286,11 @@ func (r *groupRepository) Find(c *groupCriteria) ([]*groupEntity, error) {
 			dirty = true
 
 			wbuf.WriteString(tableGroupColumnName)
-			wbuf.WriteString(" LIKE ")
+			if c.name.Negation {
+				wbuf.WriteString(" NOT LIKE ")
+			} else {
+				wbuf.WriteString(" LIKE ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(fmt.Sprintf("%%%s", c.name.Value()))
 		}
@@ -1904,9 +2301,8 @@ func (r *groupRepository) Find(c *groupCriteria) ([]*groupEntity, error) {
 		if updatedAtt1 != nil {
 			updatedAt1, err := ptypes.Timestamp(updatedAtt1)
 			if err != nil {
-				return nil, err
+				return wr, err
 			}
-
 			switch c.updatedAt.Type {
 			case qtypes.NumericQueryType_NOT_A_NUMBER:
 				if dirty {
@@ -1927,17 +2323,11 @@ func (r *groupRepository) Find(c *groupCriteria) ([]*groupEntity, error) {
 				dirty = true
 
 				wbuf.WriteString(tableGroupColumnUpdatedAt)
-				wbuf.WriteString("=")
-				pw.WriteTo(wbuf)
-				args.Add(c.updatedAt.Value())
-			case qtypes.NumericQueryType_NOT_EQUAL:
-				if dirty {
-					wbuf.WriteString(" AND ")
+				if c.updatedAt.Negation {
+					wbuf.WriteString("<>")
+				} else {
+					wbuf.WriteString("=")
 				}
-				dirty = true
-
-				wbuf.WriteString(tableGroupColumnUpdatedAt)
-				wbuf.WriteString("!=")
 				pw.WriteTo(wbuf)
 				args.Add(c.updatedAt.Value())
 			case qtypes.NumericQueryType_GREATER:
@@ -2008,16 +2398,13 @@ func (r *groupRepository) Find(c *groupCriteria) ([]*groupEntity, error) {
 				if updatedAtt2 != nil {
 					updatedAt2, err := ptypes.Timestamp(updatedAtt2)
 					if err != nil {
-						return nil, err
+						return wr, err
 					}
-
 					wbuf.WriteString(tableGroupColumnUpdatedAt)
 					wbuf.WriteString(" > ")
 					pw.WriteTo(wbuf)
 					args.Add(updatedAt1)
-
 					wbuf.WriteString(" AND ")
-
 					wbuf.WriteString(tableGroupColumnUpdatedAt)
 					wbuf.WriteString(" < ")
 					pw.WriteTo(wbuf)
@@ -2048,17 +2435,11 @@ func (r *groupRepository) Find(c *groupCriteria) ([]*groupEntity, error) {
 			dirty = true
 
 			wbuf.WriteString(tableGroupColumnUpdatedBy)
-			wbuf.WriteString("=")
-			pw.WriteTo(wbuf)
-			args.Add(c.updatedBy.Value())
-		case qtypes.NumericQueryType_NOT_EQUAL:
-			if dirty {
-				wbuf.WriteString(" AND ")
+			if c.updatedBy.Negation {
+				wbuf.WriteString(" <> ")
+			} else {
+				wbuf.WriteString("=")
 			}
-			dirty = true
-
-			wbuf.WriteString(tableGroupColumnUpdatedBy)
-			wbuf.WriteString(" <> ")
 			pw.WriteTo(wbuf)
 			args.Add(c.updatedBy.Value())
 		case qtypes.NumericQueryType_GREATER:
@@ -2068,7 +2449,11 @@ func (r *groupRepository) Find(c *groupCriteria) ([]*groupEntity, error) {
 			dirty = true
 
 			wbuf.WriteString(tableGroupColumnUpdatedBy)
-			wbuf.WriteString(" > ")
+			if c.updatedBy.Negation {
+				wbuf.WriteString(" <= ")
+			} else {
+				wbuf.WriteString(" > ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.updatedBy.Value())
 		case qtypes.NumericQueryType_GREATER_EQUAL:
@@ -2078,7 +2463,11 @@ func (r *groupRepository) Find(c *groupCriteria) ([]*groupEntity, error) {
 			dirty = true
 
 			wbuf.WriteString(tableGroupColumnUpdatedBy)
-			wbuf.WriteString(" >= ")
+			if c.updatedBy.Negation {
+				wbuf.WriteString(" < ")
+			} else {
+				wbuf.WriteString(" >= ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.updatedBy.Value())
 		case qtypes.NumericQueryType_LESS:
@@ -2088,7 +2477,11 @@ func (r *groupRepository) Find(c *groupCriteria) ([]*groupEntity, error) {
 			dirty = true
 
 			wbuf.WriteString(tableGroupColumnUpdatedBy)
-			wbuf.WriteString(" < ")
+			if c.updatedBy.Negation {
+				wbuf.WriteString(" >= ")
+			} else {
+				wbuf.WriteString(" < ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.updatedBy)
 		case qtypes.NumericQueryType_LESS_EQUAL:
@@ -2098,7 +2491,11 @@ func (r *groupRepository) Find(c *groupCriteria) ([]*groupEntity, error) {
 			dirty = true
 
 			wbuf.WriteString(tableGroupColumnUpdatedBy)
-			wbuf.WriteString(" >= ")
+			if c.updatedBy.Negation {
+				wbuf.WriteString(" > ")
+			} else {
+				wbuf.WriteString(" <= ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.updatedBy.Value())
 		case qtypes.NumericQueryType_IN:
@@ -2109,7 +2506,11 @@ func (r *groupRepository) Find(c *groupCriteria) ([]*groupEntity, error) {
 				dirty = true
 
 				wbuf.WriteString(tableGroupColumnUpdatedBy)
-				wbuf.WriteString(" IN (")
+				if c.updatedBy.Negation {
+					wbuf.WriteString(" NOT IN (")
+				} else {
+					wbuf.WriteString(" IN (")
+				}
 				for i, v := range c.updatedBy.Values {
 					if i != 0 {
 						wbuf.WriteString(",")
@@ -2126,37 +2527,140 @@ func (r *groupRepository) Find(c *groupCriteria) ([]*groupEntity, error) {
 			dirty = true
 
 			wbuf.WriteString(tableGroupColumnUpdatedBy)
-			wbuf.WriteString(" > ")
+			if c.updatedBy.Negation {
+				wbuf.WriteString(" <= ")
+			} else {
+				wbuf.WriteString(" > ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.updatedBy.Values[0])
-
 			wbuf.WriteString(" AND ")
-
 			wbuf.WriteString(tableGroupColumnUpdatedBy)
-			wbuf.WriteString(" < ")
+			if c.updatedBy.Negation {
+				wbuf.WriteString(" >= ")
+			} else {
+				wbuf.WriteString(" < ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.updatedBy.Values[1])
 		}
 	}
 
 	if dirty {
-		if _, err := qbuf.WriteString(" WHERE "); err != nil {
-			return nil, err
+		if wrt, err = b.WriteString(" WHERE "); err != nil {
+			return
 		}
-		if _, err := wbuf.WriteTo(qbuf); err != nil {
-			return nil, err
+		wr += int64(wrt)
+		if wrt64, err = wbuf.WriteTo(b); err != nil {
+			return
 		}
+		wr += wrt64
 	}
 
 	if c.offset > 0 {
-		qbuf.WriteString(" OFFSET ")
-		pw.WriteTo(qbuf)
+		b.WriteString(" OFFSET ")
+		if wrt64, err = pw.WriteTo(b); err != nil {
+			return
+		}
+		wr += wrt64
 		args.Add(c.offset)
 	}
 	if c.limit > 0 {
-		qbuf.WriteString(" LIMIT ")
-		pw.WriteTo(qbuf)
+		b.WriteString(" LIMIT ")
+		if wrt64, err = pw.WriteTo(b); err != nil {
+			return
+		}
+		wr += wrt64
 		args.Add(c.limit)
+	}
+
+	return
+}
+
+type groupPatch struct {
+	id          int64
+	createdAt   *time.Time
+	createdBy   *ntypes.Int64
+	description *ntypes.String
+	name        *ntypes.String
+	updatedAt   *time.Time
+	updatedBy   *ntypes.Int64
+}
+
+type groupRepositoryBase struct {
+	table   string
+	columns []string
+	db      *sql.DB
+	dbg     bool
+	log     log.Logger
+}
+
+func ScanGroupRows(rows *sql.Rows) ([]*groupEntity, error) {
+	var (
+		entities []*groupEntity
+		err      error
+	)
+	for rows.Next() {
+		var ent groupEntity
+		err = rows.Scan(
+			&ent.CreatedAt,
+			&ent.CreatedBy,
+			&ent.Description,
+			&ent.ID,
+			&ent.Name,
+			&ent.UpdatedAt,
+			&ent.UpdatedBy,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		entities = append(entities, &ent)
+	}
+	if rows.Err() != nil {
+		return nil, rows.Err()
+	}
+
+	return entities, nil
+}
+
+func (r *groupRepositoryBase) Count(c *groupCriteria) (int64, error) {
+
+	qbuf := bytes.NewBuffer(nil)
+	qbuf.WriteString("SELECT COUNT(*) FROM ")
+	qbuf.WriteString(r.table)
+	pw := pqtgo.NewPlaceholderWriter()
+	args := pqtgo.NewArguments(0)
+
+	if _, err := c.WriteSQL(qbuf, pw, args); err != nil {
+		return 0, err
+	}
+	if r.dbg {
+		if err := r.log.Log("msg", qbuf.String(), "function", "Count"); err != nil {
+			return 0, err
+		}
+	}
+
+	var count int64
+	err := r.db.QueryRow(qbuf.String(), args.Slice()...).Scan(&count)
+	if err != nil {
+		return 0, err
+	}
+	return count, nil
+}
+func (r *groupRepositoryBase) Find(c *groupCriteria) ([]*groupEntity, error) {
+
+	qbuf := bytes.NewBuffer(nil)
+	qbuf.WriteString("SELECT ")
+	qbuf.WriteString(strings.Join(r.columns, ", "))
+	qbuf.WriteString(" FROM ")
+	qbuf.WriteString(r.table)
+
+	pw := pqtgo.NewPlaceholderWriter()
+	args := pqtgo.NewArguments(0)
+
+	if _, err := c.WriteSQL(qbuf, pw, args); err != nil {
+		return nil, err
 	}
 
 	if r.dbg {
@@ -2169,33 +2673,40 @@ func (r *groupRepository) Find(c *groupCriteria) ([]*groupEntity, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	defer rows.Close()
 
-	var entities []*groupEntity
-	for rows.Next() {
-		var entity groupEntity
-		err = rows.Scan(
-			&entity.CreatedAt,
-			&entity.CreatedBy,
-			&entity.Description,
-			&entity.ID,
-			&entity.Name,
-			&entity.UpdatedAt,
-			&entity.UpdatedBy,
-		)
-		if err != nil {
+	return ScanGroupRows(rows)
+}
+func (r *groupRepositoryBase) FindIter(c *groupCriteria) (*groupIterator, error) {
+
+	qbuf := bytes.NewBuffer(nil)
+	qbuf.WriteString("SELECT ")
+	qbuf.WriteString(strings.Join(r.columns, ", "))
+	qbuf.WriteString(" FROM ")
+	qbuf.WriteString(r.table)
+
+	pw := pqtgo.NewPlaceholderWriter()
+	args := pqtgo.NewArguments(0)
+
+	if _, err := c.WriteSQL(qbuf, pw, args); err != nil {
+		return nil, err
+	}
+
+	if r.dbg {
+		if err := r.log.Log("msg", qbuf.String(), "function", "Find"); err != nil {
 			return nil, err
 		}
-
-		entities = append(entities, &entity)
-	}
-	if rows.Err() != nil {
-		return nil, rows.Err()
 	}
 
-	return entities, nil
+	rows, err := r.db.Query(qbuf.String(), args.Slice()...)
+	if err != nil {
+		return nil, err
+	}
+
+	return &groupIterator{rows: rows}, nil
 }
-func (r *groupRepository) FindOneByID(id int64) (*groupEntity, error) {
+func (r *groupRepositoryBase) FindOneByID(id int64) (*groupEntity, error) {
 	var (
 		query  string
 		entity groupEntity
@@ -2223,7 +2734,7 @@ updated_by
 
 	return &entity, nil
 }
-func (r *groupRepository) Insert(e *groupEntity) (*groupEntity, error) {
+func (r *groupRepositoryBase) Insert(e *groupEntity) (*groupEntity, error) {
 	insert := pqcomp.New(0, 7)
 	insert.AddExpr(tableGroupColumnCreatedAt, "", e.CreatedAt)
 	insert.AddExpr(tableGroupColumnCreatedBy, "", e.CreatedBy)
@@ -2274,30 +2785,22 @@ func (r *groupRepository) Insert(e *groupEntity) (*groupEntity, error) {
 
 	return e, nil
 }
-func (r *groupRepository) UpdateByID(
-	id int64,
-	createdAt *time.Time,
-	createdBy *ntypes.Int64,
-	description *ntypes.String,
-	name *ntypes.String,
-	updatedAt *time.Time,
-	updatedBy *ntypes.Int64,
-) (*groupEntity, error) {
+func (r *groupRepositoryBase) UpdateByID(patch *groupPatch) (*groupEntity, error) {
 	update := pqcomp.New(0, 7)
-	update.AddExpr(tableGroupColumnID, pqcomp.Equal, id)
-	if createdAt != nil {
-		update.AddExpr(tableGroupColumnCreatedAt, pqcomp.Equal, createdAt)
+	update.AddExpr(tableGroupColumnID, pqcomp.Equal, patch.id)
+	if patch.createdAt != nil {
+		update.AddExpr(tableGroupColumnCreatedAt, pqcomp.Equal, patch.createdAt)
 
 	}
-	update.AddExpr(tableGroupColumnCreatedBy, pqcomp.Equal, createdBy)
-	update.AddExpr(tableGroupColumnDescription, pqcomp.Equal, description)
-	update.AddExpr(tableGroupColumnName, pqcomp.Equal, name)
-	if updatedAt != nil {
-		update.AddExpr(tableGroupColumnUpdatedAt, pqcomp.Equal, updatedAt)
+	update.AddExpr(tableGroupColumnCreatedBy, pqcomp.Equal, patch.createdBy)
+	update.AddExpr(tableGroupColumnDescription, pqcomp.Equal, patch.description)
+	update.AddExpr(tableGroupColumnName, pqcomp.Equal, patch.name)
+	if patch.updatedAt != nil {
+		update.AddExpr(tableGroupColumnUpdatedAt, pqcomp.Equal, patch.updatedAt)
 	} else {
 		update.AddExpr(tableGroupColumnUpdatedAt, pqcomp.Equal, "NOW()")
 	}
-	update.AddExpr(tableGroupColumnUpdatedBy, pqcomp.Equal, updatedBy)
+	update.AddExpr(tableGroupColumnUpdatedBy, pqcomp.Equal, patch.updatedBy)
 
 	if update.Len() == 0 {
 		return nil, errors.New("charond: group update failure, nothing to update")
@@ -2327,8 +2830,7 @@ func (r *groupRepository) UpdateByID(
 
 	return &e, nil
 }
-
-func (r *groupRepository) DeleteByID(id int64) (int64, error) {
+func (r *groupRepositoryBase) DeleteByID(id int64) (int64, error) {
 	query := "DELETE FROM charon.group WHERE id = $1"
 
 	res, err := r.db.Exec(query, id)
@@ -2372,41 +2874,109 @@ type permissionEntity struct {
 	Groups    []*groupEntity
 	Users     []*userEntity
 }
+
+func (e *permissionEntity) Prop(cn string) (interface{}, bool) {
+	switch cn {
+	case tablePermissionColumnAction:
+		return &e.Action, true
+	case tablePermissionColumnCreatedAt:
+		return &e.CreatedAt, true
+	case tablePermissionColumnID:
+		return &e.ID, true
+	case tablePermissionColumnModule:
+		return &e.Module, true
+	case tablePermissionColumnSubsystem:
+		return &e.Subsystem, true
+	case tablePermissionColumnUpdatedAt:
+		return &e.UpdatedAt, true
+	default:
+		return nil, false
+	}
+}
+func (e *permissionEntity) Props(cns ...string) ([]interface{}, error) {
+
+	res := make([]interface{}, 0, len(cns))
+	for _, cn := range cns {
+		if prop, ok := e.Prop(cn); ok {
+			res = append(res, prop)
+		} else {
+			return nil, fmt.Errorf("unexpected column provided: %s", cn)
+		}
+	}
+	return res, nil
+}
+
+// permissionIterator is not thread safe.
+type permissionIterator struct {
+	rows *sql.Rows
+	cols []string
+}
+
+func (i *permissionIterator) Next() bool {
+	return i.rows.Next()
+}
+
+func (i *permissionIterator) Close() error {
+	return i.rows.Close()
+}
+
+func (i *permissionIterator) Err() error {
+	return i.rows.Err()
+}
+
+// Columns is wrapper around sql.Rows.Columns method, that also cache outpu inside iterator.
+func (i *permissionIterator) Columns() ([]string, error) {
+	if i.cols == nil {
+		cols, err := i.rows.Columns()
+		if err != nil {
+			return nil, err
+		}
+		i.cols = cols
+	}
+	return i.cols, nil
+}
+
+// Ent is wrapper arround permission method that makes iterator more generic.
+func (i *permissionIterator) Ent() (interface{}, error) {
+	return i.Permission()
+}
+
+func (i *permissionIterator) Permission() (*permissionEntity, error) {
+	var ent permissionEntity
+	cols, err := i.rows.Columns()
+	if err != nil {
+		return nil, err
+	}
+
+	props, err := ent.Props(cols...)
+	if err != nil {
+		return nil, err
+	}
+	if err := i.rows.Scan(props...); err != nil {
+		return nil, err
+	}
+	return &ent, nil
+}
+
 type permissionCriteria struct {
 	offset, limit int64
 	sort          map[string]bool
 	action        *qtypes.String
-
-	createdAt *qtypes.Timestamp
-
-	id *qtypes.Int64
-
-	module *qtypes.String
-
-	subsystem *qtypes.String
-
-	updatedAt *qtypes.Timestamp
+	createdAt     *qtypes.Timestamp
+	id            *qtypes.Int64
+	module        *qtypes.String
+	subsystem     *qtypes.String
+	updatedAt     *qtypes.Timestamp
 }
 
-type permissionRepository struct {
-	table   string
-	columns []string
-	db      *sql.DB
-	dbg     bool
-	log     log.Logger
-}
+func (c *permissionCriteria) WriteSQL(b *bytes.Buffer, pw *pqtgo.PlaceholderWriter, args *pqtgo.Arguments) (wr int64, err error) {
+	var (
+		wrt   int
+		wrt64 int64
+		dirty bool
+	)
 
-func (r *permissionRepository) Find(c *permissionCriteria) ([]*permissionEntity, error) {
 	wbuf := bytes.NewBuffer(nil)
-	qbuf := bytes.NewBuffer(nil)
-	qbuf.WriteString("SELECT ")
-	qbuf.WriteString(strings.Join(r.columns, ", "))
-	qbuf.WriteString(" FROM ")
-	qbuf.WriteString(r.table)
-
-	pw := pqtgo.NewPlaceholderWriter()
-	args := pqtgo.NewArguments(0)
-	dirty := false
 
 	if c.action != nil && c.action.Valid {
 		switch c.action.Type {
@@ -2429,7 +2999,11 @@ func (r *permissionRepository) Find(c *permissionCriteria) ([]*permissionEntity,
 			dirty = true
 
 			wbuf.WriteString(tablePermissionColumnAction)
-			wbuf.WriteString("=")
+			if c.action.Negation {
+				wbuf.WriteString(" <> ")
+			} else {
+				wbuf.WriteString(" = ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.action.Value())
 		case qtypes.TextQueryType_SUBSTRING:
@@ -2439,7 +3013,11 @@ func (r *permissionRepository) Find(c *permissionCriteria) ([]*permissionEntity,
 			dirty = true
 
 			wbuf.WriteString(tablePermissionColumnAction)
-			wbuf.WriteString(" LIKE ")
+			if c.action.Negation {
+				wbuf.WriteString(" NOT LIKE ")
+			} else {
+				wbuf.WriteString(" LIKE ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(fmt.Sprintf("%%%s%%", c.action.Value()))
 		case qtypes.TextQueryType_HAS_PREFIX:
@@ -2449,7 +3027,11 @@ func (r *permissionRepository) Find(c *permissionCriteria) ([]*permissionEntity,
 			dirty = true
 
 			wbuf.WriteString(tablePermissionColumnAction)
-			wbuf.WriteString(" LIKE ")
+			if c.action.Negation {
+				wbuf.WriteString(" NOT LIKE ")
+			} else {
+				wbuf.WriteString(" LIKE ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(fmt.Sprintf("%s%%", c.action.Value()))
 		case qtypes.TextQueryType_HAS_SUFFIX:
@@ -2459,7 +3041,11 @@ func (r *permissionRepository) Find(c *permissionCriteria) ([]*permissionEntity,
 			dirty = true
 
 			wbuf.WriteString(tablePermissionColumnAction)
-			wbuf.WriteString(" LIKE ")
+			if c.action.Negation {
+				wbuf.WriteString(" NOT LIKE ")
+			} else {
+				wbuf.WriteString(" LIKE ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(fmt.Sprintf("%%%s", c.action.Value()))
 		}
@@ -2470,9 +3056,8 @@ func (r *permissionRepository) Find(c *permissionCriteria) ([]*permissionEntity,
 		if createdAtt1 != nil {
 			createdAt1, err := ptypes.Timestamp(createdAtt1)
 			if err != nil {
-				return nil, err
+				return wr, err
 			}
-
 			switch c.createdAt.Type {
 			case qtypes.NumericQueryType_NOT_A_NUMBER:
 				if dirty {
@@ -2493,17 +3078,11 @@ func (r *permissionRepository) Find(c *permissionCriteria) ([]*permissionEntity,
 				dirty = true
 
 				wbuf.WriteString(tablePermissionColumnCreatedAt)
-				wbuf.WriteString("=")
-				pw.WriteTo(wbuf)
-				args.Add(c.createdAt.Value())
-			case qtypes.NumericQueryType_NOT_EQUAL:
-				if dirty {
-					wbuf.WriteString(" AND ")
+				if c.createdAt.Negation {
+					wbuf.WriteString("<>")
+				} else {
+					wbuf.WriteString("=")
 				}
-				dirty = true
-
-				wbuf.WriteString(tablePermissionColumnCreatedAt)
-				wbuf.WriteString("!=")
 				pw.WriteTo(wbuf)
 				args.Add(c.createdAt.Value())
 			case qtypes.NumericQueryType_GREATER:
@@ -2574,16 +3153,13 @@ func (r *permissionRepository) Find(c *permissionCriteria) ([]*permissionEntity,
 				if createdAtt2 != nil {
 					createdAt2, err := ptypes.Timestamp(createdAtt2)
 					if err != nil {
-						return nil, err
+						return wr, err
 					}
-
 					wbuf.WriteString(tablePermissionColumnCreatedAt)
 					wbuf.WriteString(" > ")
 					pw.WriteTo(wbuf)
 					args.Add(createdAt1)
-
 					wbuf.WriteString(" AND ")
-
 					wbuf.WriteString(tablePermissionColumnCreatedAt)
 					wbuf.WriteString(" < ")
 					pw.WriteTo(wbuf)
@@ -2614,17 +3190,11 @@ func (r *permissionRepository) Find(c *permissionCriteria) ([]*permissionEntity,
 			dirty = true
 
 			wbuf.WriteString(tablePermissionColumnID)
-			wbuf.WriteString("=")
-			pw.WriteTo(wbuf)
-			args.Add(c.id.Value())
-		case qtypes.NumericQueryType_NOT_EQUAL:
-			if dirty {
-				wbuf.WriteString(" AND ")
+			if c.id.Negation {
+				wbuf.WriteString(" <> ")
+			} else {
+				wbuf.WriteString("=")
 			}
-			dirty = true
-
-			wbuf.WriteString(tablePermissionColumnID)
-			wbuf.WriteString(" <> ")
 			pw.WriteTo(wbuf)
 			args.Add(c.id.Value())
 		case qtypes.NumericQueryType_GREATER:
@@ -2634,7 +3204,11 @@ func (r *permissionRepository) Find(c *permissionCriteria) ([]*permissionEntity,
 			dirty = true
 
 			wbuf.WriteString(tablePermissionColumnID)
-			wbuf.WriteString(" > ")
+			if c.id.Negation {
+				wbuf.WriteString(" <= ")
+			} else {
+				wbuf.WriteString(" > ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.id.Value())
 		case qtypes.NumericQueryType_GREATER_EQUAL:
@@ -2644,7 +3218,11 @@ func (r *permissionRepository) Find(c *permissionCriteria) ([]*permissionEntity,
 			dirty = true
 
 			wbuf.WriteString(tablePermissionColumnID)
-			wbuf.WriteString(" >= ")
+			if c.id.Negation {
+				wbuf.WriteString(" < ")
+			} else {
+				wbuf.WriteString(" >= ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.id.Value())
 		case qtypes.NumericQueryType_LESS:
@@ -2654,7 +3232,11 @@ func (r *permissionRepository) Find(c *permissionCriteria) ([]*permissionEntity,
 			dirty = true
 
 			wbuf.WriteString(tablePermissionColumnID)
-			wbuf.WriteString(" < ")
+			if c.id.Negation {
+				wbuf.WriteString(" >= ")
+			} else {
+				wbuf.WriteString(" < ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.id)
 		case qtypes.NumericQueryType_LESS_EQUAL:
@@ -2664,7 +3246,11 @@ func (r *permissionRepository) Find(c *permissionCriteria) ([]*permissionEntity,
 			dirty = true
 
 			wbuf.WriteString(tablePermissionColumnID)
-			wbuf.WriteString(" >= ")
+			if c.id.Negation {
+				wbuf.WriteString(" > ")
+			} else {
+				wbuf.WriteString(" <= ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.id.Value())
 		case qtypes.NumericQueryType_IN:
@@ -2675,7 +3261,11 @@ func (r *permissionRepository) Find(c *permissionCriteria) ([]*permissionEntity,
 				dirty = true
 
 				wbuf.WriteString(tablePermissionColumnID)
-				wbuf.WriteString(" IN (")
+				if c.id.Negation {
+					wbuf.WriteString(" NOT IN (")
+				} else {
+					wbuf.WriteString(" IN (")
+				}
 				for i, v := range c.id.Values {
 					if i != 0 {
 						wbuf.WriteString(",")
@@ -2692,14 +3282,20 @@ func (r *permissionRepository) Find(c *permissionCriteria) ([]*permissionEntity,
 			dirty = true
 
 			wbuf.WriteString(tablePermissionColumnID)
-			wbuf.WriteString(" > ")
+			if c.id.Negation {
+				wbuf.WriteString(" <= ")
+			} else {
+				wbuf.WriteString(" > ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.id.Values[0])
-
 			wbuf.WriteString(" AND ")
-
 			wbuf.WriteString(tablePermissionColumnID)
-			wbuf.WriteString(" < ")
+			if c.id.Negation {
+				wbuf.WriteString(" >= ")
+			} else {
+				wbuf.WriteString(" < ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.id.Values[1])
 		}
@@ -2726,7 +3322,11 @@ func (r *permissionRepository) Find(c *permissionCriteria) ([]*permissionEntity,
 			dirty = true
 
 			wbuf.WriteString(tablePermissionColumnModule)
-			wbuf.WriteString("=")
+			if c.module.Negation {
+				wbuf.WriteString(" <> ")
+			} else {
+				wbuf.WriteString(" = ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.module.Value())
 		case qtypes.TextQueryType_SUBSTRING:
@@ -2736,7 +3336,11 @@ func (r *permissionRepository) Find(c *permissionCriteria) ([]*permissionEntity,
 			dirty = true
 
 			wbuf.WriteString(tablePermissionColumnModule)
-			wbuf.WriteString(" LIKE ")
+			if c.module.Negation {
+				wbuf.WriteString(" NOT LIKE ")
+			} else {
+				wbuf.WriteString(" LIKE ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(fmt.Sprintf("%%%s%%", c.module.Value()))
 		case qtypes.TextQueryType_HAS_PREFIX:
@@ -2746,7 +3350,11 @@ func (r *permissionRepository) Find(c *permissionCriteria) ([]*permissionEntity,
 			dirty = true
 
 			wbuf.WriteString(tablePermissionColumnModule)
-			wbuf.WriteString(" LIKE ")
+			if c.module.Negation {
+				wbuf.WriteString(" NOT LIKE ")
+			} else {
+				wbuf.WriteString(" LIKE ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(fmt.Sprintf("%s%%", c.module.Value()))
 		case qtypes.TextQueryType_HAS_SUFFIX:
@@ -2756,7 +3364,11 @@ func (r *permissionRepository) Find(c *permissionCriteria) ([]*permissionEntity,
 			dirty = true
 
 			wbuf.WriteString(tablePermissionColumnModule)
-			wbuf.WriteString(" LIKE ")
+			if c.module.Negation {
+				wbuf.WriteString(" NOT LIKE ")
+			} else {
+				wbuf.WriteString(" LIKE ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(fmt.Sprintf("%%%s", c.module.Value()))
 		}
@@ -2783,7 +3395,11 @@ func (r *permissionRepository) Find(c *permissionCriteria) ([]*permissionEntity,
 			dirty = true
 
 			wbuf.WriteString(tablePermissionColumnSubsystem)
-			wbuf.WriteString("=")
+			if c.subsystem.Negation {
+				wbuf.WriteString(" <> ")
+			} else {
+				wbuf.WriteString(" = ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.subsystem.Value())
 		case qtypes.TextQueryType_SUBSTRING:
@@ -2793,7 +3409,11 @@ func (r *permissionRepository) Find(c *permissionCriteria) ([]*permissionEntity,
 			dirty = true
 
 			wbuf.WriteString(tablePermissionColumnSubsystem)
-			wbuf.WriteString(" LIKE ")
+			if c.subsystem.Negation {
+				wbuf.WriteString(" NOT LIKE ")
+			} else {
+				wbuf.WriteString(" LIKE ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(fmt.Sprintf("%%%s%%", c.subsystem.Value()))
 		case qtypes.TextQueryType_HAS_PREFIX:
@@ -2803,7 +3423,11 @@ func (r *permissionRepository) Find(c *permissionCriteria) ([]*permissionEntity,
 			dirty = true
 
 			wbuf.WriteString(tablePermissionColumnSubsystem)
-			wbuf.WriteString(" LIKE ")
+			if c.subsystem.Negation {
+				wbuf.WriteString(" NOT LIKE ")
+			} else {
+				wbuf.WriteString(" LIKE ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(fmt.Sprintf("%s%%", c.subsystem.Value()))
 		case qtypes.TextQueryType_HAS_SUFFIX:
@@ -2813,7 +3437,11 @@ func (r *permissionRepository) Find(c *permissionCriteria) ([]*permissionEntity,
 			dirty = true
 
 			wbuf.WriteString(tablePermissionColumnSubsystem)
-			wbuf.WriteString(" LIKE ")
+			if c.subsystem.Negation {
+				wbuf.WriteString(" NOT LIKE ")
+			} else {
+				wbuf.WriteString(" LIKE ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(fmt.Sprintf("%%%s", c.subsystem.Value()))
 		}
@@ -2824,9 +3452,8 @@ func (r *permissionRepository) Find(c *permissionCriteria) ([]*permissionEntity,
 		if updatedAtt1 != nil {
 			updatedAt1, err := ptypes.Timestamp(updatedAtt1)
 			if err != nil {
-				return nil, err
+				return wr, err
 			}
-
 			switch c.updatedAt.Type {
 			case qtypes.NumericQueryType_NOT_A_NUMBER:
 				if dirty {
@@ -2847,17 +3474,11 @@ func (r *permissionRepository) Find(c *permissionCriteria) ([]*permissionEntity,
 				dirty = true
 
 				wbuf.WriteString(tablePermissionColumnUpdatedAt)
-				wbuf.WriteString("=")
-				pw.WriteTo(wbuf)
-				args.Add(c.updatedAt.Value())
-			case qtypes.NumericQueryType_NOT_EQUAL:
-				if dirty {
-					wbuf.WriteString(" AND ")
+				if c.updatedAt.Negation {
+					wbuf.WriteString("<>")
+				} else {
+					wbuf.WriteString("=")
 				}
-				dirty = true
-
-				wbuf.WriteString(tablePermissionColumnUpdatedAt)
-				wbuf.WriteString("!=")
 				pw.WriteTo(wbuf)
 				args.Add(c.updatedAt.Value())
 			case qtypes.NumericQueryType_GREATER:
@@ -2928,16 +3549,13 @@ func (r *permissionRepository) Find(c *permissionCriteria) ([]*permissionEntity,
 				if updatedAtt2 != nil {
 					updatedAt2, err := ptypes.Timestamp(updatedAtt2)
 					if err != nil {
-						return nil, err
+						return wr, err
 					}
-
 					wbuf.WriteString(tablePermissionColumnUpdatedAt)
 					wbuf.WriteString(" > ")
 					pw.WriteTo(wbuf)
 					args.Add(updatedAt1)
-
 					wbuf.WriteString(" AND ")
-
 					wbuf.WriteString(tablePermissionColumnUpdatedAt)
 					wbuf.WriteString(" < ")
 					pw.WriteTo(wbuf)
@@ -2948,23 +3566,118 @@ func (r *permissionRepository) Find(c *permissionCriteria) ([]*permissionEntity,
 	}
 
 	if dirty {
-		if _, err := qbuf.WriteString(" WHERE "); err != nil {
-			return nil, err
+		if wrt, err = b.WriteString(" WHERE "); err != nil {
+			return
 		}
-		if _, err := wbuf.WriteTo(qbuf); err != nil {
-			return nil, err
+		wr += int64(wrt)
+		if wrt64, err = wbuf.WriteTo(b); err != nil {
+			return
 		}
+		wr += wrt64
 	}
 
 	if c.offset > 0 {
-		qbuf.WriteString(" OFFSET ")
-		pw.WriteTo(qbuf)
+		b.WriteString(" OFFSET ")
+		if wrt64, err = pw.WriteTo(b); err != nil {
+			return
+		}
+		wr += wrt64
 		args.Add(c.offset)
 	}
 	if c.limit > 0 {
-		qbuf.WriteString(" LIMIT ")
-		pw.WriteTo(qbuf)
+		b.WriteString(" LIMIT ")
+		if wrt64, err = pw.WriteTo(b); err != nil {
+			return
+		}
+		wr += wrt64
 		args.Add(c.limit)
+	}
+
+	return
+}
+
+type permissionPatch struct {
+	id        int64
+	action    *ntypes.String
+	createdAt *time.Time
+	module    *ntypes.String
+	subsystem *ntypes.String
+	updatedAt *time.Time
+}
+
+type permissionRepositoryBase struct {
+	table   string
+	columns []string
+	db      *sql.DB
+	dbg     bool
+	log     log.Logger
+}
+
+func ScanPermissionRows(rows *sql.Rows) ([]*permissionEntity, error) {
+	var (
+		entities []*permissionEntity
+		err      error
+	)
+	for rows.Next() {
+		var ent permissionEntity
+		err = rows.Scan(
+			&ent.Action,
+			&ent.CreatedAt,
+			&ent.ID,
+			&ent.Module,
+			&ent.Subsystem,
+			&ent.UpdatedAt,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		entities = append(entities, &ent)
+	}
+	if rows.Err() != nil {
+		return nil, rows.Err()
+	}
+
+	return entities, nil
+}
+
+func (r *permissionRepositoryBase) Count(c *permissionCriteria) (int64, error) {
+
+	qbuf := bytes.NewBuffer(nil)
+	qbuf.WriteString("SELECT COUNT(*) FROM ")
+	qbuf.WriteString(r.table)
+	pw := pqtgo.NewPlaceholderWriter()
+	args := pqtgo.NewArguments(0)
+
+	if _, err := c.WriteSQL(qbuf, pw, args); err != nil {
+		return 0, err
+	}
+	if r.dbg {
+		if err := r.log.Log("msg", qbuf.String(), "function", "Count"); err != nil {
+			return 0, err
+		}
+	}
+
+	var count int64
+	err := r.db.QueryRow(qbuf.String(), args.Slice()...).Scan(&count)
+	if err != nil {
+		return 0, err
+	}
+	return count, nil
+}
+func (r *permissionRepositoryBase) Find(c *permissionCriteria) ([]*permissionEntity, error) {
+
+	qbuf := bytes.NewBuffer(nil)
+	qbuf.WriteString("SELECT ")
+	qbuf.WriteString(strings.Join(r.columns, ", "))
+	qbuf.WriteString(" FROM ")
+	qbuf.WriteString(r.table)
+
+	pw := pqtgo.NewPlaceholderWriter()
+	args := pqtgo.NewArguments(0)
+
+	if _, err := c.WriteSQL(qbuf, pw, args); err != nil {
+		return nil, err
 	}
 
 	if r.dbg {
@@ -2977,32 +3690,40 @@ func (r *permissionRepository) Find(c *permissionCriteria) ([]*permissionEntity,
 	if err != nil {
 		return nil, err
 	}
+
 	defer rows.Close()
 
-	var entities []*permissionEntity
-	for rows.Next() {
-		var entity permissionEntity
-		err = rows.Scan(
-			&entity.Action,
-			&entity.CreatedAt,
-			&entity.ID,
-			&entity.Module,
-			&entity.Subsystem,
-			&entity.UpdatedAt,
-		)
-		if err != nil {
+	return ScanPermissionRows(rows)
+}
+func (r *permissionRepositoryBase) FindIter(c *permissionCriteria) (*permissionIterator, error) {
+
+	qbuf := bytes.NewBuffer(nil)
+	qbuf.WriteString("SELECT ")
+	qbuf.WriteString(strings.Join(r.columns, ", "))
+	qbuf.WriteString(" FROM ")
+	qbuf.WriteString(r.table)
+
+	pw := pqtgo.NewPlaceholderWriter()
+	args := pqtgo.NewArguments(0)
+
+	if _, err := c.WriteSQL(qbuf, pw, args); err != nil {
+		return nil, err
+	}
+
+	if r.dbg {
+		if err := r.log.Log("msg", qbuf.String(), "function", "Find"); err != nil {
 			return nil, err
 		}
-
-		entities = append(entities, &entity)
-	}
-	if rows.Err() != nil {
-		return nil, rows.Err()
 	}
 
-	return entities, nil
+	rows, err := r.db.Query(qbuf.String(), args.Slice()...)
+	if err != nil {
+		return nil, err
+	}
+
+	return &permissionIterator{rows: rows}, nil
 }
-func (r *permissionRepository) FindOneByID(id int64) (*permissionEntity, error) {
+func (r *permissionRepositoryBase) FindOneByID(id int64) (*permissionEntity, error) {
 	var (
 		query  string
 		entity permissionEntity
@@ -3028,7 +3749,7 @@ updated_at
 
 	return &entity, nil
 }
-func (r *permissionRepository) Insert(e *permissionEntity) (*permissionEntity, error) {
+func (r *permissionRepositoryBase) Insert(e *permissionEntity) (*permissionEntity, error) {
 	insert := pqcomp.New(0, 6)
 	insert.AddExpr(tablePermissionColumnAction, "", e.Action)
 	insert.AddExpr(tablePermissionColumnCreatedAt, "", e.CreatedAt)
@@ -3077,25 +3798,18 @@ func (r *permissionRepository) Insert(e *permissionEntity) (*permissionEntity, e
 
 	return e, nil
 }
-func (r *permissionRepository) UpdateByID(
-	id int64,
-	action *ntypes.String,
-	createdAt *time.Time,
-	module *ntypes.String,
-	subsystem *ntypes.String,
-	updatedAt *time.Time,
-) (*permissionEntity, error) {
+func (r *permissionRepositoryBase) UpdateByID(patch *permissionPatch) (*permissionEntity, error) {
 	update := pqcomp.New(0, 6)
-	update.AddExpr(tablePermissionColumnID, pqcomp.Equal, id)
-	update.AddExpr(tablePermissionColumnAction, pqcomp.Equal, action)
-	if createdAt != nil {
-		update.AddExpr(tablePermissionColumnCreatedAt, pqcomp.Equal, createdAt)
+	update.AddExpr(tablePermissionColumnID, pqcomp.Equal, patch.id)
+	update.AddExpr(tablePermissionColumnAction, pqcomp.Equal, patch.action)
+	if patch.createdAt != nil {
+		update.AddExpr(tablePermissionColumnCreatedAt, pqcomp.Equal, patch.createdAt)
 
 	}
-	update.AddExpr(tablePermissionColumnModule, pqcomp.Equal, module)
-	update.AddExpr(tablePermissionColumnSubsystem, pqcomp.Equal, subsystem)
-	if updatedAt != nil {
-		update.AddExpr(tablePermissionColumnUpdatedAt, pqcomp.Equal, updatedAt)
+	update.AddExpr(tablePermissionColumnModule, pqcomp.Equal, patch.module)
+	update.AddExpr(tablePermissionColumnSubsystem, pqcomp.Equal, patch.subsystem)
+	if patch.updatedAt != nil {
+		update.AddExpr(tablePermissionColumnUpdatedAt, pqcomp.Equal, patch.updatedAt)
 	} else {
 		update.AddExpr(tablePermissionColumnUpdatedAt, pqcomp.Equal, "NOW()")
 	}
@@ -3127,8 +3841,7 @@ func (r *permissionRepository) UpdateByID(
 
 	return &e, nil
 }
-
-func (r *permissionRepository) DeleteByID(id int64) (int64, error) {
+func (r *permissionRepositoryBase) DeleteByID(id int64) (int64, error) {
 	query := "DELETE FROM charon.permission WHERE id = $1"
 
 	res, err := r.db.Exec(query, id)
@@ -3174,53 +3887,120 @@ type userGroupsEntity struct {
 	UserID    int64
 	User      *userEntity
 	Group     *groupEntity
-	Author    []*userEntity
-	Modifier  []*userEntity
+	Author    *userEntity
+	Modifier  *userEntity
 }
+
+func (e *userGroupsEntity) Prop(cn string) (interface{}, bool) {
+	switch cn {
+	case tableUserGroupsColumnCreatedAt:
+		return &e.CreatedAt, true
+	case tableUserGroupsColumnCreatedBy:
+		return &e.CreatedBy, true
+	case tableUserGroupsColumnGroupID:
+		return &e.GroupID, true
+	case tableUserGroupsColumnUpdatedAt:
+		return &e.UpdatedAt, true
+	case tableUserGroupsColumnUpdatedBy:
+		return &e.UpdatedBy, true
+	case tableUserGroupsColumnUserID:
+		return &e.UserID, true
+	default:
+		return nil, false
+	}
+}
+func (e *userGroupsEntity) Props(cns ...string) ([]interface{}, error) {
+
+	res := make([]interface{}, 0, len(cns))
+	for _, cn := range cns {
+		if prop, ok := e.Prop(cn); ok {
+			res = append(res, prop)
+		} else {
+			return nil, fmt.Errorf("unexpected column provided: %s", cn)
+		}
+	}
+	return res, nil
+}
+
+// userGroupsIterator is not thread safe.
+type userGroupsIterator struct {
+	rows *sql.Rows
+	cols []string
+}
+
+func (i *userGroupsIterator) Next() bool {
+	return i.rows.Next()
+}
+
+func (i *userGroupsIterator) Close() error {
+	return i.rows.Close()
+}
+
+func (i *userGroupsIterator) Err() error {
+	return i.rows.Err()
+}
+
+// Columns is wrapper around sql.Rows.Columns method, that also cache outpu inside iterator.
+func (i *userGroupsIterator) Columns() ([]string, error) {
+	if i.cols == nil {
+		cols, err := i.rows.Columns()
+		if err != nil {
+			return nil, err
+		}
+		i.cols = cols
+	}
+	return i.cols, nil
+}
+
+// Ent is wrapper arround userGroups method that makes iterator more generic.
+func (i *userGroupsIterator) Ent() (interface{}, error) {
+	return i.UserGroups()
+}
+
+func (i *userGroupsIterator) UserGroups() (*userGroupsEntity, error) {
+	var ent userGroupsEntity
+	cols, err := i.rows.Columns()
+	if err != nil {
+		return nil, err
+	}
+
+	props, err := ent.Props(cols...)
+	if err != nil {
+		return nil, err
+	}
+	if err := i.rows.Scan(props...); err != nil {
+		return nil, err
+	}
+	return &ent, nil
+}
+
 type userGroupsCriteria struct {
 	offset, limit int64
 	sort          map[string]bool
 	createdAt     *qtypes.Timestamp
-
-	createdBy *qtypes.Int64
-
-	groupID *qtypes.Int64
-
-	updatedAt *qtypes.Timestamp
-
-	updatedBy *qtypes.Int64
-
-	userID *qtypes.Int64
+	createdBy     *qtypes.Int64
+	groupID       *qtypes.Int64
+	updatedAt     *qtypes.Timestamp
+	updatedBy     *qtypes.Int64
+	userID        *qtypes.Int64
 }
 
-type userGroupsRepository struct {
-	table   string
-	columns []string
-	db      *sql.DB
-	dbg     bool
-	log     log.Logger
-}
+func (c *userGroupsCriteria) WriteSQL(b *bytes.Buffer, pw *pqtgo.PlaceholderWriter, args *pqtgo.Arguments) (wr int64, err error) {
+	var (
+		wrt   int
+		wrt64 int64
+		dirty bool
+	)
 
-func (r *userGroupsRepository) Find(c *userGroupsCriteria) ([]*userGroupsEntity, error) {
 	wbuf := bytes.NewBuffer(nil)
-	qbuf := bytes.NewBuffer(nil)
-	qbuf.WriteString("SELECT ")
-	qbuf.WriteString(strings.Join(r.columns, ", "))
-	qbuf.WriteString(" FROM ")
-	qbuf.WriteString(r.table)
-
-	pw := pqtgo.NewPlaceholderWriter()
-	args := pqtgo.NewArguments(0)
-	dirty := false
 
 	if c.createdAt != nil && c.createdAt.Valid {
 		createdAtt1 := c.createdAt.Value()
 		if createdAtt1 != nil {
 			createdAt1, err := ptypes.Timestamp(createdAtt1)
 			if err != nil {
-				return nil, err
+				return wr, err
 			}
-
 			switch c.createdAt.Type {
 			case qtypes.NumericQueryType_NOT_A_NUMBER:
 				if dirty {
@@ -3241,17 +4021,11 @@ func (r *userGroupsRepository) Find(c *userGroupsCriteria) ([]*userGroupsEntity,
 				dirty = true
 
 				wbuf.WriteString(tableUserGroupsColumnCreatedAt)
-				wbuf.WriteString("=")
-				pw.WriteTo(wbuf)
-				args.Add(c.createdAt.Value())
-			case qtypes.NumericQueryType_NOT_EQUAL:
-				if dirty {
-					wbuf.WriteString(" AND ")
+				if c.createdAt.Negation {
+					wbuf.WriteString("<>")
+				} else {
+					wbuf.WriteString("=")
 				}
-				dirty = true
-
-				wbuf.WriteString(tableUserGroupsColumnCreatedAt)
-				wbuf.WriteString("!=")
 				pw.WriteTo(wbuf)
 				args.Add(c.createdAt.Value())
 			case qtypes.NumericQueryType_GREATER:
@@ -3322,16 +4096,13 @@ func (r *userGroupsRepository) Find(c *userGroupsCriteria) ([]*userGroupsEntity,
 				if createdAtt2 != nil {
 					createdAt2, err := ptypes.Timestamp(createdAtt2)
 					if err != nil {
-						return nil, err
+						return wr, err
 					}
-
 					wbuf.WriteString(tableUserGroupsColumnCreatedAt)
 					wbuf.WriteString(" > ")
 					pw.WriteTo(wbuf)
 					args.Add(createdAt1)
-
 					wbuf.WriteString(" AND ")
-
 					wbuf.WriteString(tableUserGroupsColumnCreatedAt)
 					wbuf.WriteString(" < ")
 					pw.WriteTo(wbuf)
@@ -3362,17 +4133,11 @@ func (r *userGroupsRepository) Find(c *userGroupsCriteria) ([]*userGroupsEntity,
 			dirty = true
 
 			wbuf.WriteString(tableUserGroupsColumnCreatedBy)
-			wbuf.WriteString("=")
-			pw.WriteTo(wbuf)
-			args.Add(c.createdBy.Value())
-		case qtypes.NumericQueryType_NOT_EQUAL:
-			if dirty {
-				wbuf.WriteString(" AND ")
+			if c.createdBy.Negation {
+				wbuf.WriteString(" <> ")
+			} else {
+				wbuf.WriteString("=")
 			}
-			dirty = true
-
-			wbuf.WriteString(tableUserGroupsColumnCreatedBy)
-			wbuf.WriteString(" <> ")
 			pw.WriteTo(wbuf)
 			args.Add(c.createdBy.Value())
 		case qtypes.NumericQueryType_GREATER:
@@ -3382,7 +4147,11 @@ func (r *userGroupsRepository) Find(c *userGroupsCriteria) ([]*userGroupsEntity,
 			dirty = true
 
 			wbuf.WriteString(tableUserGroupsColumnCreatedBy)
-			wbuf.WriteString(" > ")
+			if c.createdBy.Negation {
+				wbuf.WriteString(" <= ")
+			} else {
+				wbuf.WriteString(" > ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.createdBy.Value())
 		case qtypes.NumericQueryType_GREATER_EQUAL:
@@ -3392,7 +4161,11 @@ func (r *userGroupsRepository) Find(c *userGroupsCriteria) ([]*userGroupsEntity,
 			dirty = true
 
 			wbuf.WriteString(tableUserGroupsColumnCreatedBy)
-			wbuf.WriteString(" >= ")
+			if c.createdBy.Negation {
+				wbuf.WriteString(" < ")
+			} else {
+				wbuf.WriteString(" >= ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.createdBy.Value())
 		case qtypes.NumericQueryType_LESS:
@@ -3402,7 +4175,11 @@ func (r *userGroupsRepository) Find(c *userGroupsCriteria) ([]*userGroupsEntity,
 			dirty = true
 
 			wbuf.WriteString(tableUserGroupsColumnCreatedBy)
-			wbuf.WriteString(" < ")
+			if c.createdBy.Negation {
+				wbuf.WriteString(" >= ")
+			} else {
+				wbuf.WriteString(" < ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.createdBy)
 		case qtypes.NumericQueryType_LESS_EQUAL:
@@ -3412,7 +4189,11 @@ func (r *userGroupsRepository) Find(c *userGroupsCriteria) ([]*userGroupsEntity,
 			dirty = true
 
 			wbuf.WriteString(tableUserGroupsColumnCreatedBy)
-			wbuf.WriteString(" >= ")
+			if c.createdBy.Negation {
+				wbuf.WriteString(" > ")
+			} else {
+				wbuf.WriteString(" <= ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.createdBy.Value())
 		case qtypes.NumericQueryType_IN:
@@ -3423,7 +4204,11 @@ func (r *userGroupsRepository) Find(c *userGroupsCriteria) ([]*userGroupsEntity,
 				dirty = true
 
 				wbuf.WriteString(tableUserGroupsColumnCreatedBy)
-				wbuf.WriteString(" IN (")
+				if c.createdBy.Negation {
+					wbuf.WriteString(" NOT IN (")
+				} else {
+					wbuf.WriteString(" IN (")
+				}
 				for i, v := range c.createdBy.Values {
 					if i != 0 {
 						wbuf.WriteString(",")
@@ -3440,14 +4225,20 @@ func (r *userGroupsRepository) Find(c *userGroupsCriteria) ([]*userGroupsEntity,
 			dirty = true
 
 			wbuf.WriteString(tableUserGroupsColumnCreatedBy)
-			wbuf.WriteString(" > ")
+			if c.createdBy.Negation {
+				wbuf.WriteString(" <= ")
+			} else {
+				wbuf.WriteString(" > ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.createdBy.Values[0])
-
 			wbuf.WriteString(" AND ")
-
 			wbuf.WriteString(tableUserGroupsColumnCreatedBy)
-			wbuf.WriteString(" < ")
+			if c.createdBy.Negation {
+				wbuf.WriteString(" >= ")
+			} else {
+				wbuf.WriteString(" < ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.createdBy.Values[1])
 		}
@@ -3474,17 +4265,11 @@ func (r *userGroupsRepository) Find(c *userGroupsCriteria) ([]*userGroupsEntity,
 			dirty = true
 
 			wbuf.WriteString(tableUserGroupsColumnGroupID)
-			wbuf.WriteString("=")
-			pw.WriteTo(wbuf)
-			args.Add(c.groupID.Value())
-		case qtypes.NumericQueryType_NOT_EQUAL:
-			if dirty {
-				wbuf.WriteString(" AND ")
+			if c.groupID.Negation {
+				wbuf.WriteString(" <> ")
+			} else {
+				wbuf.WriteString("=")
 			}
-			dirty = true
-
-			wbuf.WriteString(tableUserGroupsColumnGroupID)
-			wbuf.WriteString(" <> ")
 			pw.WriteTo(wbuf)
 			args.Add(c.groupID.Value())
 		case qtypes.NumericQueryType_GREATER:
@@ -3494,7 +4279,11 @@ func (r *userGroupsRepository) Find(c *userGroupsCriteria) ([]*userGroupsEntity,
 			dirty = true
 
 			wbuf.WriteString(tableUserGroupsColumnGroupID)
-			wbuf.WriteString(" > ")
+			if c.groupID.Negation {
+				wbuf.WriteString(" <= ")
+			} else {
+				wbuf.WriteString(" > ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.groupID.Value())
 		case qtypes.NumericQueryType_GREATER_EQUAL:
@@ -3504,7 +4293,11 @@ func (r *userGroupsRepository) Find(c *userGroupsCriteria) ([]*userGroupsEntity,
 			dirty = true
 
 			wbuf.WriteString(tableUserGroupsColumnGroupID)
-			wbuf.WriteString(" >= ")
+			if c.groupID.Negation {
+				wbuf.WriteString(" < ")
+			} else {
+				wbuf.WriteString(" >= ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.groupID.Value())
 		case qtypes.NumericQueryType_LESS:
@@ -3514,7 +4307,11 @@ func (r *userGroupsRepository) Find(c *userGroupsCriteria) ([]*userGroupsEntity,
 			dirty = true
 
 			wbuf.WriteString(tableUserGroupsColumnGroupID)
-			wbuf.WriteString(" < ")
+			if c.groupID.Negation {
+				wbuf.WriteString(" >= ")
+			} else {
+				wbuf.WriteString(" < ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.groupID)
 		case qtypes.NumericQueryType_LESS_EQUAL:
@@ -3524,7 +4321,11 @@ func (r *userGroupsRepository) Find(c *userGroupsCriteria) ([]*userGroupsEntity,
 			dirty = true
 
 			wbuf.WriteString(tableUserGroupsColumnGroupID)
-			wbuf.WriteString(" >= ")
+			if c.groupID.Negation {
+				wbuf.WriteString(" > ")
+			} else {
+				wbuf.WriteString(" <= ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.groupID.Value())
 		case qtypes.NumericQueryType_IN:
@@ -3535,7 +4336,11 @@ func (r *userGroupsRepository) Find(c *userGroupsCriteria) ([]*userGroupsEntity,
 				dirty = true
 
 				wbuf.WriteString(tableUserGroupsColumnGroupID)
-				wbuf.WriteString(" IN (")
+				if c.groupID.Negation {
+					wbuf.WriteString(" NOT IN (")
+				} else {
+					wbuf.WriteString(" IN (")
+				}
 				for i, v := range c.groupID.Values {
 					if i != 0 {
 						wbuf.WriteString(",")
@@ -3552,14 +4357,20 @@ func (r *userGroupsRepository) Find(c *userGroupsCriteria) ([]*userGroupsEntity,
 			dirty = true
 
 			wbuf.WriteString(tableUserGroupsColumnGroupID)
-			wbuf.WriteString(" > ")
+			if c.groupID.Negation {
+				wbuf.WriteString(" <= ")
+			} else {
+				wbuf.WriteString(" > ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.groupID.Values[0])
-
 			wbuf.WriteString(" AND ")
-
 			wbuf.WriteString(tableUserGroupsColumnGroupID)
-			wbuf.WriteString(" < ")
+			if c.groupID.Negation {
+				wbuf.WriteString(" >= ")
+			} else {
+				wbuf.WriteString(" < ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.groupID.Values[1])
 		}
@@ -3570,9 +4381,8 @@ func (r *userGroupsRepository) Find(c *userGroupsCriteria) ([]*userGroupsEntity,
 		if updatedAtt1 != nil {
 			updatedAt1, err := ptypes.Timestamp(updatedAtt1)
 			if err != nil {
-				return nil, err
+				return wr, err
 			}
-
 			switch c.updatedAt.Type {
 			case qtypes.NumericQueryType_NOT_A_NUMBER:
 				if dirty {
@@ -3593,17 +4403,11 @@ func (r *userGroupsRepository) Find(c *userGroupsCriteria) ([]*userGroupsEntity,
 				dirty = true
 
 				wbuf.WriteString(tableUserGroupsColumnUpdatedAt)
-				wbuf.WriteString("=")
-				pw.WriteTo(wbuf)
-				args.Add(c.updatedAt.Value())
-			case qtypes.NumericQueryType_NOT_EQUAL:
-				if dirty {
-					wbuf.WriteString(" AND ")
+				if c.updatedAt.Negation {
+					wbuf.WriteString("<>")
+				} else {
+					wbuf.WriteString("=")
 				}
-				dirty = true
-
-				wbuf.WriteString(tableUserGroupsColumnUpdatedAt)
-				wbuf.WriteString("!=")
 				pw.WriteTo(wbuf)
 				args.Add(c.updatedAt.Value())
 			case qtypes.NumericQueryType_GREATER:
@@ -3674,16 +4478,13 @@ func (r *userGroupsRepository) Find(c *userGroupsCriteria) ([]*userGroupsEntity,
 				if updatedAtt2 != nil {
 					updatedAt2, err := ptypes.Timestamp(updatedAtt2)
 					if err != nil {
-						return nil, err
+						return wr, err
 					}
-
 					wbuf.WriteString(tableUserGroupsColumnUpdatedAt)
 					wbuf.WriteString(" > ")
 					pw.WriteTo(wbuf)
 					args.Add(updatedAt1)
-
 					wbuf.WriteString(" AND ")
-
 					wbuf.WriteString(tableUserGroupsColumnUpdatedAt)
 					wbuf.WriteString(" < ")
 					pw.WriteTo(wbuf)
@@ -3714,17 +4515,11 @@ func (r *userGroupsRepository) Find(c *userGroupsCriteria) ([]*userGroupsEntity,
 			dirty = true
 
 			wbuf.WriteString(tableUserGroupsColumnUpdatedBy)
-			wbuf.WriteString("=")
-			pw.WriteTo(wbuf)
-			args.Add(c.updatedBy.Value())
-		case qtypes.NumericQueryType_NOT_EQUAL:
-			if dirty {
-				wbuf.WriteString(" AND ")
+			if c.updatedBy.Negation {
+				wbuf.WriteString(" <> ")
+			} else {
+				wbuf.WriteString("=")
 			}
-			dirty = true
-
-			wbuf.WriteString(tableUserGroupsColumnUpdatedBy)
-			wbuf.WriteString(" <> ")
 			pw.WriteTo(wbuf)
 			args.Add(c.updatedBy.Value())
 		case qtypes.NumericQueryType_GREATER:
@@ -3734,7 +4529,11 @@ func (r *userGroupsRepository) Find(c *userGroupsCriteria) ([]*userGroupsEntity,
 			dirty = true
 
 			wbuf.WriteString(tableUserGroupsColumnUpdatedBy)
-			wbuf.WriteString(" > ")
+			if c.updatedBy.Negation {
+				wbuf.WriteString(" <= ")
+			} else {
+				wbuf.WriteString(" > ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.updatedBy.Value())
 		case qtypes.NumericQueryType_GREATER_EQUAL:
@@ -3744,7 +4543,11 @@ func (r *userGroupsRepository) Find(c *userGroupsCriteria) ([]*userGroupsEntity,
 			dirty = true
 
 			wbuf.WriteString(tableUserGroupsColumnUpdatedBy)
-			wbuf.WriteString(" >= ")
+			if c.updatedBy.Negation {
+				wbuf.WriteString(" < ")
+			} else {
+				wbuf.WriteString(" >= ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.updatedBy.Value())
 		case qtypes.NumericQueryType_LESS:
@@ -3754,7 +4557,11 @@ func (r *userGroupsRepository) Find(c *userGroupsCriteria) ([]*userGroupsEntity,
 			dirty = true
 
 			wbuf.WriteString(tableUserGroupsColumnUpdatedBy)
-			wbuf.WriteString(" < ")
+			if c.updatedBy.Negation {
+				wbuf.WriteString(" >= ")
+			} else {
+				wbuf.WriteString(" < ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.updatedBy)
 		case qtypes.NumericQueryType_LESS_EQUAL:
@@ -3764,7 +4571,11 @@ func (r *userGroupsRepository) Find(c *userGroupsCriteria) ([]*userGroupsEntity,
 			dirty = true
 
 			wbuf.WriteString(tableUserGroupsColumnUpdatedBy)
-			wbuf.WriteString(" >= ")
+			if c.updatedBy.Negation {
+				wbuf.WriteString(" > ")
+			} else {
+				wbuf.WriteString(" <= ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.updatedBy.Value())
 		case qtypes.NumericQueryType_IN:
@@ -3775,7 +4586,11 @@ func (r *userGroupsRepository) Find(c *userGroupsCriteria) ([]*userGroupsEntity,
 				dirty = true
 
 				wbuf.WriteString(tableUserGroupsColumnUpdatedBy)
-				wbuf.WriteString(" IN (")
+				if c.updatedBy.Negation {
+					wbuf.WriteString(" NOT IN (")
+				} else {
+					wbuf.WriteString(" IN (")
+				}
 				for i, v := range c.updatedBy.Values {
 					if i != 0 {
 						wbuf.WriteString(",")
@@ -3792,14 +4607,20 @@ func (r *userGroupsRepository) Find(c *userGroupsCriteria) ([]*userGroupsEntity,
 			dirty = true
 
 			wbuf.WriteString(tableUserGroupsColumnUpdatedBy)
-			wbuf.WriteString(" > ")
+			if c.updatedBy.Negation {
+				wbuf.WriteString(" <= ")
+			} else {
+				wbuf.WriteString(" > ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.updatedBy.Values[0])
-
 			wbuf.WriteString(" AND ")
-
 			wbuf.WriteString(tableUserGroupsColumnUpdatedBy)
-			wbuf.WriteString(" < ")
+			if c.updatedBy.Negation {
+				wbuf.WriteString(" >= ")
+			} else {
+				wbuf.WriteString(" < ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.updatedBy.Values[1])
 		}
@@ -3826,17 +4647,11 @@ func (r *userGroupsRepository) Find(c *userGroupsCriteria) ([]*userGroupsEntity,
 			dirty = true
 
 			wbuf.WriteString(tableUserGroupsColumnUserID)
-			wbuf.WriteString("=")
-			pw.WriteTo(wbuf)
-			args.Add(c.userID.Value())
-		case qtypes.NumericQueryType_NOT_EQUAL:
-			if dirty {
-				wbuf.WriteString(" AND ")
+			if c.userID.Negation {
+				wbuf.WriteString(" <> ")
+			} else {
+				wbuf.WriteString("=")
 			}
-			dirty = true
-
-			wbuf.WriteString(tableUserGroupsColumnUserID)
-			wbuf.WriteString(" <> ")
 			pw.WriteTo(wbuf)
 			args.Add(c.userID.Value())
 		case qtypes.NumericQueryType_GREATER:
@@ -3846,7 +4661,11 @@ func (r *userGroupsRepository) Find(c *userGroupsCriteria) ([]*userGroupsEntity,
 			dirty = true
 
 			wbuf.WriteString(tableUserGroupsColumnUserID)
-			wbuf.WriteString(" > ")
+			if c.userID.Negation {
+				wbuf.WriteString(" <= ")
+			} else {
+				wbuf.WriteString(" > ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.userID.Value())
 		case qtypes.NumericQueryType_GREATER_EQUAL:
@@ -3856,7 +4675,11 @@ func (r *userGroupsRepository) Find(c *userGroupsCriteria) ([]*userGroupsEntity,
 			dirty = true
 
 			wbuf.WriteString(tableUserGroupsColumnUserID)
-			wbuf.WriteString(" >= ")
+			if c.userID.Negation {
+				wbuf.WriteString(" < ")
+			} else {
+				wbuf.WriteString(" >= ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.userID.Value())
 		case qtypes.NumericQueryType_LESS:
@@ -3866,7 +4689,11 @@ func (r *userGroupsRepository) Find(c *userGroupsCriteria) ([]*userGroupsEntity,
 			dirty = true
 
 			wbuf.WriteString(tableUserGroupsColumnUserID)
-			wbuf.WriteString(" < ")
+			if c.userID.Negation {
+				wbuf.WriteString(" >= ")
+			} else {
+				wbuf.WriteString(" < ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.userID)
 		case qtypes.NumericQueryType_LESS_EQUAL:
@@ -3876,7 +4703,11 @@ func (r *userGroupsRepository) Find(c *userGroupsCriteria) ([]*userGroupsEntity,
 			dirty = true
 
 			wbuf.WriteString(tableUserGroupsColumnUserID)
-			wbuf.WriteString(" >= ")
+			if c.userID.Negation {
+				wbuf.WriteString(" > ")
+			} else {
+				wbuf.WriteString(" <= ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.userID.Value())
 		case qtypes.NumericQueryType_IN:
@@ -3887,7 +4718,11 @@ func (r *userGroupsRepository) Find(c *userGroupsCriteria) ([]*userGroupsEntity,
 				dirty = true
 
 				wbuf.WriteString(tableUserGroupsColumnUserID)
-				wbuf.WriteString(" IN (")
+				if c.userID.Negation {
+					wbuf.WriteString(" NOT IN (")
+				} else {
+					wbuf.WriteString(" IN (")
+				}
 				for i, v := range c.userID.Values {
 					if i != 0 {
 						wbuf.WriteString(",")
@@ -3904,37 +4739,129 @@ func (r *userGroupsRepository) Find(c *userGroupsCriteria) ([]*userGroupsEntity,
 			dirty = true
 
 			wbuf.WriteString(tableUserGroupsColumnUserID)
-			wbuf.WriteString(" > ")
+			if c.userID.Negation {
+				wbuf.WriteString(" <= ")
+			} else {
+				wbuf.WriteString(" > ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.userID.Values[0])
-
 			wbuf.WriteString(" AND ")
-
 			wbuf.WriteString(tableUserGroupsColumnUserID)
-			wbuf.WriteString(" < ")
+			if c.userID.Negation {
+				wbuf.WriteString(" >= ")
+			} else {
+				wbuf.WriteString(" < ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.userID.Values[1])
 		}
 	}
 
 	if dirty {
-		if _, err := qbuf.WriteString(" WHERE "); err != nil {
-			return nil, err
+		if wrt, err = b.WriteString(" WHERE "); err != nil {
+			return
 		}
-		if _, err := wbuf.WriteTo(qbuf); err != nil {
-			return nil, err
+		wr += int64(wrt)
+		if wrt64, err = wbuf.WriteTo(b); err != nil {
+			return
 		}
+		wr += wrt64
 	}
 
 	if c.offset > 0 {
-		qbuf.WriteString(" OFFSET ")
-		pw.WriteTo(qbuf)
+		b.WriteString(" OFFSET ")
+		if wrt64, err = pw.WriteTo(b); err != nil {
+			return
+		}
+		wr += wrt64
 		args.Add(c.offset)
 	}
 	if c.limit > 0 {
-		qbuf.WriteString(" LIMIT ")
-		pw.WriteTo(qbuf)
+		b.WriteString(" LIMIT ")
+		if wrt64, err = pw.WriteTo(b); err != nil {
+			return
+		}
+		wr += wrt64
 		args.Add(c.limit)
+	}
+
+	return
+}
+
+type userGroupsRepositoryBase struct {
+	table   string
+	columns []string
+	db      *sql.DB
+	dbg     bool
+	log     log.Logger
+}
+
+func ScanUserGroupsRows(rows *sql.Rows) ([]*userGroupsEntity, error) {
+	var (
+		entities []*userGroupsEntity
+		err      error
+	)
+	for rows.Next() {
+		var ent userGroupsEntity
+		err = rows.Scan(
+			&ent.CreatedAt,
+			&ent.CreatedBy,
+			&ent.GroupID,
+			&ent.UpdatedAt,
+			&ent.UpdatedBy,
+			&ent.UserID,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		entities = append(entities, &ent)
+	}
+	if rows.Err() != nil {
+		return nil, rows.Err()
+	}
+
+	return entities, nil
+}
+
+func (r *userGroupsRepositoryBase) Count(c *userGroupsCriteria) (int64, error) {
+
+	qbuf := bytes.NewBuffer(nil)
+	qbuf.WriteString("SELECT COUNT(*) FROM ")
+	qbuf.WriteString(r.table)
+	pw := pqtgo.NewPlaceholderWriter()
+	args := pqtgo.NewArguments(0)
+
+	if _, err := c.WriteSQL(qbuf, pw, args); err != nil {
+		return 0, err
+	}
+	if r.dbg {
+		if err := r.log.Log("msg", qbuf.String(), "function", "Count"); err != nil {
+			return 0, err
+		}
+	}
+
+	var count int64
+	err := r.db.QueryRow(qbuf.String(), args.Slice()...).Scan(&count)
+	if err != nil {
+		return 0, err
+	}
+	return count, nil
+}
+func (r *userGroupsRepositoryBase) Find(c *userGroupsCriteria) ([]*userGroupsEntity, error) {
+
+	qbuf := bytes.NewBuffer(nil)
+	qbuf.WriteString("SELECT ")
+	qbuf.WriteString(strings.Join(r.columns, ", "))
+	qbuf.WriteString(" FROM ")
+	qbuf.WriteString(r.table)
+
+	pw := pqtgo.NewPlaceholderWriter()
+	args := pqtgo.NewArguments(0)
+
+	if _, err := c.WriteSQL(qbuf, pw, args); err != nil {
+		return nil, err
 	}
 
 	if r.dbg {
@@ -3947,32 +4874,40 @@ func (r *userGroupsRepository) Find(c *userGroupsCriteria) ([]*userGroupsEntity,
 	if err != nil {
 		return nil, err
 	}
+
 	defer rows.Close()
 
-	var entities []*userGroupsEntity
-	for rows.Next() {
-		var entity userGroupsEntity
-		err = rows.Scan(
-			&entity.CreatedAt,
-			&entity.CreatedBy,
-			&entity.GroupID,
-			&entity.UpdatedAt,
-			&entity.UpdatedBy,
-			&entity.UserID,
-		)
-		if err != nil {
+	return ScanUserGroupsRows(rows)
+}
+func (r *userGroupsRepositoryBase) FindIter(c *userGroupsCriteria) (*userGroupsIterator, error) {
+
+	qbuf := bytes.NewBuffer(nil)
+	qbuf.WriteString("SELECT ")
+	qbuf.WriteString(strings.Join(r.columns, ", "))
+	qbuf.WriteString(" FROM ")
+	qbuf.WriteString(r.table)
+
+	pw := pqtgo.NewPlaceholderWriter()
+	args := pqtgo.NewArguments(0)
+
+	if _, err := c.WriteSQL(qbuf, pw, args); err != nil {
+		return nil, err
+	}
+
+	if r.dbg {
+		if err := r.log.Log("msg", qbuf.String(), "function", "Find"); err != nil {
 			return nil, err
 		}
-
-		entities = append(entities, &entity)
-	}
-	if rows.Err() != nil {
-		return nil, rows.Err()
 	}
 
-	return entities, nil
+	rows, err := r.db.Query(qbuf.String(), args.Slice()...)
+	if err != nil {
+		return nil, err
+	}
+
+	return &userGroupsIterator{rows: rows}, nil
 }
-func (r *userGroupsRepository) Insert(e *userGroupsEntity) (*userGroupsEntity, error) {
+func (r *userGroupsRepositoryBase) Insert(e *userGroupsEntity) (*userGroupsEntity, error) {
 	insert := pqcomp.New(0, 6)
 	insert.AddExpr(tableUserGroupsColumnCreatedAt, "", e.CreatedAt)
 	insert.AddExpr(tableUserGroupsColumnCreatedBy, "", e.CreatedBy)
@@ -4064,57 +4999,126 @@ type groupPermissionsEntity struct {
 	UpdatedBy           *ntypes.Int64
 	Group               *groupEntity
 	Permission          *permissionEntity
-	Author              []*userEntity
-	Modifier            []*userEntity
+	Author              *userEntity
+	Modifier            *userEntity
 }
+
+func (e *groupPermissionsEntity) Prop(cn string) (interface{}, bool) {
+	switch cn {
+	case tableGroupPermissionsColumnCreatedAt:
+		return &e.CreatedAt, true
+	case tableGroupPermissionsColumnCreatedBy:
+		return &e.CreatedBy, true
+	case tableGroupPermissionsColumnGroupID:
+		return &e.GroupID, true
+	case tableGroupPermissionsColumnPermissionAction:
+		return &e.PermissionAction, true
+	case tableGroupPermissionsColumnPermissionModule:
+		return &e.PermissionModule, true
+	case tableGroupPermissionsColumnPermissionSubsystem:
+		return &e.PermissionSubsystem, true
+	case tableGroupPermissionsColumnUpdatedAt:
+		return &e.UpdatedAt, true
+	case tableGroupPermissionsColumnUpdatedBy:
+		return &e.UpdatedBy, true
+	default:
+		return nil, false
+	}
+}
+func (e *groupPermissionsEntity) Props(cns ...string) ([]interface{}, error) {
+
+	res := make([]interface{}, 0, len(cns))
+	for _, cn := range cns {
+		if prop, ok := e.Prop(cn); ok {
+			res = append(res, prop)
+		} else {
+			return nil, fmt.Errorf("unexpected column provided: %s", cn)
+		}
+	}
+	return res, nil
+}
+
+// groupPermissionsIterator is not thread safe.
+type groupPermissionsIterator struct {
+	rows *sql.Rows
+	cols []string
+}
+
+func (i *groupPermissionsIterator) Next() bool {
+	return i.rows.Next()
+}
+
+func (i *groupPermissionsIterator) Close() error {
+	return i.rows.Close()
+}
+
+func (i *groupPermissionsIterator) Err() error {
+	return i.rows.Err()
+}
+
+// Columns is wrapper around sql.Rows.Columns method, that also cache outpu inside iterator.
+func (i *groupPermissionsIterator) Columns() ([]string, error) {
+	if i.cols == nil {
+		cols, err := i.rows.Columns()
+		if err != nil {
+			return nil, err
+		}
+		i.cols = cols
+	}
+	return i.cols, nil
+}
+
+// Ent is wrapper arround groupPermissions method that makes iterator more generic.
+func (i *groupPermissionsIterator) Ent() (interface{}, error) {
+	return i.GroupPermissions()
+}
+
+func (i *groupPermissionsIterator) GroupPermissions() (*groupPermissionsEntity, error) {
+	var ent groupPermissionsEntity
+	cols, err := i.rows.Columns()
+	if err != nil {
+		return nil, err
+	}
+
+	props, err := ent.Props(cols...)
+	if err != nil {
+		return nil, err
+	}
+	if err := i.rows.Scan(props...); err != nil {
+		return nil, err
+	}
+	return &ent, nil
+}
+
 type groupPermissionsCriteria struct {
-	offset, limit int64
-	sort          map[string]bool
-	createdAt     *qtypes.Timestamp
-
-	createdBy *qtypes.Int64
-
-	groupID *qtypes.Int64
-
-	permissionAction *qtypes.String
-
-	permissionModule *qtypes.String
-
+	offset, limit       int64
+	sort                map[string]bool
+	createdAt           *qtypes.Timestamp
+	createdBy           *qtypes.Int64
+	groupID             *qtypes.Int64
+	permissionAction    *qtypes.String
+	permissionModule    *qtypes.String
 	permissionSubsystem *qtypes.String
-
-	updatedAt *qtypes.Timestamp
-
-	updatedBy *qtypes.Int64
+	updatedAt           *qtypes.Timestamp
+	updatedBy           *qtypes.Int64
 }
 
-type groupPermissionsRepository struct {
-	table   string
-	columns []string
-	db      *sql.DB
-	dbg     bool
-	log     log.Logger
-}
+func (c *groupPermissionsCriteria) WriteSQL(b *bytes.Buffer, pw *pqtgo.PlaceholderWriter, args *pqtgo.Arguments) (wr int64, err error) {
+	var (
+		wrt   int
+		wrt64 int64
+		dirty bool
+	)
 
-func (r *groupPermissionsRepository) Find(c *groupPermissionsCriteria) ([]*groupPermissionsEntity, error) {
 	wbuf := bytes.NewBuffer(nil)
-	qbuf := bytes.NewBuffer(nil)
-	qbuf.WriteString("SELECT ")
-	qbuf.WriteString(strings.Join(r.columns, ", "))
-	qbuf.WriteString(" FROM ")
-	qbuf.WriteString(r.table)
-
-	pw := pqtgo.NewPlaceholderWriter()
-	args := pqtgo.NewArguments(0)
-	dirty := false
 
 	if c.createdAt != nil && c.createdAt.Valid {
 		createdAtt1 := c.createdAt.Value()
 		if createdAtt1 != nil {
 			createdAt1, err := ptypes.Timestamp(createdAtt1)
 			if err != nil {
-				return nil, err
+				return wr, err
 			}
-
 			switch c.createdAt.Type {
 			case qtypes.NumericQueryType_NOT_A_NUMBER:
 				if dirty {
@@ -4135,17 +5139,11 @@ func (r *groupPermissionsRepository) Find(c *groupPermissionsCriteria) ([]*group
 				dirty = true
 
 				wbuf.WriteString(tableGroupPermissionsColumnCreatedAt)
-				wbuf.WriteString("=")
-				pw.WriteTo(wbuf)
-				args.Add(c.createdAt.Value())
-			case qtypes.NumericQueryType_NOT_EQUAL:
-				if dirty {
-					wbuf.WriteString(" AND ")
+				if c.createdAt.Negation {
+					wbuf.WriteString("<>")
+				} else {
+					wbuf.WriteString("=")
 				}
-				dirty = true
-
-				wbuf.WriteString(tableGroupPermissionsColumnCreatedAt)
-				wbuf.WriteString("!=")
 				pw.WriteTo(wbuf)
 				args.Add(c.createdAt.Value())
 			case qtypes.NumericQueryType_GREATER:
@@ -4216,16 +5214,13 @@ func (r *groupPermissionsRepository) Find(c *groupPermissionsCriteria) ([]*group
 				if createdAtt2 != nil {
 					createdAt2, err := ptypes.Timestamp(createdAtt2)
 					if err != nil {
-						return nil, err
+						return wr, err
 					}
-
 					wbuf.WriteString(tableGroupPermissionsColumnCreatedAt)
 					wbuf.WriteString(" > ")
 					pw.WriteTo(wbuf)
 					args.Add(createdAt1)
-
 					wbuf.WriteString(" AND ")
-
 					wbuf.WriteString(tableGroupPermissionsColumnCreatedAt)
 					wbuf.WriteString(" < ")
 					pw.WriteTo(wbuf)
@@ -4256,17 +5251,11 @@ func (r *groupPermissionsRepository) Find(c *groupPermissionsCriteria) ([]*group
 			dirty = true
 
 			wbuf.WriteString(tableGroupPermissionsColumnCreatedBy)
-			wbuf.WriteString("=")
-			pw.WriteTo(wbuf)
-			args.Add(c.createdBy.Value())
-		case qtypes.NumericQueryType_NOT_EQUAL:
-			if dirty {
-				wbuf.WriteString(" AND ")
+			if c.createdBy.Negation {
+				wbuf.WriteString(" <> ")
+			} else {
+				wbuf.WriteString("=")
 			}
-			dirty = true
-
-			wbuf.WriteString(tableGroupPermissionsColumnCreatedBy)
-			wbuf.WriteString(" <> ")
 			pw.WriteTo(wbuf)
 			args.Add(c.createdBy.Value())
 		case qtypes.NumericQueryType_GREATER:
@@ -4276,7 +5265,11 @@ func (r *groupPermissionsRepository) Find(c *groupPermissionsCriteria) ([]*group
 			dirty = true
 
 			wbuf.WriteString(tableGroupPermissionsColumnCreatedBy)
-			wbuf.WriteString(" > ")
+			if c.createdBy.Negation {
+				wbuf.WriteString(" <= ")
+			} else {
+				wbuf.WriteString(" > ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.createdBy.Value())
 		case qtypes.NumericQueryType_GREATER_EQUAL:
@@ -4286,7 +5279,11 @@ func (r *groupPermissionsRepository) Find(c *groupPermissionsCriteria) ([]*group
 			dirty = true
 
 			wbuf.WriteString(tableGroupPermissionsColumnCreatedBy)
-			wbuf.WriteString(" >= ")
+			if c.createdBy.Negation {
+				wbuf.WriteString(" < ")
+			} else {
+				wbuf.WriteString(" >= ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.createdBy.Value())
 		case qtypes.NumericQueryType_LESS:
@@ -4296,7 +5293,11 @@ func (r *groupPermissionsRepository) Find(c *groupPermissionsCriteria) ([]*group
 			dirty = true
 
 			wbuf.WriteString(tableGroupPermissionsColumnCreatedBy)
-			wbuf.WriteString(" < ")
+			if c.createdBy.Negation {
+				wbuf.WriteString(" >= ")
+			} else {
+				wbuf.WriteString(" < ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.createdBy)
 		case qtypes.NumericQueryType_LESS_EQUAL:
@@ -4306,7 +5307,11 @@ func (r *groupPermissionsRepository) Find(c *groupPermissionsCriteria) ([]*group
 			dirty = true
 
 			wbuf.WriteString(tableGroupPermissionsColumnCreatedBy)
-			wbuf.WriteString(" >= ")
+			if c.createdBy.Negation {
+				wbuf.WriteString(" > ")
+			} else {
+				wbuf.WriteString(" <= ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.createdBy.Value())
 		case qtypes.NumericQueryType_IN:
@@ -4317,7 +5322,11 @@ func (r *groupPermissionsRepository) Find(c *groupPermissionsCriteria) ([]*group
 				dirty = true
 
 				wbuf.WriteString(tableGroupPermissionsColumnCreatedBy)
-				wbuf.WriteString(" IN (")
+				if c.createdBy.Negation {
+					wbuf.WriteString(" NOT IN (")
+				} else {
+					wbuf.WriteString(" IN (")
+				}
 				for i, v := range c.createdBy.Values {
 					if i != 0 {
 						wbuf.WriteString(",")
@@ -4334,14 +5343,20 @@ func (r *groupPermissionsRepository) Find(c *groupPermissionsCriteria) ([]*group
 			dirty = true
 
 			wbuf.WriteString(tableGroupPermissionsColumnCreatedBy)
-			wbuf.WriteString(" > ")
+			if c.createdBy.Negation {
+				wbuf.WriteString(" <= ")
+			} else {
+				wbuf.WriteString(" > ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.createdBy.Values[0])
-
 			wbuf.WriteString(" AND ")
-
 			wbuf.WriteString(tableGroupPermissionsColumnCreatedBy)
-			wbuf.WriteString(" < ")
+			if c.createdBy.Negation {
+				wbuf.WriteString(" >= ")
+			} else {
+				wbuf.WriteString(" < ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.createdBy.Values[1])
 		}
@@ -4368,17 +5383,11 @@ func (r *groupPermissionsRepository) Find(c *groupPermissionsCriteria) ([]*group
 			dirty = true
 
 			wbuf.WriteString(tableGroupPermissionsColumnGroupID)
-			wbuf.WriteString("=")
-			pw.WriteTo(wbuf)
-			args.Add(c.groupID.Value())
-		case qtypes.NumericQueryType_NOT_EQUAL:
-			if dirty {
-				wbuf.WriteString(" AND ")
+			if c.groupID.Negation {
+				wbuf.WriteString(" <> ")
+			} else {
+				wbuf.WriteString("=")
 			}
-			dirty = true
-
-			wbuf.WriteString(tableGroupPermissionsColumnGroupID)
-			wbuf.WriteString(" <> ")
 			pw.WriteTo(wbuf)
 			args.Add(c.groupID.Value())
 		case qtypes.NumericQueryType_GREATER:
@@ -4388,7 +5397,11 @@ func (r *groupPermissionsRepository) Find(c *groupPermissionsCriteria) ([]*group
 			dirty = true
 
 			wbuf.WriteString(tableGroupPermissionsColumnGroupID)
-			wbuf.WriteString(" > ")
+			if c.groupID.Negation {
+				wbuf.WriteString(" <= ")
+			} else {
+				wbuf.WriteString(" > ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.groupID.Value())
 		case qtypes.NumericQueryType_GREATER_EQUAL:
@@ -4398,7 +5411,11 @@ func (r *groupPermissionsRepository) Find(c *groupPermissionsCriteria) ([]*group
 			dirty = true
 
 			wbuf.WriteString(tableGroupPermissionsColumnGroupID)
-			wbuf.WriteString(" >= ")
+			if c.groupID.Negation {
+				wbuf.WriteString(" < ")
+			} else {
+				wbuf.WriteString(" >= ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.groupID.Value())
 		case qtypes.NumericQueryType_LESS:
@@ -4408,7 +5425,11 @@ func (r *groupPermissionsRepository) Find(c *groupPermissionsCriteria) ([]*group
 			dirty = true
 
 			wbuf.WriteString(tableGroupPermissionsColumnGroupID)
-			wbuf.WriteString(" < ")
+			if c.groupID.Negation {
+				wbuf.WriteString(" >= ")
+			} else {
+				wbuf.WriteString(" < ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.groupID)
 		case qtypes.NumericQueryType_LESS_EQUAL:
@@ -4418,7 +5439,11 @@ func (r *groupPermissionsRepository) Find(c *groupPermissionsCriteria) ([]*group
 			dirty = true
 
 			wbuf.WriteString(tableGroupPermissionsColumnGroupID)
-			wbuf.WriteString(" >= ")
+			if c.groupID.Negation {
+				wbuf.WriteString(" > ")
+			} else {
+				wbuf.WriteString(" <= ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.groupID.Value())
 		case qtypes.NumericQueryType_IN:
@@ -4429,7 +5454,11 @@ func (r *groupPermissionsRepository) Find(c *groupPermissionsCriteria) ([]*group
 				dirty = true
 
 				wbuf.WriteString(tableGroupPermissionsColumnGroupID)
-				wbuf.WriteString(" IN (")
+				if c.groupID.Negation {
+					wbuf.WriteString(" NOT IN (")
+				} else {
+					wbuf.WriteString(" IN (")
+				}
 				for i, v := range c.groupID.Values {
 					if i != 0 {
 						wbuf.WriteString(",")
@@ -4446,14 +5475,20 @@ func (r *groupPermissionsRepository) Find(c *groupPermissionsCriteria) ([]*group
 			dirty = true
 
 			wbuf.WriteString(tableGroupPermissionsColumnGroupID)
-			wbuf.WriteString(" > ")
+			if c.groupID.Negation {
+				wbuf.WriteString(" <= ")
+			} else {
+				wbuf.WriteString(" > ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.groupID.Values[0])
-
 			wbuf.WriteString(" AND ")
-
 			wbuf.WriteString(tableGroupPermissionsColumnGroupID)
-			wbuf.WriteString(" < ")
+			if c.groupID.Negation {
+				wbuf.WriteString(" >= ")
+			} else {
+				wbuf.WriteString(" < ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.groupID.Values[1])
 		}
@@ -4480,7 +5515,11 @@ func (r *groupPermissionsRepository) Find(c *groupPermissionsCriteria) ([]*group
 			dirty = true
 
 			wbuf.WriteString(tableGroupPermissionsColumnPermissionAction)
-			wbuf.WriteString("=")
+			if c.permissionAction.Negation {
+				wbuf.WriteString(" <> ")
+			} else {
+				wbuf.WriteString(" = ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.permissionAction.Value())
 		case qtypes.TextQueryType_SUBSTRING:
@@ -4490,7 +5529,11 @@ func (r *groupPermissionsRepository) Find(c *groupPermissionsCriteria) ([]*group
 			dirty = true
 
 			wbuf.WriteString(tableGroupPermissionsColumnPermissionAction)
-			wbuf.WriteString(" LIKE ")
+			if c.permissionAction.Negation {
+				wbuf.WriteString(" NOT LIKE ")
+			} else {
+				wbuf.WriteString(" LIKE ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(fmt.Sprintf("%%%s%%", c.permissionAction.Value()))
 		case qtypes.TextQueryType_HAS_PREFIX:
@@ -4500,7 +5543,11 @@ func (r *groupPermissionsRepository) Find(c *groupPermissionsCriteria) ([]*group
 			dirty = true
 
 			wbuf.WriteString(tableGroupPermissionsColumnPermissionAction)
-			wbuf.WriteString(" LIKE ")
+			if c.permissionAction.Negation {
+				wbuf.WriteString(" NOT LIKE ")
+			} else {
+				wbuf.WriteString(" LIKE ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(fmt.Sprintf("%s%%", c.permissionAction.Value()))
 		case qtypes.TextQueryType_HAS_SUFFIX:
@@ -4510,7 +5557,11 @@ func (r *groupPermissionsRepository) Find(c *groupPermissionsCriteria) ([]*group
 			dirty = true
 
 			wbuf.WriteString(tableGroupPermissionsColumnPermissionAction)
-			wbuf.WriteString(" LIKE ")
+			if c.permissionAction.Negation {
+				wbuf.WriteString(" NOT LIKE ")
+			} else {
+				wbuf.WriteString(" LIKE ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(fmt.Sprintf("%%%s", c.permissionAction.Value()))
 		}
@@ -4537,7 +5588,11 @@ func (r *groupPermissionsRepository) Find(c *groupPermissionsCriteria) ([]*group
 			dirty = true
 
 			wbuf.WriteString(tableGroupPermissionsColumnPermissionModule)
-			wbuf.WriteString("=")
+			if c.permissionModule.Negation {
+				wbuf.WriteString(" <> ")
+			} else {
+				wbuf.WriteString(" = ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.permissionModule.Value())
 		case qtypes.TextQueryType_SUBSTRING:
@@ -4547,7 +5602,11 @@ func (r *groupPermissionsRepository) Find(c *groupPermissionsCriteria) ([]*group
 			dirty = true
 
 			wbuf.WriteString(tableGroupPermissionsColumnPermissionModule)
-			wbuf.WriteString(" LIKE ")
+			if c.permissionModule.Negation {
+				wbuf.WriteString(" NOT LIKE ")
+			} else {
+				wbuf.WriteString(" LIKE ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(fmt.Sprintf("%%%s%%", c.permissionModule.Value()))
 		case qtypes.TextQueryType_HAS_PREFIX:
@@ -4557,7 +5616,11 @@ func (r *groupPermissionsRepository) Find(c *groupPermissionsCriteria) ([]*group
 			dirty = true
 
 			wbuf.WriteString(tableGroupPermissionsColumnPermissionModule)
-			wbuf.WriteString(" LIKE ")
+			if c.permissionModule.Negation {
+				wbuf.WriteString(" NOT LIKE ")
+			} else {
+				wbuf.WriteString(" LIKE ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(fmt.Sprintf("%s%%", c.permissionModule.Value()))
 		case qtypes.TextQueryType_HAS_SUFFIX:
@@ -4567,7 +5630,11 @@ func (r *groupPermissionsRepository) Find(c *groupPermissionsCriteria) ([]*group
 			dirty = true
 
 			wbuf.WriteString(tableGroupPermissionsColumnPermissionModule)
-			wbuf.WriteString(" LIKE ")
+			if c.permissionModule.Negation {
+				wbuf.WriteString(" NOT LIKE ")
+			} else {
+				wbuf.WriteString(" LIKE ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(fmt.Sprintf("%%%s", c.permissionModule.Value()))
 		}
@@ -4594,7 +5661,11 @@ func (r *groupPermissionsRepository) Find(c *groupPermissionsCriteria) ([]*group
 			dirty = true
 
 			wbuf.WriteString(tableGroupPermissionsColumnPermissionSubsystem)
-			wbuf.WriteString("=")
+			if c.permissionSubsystem.Negation {
+				wbuf.WriteString(" <> ")
+			} else {
+				wbuf.WriteString(" = ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.permissionSubsystem.Value())
 		case qtypes.TextQueryType_SUBSTRING:
@@ -4604,7 +5675,11 @@ func (r *groupPermissionsRepository) Find(c *groupPermissionsCriteria) ([]*group
 			dirty = true
 
 			wbuf.WriteString(tableGroupPermissionsColumnPermissionSubsystem)
-			wbuf.WriteString(" LIKE ")
+			if c.permissionSubsystem.Negation {
+				wbuf.WriteString(" NOT LIKE ")
+			} else {
+				wbuf.WriteString(" LIKE ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(fmt.Sprintf("%%%s%%", c.permissionSubsystem.Value()))
 		case qtypes.TextQueryType_HAS_PREFIX:
@@ -4614,7 +5689,11 @@ func (r *groupPermissionsRepository) Find(c *groupPermissionsCriteria) ([]*group
 			dirty = true
 
 			wbuf.WriteString(tableGroupPermissionsColumnPermissionSubsystem)
-			wbuf.WriteString(" LIKE ")
+			if c.permissionSubsystem.Negation {
+				wbuf.WriteString(" NOT LIKE ")
+			} else {
+				wbuf.WriteString(" LIKE ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(fmt.Sprintf("%s%%", c.permissionSubsystem.Value()))
 		case qtypes.TextQueryType_HAS_SUFFIX:
@@ -4624,7 +5703,11 @@ func (r *groupPermissionsRepository) Find(c *groupPermissionsCriteria) ([]*group
 			dirty = true
 
 			wbuf.WriteString(tableGroupPermissionsColumnPermissionSubsystem)
-			wbuf.WriteString(" LIKE ")
+			if c.permissionSubsystem.Negation {
+				wbuf.WriteString(" NOT LIKE ")
+			} else {
+				wbuf.WriteString(" LIKE ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(fmt.Sprintf("%%%s", c.permissionSubsystem.Value()))
 		}
@@ -4635,9 +5718,8 @@ func (r *groupPermissionsRepository) Find(c *groupPermissionsCriteria) ([]*group
 		if updatedAtt1 != nil {
 			updatedAt1, err := ptypes.Timestamp(updatedAtt1)
 			if err != nil {
-				return nil, err
+				return wr, err
 			}
-
 			switch c.updatedAt.Type {
 			case qtypes.NumericQueryType_NOT_A_NUMBER:
 				if dirty {
@@ -4658,17 +5740,11 @@ func (r *groupPermissionsRepository) Find(c *groupPermissionsCriteria) ([]*group
 				dirty = true
 
 				wbuf.WriteString(tableGroupPermissionsColumnUpdatedAt)
-				wbuf.WriteString("=")
-				pw.WriteTo(wbuf)
-				args.Add(c.updatedAt.Value())
-			case qtypes.NumericQueryType_NOT_EQUAL:
-				if dirty {
-					wbuf.WriteString(" AND ")
+				if c.updatedAt.Negation {
+					wbuf.WriteString("<>")
+				} else {
+					wbuf.WriteString("=")
 				}
-				dirty = true
-
-				wbuf.WriteString(tableGroupPermissionsColumnUpdatedAt)
-				wbuf.WriteString("!=")
 				pw.WriteTo(wbuf)
 				args.Add(c.updatedAt.Value())
 			case qtypes.NumericQueryType_GREATER:
@@ -4739,16 +5815,13 @@ func (r *groupPermissionsRepository) Find(c *groupPermissionsCriteria) ([]*group
 				if updatedAtt2 != nil {
 					updatedAt2, err := ptypes.Timestamp(updatedAtt2)
 					if err != nil {
-						return nil, err
+						return wr, err
 					}
-
 					wbuf.WriteString(tableGroupPermissionsColumnUpdatedAt)
 					wbuf.WriteString(" > ")
 					pw.WriteTo(wbuf)
 					args.Add(updatedAt1)
-
 					wbuf.WriteString(" AND ")
-
 					wbuf.WriteString(tableGroupPermissionsColumnUpdatedAt)
 					wbuf.WriteString(" < ")
 					pw.WriteTo(wbuf)
@@ -4779,17 +5852,11 @@ func (r *groupPermissionsRepository) Find(c *groupPermissionsCriteria) ([]*group
 			dirty = true
 
 			wbuf.WriteString(tableGroupPermissionsColumnUpdatedBy)
-			wbuf.WriteString("=")
-			pw.WriteTo(wbuf)
-			args.Add(c.updatedBy.Value())
-		case qtypes.NumericQueryType_NOT_EQUAL:
-			if dirty {
-				wbuf.WriteString(" AND ")
+			if c.updatedBy.Negation {
+				wbuf.WriteString(" <> ")
+			} else {
+				wbuf.WriteString("=")
 			}
-			dirty = true
-
-			wbuf.WriteString(tableGroupPermissionsColumnUpdatedBy)
-			wbuf.WriteString(" <> ")
 			pw.WriteTo(wbuf)
 			args.Add(c.updatedBy.Value())
 		case qtypes.NumericQueryType_GREATER:
@@ -4799,7 +5866,11 @@ func (r *groupPermissionsRepository) Find(c *groupPermissionsCriteria) ([]*group
 			dirty = true
 
 			wbuf.WriteString(tableGroupPermissionsColumnUpdatedBy)
-			wbuf.WriteString(" > ")
+			if c.updatedBy.Negation {
+				wbuf.WriteString(" <= ")
+			} else {
+				wbuf.WriteString(" > ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.updatedBy.Value())
 		case qtypes.NumericQueryType_GREATER_EQUAL:
@@ -4809,7 +5880,11 @@ func (r *groupPermissionsRepository) Find(c *groupPermissionsCriteria) ([]*group
 			dirty = true
 
 			wbuf.WriteString(tableGroupPermissionsColumnUpdatedBy)
-			wbuf.WriteString(" >= ")
+			if c.updatedBy.Negation {
+				wbuf.WriteString(" < ")
+			} else {
+				wbuf.WriteString(" >= ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.updatedBy.Value())
 		case qtypes.NumericQueryType_LESS:
@@ -4819,7 +5894,11 @@ func (r *groupPermissionsRepository) Find(c *groupPermissionsCriteria) ([]*group
 			dirty = true
 
 			wbuf.WriteString(tableGroupPermissionsColumnUpdatedBy)
-			wbuf.WriteString(" < ")
+			if c.updatedBy.Negation {
+				wbuf.WriteString(" >= ")
+			} else {
+				wbuf.WriteString(" < ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.updatedBy)
 		case qtypes.NumericQueryType_LESS_EQUAL:
@@ -4829,7 +5908,11 @@ func (r *groupPermissionsRepository) Find(c *groupPermissionsCriteria) ([]*group
 			dirty = true
 
 			wbuf.WriteString(tableGroupPermissionsColumnUpdatedBy)
-			wbuf.WriteString(" >= ")
+			if c.updatedBy.Negation {
+				wbuf.WriteString(" > ")
+			} else {
+				wbuf.WriteString(" <= ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.updatedBy.Value())
 		case qtypes.NumericQueryType_IN:
@@ -4840,7 +5923,11 @@ func (r *groupPermissionsRepository) Find(c *groupPermissionsCriteria) ([]*group
 				dirty = true
 
 				wbuf.WriteString(tableGroupPermissionsColumnUpdatedBy)
-				wbuf.WriteString(" IN (")
+				if c.updatedBy.Negation {
+					wbuf.WriteString(" NOT IN (")
+				} else {
+					wbuf.WriteString(" IN (")
+				}
 				for i, v := range c.updatedBy.Values {
 					if i != 0 {
 						wbuf.WriteString(",")
@@ -4857,37 +5944,131 @@ func (r *groupPermissionsRepository) Find(c *groupPermissionsCriteria) ([]*group
 			dirty = true
 
 			wbuf.WriteString(tableGroupPermissionsColumnUpdatedBy)
-			wbuf.WriteString(" > ")
+			if c.updatedBy.Negation {
+				wbuf.WriteString(" <= ")
+			} else {
+				wbuf.WriteString(" > ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.updatedBy.Values[0])
-
 			wbuf.WriteString(" AND ")
-
 			wbuf.WriteString(tableGroupPermissionsColumnUpdatedBy)
-			wbuf.WriteString(" < ")
+			if c.updatedBy.Negation {
+				wbuf.WriteString(" >= ")
+			} else {
+				wbuf.WriteString(" < ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.updatedBy.Values[1])
 		}
 	}
 
 	if dirty {
-		if _, err := qbuf.WriteString(" WHERE "); err != nil {
-			return nil, err
+		if wrt, err = b.WriteString(" WHERE "); err != nil {
+			return
 		}
-		if _, err := wbuf.WriteTo(qbuf); err != nil {
-			return nil, err
+		wr += int64(wrt)
+		if wrt64, err = wbuf.WriteTo(b); err != nil {
+			return
 		}
+		wr += wrt64
 	}
 
 	if c.offset > 0 {
-		qbuf.WriteString(" OFFSET ")
-		pw.WriteTo(qbuf)
+		b.WriteString(" OFFSET ")
+		if wrt64, err = pw.WriteTo(b); err != nil {
+			return
+		}
+		wr += wrt64
 		args.Add(c.offset)
 	}
 	if c.limit > 0 {
-		qbuf.WriteString(" LIMIT ")
-		pw.WriteTo(qbuf)
+		b.WriteString(" LIMIT ")
+		if wrt64, err = pw.WriteTo(b); err != nil {
+			return
+		}
+		wr += wrt64
 		args.Add(c.limit)
+	}
+
+	return
+}
+
+type groupPermissionsRepositoryBase struct {
+	table   string
+	columns []string
+	db      *sql.DB
+	dbg     bool
+	log     log.Logger
+}
+
+func ScanGroupPermissionsRows(rows *sql.Rows) ([]*groupPermissionsEntity, error) {
+	var (
+		entities []*groupPermissionsEntity
+		err      error
+	)
+	for rows.Next() {
+		var ent groupPermissionsEntity
+		err = rows.Scan(
+			&ent.CreatedAt,
+			&ent.CreatedBy,
+			&ent.GroupID,
+			&ent.PermissionAction,
+			&ent.PermissionModule,
+			&ent.PermissionSubsystem,
+			&ent.UpdatedAt,
+			&ent.UpdatedBy,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		entities = append(entities, &ent)
+	}
+	if rows.Err() != nil {
+		return nil, rows.Err()
+	}
+
+	return entities, nil
+}
+
+func (r *groupPermissionsRepositoryBase) Count(c *groupPermissionsCriteria) (int64, error) {
+
+	qbuf := bytes.NewBuffer(nil)
+	qbuf.WriteString("SELECT COUNT(*) FROM ")
+	qbuf.WriteString(r.table)
+	pw := pqtgo.NewPlaceholderWriter()
+	args := pqtgo.NewArguments(0)
+
+	if _, err := c.WriteSQL(qbuf, pw, args); err != nil {
+		return 0, err
+	}
+	if r.dbg {
+		if err := r.log.Log("msg", qbuf.String(), "function", "Count"); err != nil {
+			return 0, err
+		}
+	}
+
+	var count int64
+	err := r.db.QueryRow(qbuf.String(), args.Slice()...).Scan(&count)
+	if err != nil {
+		return 0, err
+	}
+	return count, nil
+}
+func (r *groupPermissionsRepositoryBase) Find(c *groupPermissionsCriteria) ([]*groupPermissionsEntity, error) {
+
+	qbuf := bytes.NewBuffer(nil)
+	qbuf.WriteString("SELECT ")
+	qbuf.WriteString(strings.Join(r.columns, ", "))
+	qbuf.WriteString(" FROM ")
+	qbuf.WriteString(r.table)
+
+	pw := pqtgo.NewPlaceholderWriter()
+	args := pqtgo.NewArguments(0)
+
+	if _, err := c.WriteSQL(qbuf, pw, args); err != nil {
+		return nil, err
 	}
 
 	if r.dbg {
@@ -4900,34 +6081,40 @@ func (r *groupPermissionsRepository) Find(c *groupPermissionsCriteria) ([]*group
 	if err != nil {
 		return nil, err
 	}
+
 	defer rows.Close()
 
-	var entities []*groupPermissionsEntity
-	for rows.Next() {
-		var entity groupPermissionsEntity
-		err = rows.Scan(
-			&entity.CreatedAt,
-			&entity.CreatedBy,
-			&entity.GroupID,
-			&entity.PermissionAction,
-			&entity.PermissionModule,
-			&entity.PermissionSubsystem,
-			&entity.UpdatedAt,
-			&entity.UpdatedBy,
-		)
-		if err != nil {
+	return ScanGroupPermissionsRows(rows)
+}
+func (r *groupPermissionsRepositoryBase) FindIter(c *groupPermissionsCriteria) (*groupPermissionsIterator, error) {
+
+	qbuf := bytes.NewBuffer(nil)
+	qbuf.WriteString("SELECT ")
+	qbuf.WriteString(strings.Join(r.columns, ", "))
+	qbuf.WriteString(" FROM ")
+	qbuf.WriteString(r.table)
+
+	pw := pqtgo.NewPlaceholderWriter()
+	args := pqtgo.NewArguments(0)
+
+	if _, err := c.WriteSQL(qbuf, pw, args); err != nil {
+		return nil, err
+	}
+
+	if r.dbg {
+		if err := r.log.Log("msg", qbuf.String(), "function", "Find"); err != nil {
 			return nil, err
 		}
-
-		entities = append(entities, &entity)
-	}
-	if rows.Err() != nil {
-		return nil, rows.Err()
 	}
 
-	return entities, nil
+	rows, err := r.db.Query(qbuf.String(), args.Slice()...)
+	if err != nil {
+		return nil, err
+	}
+
+	return &groupPermissionsIterator{rows: rows}, nil
 }
-func (r *groupPermissionsRepository) Insert(e *groupPermissionsEntity) (*groupPermissionsEntity, error) {
+func (r *groupPermissionsRepositoryBase) Insert(e *groupPermissionsEntity) (*groupPermissionsEntity, error) {
 	insert := pqcomp.New(0, 8)
 	insert.AddExpr(tableGroupPermissionsColumnCreatedAt, "", e.CreatedAt)
 	insert.AddExpr(tableGroupPermissionsColumnCreatedBy, "", e.CreatedBy)
@@ -5023,57 +6210,126 @@ type userPermissionsEntity struct {
 	UserID              int64
 	User                *userEntity
 	Permission          *permissionEntity
-	Author              []*userEntity
-	Modifier            []*userEntity
+	Author              *userEntity
+	Modifier            *userEntity
 }
+
+func (e *userPermissionsEntity) Prop(cn string) (interface{}, bool) {
+	switch cn {
+	case tableUserPermissionsColumnCreatedAt:
+		return &e.CreatedAt, true
+	case tableUserPermissionsColumnCreatedBy:
+		return &e.CreatedBy, true
+	case tableUserPermissionsColumnPermissionAction:
+		return &e.PermissionAction, true
+	case tableUserPermissionsColumnPermissionModule:
+		return &e.PermissionModule, true
+	case tableUserPermissionsColumnPermissionSubsystem:
+		return &e.PermissionSubsystem, true
+	case tableUserPermissionsColumnUpdatedAt:
+		return &e.UpdatedAt, true
+	case tableUserPermissionsColumnUpdatedBy:
+		return &e.UpdatedBy, true
+	case tableUserPermissionsColumnUserID:
+		return &e.UserID, true
+	default:
+		return nil, false
+	}
+}
+func (e *userPermissionsEntity) Props(cns ...string) ([]interface{}, error) {
+
+	res := make([]interface{}, 0, len(cns))
+	for _, cn := range cns {
+		if prop, ok := e.Prop(cn); ok {
+			res = append(res, prop)
+		} else {
+			return nil, fmt.Errorf("unexpected column provided: %s", cn)
+		}
+	}
+	return res, nil
+}
+
+// userPermissionsIterator is not thread safe.
+type userPermissionsIterator struct {
+	rows *sql.Rows
+	cols []string
+}
+
+func (i *userPermissionsIterator) Next() bool {
+	return i.rows.Next()
+}
+
+func (i *userPermissionsIterator) Close() error {
+	return i.rows.Close()
+}
+
+func (i *userPermissionsIterator) Err() error {
+	return i.rows.Err()
+}
+
+// Columns is wrapper around sql.Rows.Columns method, that also cache outpu inside iterator.
+func (i *userPermissionsIterator) Columns() ([]string, error) {
+	if i.cols == nil {
+		cols, err := i.rows.Columns()
+		if err != nil {
+			return nil, err
+		}
+		i.cols = cols
+	}
+	return i.cols, nil
+}
+
+// Ent is wrapper arround userPermissions method that makes iterator more generic.
+func (i *userPermissionsIterator) Ent() (interface{}, error) {
+	return i.UserPermissions()
+}
+
+func (i *userPermissionsIterator) UserPermissions() (*userPermissionsEntity, error) {
+	var ent userPermissionsEntity
+	cols, err := i.rows.Columns()
+	if err != nil {
+		return nil, err
+	}
+
+	props, err := ent.Props(cols...)
+	if err != nil {
+		return nil, err
+	}
+	if err := i.rows.Scan(props...); err != nil {
+		return nil, err
+	}
+	return &ent, nil
+}
+
 type userPermissionsCriteria struct {
-	offset, limit int64
-	sort          map[string]bool
-	createdAt     *qtypes.Timestamp
-
-	createdBy *qtypes.Int64
-
-	permissionAction *qtypes.String
-
-	permissionModule *qtypes.String
-
+	offset, limit       int64
+	sort                map[string]bool
+	createdAt           *qtypes.Timestamp
+	createdBy           *qtypes.Int64
+	permissionAction    *qtypes.String
+	permissionModule    *qtypes.String
 	permissionSubsystem *qtypes.String
-
-	updatedAt *qtypes.Timestamp
-
-	updatedBy *qtypes.Int64
-
-	userID *qtypes.Int64
+	updatedAt           *qtypes.Timestamp
+	updatedBy           *qtypes.Int64
+	userID              *qtypes.Int64
 }
 
-type userPermissionsRepository struct {
-	table   string
-	columns []string
-	db      *sql.DB
-	dbg     bool
-	log     log.Logger
-}
+func (c *userPermissionsCriteria) WriteSQL(b *bytes.Buffer, pw *pqtgo.PlaceholderWriter, args *pqtgo.Arguments) (wr int64, err error) {
+	var (
+		wrt   int
+		wrt64 int64
+		dirty bool
+	)
 
-func (r *userPermissionsRepository) Find(c *userPermissionsCriteria) ([]*userPermissionsEntity, error) {
 	wbuf := bytes.NewBuffer(nil)
-	qbuf := bytes.NewBuffer(nil)
-	qbuf.WriteString("SELECT ")
-	qbuf.WriteString(strings.Join(r.columns, ", "))
-	qbuf.WriteString(" FROM ")
-	qbuf.WriteString(r.table)
-
-	pw := pqtgo.NewPlaceholderWriter()
-	args := pqtgo.NewArguments(0)
-	dirty := false
 
 	if c.createdAt != nil && c.createdAt.Valid {
 		createdAtt1 := c.createdAt.Value()
 		if createdAtt1 != nil {
 			createdAt1, err := ptypes.Timestamp(createdAtt1)
 			if err != nil {
-				return nil, err
+				return wr, err
 			}
-
 			switch c.createdAt.Type {
 			case qtypes.NumericQueryType_NOT_A_NUMBER:
 				if dirty {
@@ -5094,17 +6350,11 @@ func (r *userPermissionsRepository) Find(c *userPermissionsCriteria) ([]*userPer
 				dirty = true
 
 				wbuf.WriteString(tableUserPermissionsColumnCreatedAt)
-				wbuf.WriteString("=")
-				pw.WriteTo(wbuf)
-				args.Add(c.createdAt.Value())
-			case qtypes.NumericQueryType_NOT_EQUAL:
-				if dirty {
-					wbuf.WriteString(" AND ")
+				if c.createdAt.Negation {
+					wbuf.WriteString("<>")
+				} else {
+					wbuf.WriteString("=")
 				}
-				dirty = true
-
-				wbuf.WriteString(tableUserPermissionsColumnCreatedAt)
-				wbuf.WriteString("!=")
 				pw.WriteTo(wbuf)
 				args.Add(c.createdAt.Value())
 			case qtypes.NumericQueryType_GREATER:
@@ -5175,16 +6425,13 @@ func (r *userPermissionsRepository) Find(c *userPermissionsCriteria) ([]*userPer
 				if createdAtt2 != nil {
 					createdAt2, err := ptypes.Timestamp(createdAtt2)
 					if err != nil {
-						return nil, err
+						return wr, err
 					}
-
 					wbuf.WriteString(tableUserPermissionsColumnCreatedAt)
 					wbuf.WriteString(" > ")
 					pw.WriteTo(wbuf)
 					args.Add(createdAt1)
-
 					wbuf.WriteString(" AND ")
-
 					wbuf.WriteString(tableUserPermissionsColumnCreatedAt)
 					wbuf.WriteString(" < ")
 					pw.WriteTo(wbuf)
@@ -5215,17 +6462,11 @@ func (r *userPermissionsRepository) Find(c *userPermissionsCriteria) ([]*userPer
 			dirty = true
 
 			wbuf.WriteString(tableUserPermissionsColumnCreatedBy)
-			wbuf.WriteString("=")
-			pw.WriteTo(wbuf)
-			args.Add(c.createdBy.Value())
-		case qtypes.NumericQueryType_NOT_EQUAL:
-			if dirty {
-				wbuf.WriteString(" AND ")
+			if c.createdBy.Negation {
+				wbuf.WriteString(" <> ")
+			} else {
+				wbuf.WriteString("=")
 			}
-			dirty = true
-
-			wbuf.WriteString(tableUserPermissionsColumnCreatedBy)
-			wbuf.WriteString(" <> ")
 			pw.WriteTo(wbuf)
 			args.Add(c.createdBy.Value())
 		case qtypes.NumericQueryType_GREATER:
@@ -5235,7 +6476,11 @@ func (r *userPermissionsRepository) Find(c *userPermissionsCriteria) ([]*userPer
 			dirty = true
 
 			wbuf.WriteString(tableUserPermissionsColumnCreatedBy)
-			wbuf.WriteString(" > ")
+			if c.createdBy.Negation {
+				wbuf.WriteString(" <= ")
+			} else {
+				wbuf.WriteString(" > ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.createdBy.Value())
 		case qtypes.NumericQueryType_GREATER_EQUAL:
@@ -5245,7 +6490,11 @@ func (r *userPermissionsRepository) Find(c *userPermissionsCriteria) ([]*userPer
 			dirty = true
 
 			wbuf.WriteString(tableUserPermissionsColumnCreatedBy)
-			wbuf.WriteString(" >= ")
+			if c.createdBy.Negation {
+				wbuf.WriteString(" < ")
+			} else {
+				wbuf.WriteString(" >= ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.createdBy.Value())
 		case qtypes.NumericQueryType_LESS:
@@ -5255,7 +6504,11 @@ func (r *userPermissionsRepository) Find(c *userPermissionsCriteria) ([]*userPer
 			dirty = true
 
 			wbuf.WriteString(tableUserPermissionsColumnCreatedBy)
-			wbuf.WriteString(" < ")
+			if c.createdBy.Negation {
+				wbuf.WriteString(" >= ")
+			} else {
+				wbuf.WriteString(" < ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.createdBy)
 		case qtypes.NumericQueryType_LESS_EQUAL:
@@ -5265,7 +6518,11 @@ func (r *userPermissionsRepository) Find(c *userPermissionsCriteria) ([]*userPer
 			dirty = true
 
 			wbuf.WriteString(tableUserPermissionsColumnCreatedBy)
-			wbuf.WriteString(" >= ")
+			if c.createdBy.Negation {
+				wbuf.WriteString(" > ")
+			} else {
+				wbuf.WriteString(" <= ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.createdBy.Value())
 		case qtypes.NumericQueryType_IN:
@@ -5276,7 +6533,11 @@ func (r *userPermissionsRepository) Find(c *userPermissionsCriteria) ([]*userPer
 				dirty = true
 
 				wbuf.WriteString(tableUserPermissionsColumnCreatedBy)
-				wbuf.WriteString(" IN (")
+				if c.createdBy.Negation {
+					wbuf.WriteString(" NOT IN (")
+				} else {
+					wbuf.WriteString(" IN (")
+				}
 				for i, v := range c.createdBy.Values {
 					if i != 0 {
 						wbuf.WriteString(",")
@@ -5293,14 +6554,20 @@ func (r *userPermissionsRepository) Find(c *userPermissionsCriteria) ([]*userPer
 			dirty = true
 
 			wbuf.WriteString(tableUserPermissionsColumnCreatedBy)
-			wbuf.WriteString(" > ")
+			if c.createdBy.Negation {
+				wbuf.WriteString(" <= ")
+			} else {
+				wbuf.WriteString(" > ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.createdBy.Values[0])
-
 			wbuf.WriteString(" AND ")
-
 			wbuf.WriteString(tableUserPermissionsColumnCreatedBy)
-			wbuf.WriteString(" < ")
+			if c.createdBy.Negation {
+				wbuf.WriteString(" >= ")
+			} else {
+				wbuf.WriteString(" < ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.createdBy.Values[1])
 		}
@@ -5327,7 +6594,11 @@ func (r *userPermissionsRepository) Find(c *userPermissionsCriteria) ([]*userPer
 			dirty = true
 
 			wbuf.WriteString(tableUserPermissionsColumnPermissionAction)
-			wbuf.WriteString("=")
+			if c.permissionAction.Negation {
+				wbuf.WriteString(" <> ")
+			} else {
+				wbuf.WriteString(" = ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.permissionAction.Value())
 		case qtypes.TextQueryType_SUBSTRING:
@@ -5337,7 +6608,11 @@ func (r *userPermissionsRepository) Find(c *userPermissionsCriteria) ([]*userPer
 			dirty = true
 
 			wbuf.WriteString(tableUserPermissionsColumnPermissionAction)
-			wbuf.WriteString(" LIKE ")
+			if c.permissionAction.Negation {
+				wbuf.WriteString(" NOT LIKE ")
+			} else {
+				wbuf.WriteString(" LIKE ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(fmt.Sprintf("%%%s%%", c.permissionAction.Value()))
 		case qtypes.TextQueryType_HAS_PREFIX:
@@ -5347,7 +6622,11 @@ func (r *userPermissionsRepository) Find(c *userPermissionsCriteria) ([]*userPer
 			dirty = true
 
 			wbuf.WriteString(tableUserPermissionsColumnPermissionAction)
-			wbuf.WriteString(" LIKE ")
+			if c.permissionAction.Negation {
+				wbuf.WriteString(" NOT LIKE ")
+			} else {
+				wbuf.WriteString(" LIKE ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(fmt.Sprintf("%s%%", c.permissionAction.Value()))
 		case qtypes.TextQueryType_HAS_SUFFIX:
@@ -5357,7 +6636,11 @@ func (r *userPermissionsRepository) Find(c *userPermissionsCriteria) ([]*userPer
 			dirty = true
 
 			wbuf.WriteString(tableUserPermissionsColumnPermissionAction)
-			wbuf.WriteString(" LIKE ")
+			if c.permissionAction.Negation {
+				wbuf.WriteString(" NOT LIKE ")
+			} else {
+				wbuf.WriteString(" LIKE ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(fmt.Sprintf("%%%s", c.permissionAction.Value()))
 		}
@@ -5384,7 +6667,11 @@ func (r *userPermissionsRepository) Find(c *userPermissionsCriteria) ([]*userPer
 			dirty = true
 
 			wbuf.WriteString(tableUserPermissionsColumnPermissionModule)
-			wbuf.WriteString("=")
+			if c.permissionModule.Negation {
+				wbuf.WriteString(" <> ")
+			} else {
+				wbuf.WriteString(" = ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.permissionModule.Value())
 		case qtypes.TextQueryType_SUBSTRING:
@@ -5394,7 +6681,11 @@ func (r *userPermissionsRepository) Find(c *userPermissionsCriteria) ([]*userPer
 			dirty = true
 
 			wbuf.WriteString(tableUserPermissionsColumnPermissionModule)
-			wbuf.WriteString(" LIKE ")
+			if c.permissionModule.Negation {
+				wbuf.WriteString(" NOT LIKE ")
+			} else {
+				wbuf.WriteString(" LIKE ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(fmt.Sprintf("%%%s%%", c.permissionModule.Value()))
 		case qtypes.TextQueryType_HAS_PREFIX:
@@ -5404,7 +6695,11 @@ func (r *userPermissionsRepository) Find(c *userPermissionsCriteria) ([]*userPer
 			dirty = true
 
 			wbuf.WriteString(tableUserPermissionsColumnPermissionModule)
-			wbuf.WriteString(" LIKE ")
+			if c.permissionModule.Negation {
+				wbuf.WriteString(" NOT LIKE ")
+			} else {
+				wbuf.WriteString(" LIKE ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(fmt.Sprintf("%s%%", c.permissionModule.Value()))
 		case qtypes.TextQueryType_HAS_SUFFIX:
@@ -5414,7 +6709,11 @@ func (r *userPermissionsRepository) Find(c *userPermissionsCriteria) ([]*userPer
 			dirty = true
 
 			wbuf.WriteString(tableUserPermissionsColumnPermissionModule)
-			wbuf.WriteString(" LIKE ")
+			if c.permissionModule.Negation {
+				wbuf.WriteString(" NOT LIKE ")
+			} else {
+				wbuf.WriteString(" LIKE ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(fmt.Sprintf("%%%s", c.permissionModule.Value()))
 		}
@@ -5441,7 +6740,11 @@ func (r *userPermissionsRepository) Find(c *userPermissionsCriteria) ([]*userPer
 			dirty = true
 
 			wbuf.WriteString(tableUserPermissionsColumnPermissionSubsystem)
-			wbuf.WriteString("=")
+			if c.permissionSubsystem.Negation {
+				wbuf.WriteString(" <> ")
+			} else {
+				wbuf.WriteString(" = ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.permissionSubsystem.Value())
 		case qtypes.TextQueryType_SUBSTRING:
@@ -5451,7 +6754,11 @@ func (r *userPermissionsRepository) Find(c *userPermissionsCriteria) ([]*userPer
 			dirty = true
 
 			wbuf.WriteString(tableUserPermissionsColumnPermissionSubsystem)
-			wbuf.WriteString(" LIKE ")
+			if c.permissionSubsystem.Negation {
+				wbuf.WriteString(" NOT LIKE ")
+			} else {
+				wbuf.WriteString(" LIKE ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(fmt.Sprintf("%%%s%%", c.permissionSubsystem.Value()))
 		case qtypes.TextQueryType_HAS_PREFIX:
@@ -5461,7 +6768,11 @@ func (r *userPermissionsRepository) Find(c *userPermissionsCriteria) ([]*userPer
 			dirty = true
 
 			wbuf.WriteString(tableUserPermissionsColumnPermissionSubsystem)
-			wbuf.WriteString(" LIKE ")
+			if c.permissionSubsystem.Negation {
+				wbuf.WriteString(" NOT LIKE ")
+			} else {
+				wbuf.WriteString(" LIKE ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(fmt.Sprintf("%s%%", c.permissionSubsystem.Value()))
 		case qtypes.TextQueryType_HAS_SUFFIX:
@@ -5471,7 +6782,11 @@ func (r *userPermissionsRepository) Find(c *userPermissionsCriteria) ([]*userPer
 			dirty = true
 
 			wbuf.WriteString(tableUserPermissionsColumnPermissionSubsystem)
-			wbuf.WriteString(" LIKE ")
+			if c.permissionSubsystem.Negation {
+				wbuf.WriteString(" NOT LIKE ")
+			} else {
+				wbuf.WriteString(" LIKE ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(fmt.Sprintf("%%%s", c.permissionSubsystem.Value()))
 		}
@@ -5482,9 +6797,8 @@ func (r *userPermissionsRepository) Find(c *userPermissionsCriteria) ([]*userPer
 		if updatedAtt1 != nil {
 			updatedAt1, err := ptypes.Timestamp(updatedAtt1)
 			if err != nil {
-				return nil, err
+				return wr, err
 			}
-
 			switch c.updatedAt.Type {
 			case qtypes.NumericQueryType_NOT_A_NUMBER:
 				if dirty {
@@ -5505,17 +6819,11 @@ func (r *userPermissionsRepository) Find(c *userPermissionsCriteria) ([]*userPer
 				dirty = true
 
 				wbuf.WriteString(tableUserPermissionsColumnUpdatedAt)
-				wbuf.WriteString("=")
-				pw.WriteTo(wbuf)
-				args.Add(c.updatedAt.Value())
-			case qtypes.NumericQueryType_NOT_EQUAL:
-				if dirty {
-					wbuf.WriteString(" AND ")
+				if c.updatedAt.Negation {
+					wbuf.WriteString("<>")
+				} else {
+					wbuf.WriteString("=")
 				}
-				dirty = true
-
-				wbuf.WriteString(tableUserPermissionsColumnUpdatedAt)
-				wbuf.WriteString("!=")
 				pw.WriteTo(wbuf)
 				args.Add(c.updatedAt.Value())
 			case qtypes.NumericQueryType_GREATER:
@@ -5586,16 +6894,13 @@ func (r *userPermissionsRepository) Find(c *userPermissionsCriteria) ([]*userPer
 				if updatedAtt2 != nil {
 					updatedAt2, err := ptypes.Timestamp(updatedAtt2)
 					if err != nil {
-						return nil, err
+						return wr, err
 					}
-
 					wbuf.WriteString(tableUserPermissionsColumnUpdatedAt)
 					wbuf.WriteString(" > ")
 					pw.WriteTo(wbuf)
 					args.Add(updatedAt1)
-
 					wbuf.WriteString(" AND ")
-
 					wbuf.WriteString(tableUserPermissionsColumnUpdatedAt)
 					wbuf.WriteString(" < ")
 					pw.WriteTo(wbuf)
@@ -5626,17 +6931,11 @@ func (r *userPermissionsRepository) Find(c *userPermissionsCriteria) ([]*userPer
 			dirty = true
 
 			wbuf.WriteString(tableUserPermissionsColumnUpdatedBy)
-			wbuf.WriteString("=")
-			pw.WriteTo(wbuf)
-			args.Add(c.updatedBy.Value())
-		case qtypes.NumericQueryType_NOT_EQUAL:
-			if dirty {
-				wbuf.WriteString(" AND ")
+			if c.updatedBy.Negation {
+				wbuf.WriteString(" <> ")
+			} else {
+				wbuf.WriteString("=")
 			}
-			dirty = true
-
-			wbuf.WriteString(tableUserPermissionsColumnUpdatedBy)
-			wbuf.WriteString(" <> ")
 			pw.WriteTo(wbuf)
 			args.Add(c.updatedBy.Value())
 		case qtypes.NumericQueryType_GREATER:
@@ -5646,7 +6945,11 @@ func (r *userPermissionsRepository) Find(c *userPermissionsCriteria) ([]*userPer
 			dirty = true
 
 			wbuf.WriteString(tableUserPermissionsColumnUpdatedBy)
-			wbuf.WriteString(" > ")
+			if c.updatedBy.Negation {
+				wbuf.WriteString(" <= ")
+			} else {
+				wbuf.WriteString(" > ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.updatedBy.Value())
 		case qtypes.NumericQueryType_GREATER_EQUAL:
@@ -5656,7 +6959,11 @@ func (r *userPermissionsRepository) Find(c *userPermissionsCriteria) ([]*userPer
 			dirty = true
 
 			wbuf.WriteString(tableUserPermissionsColumnUpdatedBy)
-			wbuf.WriteString(" >= ")
+			if c.updatedBy.Negation {
+				wbuf.WriteString(" < ")
+			} else {
+				wbuf.WriteString(" >= ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.updatedBy.Value())
 		case qtypes.NumericQueryType_LESS:
@@ -5666,7 +6973,11 @@ func (r *userPermissionsRepository) Find(c *userPermissionsCriteria) ([]*userPer
 			dirty = true
 
 			wbuf.WriteString(tableUserPermissionsColumnUpdatedBy)
-			wbuf.WriteString(" < ")
+			if c.updatedBy.Negation {
+				wbuf.WriteString(" >= ")
+			} else {
+				wbuf.WriteString(" < ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.updatedBy)
 		case qtypes.NumericQueryType_LESS_EQUAL:
@@ -5676,7 +6987,11 @@ func (r *userPermissionsRepository) Find(c *userPermissionsCriteria) ([]*userPer
 			dirty = true
 
 			wbuf.WriteString(tableUserPermissionsColumnUpdatedBy)
-			wbuf.WriteString(" >= ")
+			if c.updatedBy.Negation {
+				wbuf.WriteString(" > ")
+			} else {
+				wbuf.WriteString(" <= ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.updatedBy.Value())
 		case qtypes.NumericQueryType_IN:
@@ -5687,7 +7002,11 @@ func (r *userPermissionsRepository) Find(c *userPermissionsCriteria) ([]*userPer
 				dirty = true
 
 				wbuf.WriteString(tableUserPermissionsColumnUpdatedBy)
-				wbuf.WriteString(" IN (")
+				if c.updatedBy.Negation {
+					wbuf.WriteString(" NOT IN (")
+				} else {
+					wbuf.WriteString(" IN (")
+				}
 				for i, v := range c.updatedBy.Values {
 					if i != 0 {
 						wbuf.WriteString(",")
@@ -5704,14 +7023,20 @@ func (r *userPermissionsRepository) Find(c *userPermissionsCriteria) ([]*userPer
 			dirty = true
 
 			wbuf.WriteString(tableUserPermissionsColumnUpdatedBy)
-			wbuf.WriteString(" > ")
+			if c.updatedBy.Negation {
+				wbuf.WriteString(" <= ")
+			} else {
+				wbuf.WriteString(" > ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.updatedBy.Values[0])
-
 			wbuf.WriteString(" AND ")
-
 			wbuf.WriteString(tableUserPermissionsColumnUpdatedBy)
-			wbuf.WriteString(" < ")
+			if c.updatedBy.Negation {
+				wbuf.WriteString(" >= ")
+			} else {
+				wbuf.WriteString(" < ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.updatedBy.Values[1])
 		}
@@ -5738,17 +7063,11 @@ func (r *userPermissionsRepository) Find(c *userPermissionsCriteria) ([]*userPer
 			dirty = true
 
 			wbuf.WriteString(tableUserPermissionsColumnUserID)
-			wbuf.WriteString("=")
-			pw.WriteTo(wbuf)
-			args.Add(c.userID.Value())
-		case qtypes.NumericQueryType_NOT_EQUAL:
-			if dirty {
-				wbuf.WriteString(" AND ")
+			if c.userID.Negation {
+				wbuf.WriteString(" <> ")
+			} else {
+				wbuf.WriteString("=")
 			}
-			dirty = true
-
-			wbuf.WriteString(tableUserPermissionsColumnUserID)
-			wbuf.WriteString(" <> ")
 			pw.WriteTo(wbuf)
 			args.Add(c.userID.Value())
 		case qtypes.NumericQueryType_GREATER:
@@ -5758,7 +7077,11 @@ func (r *userPermissionsRepository) Find(c *userPermissionsCriteria) ([]*userPer
 			dirty = true
 
 			wbuf.WriteString(tableUserPermissionsColumnUserID)
-			wbuf.WriteString(" > ")
+			if c.userID.Negation {
+				wbuf.WriteString(" <= ")
+			} else {
+				wbuf.WriteString(" > ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.userID.Value())
 		case qtypes.NumericQueryType_GREATER_EQUAL:
@@ -5768,7 +7091,11 @@ func (r *userPermissionsRepository) Find(c *userPermissionsCriteria) ([]*userPer
 			dirty = true
 
 			wbuf.WriteString(tableUserPermissionsColumnUserID)
-			wbuf.WriteString(" >= ")
+			if c.userID.Negation {
+				wbuf.WriteString(" < ")
+			} else {
+				wbuf.WriteString(" >= ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.userID.Value())
 		case qtypes.NumericQueryType_LESS:
@@ -5778,7 +7105,11 @@ func (r *userPermissionsRepository) Find(c *userPermissionsCriteria) ([]*userPer
 			dirty = true
 
 			wbuf.WriteString(tableUserPermissionsColumnUserID)
-			wbuf.WriteString(" < ")
+			if c.userID.Negation {
+				wbuf.WriteString(" >= ")
+			} else {
+				wbuf.WriteString(" < ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.userID)
 		case qtypes.NumericQueryType_LESS_EQUAL:
@@ -5788,7 +7119,11 @@ func (r *userPermissionsRepository) Find(c *userPermissionsCriteria) ([]*userPer
 			dirty = true
 
 			wbuf.WriteString(tableUserPermissionsColumnUserID)
-			wbuf.WriteString(" >= ")
+			if c.userID.Negation {
+				wbuf.WriteString(" > ")
+			} else {
+				wbuf.WriteString(" <= ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.userID.Value())
 		case qtypes.NumericQueryType_IN:
@@ -5799,7 +7134,11 @@ func (r *userPermissionsRepository) Find(c *userPermissionsCriteria) ([]*userPer
 				dirty = true
 
 				wbuf.WriteString(tableUserPermissionsColumnUserID)
-				wbuf.WriteString(" IN (")
+				if c.userID.Negation {
+					wbuf.WriteString(" NOT IN (")
+				} else {
+					wbuf.WriteString(" IN (")
+				}
 				for i, v := range c.userID.Values {
 					if i != 0 {
 						wbuf.WriteString(",")
@@ -5816,37 +7155,131 @@ func (r *userPermissionsRepository) Find(c *userPermissionsCriteria) ([]*userPer
 			dirty = true
 
 			wbuf.WriteString(tableUserPermissionsColumnUserID)
-			wbuf.WriteString(" > ")
+			if c.userID.Negation {
+				wbuf.WriteString(" <= ")
+			} else {
+				wbuf.WriteString(" > ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.userID.Values[0])
-
 			wbuf.WriteString(" AND ")
-
 			wbuf.WriteString(tableUserPermissionsColumnUserID)
-			wbuf.WriteString(" < ")
+			if c.userID.Negation {
+				wbuf.WriteString(" >= ")
+			} else {
+				wbuf.WriteString(" < ")
+			}
 			pw.WriteTo(wbuf)
 			args.Add(c.userID.Values[1])
 		}
 	}
 
 	if dirty {
-		if _, err := qbuf.WriteString(" WHERE "); err != nil {
-			return nil, err
+		if wrt, err = b.WriteString(" WHERE "); err != nil {
+			return
 		}
-		if _, err := wbuf.WriteTo(qbuf); err != nil {
-			return nil, err
+		wr += int64(wrt)
+		if wrt64, err = wbuf.WriteTo(b); err != nil {
+			return
 		}
+		wr += wrt64
 	}
 
 	if c.offset > 0 {
-		qbuf.WriteString(" OFFSET ")
-		pw.WriteTo(qbuf)
+		b.WriteString(" OFFSET ")
+		if wrt64, err = pw.WriteTo(b); err != nil {
+			return
+		}
+		wr += wrt64
 		args.Add(c.offset)
 	}
 	if c.limit > 0 {
-		qbuf.WriteString(" LIMIT ")
-		pw.WriteTo(qbuf)
+		b.WriteString(" LIMIT ")
+		if wrt64, err = pw.WriteTo(b); err != nil {
+			return
+		}
+		wr += wrt64
 		args.Add(c.limit)
+	}
+
+	return
+}
+
+type userPermissionsRepositoryBase struct {
+	table   string
+	columns []string
+	db      *sql.DB
+	dbg     bool
+	log     log.Logger
+}
+
+func ScanUserPermissionsRows(rows *sql.Rows) ([]*userPermissionsEntity, error) {
+	var (
+		entities []*userPermissionsEntity
+		err      error
+	)
+	for rows.Next() {
+		var ent userPermissionsEntity
+		err = rows.Scan(
+			&ent.CreatedAt,
+			&ent.CreatedBy,
+			&ent.PermissionAction,
+			&ent.PermissionModule,
+			&ent.PermissionSubsystem,
+			&ent.UpdatedAt,
+			&ent.UpdatedBy,
+			&ent.UserID,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		entities = append(entities, &ent)
+	}
+	if rows.Err() != nil {
+		return nil, rows.Err()
+	}
+
+	return entities, nil
+}
+
+func (r *userPermissionsRepositoryBase) Count(c *userPermissionsCriteria) (int64, error) {
+
+	qbuf := bytes.NewBuffer(nil)
+	qbuf.WriteString("SELECT COUNT(*) FROM ")
+	qbuf.WriteString(r.table)
+	pw := pqtgo.NewPlaceholderWriter()
+	args := pqtgo.NewArguments(0)
+
+	if _, err := c.WriteSQL(qbuf, pw, args); err != nil {
+		return 0, err
+	}
+	if r.dbg {
+		if err := r.log.Log("msg", qbuf.String(), "function", "Count"); err != nil {
+			return 0, err
+		}
+	}
+
+	var count int64
+	err := r.db.QueryRow(qbuf.String(), args.Slice()...).Scan(&count)
+	if err != nil {
+		return 0, err
+	}
+	return count, nil
+}
+func (r *userPermissionsRepositoryBase) Find(c *userPermissionsCriteria) ([]*userPermissionsEntity, error) {
+
+	qbuf := bytes.NewBuffer(nil)
+	qbuf.WriteString("SELECT ")
+	qbuf.WriteString(strings.Join(r.columns, ", "))
+	qbuf.WriteString(" FROM ")
+	qbuf.WriteString(r.table)
+
+	pw := pqtgo.NewPlaceholderWriter()
+	args := pqtgo.NewArguments(0)
+
+	if _, err := c.WriteSQL(qbuf, pw, args); err != nil {
+		return nil, err
 	}
 
 	if r.dbg {
@@ -5859,34 +7292,40 @@ func (r *userPermissionsRepository) Find(c *userPermissionsCriteria) ([]*userPer
 	if err != nil {
 		return nil, err
 	}
+
 	defer rows.Close()
 
-	var entities []*userPermissionsEntity
-	for rows.Next() {
-		var entity userPermissionsEntity
-		err = rows.Scan(
-			&entity.CreatedAt,
-			&entity.CreatedBy,
-			&entity.PermissionAction,
-			&entity.PermissionModule,
-			&entity.PermissionSubsystem,
-			&entity.UpdatedAt,
-			&entity.UpdatedBy,
-			&entity.UserID,
-		)
-		if err != nil {
+	return ScanUserPermissionsRows(rows)
+}
+func (r *userPermissionsRepositoryBase) FindIter(c *userPermissionsCriteria) (*userPermissionsIterator, error) {
+
+	qbuf := bytes.NewBuffer(nil)
+	qbuf.WriteString("SELECT ")
+	qbuf.WriteString(strings.Join(r.columns, ", "))
+	qbuf.WriteString(" FROM ")
+	qbuf.WriteString(r.table)
+
+	pw := pqtgo.NewPlaceholderWriter()
+	args := pqtgo.NewArguments(0)
+
+	if _, err := c.WriteSQL(qbuf, pw, args); err != nil {
+		return nil, err
+	}
+
+	if r.dbg {
+		if err := r.log.Log("msg", qbuf.String(), "function", "Find"); err != nil {
 			return nil, err
 		}
-
-		entities = append(entities, &entity)
-	}
-	if rows.Err() != nil {
-		return nil, rows.Err()
 	}
 
-	return entities, nil
+	rows, err := r.db.Query(qbuf.String(), args.Slice()...)
+	if err != nil {
+		return nil, err
+	}
+
+	return &userPermissionsIterator{rows: rows}, nil
 }
-func (r *userPermissionsRepository) Insert(e *userPermissionsEntity) (*userPermissionsEntity, error) {
+func (r *userPermissionsRepositoryBase) Insert(e *userPermissionsEntity) (*userPermissionsEntity, error) {
 	insert := pqcomp.New(0, 8)
 	insert.AddExpr(tableUserPermissionsColumnCreatedAt, "", e.CreatedAt)
 	insert.AddExpr(tableUserPermissionsColumnCreatedBy, "", e.CreatedBy)

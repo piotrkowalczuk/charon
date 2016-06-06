@@ -6,10 +6,16 @@ type userPermissionsProvider interface {
 	Insert(entity *userPermissionsEntity) (*userPermissionsEntity, error)
 }
 
+type userPermissionsRepository struct {
+	userPermissionsRepositoryBase
+}
+
 func newUserPermissionsRepository(dbPool *sql.DB) userPermissionsProvider {
 	return &userPermissionsRepository{
-		db:      dbPool,
-		table:   tableUserPermissions,
-		columns: tableUserPermissionsColumns,
+		userPermissionsRepositoryBase: userPermissionsRepositoryBase{
+			db:      dbPool,
+			table:   tableUserPermissions,
+			columns: tableUserPermissionsColumns,
+		},
 	}
 }
