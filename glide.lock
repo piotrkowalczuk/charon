@@ -1,5 +1,5 @@
 hash: e9449be2d5dafb7b67b26c86b6d3a9da536c9f7ca5af0cec7cffa6731a20857c
-updated: 2016-05-26T12:01:11.542923819+02:00
+updated: 2016-06-06T15:43:47.982327299+02:00
 imports:
 - name: github.com/beorn7/perks
   version: 3ac7bf7a47d159a033b107610db8a1b6575507a4
@@ -55,7 +55,7 @@ imports:
 - name: github.com/piotrkowalczuk/pqcomp
   version: 631b19c36ded8bbe954cf8c15a0044c591033536
 - name: github.com/piotrkowalczuk/pqt
-  version: 9e00119f1ed2979df3fc61e6927aed7782931686
+  version: ed1de8b1dce5c42d1a8c73b6dfec270b3e663732
   subpackages:
   - pqtgo
   - pqtsql
