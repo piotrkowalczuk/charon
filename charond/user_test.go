@@ -75,23 +75,17 @@ func TestUserRepository_UpdateByID(t *testing.T) {
 
 	for res := range loadUserFixtures(t, suite.repository.user, userTestFixtures) {
 		user := res.got
-		modified, err := suite.repository.user.UpdateByID(
-			user.ID,
-			nil,
-			nil,
-			&ntypes.Int64{},
-			&ntypes.String{String: user.FirstName + suffix, Valid: true},
-			&ntypes.Bool{Bool: true, Valid: true},
-			&ntypes.Bool{Bool: true, Valid: true},
-			&ntypes.Bool{Bool: true, Valid: true},
-			&ntypes.Bool{Bool: true, Valid: true},
-			nil,
-			&ntypes.String{String: user.LastName + suffix, Valid: true},
-			user.Password,
-			nil,
-			&ntypes.Int64{},
-			&ntypes.String{String: user.Username + suffix, Valid: true},
-		)
+		modified, err := suite.repository.user.UpdateByID(&userPatch{
+			firstName:   &ntypes.String{String: user.FirstName + suffix, Valid: true},
+			id:          user.ID,
+			isActive:    &ntypes.Bool{Bool: true, Valid: true},
+			isConfirmed: &ntypes.Bool{Bool: true, Valid: true},
+			isStaff:     &ntypes.Bool{Bool: true, Valid: true},
+			isSuperuser: &ntypes.Bool{Bool: true, Valid: true},
+			lastName:    &ntypes.String{String: user.LastName + suffix, Valid: true},
+			password:    user.Password,
+			username:    &ntypes.String{String: user.Username + suffix, Valid: true},
+		})
 
 		if err != nil {
 			t.Errorf("user cannot be modified, unexpected error: %s", err.Error())

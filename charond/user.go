@@ -85,8 +85,8 @@ func newUserRepository(dbPool *sql.DB) userProvider {
 	return &userRepository{
 		userRepositoryBase: userRepositoryBase{
 			db:      dbPool,
-			table:   tableGroup,
-			columns: tableGroupColumns,
+			table:   tableUser,
+			columns: tableUserColumns,
 		},
 	}
 }
