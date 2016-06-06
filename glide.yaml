@@ -6,6 +6,7 @@ import:
   - metrics
   - metrics/prometheus
 - package: github.com/golang/protobuf
+  version: 3b06fc7a4cad73efce5fe6217ab6c33e7231ab4a
   subpackages:
   - proto
   - ptypes
@@ -13,15 +14,19 @@ import:
 - package: github.com/lib/pq
 - package: github.com/pborman/uuid
 - package: github.com/piotrkowalczuk/mnemosyne
+  version: ^v0.1
   subpackages:
   - mnemosynerpc
 - package: github.com/piotrkowalczuk/ntypes
+  version: ^v0.1
 - package: github.com/piotrkowalczuk/pqcomp
 - package: github.com/piotrkowalczuk/pqt
+  version: ^v0.1
   subpackages:
   - pqtgo
   - pqtsql
 - package: github.com/piotrkowalczuk/qtypes
+  version: ^v0.1
 - package: github.com/piotrkowalczuk/sklog
 - package: github.com/prometheus/client_golang
   subpackages:
@@ -37,6 +42,7 @@ import:
   - context
 - package: golang.org/x/oauth2
 - package: google.golang.org/grpc
+  version: ce6213360cb8fadd0b08f9513406176ec931c5f7
   subpackages:
   - codes
   - credentials

@@ -1,5 +1,5 @@
-hash: e9449be2d5dafb7b67b26c86b6d3a9da536c9f7ca5af0cec7cffa6731a20857c
-updated: 2016-06-06T15:43:47.982327299+02:00
+hash: cc8af836dcdab664fac48efeafb445a30a6a8538f4032756ef877c5bc6dd92c3
+updated: 2016-06-06T16:08:41.619586346+02:00
 imports:
 - name: github.com/beorn7/perks
   version: 3ac7bf7a47d159a033b107610db8a1b6575507a4
@@ -10,21 +10,21 @@ imports:
   subpackages:
   - spew
 - name: github.com/ernesto-jimenez/gogen
-  version: 6f83150fb39a1678d516c9af15dbb6b3e556d400
+  version: 89eb3723ef4c1c5e3ac9a3ff41c7b1dbadfe51ba
   subpackages:
   - imports
 - name: github.com/go-kit/kit
-  version: 3122b441515cf7ceb82d0c89cbb25837395ac006
+  version: 5402f78cdc790fb13707a848c9e589c816067ae0
   subpackages:
   - log
   - metrics
   - metrics/prometheus
 - name: github.com/go-logfmt/logfmt
-  version: 538518f3a61c040f3d15f05decfffef6bd0302bc
+  version: d4327190ff838312623b09bfeb50d7c93c8d9c1d
 - name: github.com/go-stack/stack
   version: 100eb0c0a9c5b306ca2fb4f165df21d80ada4b82
 - name: github.com/golang/protobuf
-  version: 9e6977f30c91c78396e719e164e57f9287fff42c
+  version: 3b06fc7a4cad73efce5fe6217ab6c33e7231ab4a
   subpackages:
   - proto
   - ptypes
@@ -47,7 +47,7 @@ imports:
 - name: github.com/pborman/uuid
   version: c55201b036063326c5b1b89ccfe45a184973d073
 - name: github.com/piotrkowalczuk/mnemosyne
-  version: ccead043c33663e4a1d6eef0991d19fc5fcb64fe
+  version: e4727b4c8d335ce4a9563a9de10ccbfa13e33168
   subpackages:
   - mnemosynerpc
 - name: github.com/piotrkowalczuk/ntypes
@@ -60,7 +60,7 @@ imports:
   - pqtgo
   - pqtsql
 - name: github.com/piotrkowalczuk/qtypes
-  version: efd30d929d2fccac95e95c5909de8ec235fda46f
+  version: c3549bc3a5adec268fdeb84a458e25f5313af2ad
 - name: github.com/piotrkowalczuk/sklog
   version: ec5c8660c571ff906c65341ba96de449706d63fa
 - name: github.com/pmezard/go-difflib
@@ -68,7 +68,7 @@ imports:
   subpackages:
   - difflib
 - name: github.com/prometheus/client_golang
-  version: d38f1ef46f0d78136db3e585f7ebe1bcc3476f73
+  version: 488edd04dc224ba64c401747cd0a4b5f05dfb234
   subpackages:
   - prometheus
 - name: github.com/prometheus/client_model
@@ -76,7 +76,7 @@ imports:
   subpackages:
   - go
 - name: github.com/prometheus/common
-  version: a715f9d07a512e8339f70a275ace0e67c0f9a65f
+  version: a3a8fe85f2579bcfec713dbfacbdd0797a792f3a
   subpackages:
   - expfmt
   - internal/bitbucket.org/ww/goautoneg
@@ -91,13 +91,13 @@ imports:
   - mock
   - assert
 - name: golang.org/x/crypto
-  version: 5bcd134fee4dd1475da17714aac19c0aa0142e2f
+  version: 89d9e62992539701a49a19c52ebb33e84cbbe80f
   subpackages:
   - bcrypt
   - sha3
   - blowfish
 - name: golang.org/x/net
-  version: dfd9ed699ea197b58a32e0d1dcfa2be66f127ec4
+  version: c4c3ea71919de159c9e246d7be66deb7f0a39a58
   subpackages:
   - context
   - http2
@@ -119,7 +119,7 @@ imports:
   - internal/datastore
   - internal/remote_api
 - name: google.golang.org/grpc
-  version: 8213ee577a465c1f314d85748fb29e4eeed59baf
+  version: ce6213360cb8fadd0b08f9513406176ec931c5f7
   subpackages:
   - codes
   - credentials
