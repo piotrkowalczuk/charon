@@ -87,26 +87,13 @@ func (etes *endToEndSuite) setup(t *testing.T) {
 }
 
 func (etes *endToEndSuite) teardown(t *testing.T) {
-	grpcClose := func(conn *grpc.ClientConn) error {
-		state, err := conn.State()
-		if err != nil {
-			return err
-		}
-		if state != grpc.Shutdown {
-			if err = conn.Close(); err != nil {
-				return err
-			}
-		}
-		return nil
-	}
-
 	if err := teardownDatabase(etes.db); err != nil {
 		t.Errorf("e2e suite database teardown error: %s", err.Error())
 	}
-	if err := grpcClose(etes.mnemosyneConn); err != nil {
+	if err := etes.mnemosyneConn.Close(); err != nil {
 		t.Errorf("e2e suite mnemosyne conn close error: %s", err.Error())
 	}
-	if err := grpcClose(etes.charonConn); err != nil {
+	if err := etes.charonConn.Close(); err != nil {
 		t.Errorf("e2e suite charon conn close error: %s", err.Error())
 	}
 	if err := etes.mnemosyneCloser.Close(); err != nil {
