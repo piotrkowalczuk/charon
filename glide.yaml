@@ -17,19 +17,19 @@ import:
 - package: github.com/lib/pq
 - package: github.com/pborman/uuid
 - package: github.com/piotrkowalczuk/mnemosyne
-  version: ^v0.1
+  version: ~0.1
   subpackages:
   - mnemosynerpc
 - package: github.com/piotrkowalczuk/ntypes
-  version: ^v0.1
+  version: ~0.1
 - package: github.com/piotrkowalczuk/pqcomp
 - package: github.com/piotrkowalczuk/pqt
-  version: ^v0.1
+  version: ~0.1
   subpackages:
   - pqtgo
   - pqtsql
 - package: github.com/piotrkowalczuk/qtypes
-  version: ^v0.1
+  version: ~0.1
 - package: github.com/piotrkowalczuk/sklog
 - package: github.com/prometheus/client_golang
   subpackages:
