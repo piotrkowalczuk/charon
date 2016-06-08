@@ -1,3 +1,4 @@
+VERSION=$(shell git describe --tags --always --dirty)
 PROTOC=/usr/local/bin/protoc
 SERVICE=charon
 PACKAGE=github.com/piotrkowalczuk/charon
@@ -44,7 +45,7 @@ PROTO_PATH=--proto_path=. \
 
 .PHONY:	all proto rebuild build build-daemon build-control build-example install-generator run test test-short get build package
 
-all: rebuild test run
+all: get install
 
 proto:
 	@${PROTOC} --proto_path=. \
@@ -94,14 +95,9 @@ get:
 	@glide install
 
 install: build
-	#install binary
-	install -Dm 755 ${BINARY_CMD_DAEMON} ${DIST_BINDIR}/${SERVICE}d
-	install -Dm 755 ${BINARY_CMD_CONTROL} ${DIST_BINDIR}/${SERVICE}ctl
-	#install config file
-	install -Dm 644 scripts/${SERVICE}.env ${DESTDIR}/etc/${SERVICE}.env
-	install -Dm 644 scripts/${SERVICE}.env ${DESTDIR}/etc/${SERVICE}.env
-	#install init script
-	install -Dm 644 scripts/${SERVICE}.service ${DESTDIR}/etc/systemd/system/${SERVICE}.service
+	@go install ${PACKAGE_CMD_DAEMON}
+	@go install ${PACKAGE_CMD_CONTROL}
+	@go install ${PACKAGE_CMD_GENERATOR}
 
 package:
 	# export DIST_PACKAGE_TYPE to vary package type (e.g. deb, tar, rpm)
