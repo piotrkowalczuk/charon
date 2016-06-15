@@ -194,16 +194,16 @@ func (d *Daemon) Addr() net.Addr {
 func (d *Daemon) initMonitoring() (err error) {
 	hostname, err := os.Hostname()
 	if err != nil {
-		return errors.New("charond: getting hostname failed")
+		return errors.New("getting hostname failed")
 	}
 
 	switch d.opts.MonitoringEngine {
 	case "":
-		return errors.New("charond: monitoring is mandatory, at least for now")
+		return errors.New("monitoring is mandatory, at least for now")
 	case MonitoringEnginePrometheus:
 		d.monitor = initPrometheus(d.opts.Namespace, d.opts.Subsystem, prometheus.Labels{"server": hostname})
 		return
 	default:
-		return errors.New("charond: unknown monitoring engine")
+		return errors.New("unknown monitoring engine")
 	}
 }

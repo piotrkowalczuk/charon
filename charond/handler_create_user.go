@@ -31,7 +31,7 @@ func (cuh *createUserHandler) handle(ctx context.Context, req *charon.CreateUser
 			return nil, err
 		}
 		if count > 0 {
-			return nil, grpc.Errorf(codes.AlreadyExists, "charond: initial superuser account already exists")
+			return nil, grpc.Errorf(codes.AlreadyExists, "initial superuser account already exists")
 		}
 	}
 	if len(req.SecurePassword) == 0 {
@@ -76,13 +76,13 @@ func (cuh *createUserHandler) firewall(req *charon.CreateUserRequest, act *actor
 		return nil
 	}
 	if req.IsSuperuser.BoolOr(false) {
-		return grpc.Errorf(codes.PermissionDenied, "charond: user is not allowed to create superuser")
+		return grpc.Errorf(codes.PermissionDenied, "user is not allowed to create superuser")
 	}
 	if req.IsStaff.BoolOr(false) && !act.permissions.Contains(charon.UserCanCreateStaff) {
-		return grpc.Errorf(codes.PermissionDenied, "charond: user is not allowed to create staff user")
+		return grpc.Errorf(codes.PermissionDenied, "user is not allowed to create staff user")
 	}
 	if !act.permissions.Contains(charon.UserCanCreateStaff, charon.UserCanCreate) {
-		return grpc.Errorf(codes.PermissionDenied, "charond: user is not allowed to create another user")
+		return grpc.Errorf(codes.PermissionDenied, "user is not allowed to create another user")
 	}
 
 	return nil

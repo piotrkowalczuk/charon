@@ -28,7 +28,7 @@ func (ggh *getGroupHandler) handle(ctx context.Context, req *charon.GetGroupRequ
 	ent, err := ggh.repository.group.FindOneByID(req.Id)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, grpc.Errorf(codes.NotFound, "charond: group with id %d does not exists", req.Id)
+			return nil, grpc.Errorf(codes.NotFound, "group does not exists")
 		}
 		return nil, grpc.Errorf(codes.Internal, err.Error())
 	}
@@ -44,7 +44,7 @@ func (ggh *getGroupHandler) firewall(req *charon.GetGroupRequest, act *actor) er
 		return nil
 	}
 
-	return grpc.Errorf(codes.PermissionDenied, "charond: group cannot be retrieved, missing permission")
+	return grpc.Errorf(codes.PermissionDenied, "group cannot be retrieved, missing permission")
 }
 
 func (ggh *getGroupHandler) response(ent *groupEntity) (*charon.GetGroupResponse, error) {

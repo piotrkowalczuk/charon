@@ -17,19 +17,19 @@ func (lh *loginHandler) handle(ctx context.Context, r *charon.LoginRequest) (*ch
 	lh.logger = log.NewContext(lh.logger).With("username", r.Username)
 
 	if r.Username == "" {
-		return nil, grpc.Errorf(codes.Unauthenticated, "charond: empty username")
+		return nil, grpc.Errorf(codes.Unauthenticated, "empty username")
 	}
 	if len(r.Password) == 0 {
-		return nil, grpc.Errorf(codes.Unauthenticated, "charond: empty password")
+		return nil, grpc.Errorf(codes.Unauthenticated, "empty password")
 	}
 
 	user, err := lh.repository.user.FindOneByUsername(r.Username)
 	if err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "charond: the username and password do not match")
+		return nil, grpc.Errorf(codes.Unauthenticated, "the username and password do not match")
 	}
 
 	if matches := lh.hasher.Compare(user.Password, []byte(r.Password)); !matches {
-		return nil, grpc.Errorf(codes.Unauthenticated, "charond: the username and password do not match")
+		return nil, grpc.Errorf(codes.Unauthenticated, "the username and password do not match")
 	}
 
 	lh.loggerWith(
@@ -41,11 +41,11 @@ func (lh *loginHandler) handle(ctx context.Context, r *charon.LoginRequest) (*ch
 		"last_name", user.LastName,
 	)
 	if !user.IsConfirmed {
-		return nil, grpc.Errorf(codes.Unauthenticated, "charond: user is not confirmed")
+		return nil, grpc.Errorf(codes.Unauthenticated, "user is not confirmed")
 	}
 
 	if !user.IsActive {
-		return nil, grpc.Errorf(codes.Unauthenticated, "charond: user is not active")
+		return nil, grpc.Errorf(codes.Unauthenticated, "user is not active")
 	}
 
 	session, err := lh.session.Start(ctx, charon.SubjectIDFromInt64(user.ID).String(), r.Client, map[string]string{
@@ -61,7 +61,7 @@ func (lh *loginHandler) handle(ctx context.Context, r *charon.LoginRequest) (*ch
 
 	_, err = lh.repository.user.UpdateLastLoginAt(user.ID)
 	if err != nil {
-		return nil, grpc.Errorf(codes.Internal, "charond: last login update failure: %s", err)
+		return nil, grpc.Errorf(codes.Internal, "last login update failure: %s", err)
 	}
 
 	return &charon.LoginResponse{AccessToken: session.AccessToken}, nil

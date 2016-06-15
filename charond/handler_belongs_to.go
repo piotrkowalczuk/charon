@@ -50,5 +50,5 @@ func (ig *belongsToHandler) firewall(req *charon.BelongsToRequest, act *actor) e
 		return nil
 	}
 
-	return grpc.Errorf(codes.PermissionDenied, "charond: group belonging cannot be checked, missing permission")
+	return grpc.Errorf(codes.PermissionDenied, "group belonging cannot be checked, missing permission")
 }

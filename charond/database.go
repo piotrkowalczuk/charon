@@ -190,7 +190,7 @@ func setManyToMany(db *sql.DB, table, column1, column2 string, id int64, ids []i
 
 func setPermissions(db *sql.DB, table, columnID, columnSubsystem, columnModule, columnAction string, id int64, permissions charon.Permissions) (int64, int64, error) {
 	if len(permissions) == 0 {
-		return 0, 0, errors.New("charond: permission cannot be set, none provided")
+		return 0, 0, errors.New("permission cannot be set, none provided")
 	}
 	var (
 		err                    error
@@ -244,7 +244,7 @@ func setPermissions(db *sql.DB, table, columnID, columnSubsystem, columnModule, 
 			}
 			res, err = insert.Exec(id, subsystem, module, action)
 			if err != nil {
-				return 0, 0, fmt.Errorf("charond: error on permission insert: %s", err.Error())
+				return 0, 0, fmt.Errorf("error on permission insert: %s", err.Error())
 			}
 
 			aff, err = res.RowsAffected()

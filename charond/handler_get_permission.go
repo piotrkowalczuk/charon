@@ -1,6 +1,8 @@
 package charond
 
 import (
+	"database/sql"
+
 	"github.com/piotrkowalczuk/charon"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
@@ -28,6 +30,9 @@ func (gph *getPermissionHandler) handle(ctx context.Context, req *charon.GetPerm
 
 	permission, err := gph.repository.permission.FindOneByID(req.Id)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, grpc.Errorf(codes.NotFound, "permission does not exists")
+		}
 		return nil, err
 	}
 
@@ -44,5 +49,5 @@ func (gph *getPermissionHandler) firewall(req *charon.GetPermissionRequest, act 
 		return nil
 	}
 
-	return grpc.Errorf(codes.PermissionDenied, "charond: permission cannot be retrieved, missing permission")
+	return grpc.Errorf(codes.PermissionDenied, "permission cannot be retrieved, missing permission")
 }

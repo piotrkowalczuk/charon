@@ -180,7 +180,7 @@ func (gr *groupRepository) UpdateOneByID(id, updatedBy int64, name, description 
 	comp.AddExpr("g.description", pqcomp.Equal, description)
 
 	if comp.Len() == 0 {
-		return nil, errors.New("charond: nothing to update")
+		return nil, errors.New("nothing to update")
 	}
 
 	query = `UPDATE ` + tableGroup + ` SET `

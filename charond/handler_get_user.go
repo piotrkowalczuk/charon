@@ -1,6 +1,8 @@
 package charond
 
 import (
+	"database/sql"
+
 	"github.com/piotrkowalczuk/charon"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
@@ -20,6 +22,9 @@ func (guh *getUserHandler) handle(ctx context.Context, req *charon.GetUserReques
 	}
 	ent, err := guh.repository.user.FindOneByID(req.Id)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, grpc.Errorf(codes.NotFound, "user does not exists")
+		}
 		return nil, err
 	}
 	if err = guh.firewall(req, act, ent); err != nil {
@@ -34,28 +39,28 @@ func (guh *getUserHandler) firewall(req *charon.GetUserRequest, act *actor, ent 
 		return nil
 	}
 	if ent.IsSuperuser {
-		return grpc.Errorf(codes.PermissionDenied, "charond: only superuser is permited to retrieve other superuser")
+		return grpc.Errorf(codes.PermissionDenied, "only superuser is permited to retrieve other superuser")
 	}
 	if ent.IsStaff {
 		if ent.CreatedBy.Int64Or(0) == act.user.ID {
 			if !act.permissions.Contains(charon.UserCanRetrieveStaffAsOwner) {
-				return grpc.Errorf(codes.PermissionDenied, "charond: staff user cannot be retrieved as an owner, missing permission")
+				return grpc.Errorf(codes.PermissionDenied, "staff user cannot be retrieved as an owner, missing permission")
 			}
 			return nil
 		}
 		if !act.permissions.Contains(charon.UserCanRetrieveStaffAsStranger) {
-			return grpc.Errorf(codes.PermissionDenied, "charond: staff user cannot be retrieved as a stranger, missing permission")
+			return grpc.Errorf(codes.PermissionDenied, "staff user cannot be retrieved as a stranger, missing permission")
 		}
 		return nil
 	}
 	if ent.CreatedBy.Int64Or(0) == act.user.ID {
 		if !act.permissions.Contains(charon.UserCanRetrieveAsOwner) {
-			return grpc.Errorf(codes.PermissionDenied, "charond: user cannot be retrieved as an owner, missing permission")
+			return grpc.Errorf(codes.PermissionDenied, "user cannot be retrieved as an owner, missing permission")
 		}
 		return nil
 	}
 	if !act.permissions.Contains(charon.UserCanRetrieveAsStranger) {
-		return grpc.Errorf(codes.PermissionDenied, "charond: user cannot be retrieved as a stranger, missing permission")
+		return grpc.Errorf(codes.PermissionDenied, "user cannot be retrieved as a stranger, missing permission")
 	}
 	return nil
 }

@@ -47,29 +47,29 @@ func (luh *listUsersHandler) firewall(req *charon.ListUsersRequest, act *actor) 
 		return nil
 	}
 	if req.IsSuperuser.BoolOr(false) {
-		return grpc.Errorf(codes.PermissionDenied, "charond: only superuser is permited to retrieve other superusers")
+		return grpc.Errorf(codes.PermissionDenied, "only superuser is permited to retrieve other superusers")
 	}
 	if req.CreatedBy == nil {
 		if !act.permissions.Contains(charon.UserCanRetrieveAsStranger) {
-			return grpc.Errorf(codes.PermissionDenied, "charond: list of users cannot be retrieved as a stranger, missing permission")
+			return grpc.Errorf(codes.PermissionDenied, "list of users cannot be retrieved as a stranger, missing permission")
 		}
 		return nil
 	}
 	if req.IsStaff.BoolOr(false) {
 		if req.CreatedBy.Value() == act.user.ID {
 			if !act.permissions.Contains(charon.UserCanRetrieveStaffAsOwner) {
-				return grpc.Errorf(codes.PermissionDenied, "charond: list of staff users cannot be retrieved as an owner, missing permission")
+				return grpc.Errorf(codes.PermissionDenied, "list of staff users cannot be retrieved as an owner, missing permission")
 			}
 			return nil
 		}
 		if !act.permissions.Contains(charon.UserCanRetrieveStaffAsStranger) {
-			return grpc.Errorf(codes.PermissionDenied, "charond: list of staff users cannot be retrieved as a stranger, missing permission")
+			return grpc.Errorf(codes.PermissionDenied, "list of staff users cannot be retrieved as a stranger, missing permission")
 		}
 		return nil
 	}
 	if req.CreatedBy.Value() == act.user.ID {
 		if !act.permissions.Contains(charon.UserCanRetrieveAsOwner) {
-			return grpc.Errorf(codes.PermissionDenied, "charond: list of users cannot be retrieved as an owner, missing permission")
+			return grpc.Errorf(codes.PermissionDenied, "list of users cannot be retrieved as an owner, missing permission")
 		}
 		return nil
 	}

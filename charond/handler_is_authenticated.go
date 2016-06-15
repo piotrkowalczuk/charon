@@ -13,7 +13,7 @@ type isAuthenticatedHandler struct {
 
 func (iah *isAuthenticatedHandler) handle(ctx context.Context, req *charon.IsAuthenticatedRequest) (*charon.IsAuthenticatedResponse, error) {
 	if req.AccessToken == nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, "charond: authentication status cannot be checked, missing token")
+		return nil, grpc.Errorf(codes.InvalidArgument, "authentication status cannot be checked, missing token")
 	}
 
 	iah.loggerWith("token", req.AccessToken.Encode())

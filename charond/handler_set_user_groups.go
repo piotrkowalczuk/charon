@@ -43,5 +43,5 @@ func (sugh *setUserGroupsHandler) firewall(req *charon.SetUserGroupsRequest, act
 		return nil
 	}
 
-	return grpc.Errorf(codes.PermissionDenied, "charond: user groups cannot be set, missing permission")
+	return grpc.Errorf(codes.PermissionDenied, "user groups cannot be set, missing permission")
 }

@@ -40,5 +40,5 @@ func (dgh *deleteGroupHandler) firewall(req *charon.DeleteGroupRequest, act *act
 		return nil
 	}
 
-	return grpc.Errorf(codes.PermissionDenied, "charond: group cannot be removed, missing permission")
+	return grpc.Errorf(codes.PermissionDenied, "group cannot be removed, missing permission")
 }

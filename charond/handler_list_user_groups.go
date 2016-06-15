@@ -31,7 +31,7 @@ func (lugh *listUserGroupsHandler) firewall(req *charon.ListUserGroupsRequest, a
 		return nil
 	}
 
-	return grpc.Errorf(codes.PermissionDenied, "charond: list of user groups cannot be retrieved, missing permission")
+	return grpc.Errorf(codes.PermissionDenied, "list of user groups cannot be retrieved, missing permission")
 }
 
 func (lugh *listUserGroupsHandler) response(ents []*groupEntity) (*charon.ListUserGroupsResponse, error) {

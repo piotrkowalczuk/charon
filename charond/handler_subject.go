@@ -32,13 +32,13 @@ func (sh *subjectHandler) handle(ctx context.Context, r *charon.SubjectRequest) 
 
 	id, err := charon.SubjectID(ses.SubjectId).UserID()
 	if err != nil {
-		return nil, fmt.Errorf("charond: invalid session subject id: %s", ses.SubjectId)
+		return nil, fmt.Errorf("invalid session subject id: %s", ses.SubjectId)
 	}
 
 	userEntity, err := sh.repository.user.FindOneByID(id)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, grpc.Errorf(codes.NotFound, "charond: subject does not exists with id: %d", id)
+			return nil, grpc.Errorf(codes.NotFound, "subject does not exists with id: %d", id)
 		}
 
 		return nil, err

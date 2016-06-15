@@ -15,7 +15,7 @@ type modifyUserHandler struct {
 
 func (muh *modifyUserHandler) handle(ctx context.Context, req *charon.ModifyUserRequest) (*charon.ModifyUserResponse, error) {
 	if req.Id <= 0 {
-		return nil, grpc.Errorf(codes.InvalidArgument, "charond: user cannot be modified, invalid id: %d", req.Id)
+		return nil, grpc.Errorf(codes.InvalidArgument, "user cannot be modified, invalid id: %d", req.Id)
 	}
 
 	muh.loggerWith("user_id", req.Id)

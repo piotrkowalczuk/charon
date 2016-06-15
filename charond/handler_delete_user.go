@@ -15,7 +15,7 @@ func (duh *deleteUserHandler) handle(ctx context.Context, req *charon.DeleteUser
 	duh.loggerWith("user_id", req.Id)
 
 	if req.Id <= 0 {
-		return nil, grpc.Errorf(codes.InvalidArgument, "charond: user cannot be deleted, invalid id: %d", req.Id)
+		return nil, grpc.Errorf(codes.InvalidArgument, "user cannot be deleted, invalid id: %d", req.Id)
 	}
 
 	act, err := duh.retrieveActor(ctx)
@@ -42,35 +42,35 @@ func (duh *deleteUserHandler) handle(ctx context.Context, req *charon.DeleteUser
 
 func (duh *deleteUserHandler) firewall(req *charon.DeleteUserRequest, act *actor, ent *userEntity) error {
 	if act.user.ID == ent.ID {
-		return grpc.Errorf(codes.PermissionDenied, "charond: user is not permited to remove himself")
+		return grpc.Errorf(codes.PermissionDenied, "user is not permited to remove himself")
 	}
 	if act.user.IsSuperuser {
 		return nil
 	}
 	if ent.IsSuperuser {
-		return grpc.Errorf(codes.PermissionDenied, "charond: only superuser can remove other superuser")
+		return grpc.Errorf(codes.PermissionDenied, "only superuser can remove other superuser")
 	}
 	if ent.IsStaff {
 		switch {
 		case act.user.ID == ent.CreatedBy.Int64Or(0):
 			if !act.permissions.Contains(charon.UserCanDeleteStaffAsOwner) {
-				return grpc.Errorf(codes.PermissionDenied, "charond: staff user cannot be removed by owner, missing permission")
+				return grpc.Errorf(codes.PermissionDenied, "staff user cannot be removed by owner, missing permission")
 			}
 			return nil
 		case !act.permissions.Contains(charon.UserCanDeleteStaffAsStranger):
-			return grpc.Errorf(codes.PermissionDenied, "charond: staff user cannot be removed by stranger, missing permission")
+			return grpc.Errorf(codes.PermissionDenied, "staff user cannot be removed by stranger, missing permission")
 		}
 		return nil
 	}
 
 	if act.user.ID == ent.CreatedBy.Int64Or(0) {
 		if !act.permissions.Contains(charon.UserCanDeleteAsOwner) {
-			return grpc.Errorf(codes.PermissionDenied, "charond: user cannot be removed by owner, missing permission")
+			return grpc.Errorf(codes.PermissionDenied, "user cannot be removed by owner, missing permission")
 		}
 		return nil
 	}
 	if !act.permissions.Contains(charon.UserCanDeleteAsStranger) {
-		return grpc.Errorf(codes.PermissionDenied, "charond: user cannot be removed by stranger, missing permission")
+		return grpc.Errorf(codes.PermissionDenied, "user cannot be removed by stranger, missing permission")
 	}
 	return nil
 }

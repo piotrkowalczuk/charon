@@ -25,7 +25,7 @@ func (cgh *createGroupHandler) handle(ctx context.Context, req *charon.CreateGro
 	if err != nil {
 		switch pqt.ErrorConstraint(err) {
 		case tableGroupConstraintNameUnique:
-			return nil, grpc.Errorf(codes.AlreadyExists, "charond: group with given name already exists")
+			return nil, grpc.Errorf(codes.AlreadyExists, "group with given name already exists")
 		default:
 			return nil, err
 		}
@@ -42,7 +42,7 @@ func (cgh *createGroupHandler) firewall(req *charon.CreateGroupRequest, act *act
 		return nil
 	}
 
-	return grpc.Errorf(codes.PermissionDenied, "charond: group cannot be created, missing permission")
+	return grpc.Errorf(codes.PermissionDenied, "group cannot be created, missing permission")
 }
 
 func (cgh *createGroupHandler) response(ent *groupEntity) (*charon.CreateGroupResponse, error) {

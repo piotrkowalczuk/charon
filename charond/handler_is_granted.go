@@ -50,5 +50,5 @@ func (ig *isGrantedHandler) firewall(req *charon.IsGrantedRequest, act *actor) e
 		return nil
 	}
 
-	return grpc.Errorf(codes.PermissionDenied, "charond: group granting cannot be checked, missing permission")
+	return grpc.Errorf(codes.PermissionDenied, "group granting cannot be checked, missing permission")
 }

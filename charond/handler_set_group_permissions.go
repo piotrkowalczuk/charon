@@ -41,5 +41,5 @@ func (sgph *setGroupPermissionsHandler) firewall(req *charon.SetGroupPermissions
 		return nil
 	}
 
-	return grpc.Errorf(codes.PermissionDenied, "charond: group permissions cannot be set, missing permission")
+	return grpc.Errorf(codes.PermissionDenied, "group permissions cannot be set, missing permission")
 }

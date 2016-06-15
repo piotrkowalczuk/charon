@@ -1575,7 +1575,7 @@ func (r *userRepositoryBase) UpdateByID(patch *userPatch) (*userEntity, error) {
 	update.AddExpr(tableUserColumnUsername, pqcomp.Equal, patch.username)
 
 	if update.Len() == 0 {
-		return nil, errors.New("charond: user update failure, nothing to update")
+		return nil, errors.New("user update failure, nothing to update")
 	}
 	query := "UPDATE charon.user SET "
 	for update.Next() {
@@ -3815,7 +3815,7 @@ func (r *permissionRepositoryBase) UpdateByID(patch *permissionPatch) (*permissi
 	}
 
 	if update.Len() == 0 {
-		return nil, errors.New("charond: permission update failure, nothing to update")
+		return nil, errors.New("permission update failure, nothing to update")
 	}
 	query := "UPDATE charon.permission SET "
 	for update.Next() {

@@ -13,7 +13,7 @@ type logoutHandler struct {
 
 func (lh *logoutHandler) handle(ctx context.Context, r *charon.LogoutRequest) (*charon.LogoutResponse, error) {
 	if r.AccessToken.IsEmpty() { // TODO: probably wrong, implement IsEmpty method for ID
-		return nil, grpc.Errorf(codes.InvalidArgument, "charond: empty session id, logout aborted")
+		return nil, grpc.Errorf(codes.InvalidArgument, "empty session id, logout aborted")
 	}
 
 	if err := lh.session.Abandon(ctx, r.AccessToken.Encode()); err != nil {

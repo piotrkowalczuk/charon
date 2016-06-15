@@ -48,5 +48,5 @@ func (luph *listUserPermissionsHandler) firewall(req *charon.ListUserPermissions
 		return nil
 	}
 
-	return grpc.Errorf(codes.PermissionDenied, "charond: list of user permissions cannot be retrieved, missing permission")
+	return grpc.Errorf(codes.PermissionDenied, "list of user permissions cannot be retrieved, missing permission")
 }
