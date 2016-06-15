@@ -2803,7 +2803,7 @@ func (r *groupRepositoryBase) UpdateByID(patch *groupPatch) (*groupEntity, error
 	update.AddExpr(tableGroupColumnUpdatedBy, pqcomp.Equal, patch.updatedBy)
 
 	if update.Len() == 0 {
-		return nil, errors.New("charond: group update failure, nothing to update")
+		return nil, errors.New("group update failure, nothing to update")
 	}
 	query := "UPDATE charon.group SET "
 	for update.Next() {

@@ -234,7 +234,7 @@ func setPermissions(db *sql.DB, table, columnID, columnSubsystem, columnModule, 
 			subsystem, module, action = p.Split()
 
 			if err = exists.QueryRow(id, subsystem, module, action).Scan(&granted); err != nil {
-				return 0, 0, fmt.Errorf("charond: error on permission check: %s", err.Error())
+				return 0, 0, fmt.Errorf("error on permission check: %s", err.Error())
 			}
 			// Given combination already exists, ignore.
 			if granted {

@@ -42,7 +42,7 @@ func (cuh *createUserHandler) handle(ctx context.Context, req *charon.CreateUser
 	} else {
 		// TODO: only one superuser can be defined so this else statement makes no sense in this place.
 		if !act.user.IsSuperuser {
-			return nil, grpc.Errorf(codes.PermissionDenied, "charond: only superuser can create an user with manualy defined secure password")
+			return nil, grpc.Errorf(codes.PermissionDenied, "only superuser can create an user with manualy defined secure password")
 		}
 	}
 

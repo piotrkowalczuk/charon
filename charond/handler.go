@@ -45,7 +45,7 @@ func (h *handler) handle(err error, msg string) error {
 		}
 		sklog.Error(h.logger, errors.New(grpc.ErrorDesc(err)))
 
-		return grpc.Errorf(grpc.Code(err), "charond: %s", grpc.ErrorDesc(err))
+		return grpc.Errorf(grpc.Code(err), "%s", grpc.ErrorDesc(err))
 	}
 
 	sklog.Debug(h.logger, msg)
