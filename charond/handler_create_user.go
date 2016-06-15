@@ -60,9 +60,9 @@ func (cuh *createUserHandler) handle(ctx context.Context, req *charon.CreateUser
 	if err != nil {
 		switch pqt.ErrorConstraint(err) {
 		case tableUserConstraintPrimaryKey:
-			return nil, grpc.Errorf(codes.AlreadyExists, charon.ErrDescUserWithIDExists)
+			return nil, grpc.Errorf(codes.AlreadyExists, "user with such id already exists")
 		case tableUserConstraintUsernameUnique:
-			return nil, grpc.Errorf(codes.AlreadyExists, charon.ErrDescUserWithUsernameExists)
+			return nil, grpc.Errorf(codes.AlreadyExists, "user with such username already exists")
 		default:
 			return nil, err
 		}

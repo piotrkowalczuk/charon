@@ -47,13 +47,6 @@ PROTO_PATH=--proto_path=. \
 
 all: get install
 
-proto:
-	@${PROTOC} --proto_path=. \
-				--proto_path=${GOPATH}/src \
-				--go_out=Mmnemosyne.proto=github.com/piotrkowalczuk/mnemosyne,Mqtypes.proto=github.com/piotrkowalczuk/qtypes,Mntypes.proto=github.com/piotrkowalczuk/ntypes,plugins=grpc:. \
-		${SERVICE}.proto
-	@ls -al | grep pb.go
-
 rebuild: install-generator proto gen build
 
 build: build-daemon build-control build-example
@@ -73,6 +66,8 @@ install-generator:
 gen:
 	@go generate ./${SERVICE}d
 	@ls -al ${SERVICE}d | grep pqt
+	@go generate .
+	@ls -al | grep pb.go
 
 run:
 	@${BINARY_CMD_DAEMON} ${FLAGS}
@@ -94,31 +89,7 @@ get:
 	@go get github.com/smartystreets/goconvey/convey
 	@glide install
 
-install: build
+install:
 	@go install ${PACKAGE_CMD_DAEMON}
 	@go install ${PACKAGE_CMD_CONTROL}
 	@go install ${PACKAGE_CMD_GENERATOR}
-
-package:
-	# export DIST_PACKAGE_TYPE to vary package type (e.g. deb, tar, rpm)
-	@if [ -z "$(shell which fpm 2>/dev/null)" ]; then \
-		echo "error:\nPackaging requires effing package manager (fpm) to run.\nsee https://github.com/jordansissel/fpm\n"; \
-		exit 1; \
-	fi
-
-	#run make install against the packaging dir
-	mkdir -p ${DIST_PACKAGE_BUILD_DIR} && $(MAKE) install DESTDIR=${DIST_PACKAGE_BUILD_DIR}
-
-	#clean
-	mkdir -p ${DIST_PACKAGE_DIR} && rm -f ${DIST_PACKAGE_DIR}/*.${DIST_PACKAGE_TYPE}
-
-	#build package
-	fpm --rpm-os linux \
-		-s dir \
-		-p dist \
-		-t ${DIST_PACKAGE_TYPE} \
-		-n ${SERVICE} \
-		-v `${DIST_PACKAGE_BUILD_DIR}${DIST_PREFIX}/bin/${SERVICE}d -version` \
-		--config-files /etc/${SERVICE}.env \
-		--config-files /etc/systemd/system/${SERVICE}.service \
-		-C ${DIST_PACKAGE_BUILD_DIR} .

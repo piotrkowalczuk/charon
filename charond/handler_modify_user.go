@@ -1,6 +1,8 @@
 package charond
 
 import (
+	"database/sql"
+
 	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/ntypes"
 	"github.com/piotrkowalczuk/pqt"
@@ -31,7 +33,7 @@ func (muh *modifyUserHandler) handle(ctx context.Context, req *charon.ModifyUser
 	}
 
 	if hint, ok := muh.firewall(req, ent, actor); !ok {
-		return nil, grpc.Errorf(codes.PermissionDenied, "charond: "+hint)
+		return nil, grpc.Errorf(codes.PermissionDenied, hint)
 	}
 
 	ent, err = muh.repository.user.UpdateByID(&userPatch{
@@ -47,9 +49,12 @@ func (muh *modifyUserHandler) handle(ctx context.Context, req *charon.ModifyUser
 		username:    req.Username,
 	})
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, grpc.Errorf(codes.NotFound, "group does not exists")
+		}
 		switch pqt.ErrorConstraint(err) {
 		case tableUserConstraintUsernameUnique:
-			return nil, grpc.Errorf(codes.AlreadyExists, charon.ErrDescUserWithUsernameExists)
+			return nil, grpc.Errorf(codes.AlreadyExists, "user with such username already exists")
 		default:
 			return nil, err
 		}

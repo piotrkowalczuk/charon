@@ -1,6 +1,8 @@
 package charond
 
 import (
+	"database/sql"
+
 	"github.com/piotrkowalczuk/charon"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
@@ -32,6 +34,9 @@ func (duh *deleteUserHandler) handle(ctx context.Context, req *charon.DeleteUser
 
 	affected, err := duh.repository.user.DeleteByID(req.Id)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, grpc.Errorf(codes.NotFound, "user does not exists")
+		}
 		return nil, err
 	}
 

@@ -1,6 +1,8 @@
 package charond
 
 import (
+	"database/sql"
+
 	"github.com/piotrkowalczuk/charon"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
@@ -24,6 +26,9 @@ func (dgh *deleteGroupHandler) handle(ctx context.Context, req *charon.DeleteGro
 
 	affected, err := dgh.repository.group.DeleteByID(req.Id)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, grpc.Errorf(codes.NotFound, "group does not exists")
+		}
 		return nil, err
 	}
 

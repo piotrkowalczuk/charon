@@ -1,8 +1,12 @@
 package charond
 
 import (
+	"database/sql"
+
 	"github.com/piotrkowalczuk/charon"
 	"golang.org/x/net/context"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 )
 
 type modifyGroupHandler struct {
@@ -22,6 +26,9 @@ func (mgh *modifyGroupHandler) handle(ctx context.Context, req *charon.ModifyGro
 
 	group, err := mgh.repository.group.UpdateOneByID(req.Id, actor.user.ID, req.Name, req.Description)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, grpc.Errorf(codes.NotFound, "group does not exists")
+		}
 		return nil, err
 	}
 
