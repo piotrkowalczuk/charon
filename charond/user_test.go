@@ -75,9 +75,8 @@ func TestUserRepository_UpdateByID(t *testing.T) {
 
 	for res := range loadUserFixtures(t, suite.repository.user, userTestFixtures) {
 		user := res.got
-		modified, err := suite.repository.user.UpdateByID(&userPatch{
+		modified, err := suite.repository.user.UpdateOneByID(user.ID, &userPatch{
 			firstName:   &ntypes.String{String: user.FirstName + suffix, Valid: true},
-			id:          user.ID,
 			isActive:    &ntypes.Bool{Bool: true, Valid: true},
 			isConfirmed: &ntypes.Bool{Bool: true, Valid: true},
 			isStaff:     &ntypes.Bool{Bool: true, Valid: true},
@@ -114,8 +113,7 @@ func TestUserRepository_DeleteByID(t *testing.T) {
 	defer suite.teardown(t)
 
 	for res := range loadUserFixtures(t, suite.repository.user, userTestFixtures) {
-		affected, err := suite.repository.user.DeleteByID(res.got.ID)
-
+		affected, err := suite.repository.user.DeleteOneByID(res.got.ID)
 		if err != nil {
 			t.Errorf("user cannot be deleted, unexpected error: %s", err.Error())
 			continue
@@ -203,10 +201,10 @@ func TestUserRepository_Find(t *testing.T) {
 	}
 	entities, err = suite.repository.user.Find(&userCriteria{
 		limit:             all,
-		username:          qtypes.ExactString("johnsnow@gmail.com"),
+		username:          qtypes.EqualString("johnsnow@gmail.com"),
 		password:          []byte("secret"),
-		firstName:         qtypes.ExactString("John"),
-		lastName:          qtypes.ExactString("Snow"),
+		firstName:         qtypes.EqualString("John"),
+		lastName:          qtypes.EqualString("Snow"),
 		confirmationToken: []byte("1234567890"),
 		isSuperuser:       &ntypes.Bool{Bool: true}, // Is not valid, should not affect results
 	})

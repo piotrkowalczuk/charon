@@ -36,9 +36,8 @@ func (muh *modifyUserHandler) handle(ctx context.Context, req *charon.ModifyUser
 		return nil, grpc.Errorf(codes.PermissionDenied, hint)
 	}
 
-	ent, err = muh.repository.user.UpdateByID(&userPatch{
+	ent, err = muh.repository.user.UpdateOneByID(req.Id, &userPatch{
 		firstName:   req.FirstName,
-		id:          req.Id,
 		isActive:    req.IsActive,
 		isConfirmed: req.IsConfirmed,
 		isStaff:     req.IsStaff,

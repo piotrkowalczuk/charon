@@ -32,7 +32,7 @@ func (duh *deleteUserHandler) handle(ctx context.Context, req *charon.DeleteUser
 		return nil, err
 	}
 
-	affected, err := duh.repository.user.DeleteByID(req.Id)
+	affected, err := duh.repository.user.DeleteOneByID(req.Id)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, grpc.Errorf(codes.NotFound, "user does not exists")

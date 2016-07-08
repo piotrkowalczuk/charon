@@ -151,8 +151,8 @@ func (_m *mockGroupProvider) UpdateOneByID(id int64, updatedBy int64, name *ntyp
 	return r0, r1
 }
 
-// DeleteByID provides a mock function with given fields: id
-func (_m *mockGroupProvider) DeleteByID(id int64) (int64, error) {
+// DeleteOneByID provides a mock function with given fields: id
+func (_m *mockGroupProvider) DeleteOneByID(id int64) (int64, error) {
 	ret := _m.Called(id)
 
 	var r0 int64
@@ -688,8 +688,8 @@ func (_m *mockUserProvider) FindOneByUsername(username string) (*userEntity, err
 	return r0, r1
 }
 
-// DeleteByID provides a mock function with given fields: id
-func (_m *mockUserProvider) DeleteByID(id int64) (int64, error) {
+// DeleteOneByID provides a mock function with given fields: id
+func (_m *mockUserProvider) DeleteOneByID(id int64) (int64, error) {
 	ret := _m.Called(id)
 
 	var r0 int64
@@ -709,13 +709,13 @@ func (_m *mockUserProvider) DeleteByID(id int64) (int64, error) {
 	return r0, r1
 }
 
-// UpdateByID provides a mock function with given fields: _a0
-func (_m *mockUserProvider) UpdateByID(_a0 *userPatch) (*userEntity, error) {
-	ret := _m.Called(_a0)
+// UpdateOneByID provides a mock function with given fields: _a0, _a1
+func (_m *mockUserProvider) UpdateOneByID(_a0 int64, _a1 *userPatch) (*userEntity, error) {
+	ret := _m.Called(_a0, _a1)
 
 	var r0 *userEntity
-	if rf, ok := ret.Get(0).(func(*userPatch) *userEntity); ok {
-		r0 = rf(_a0)
+	if rf, ok := ret.Get(0).(func(int64, *userPatch) *userEntity); ok {
+		r0 = rf(_a0, _a1)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*userEntity)
@@ -723,8 +723,8 @@ func (_m *mockUserProvider) UpdateByID(_a0 *userPatch) (*userEntity, error) {
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(*userPatch) error); ok {
-		r1 = rf(_a0)
+	if rf, ok := ret.Get(1).(func(int64, *userPatch) error); ok {
+		r1 = rf(_a0, _a1)
 	} else {
 		r1 = ret.Error(1)
 	}

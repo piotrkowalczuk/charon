@@ -70,8 +70,8 @@ type userProvider interface {
 	Find(criteria *userCriteria) ([]*userEntity, error)
 	FindOneByID(id int64) (*userEntity, error)
 	FindOneByUsername(username string) (*userEntity, error)
-	DeleteByID(id int64) (int64, error)
-	UpdateByID(*userPatch) (*userEntity, error)
+	DeleteOneByID(id int64) (int64, error)
+	UpdateOneByID(int64, *userPatch) (*userEntity, error)
 	RegistrationConfirmation(id int64, confirmationToken string) error
 	IsGranted(id int64, permission charon.Permission) (bool, error)
 	SetPermissions(id int64, permissions ...charon.Permission) (int64, int64, error)

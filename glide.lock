@@ -1,5 +1,5 @@
-hash: a115df9ba98594a601a442310be14bece64bc2aab6e7523cca7f6ea7867ab46a
-updated: 2016-06-16T08:12:18.995674389+02:00
+hash: 255ab224ffe2d8ea3a105420e6a102ae2bd9bf91bebabdd7637b7f3e9f262cd2
+updated: 2016-07-08T17:15:22.629555588+02:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -39,7 +39,7 @@ imports:
 - name: github.com/kr/logfmt
   version: b84e30acd515aadc4b783ad4ff83aff3299bdfe0
 - name: github.com/lib/pq
-  version: ee1442bda7bd1b6a84e913bdb421cb1874ec629d
+  version: 4dd446efc17690bc53e154025146f73203b18309
   subpackages:
   - oid
 - name: github.com/matttproud/golang_protobuf_extensions
@@ -52,17 +52,19 @@ imports:
   version: 23126018dfe665026f50f1b99ce26c0b3d554ab7
   subpackages:
   - mnemosynerpc
+  - mnemosyned
+  - mnemosynetest
 - name: github.com/piotrkowalczuk/ntypes
-  version: 9b31572cf5b477462fd1328b85d4312ba484ebd6
+  version: cbae64559b0582ebff16136c0c48cc9134307c71
 - name: github.com/piotrkowalczuk/pqcomp
   version: 631b19c36ded8bbe954cf8c15a0044c591033536
 - name: github.com/piotrkowalczuk/pqt
-  version: 2d6d5b76a80725796ecc1e3b8f97b773204cd171
+  version: 5749c13586eca77f7ce057be43de10b5f6bc84ab
   subpackages:
   - pqtgo
   - pqtsql
 - name: github.com/piotrkowalczuk/qtypes
-  version: 027c852b89e0afdf313571dbadee38bb18e36ddd
+  version: 9735286d8346ebec5dfc08e2453cad1d91189872
 - name: github.com/piotrkowalczuk/sklog
   version: ec5c8660c571ff906c65341ba96de449706d63fa
 - name: github.com/pmezard/go-difflib
@@ -89,13 +91,13 @@ imports:
   - mock
   - assert
 - name: golang.org/x/crypto
-  version: f3241ce8505855877cc8a9717bd61a0f7c4ea83c
+  version: d81fdb778bf2c40a91b24519d60cdc5767318829
   subpackages:
   - bcrypt
   - sha3
   - blowfish
 - name: golang.org/x/net
-  version: d7bf3545bb0dacf009c535b3d3fbf53ac0a339ab
+  version: f841c39de738b1d0df95b5a7187744f0e03d8112
   subpackages:
   - context
   - http2
@@ -104,17 +106,18 @@ imports:
   - lex/httplex
   - internal/timeseries
 - name: golang.org/x/oauth2
-  version: 65a8d08c6292395d47053be10b3c5e91960def76
+  version: 7357e96168422ba1e6e7f21075713b72d58764e7
   subpackages:
   - internal
 - name: google.golang.org/appengine
-  version: 7f59a8c76b8594d06044bfe0bcbe475cb2020482
+  version: 267c27e7492265b84fc6719503b14a1e17975d79
   subpackages:
   - urlfetch
   - internal
   - internal/urlfetch
   - internal/base
   - internal/datastore
+  - internal/log
   - internal/remote_api
 - name: google.golang.org/grpc
   version: e78224b060cf3215247b7be455f80ea22e469b66
@@ -127,4 +130,21 @@ imports:
   - internal
   - naming
   - transport
-devImports: []
+testImports:
+- name: github.com/gopherjs/gopherjs
+  version: 090403452ab6979e3b7c054ceb7ee23da91b2ae4
+  subpackages:
+  - js
+- name: github.com/jtolds/gls
+  version: 8ddce2a84170772b95dd5d576c48d517b22cac63
+- name: github.com/smartystreets/assertions
+  version: 2063fd1cc7c975db70502811a34b06ad034ccdf2
+  subpackages:
+  - internal/go-render/render
+  - internal/oglematchers
+- name: github.com/smartystreets/goconvey
+  version: 4622128e06c77c0174e17a7f0ed2db19a989b473
+  subpackages:
+  - convey
+  - convey/reporting
+  - convey/gotest

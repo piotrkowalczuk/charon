@@ -30,7 +30,7 @@ func (luh *listUsersHandler) handle(ctx context.Context, req *charon.ListUsersRe
 		createdBy:   req.CreatedBy,
 	}
 	if act.permissions.Contains(charon.UserCanRetrieveAsOwner, charon.UserCanRetrieveStaffAsOwner) {
-		criteria.createdBy = &qtypes.Int64{Values: []int64{act.user.ID}, Type: qtypes.NumericQueryType_EQUAL, Valid: true}
+		criteria.createdBy = qtypes.EqualInt64(act.user.ID)
 	}
 
 	ents, err := luh.repository.user.Find(criteria)

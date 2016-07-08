@@ -130,5 +130,5 @@ func notNullText(name, short string) *pqt.Column {
 	if short == "" {
 		short = name
 	}
-	return pqt.NewColumn(name, pqt.TypeText(), pqt.WithNotNull(), pqt.WithShortName(short))
+	return pqt.NewColumn(name, pqt.TypeText(), pqt.WithNotNull(), pqt.WithColumnShortName(short))
 }
