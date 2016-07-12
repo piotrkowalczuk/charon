@@ -19,21 +19,26 @@ func (cuh *createUserHandler) handle(ctx context.Context, req *charon.CreateUser
 
 	act, err := cuh.retrieveActor(ctx)
 	if err != nil {
-		return nil, err
-	}
-	if err = cuh.firewall(req, act); err != nil {
-		return nil, err
-	}
+		if req.IsSuperuser.BoolOr(false) {
+			count, err := cuh.repository.user.Count()
+			if err != nil {
+				return nil, err
+			}
+			if count > 0 {
+				return nil, grpc.Errorf(codes.AlreadyExists, "initial superuser account already exists")
+			}
 
-	if act.isLocal && req.IsSuperuser.BoolOr(false) {
-		count, err := cuh.repository.user.Count()
-		if err != nil {
+			// If actor does not exists, even single user does not exists and request contains IsSuperuser equals to true.
+			// Then move forward, its request that is trying to create first user (that needs to be a superuser).
+		} else {
 			return nil, err
 		}
-		if count > 0 {
-			return nil, grpc.Errorf(codes.AlreadyExists, "initial superuser account already exists")
+	} else {
+		if err = cuh.firewall(req, act); err != nil {
+			return nil, err
 		}
 	}
+
 	if len(req.SecurePassword) == 0 {
 		req.SecurePassword, err = cuh.hasher.Hash([]byte(req.PlainPassword))
 		if err != nil {

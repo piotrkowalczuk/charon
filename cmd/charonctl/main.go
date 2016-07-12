@@ -63,7 +63,7 @@ func registerUser(config configuration) {
 		IsSuperuser:   &ntypes.Bool{Bool: config.register.superuser, Valid: true},
 	})
 	if err != nil {
-		fmt.Printf("charonctl: registration failure: %s", grpc.ErrorDesc(err))
+		fmt.Printf("registration failure: %s", grpc.ErrorDesc(err))
 		os.Exit(1)
 	}
 
