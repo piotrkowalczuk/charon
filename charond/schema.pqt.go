@@ -203,9 +203,6 @@ type userCriteria struct {
 }
 
 func (c *userCriteria) WriteComposition(sel string, com *pqtgo.Composer, opt *pqtgo.CompositionOpts) (err error) {
-	if _, err = com.WriteString(" WHERE "); err != nil {
-		return
-	}
 	if c.confirmationToken != nil {
 		if com.Dirty {
 			com.WriteString(" AND ")
@@ -354,28 +351,17 @@ func (c *userCriteria) WriteComposition(sel string, com *pqtgo.Composer, opt *pq
 		}
 	}
 
-	if c.createdBy != nil && c.createdBy.Valid && com.Dirty {
-		com.WriteString(" AND ")
-		com.Dirty = false
-	}
 	if err = pqtgo.WriteCompositionQueryInt64(c.createdBy, tableUserColumnCreatedBy, com, pqtgo.And); err != nil {
 		return
 	}
 
-	if c.firstName != nil && c.firstName.Valid && com.Dirty {
-		com.WriteString(" AND ")
-		com.Dirty = false
-	}
-	pqtgo.WriteCompositionQueryString(c.firstName, tableUserColumnFirstName, com, pqtgo.And)
-
-	if c.id != nil && c.id.Valid && com.Dirty {
-		com.WriteString(" AND ")
-		com.Dirty = false
-	}
-	if err = pqtgo.WriteCompositionQueryInt64(c.id, tableUserColumnID, com, pqtgo.And); err != nil {
+	if err = pqtgo.WriteCompositionQueryString(c.firstName, tableUserColumnFirstName, com, pqtgo.And); err != nil {
 		return
 	}
 
+	if err = pqtgo.WriteCompositionQueryInt64(c.id, tableUserColumnID, com, pqtgo.And); err != nil {
+		return
+	}
 	if c.isActive != nil && c.isActive.Valid {
 		if com.Dirty {
 			com.WriteString(" AND ")
@@ -535,12 +521,9 @@ func (c *userCriteria) WriteComposition(sel string, com *pqtgo.Composer, opt *pq
 		}
 	}
 
-	if c.lastName != nil && c.lastName.Valid && com.Dirty {
-		com.WriteString(" AND ")
-		com.Dirty = false
+	if err = pqtgo.WriteCompositionQueryString(c.lastName, tableUserColumnLastName, com, pqtgo.And); err != nil {
+		return
 	}
-	pqtgo.WriteCompositionQueryString(c.lastName, tableUserColumnLastName, com, pqtgo.And)
-
 	if c.password != nil {
 		if com.Dirty {
 			com.WriteString(" AND ")
@@ -689,23 +672,14 @@ func (c *userCriteria) WriteComposition(sel string, com *pqtgo.Composer, opt *pq
 		}
 	}
 
-	if c.updatedBy != nil && c.updatedBy.Valid && com.Dirty {
-		com.WriteString(" AND ")
-		com.Dirty = false
-	}
 	if err = pqtgo.WriteCompositionQueryInt64(c.updatedBy, tableUserColumnUpdatedBy, com, pqtgo.And); err != nil {
 		return
 	}
 
-	if c.username != nil && c.username.Valid && com.Dirty {
-		com.WriteString(" AND ")
-		com.Dirty = false
+	if err = pqtgo.WriteCompositionQueryString(c.username, tableUserColumnUsername, com, pqtgo.And); err != nil {
+		return
 	}
-	pqtgo.WriteCompositionQueryString(c.username, tableUserColumnUsername, com, pqtgo.And)
 
-	if !com.Dirty {
-		com.ResetBuf()
-	}
 	if c.offset > 0 {
 		if _, err = com.WriteString(" OFFSET "); err != nil {
 			return
@@ -730,7 +704,6 @@ func (c *userCriteria) WriteComposition(sel string, com *pqtgo.Composer, opt *pq
 		}
 		com.Add(c.limit)
 	}
-	com.Dirty = false
 
 	return
 }
@@ -1214,9 +1187,6 @@ type groupCriteria struct {
 }
 
 func (c *groupCriteria) WriteComposition(sel string, com *pqtgo.Composer, opt *pqtgo.CompositionOpts) (err error) {
-	if _, err = com.WriteString(" WHERE "); err != nil {
-		return
-	}
 
 	if c.createdAt != nil && c.createdAt.Valid {
 		createdAtt1 := c.createdAt.Value()
@@ -1336,33 +1306,21 @@ func (c *groupCriteria) WriteComposition(sel string, com *pqtgo.Composer, opt *p
 		}
 	}
 
-	if c.createdBy != nil && c.createdBy.Valid && com.Dirty {
-		com.WriteString(" AND ")
-		com.Dirty = false
-	}
 	if err = pqtgo.WriteCompositionQueryInt64(c.createdBy, tableGroupColumnCreatedBy, com, pqtgo.And); err != nil {
 		return
 	}
 
-	if c.description != nil && c.description.Valid && com.Dirty {
-		com.WriteString(" AND ")
-		com.Dirty = false
+	if err = pqtgo.WriteCompositionQueryString(c.description, tableGroupColumnDescription, com, pqtgo.And); err != nil {
+		return
 	}
-	pqtgo.WriteCompositionQueryString(c.description, tableGroupColumnDescription, com, pqtgo.And)
 
-	if c.id != nil && c.id.Valid && com.Dirty {
-		com.WriteString(" AND ")
-		com.Dirty = false
-	}
 	if err = pqtgo.WriteCompositionQueryInt64(c.id, tableGroupColumnID, com, pqtgo.And); err != nil {
 		return
 	}
 
-	if c.name != nil && c.name.Valid && com.Dirty {
-		com.WriteString(" AND ")
-		com.Dirty = false
+	if err = pqtgo.WriteCompositionQueryString(c.name, tableGroupColumnName, com, pqtgo.And); err != nil {
+		return
 	}
-	pqtgo.WriteCompositionQueryString(c.name, tableGroupColumnName, com, pqtgo.And)
 
 	if c.updatedAt != nil && c.updatedAt.Valid {
 		updatedAtt1 := c.updatedAt.Value()
@@ -1482,17 +1440,10 @@ func (c *groupCriteria) WriteComposition(sel string, com *pqtgo.Composer, opt *p
 		}
 	}
 
-	if c.updatedBy != nil && c.updatedBy.Valid && com.Dirty {
-		com.WriteString(" AND ")
-		com.Dirty = false
-	}
 	if err = pqtgo.WriteCompositionQueryInt64(c.updatedBy, tableGroupColumnUpdatedBy, com, pqtgo.And); err != nil {
 		return
 	}
 
-	if !com.Dirty {
-		com.ResetBuf()
-	}
 	if c.offset > 0 {
 		if _, err = com.WriteString(" OFFSET "); err != nil {
 			return
@@ -1517,7 +1468,6 @@ func (c *groupCriteria) WriteComposition(sel string, com *pqtgo.Composer, opt *p
 		}
 		com.Add(c.limit)
 	}
-	com.Dirty = false
 
 	return
 }
@@ -1927,15 +1877,10 @@ type permissionCriteria struct {
 }
 
 func (c *permissionCriteria) WriteComposition(sel string, com *pqtgo.Composer, opt *pqtgo.CompositionOpts) (err error) {
-	if _, err = com.WriteString(" WHERE "); err != nil {
+
+	if err = pqtgo.WriteCompositionQueryString(c.action, tablePermissionColumnAction, com, pqtgo.And); err != nil {
 		return
 	}
-
-	if c.action != nil && c.action.Valid && com.Dirty {
-		com.WriteString(" AND ")
-		com.Dirty = false
-	}
-	pqtgo.WriteCompositionQueryString(c.action, tablePermissionColumnAction, com, pqtgo.And)
 
 	if c.createdAt != nil && c.createdAt.Valid {
 		createdAtt1 := c.createdAt.Value()
@@ -2055,25 +2000,17 @@ func (c *permissionCriteria) WriteComposition(sel string, com *pqtgo.Composer, o
 		}
 	}
 
-	if c.id != nil && c.id.Valid && com.Dirty {
-		com.WriteString(" AND ")
-		com.Dirty = false
-	}
 	if err = pqtgo.WriteCompositionQueryInt64(c.id, tablePermissionColumnID, com, pqtgo.And); err != nil {
 		return
 	}
 
-	if c.module != nil && c.module.Valid && com.Dirty {
-		com.WriteString(" AND ")
-		com.Dirty = false
+	if err = pqtgo.WriteCompositionQueryString(c.module, tablePermissionColumnModule, com, pqtgo.And); err != nil {
+		return
 	}
-	pqtgo.WriteCompositionQueryString(c.module, tablePermissionColumnModule, com, pqtgo.And)
 
-	if c.subsystem != nil && c.subsystem.Valid && com.Dirty {
-		com.WriteString(" AND ")
-		com.Dirty = false
+	if err = pqtgo.WriteCompositionQueryString(c.subsystem, tablePermissionColumnSubsystem, com, pqtgo.And); err != nil {
+		return
 	}
-	pqtgo.WriteCompositionQueryString(c.subsystem, tablePermissionColumnSubsystem, com, pqtgo.And)
 
 	if c.updatedAt != nil && c.updatedAt.Valid {
 		updatedAtt1 := c.updatedAt.Value()
@@ -2193,9 +2130,6 @@ func (c *permissionCriteria) WriteComposition(sel string, com *pqtgo.Composer, o
 		}
 	}
 
-	if !com.Dirty {
-		com.ResetBuf()
-	}
 	if c.offset > 0 {
 		if _, err = com.WriteString(" OFFSET "); err != nil {
 			return
@@ -2220,7 +2154,6 @@ func (c *permissionCriteria) WriteComposition(sel string, com *pqtgo.Composer, o
 		}
 		com.Add(c.limit)
 	}
-	com.Dirty = false
 
 	return
 }
@@ -2627,9 +2560,6 @@ type userGroupsCriteria struct {
 }
 
 func (c *userGroupsCriteria) WriteComposition(sel string, com *pqtgo.Composer, opt *pqtgo.CompositionOpts) (err error) {
-	if _, err = com.WriteString(" WHERE "); err != nil {
-		return
-	}
 
 	if c.createdAt != nil && c.createdAt.Valid {
 		createdAtt1 := c.createdAt.Value()
@@ -2749,18 +2679,10 @@ func (c *userGroupsCriteria) WriteComposition(sel string, com *pqtgo.Composer, o
 		}
 	}
 
-	if c.createdBy != nil && c.createdBy.Valid && com.Dirty {
-		com.WriteString(" AND ")
-		com.Dirty = false
-	}
 	if err = pqtgo.WriteCompositionQueryInt64(c.createdBy, tableUserGroupsColumnCreatedBy, com, pqtgo.And); err != nil {
 		return
 	}
 
-	if c.groupID != nil && c.groupID.Valid && com.Dirty {
-		com.WriteString(" AND ")
-		com.Dirty = false
-	}
 	if err = pqtgo.WriteCompositionQueryInt64(c.groupID, tableUserGroupsColumnGroupID, com, pqtgo.And); err != nil {
 		return
 	}
@@ -2883,25 +2805,14 @@ func (c *userGroupsCriteria) WriteComposition(sel string, com *pqtgo.Composer, o
 		}
 	}
 
-	if c.updatedBy != nil && c.updatedBy.Valid && com.Dirty {
-		com.WriteString(" AND ")
-		com.Dirty = false
-	}
 	if err = pqtgo.WriteCompositionQueryInt64(c.updatedBy, tableUserGroupsColumnUpdatedBy, com, pqtgo.And); err != nil {
 		return
 	}
 
-	if c.userID != nil && c.userID.Valid && com.Dirty {
-		com.WriteString(" AND ")
-		com.Dirty = false
-	}
 	if err = pqtgo.WriteCompositionQueryInt64(c.userID, tableUserGroupsColumnUserID, com, pqtgo.And); err != nil {
 		return
 	}
 
-	if !com.Dirty {
-		com.ResetBuf()
-	}
 	if c.offset > 0 {
 		if _, err = com.WriteString(" OFFSET "); err != nil {
 			return
@@ -2926,7 +2837,6 @@ func (c *userGroupsCriteria) WriteComposition(sel string, com *pqtgo.Composer, o
 		}
 		com.Add(c.limit)
 	}
-	com.Dirty = false
 
 	return
 }
@@ -3259,9 +3169,6 @@ type groupPermissionsCriteria struct {
 }
 
 func (c *groupPermissionsCriteria) WriteComposition(sel string, com *pqtgo.Composer, opt *pqtgo.CompositionOpts) (err error) {
-	if _, err = com.WriteString(" WHERE "); err != nil {
-		return
-	}
 
 	if c.createdAt != nil && c.createdAt.Valid {
 		createdAtt1 := c.createdAt.Value()
@@ -3381,39 +3288,25 @@ func (c *groupPermissionsCriteria) WriteComposition(sel string, com *pqtgo.Compo
 		}
 	}
 
-	if c.createdBy != nil && c.createdBy.Valid && com.Dirty {
-		com.WriteString(" AND ")
-		com.Dirty = false
-	}
 	if err = pqtgo.WriteCompositionQueryInt64(c.createdBy, tableGroupPermissionsColumnCreatedBy, com, pqtgo.And); err != nil {
 		return
 	}
 
-	if c.groupID != nil && c.groupID.Valid && com.Dirty {
-		com.WriteString(" AND ")
-		com.Dirty = false
-	}
 	if err = pqtgo.WriteCompositionQueryInt64(c.groupID, tableGroupPermissionsColumnGroupID, com, pqtgo.And); err != nil {
 		return
 	}
 
-	if c.permissionAction != nil && c.permissionAction.Valid && com.Dirty {
-		com.WriteString(" AND ")
-		com.Dirty = false
+	if err = pqtgo.WriteCompositionQueryString(c.permissionAction, tableGroupPermissionsColumnPermissionAction, com, pqtgo.And); err != nil {
+		return
 	}
-	pqtgo.WriteCompositionQueryString(c.permissionAction, tableGroupPermissionsColumnPermissionAction, com, pqtgo.And)
 
-	if c.permissionModule != nil && c.permissionModule.Valid && com.Dirty {
-		com.WriteString(" AND ")
-		com.Dirty = false
+	if err = pqtgo.WriteCompositionQueryString(c.permissionModule, tableGroupPermissionsColumnPermissionModule, com, pqtgo.And); err != nil {
+		return
 	}
-	pqtgo.WriteCompositionQueryString(c.permissionModule, tableGroupPermissionsColumnPermissionModule, com, pqtgo.And)
 
-	if c.permissionSubsystem != nil && c.permissionSubsystem.Valid && com.Dirty {
-		com.WriteString(" AND ")
-		com.Dirty = false
+	if err = pqtgo.WriteCompositionQueryString(c.permissionSubsystem, tableGroupPermissionsColumnPermissionSubsystem, com, pqtgo.And); err != nil {
+		return
 	}
-	pqtgo.WriteCompositionQueryString(c.permissionSubsystem, tableGroupPermissionsColumnPermissionSubsystem, com, pqtgo.And)
 
 	if c.updatedAt != nil && c.updatedAt.Valid {
 		updatedAtt1 := c.updatedAt.Value()
@@ -3533,17 +3426,10 @@ func (c *groupPermissionsCriteria) WriteComposition(sel string, com *pqtgo.Compo
 		}
 	}
 
-	if c.updatedBy != nil && c.updatedBy.Valid && com.Dirty {
-		com.WriteString(" AND ")
-		com.Dirty = false
-	}
 	if err = pqtgo.WriteCompositionQueryInt64(c.updatedBy, tableGroupPermissionsColumnUpdatedBy, com, pqtgo.And); err != nil {
 		return
 	}
 
-	if !com.Dirty {
-		com.ResetBuf()
-	}
 	if c.offset > 0 {
 		if _, err = com.WriteString(" OFFSET "); err != nil {
 			return
@@ -3568,7 +3454,6 @@ func (c *groupPermissionsCriteria) WriteComposition(sel string, com *pqtgo.Compo
 		}
 		com.Add(c.limit)
 	}
-	com.Dirty = false
 
 	return
 }
@@ -3907,9 +3792,6 @@ type userPermissionsCriteria struct {
 }
 
 func (c *userPermissionsCriteria) WriteComposition(sel string, com *pqtgo.Composer, opt *pqtgo.CompositionOpts) (err error) {
-	if _, err = com.WriteString(" WHERE "); err != nil {
-		return
-	}
 
 	if c.createdAt != nil && c.createdAt.Valid {
 		createdAtt1 := c.createdAt.Value()
@@ -4029,31 +3911,21 @@ func (c *userPermissionsCriteria) WriteComposition(sel string, com *pqtgo.Compos
 		}
 	}
 
-	if c.createdBy != nil && c.createdBy.Valid && com.Dirty {
-		com.WriteString(" AND ")
-		com.Dirty = false
-	}
 	if err = pqtgo.WriteCompositionQueryInt64(c.createdBy, tableUserPermissionsColumnCreatedBy, com, pqtgo.And); err != nil {
 		return
 	}
 
-	if c.permissionAction != nil && c.permissionAction.Valid && com.Dirty {
-		com.WriteString(" AND ")
-		com.Dirty = false
+	if err = pqtgo.WriteCompositionQueryString(c.permissionAction, tableUserPermissionsColumnPermissionAction, com, pqtgo.And); err != nil {
+		return
 	}
-	pqtgo.WriteCompositionQueryString(c.permissionAction, tableUserPermissionsColumnPermissionAction, com, pqtgo.And)
 
-	if c.permissionModule != nil && c.permissionModule.Valid && com.Dirty {
-		com.WriteString(" AND ")
-		com.Dirty = false
+	if err = pqtgo.WriteCompositionQueryString(c.permissionModule, tableUserPermissionsColumnPermissionModule, com, pqtgo.And); err != nil {
+		return
 	}
-	pqtgo.WriteCompositionQueryString(c.permissionModule, tableUserPermissionsColumnPermissionModule, com, pqtgo.And)
 
-	if c.permissionSubsystem != nil && c.permissionSubsystem.Valid && com.Dirty {
-		com.WriteString(" AND ")
-		com.Dirty = false
+	if err = pqtgo.WriteCompositionQueryString(c.permissionSubsystem, tableUserPermissionsColumnPermissionSubsystem, com, pqtgo.And); err != nil {
+		return
 	}
-	pqtgo.WriteCompositionQueryString(c.permissionSubsystem, tableUserPermissionsColumnPermissionSubsystem, com, pqtgo.And)
 
 	if c.updatedAt != nil && c.updatedAt.Valid {
 		updatedAtt1 := c.updatedAt.Value()
@@ -4173,25 +4045,14 @@ func (c *userPermissionsCriteria) WriteComposition(sel string, com *pqtgo.Compos
 		}
 	}
 
-	if c.updatedBy != nil && c.updatedBy.Valid && com.Dirty {
-		com.WriteString(" AND ")
-		com.Dirty = false
-	}
 	if err = pqtgo.WriteCompositionQueryInt64(c.updatedBy, tableUserPermissionsColumnUpdatedBy, com, pqtgo.And); err != nil {
 		return
 	}
 
-	if c.userID != nil && c.userID.Valid && com.Dirty {
-		com.WriteString(" AND ")
-		com.Dirty = false
-	}
 	if err = pqtgo.WriteCompositionQueryInt64(c.userID, tableUserPermissionsColumnUserID, com, pqtgo.And); err != nil {
 		return
 	}
 
-	if !com.Dirty {
-		com.ResetBuf()
-	}
 	if c.offset > 0 {
 		if _, err = com.WriteString(" OFFSET "); err != nil {
 			return
@@ -4216,7 +4077,6 @@ func (c *userPermissionsCriteria) WriteComposition(sel string, com *pqtgo.Compos
 		}
 		com.Add(c.limit)
 	}
-	com.Dirty = false
 
 	return
 }

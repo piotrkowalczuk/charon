@@ -8,7 +8,7 @@ func databaseSchema() *pqt.Schema {
 	permission, groupPermissions, userPermissions := databaseTablePermission(user, group)
 	userGroups := databaseTableUserGroups(user, group)
 
-	return pqt.NewSchema("charon").
+	return pqt.NewSchema("charon", pqt.WithSchemaIfNotExists()).
 		AddTable(user).
 		AddTable(group).
 		AddTable(permission).
@@ -18,7 +18,7 @@ func databaseSchema() *pqt.Schema {
 }
 
 func databaseTableUser() *pqt.Table {
-	t := pqt.NewTable("user", pqt.WithIfNotExists()).
+	t := pqt.NewTable("user", pqt.WithTableIfNotExists()).
 		AddColumn(pqt.NewColumn("password", pqt.TypeBytea(), pqt.WithNotNull())).
 		AddColumn(pqt.NewColumn("username", pqt.TypeText(), pqt.WithNotNull(), pqt.WithUnique())).
 		AddColumn(pqt.NewColumn("first_name", pqt.TypeText(), pqt.WithNotNull())).
@@ -38,7 +38,7 @@ func databaseTableUser() *pqt.Table {
 }
 
 func databaseTableGroup(user *pqt.Table) *pqt.Table {
-	t := pqt.NewTable("group", pqt.WithIfNotExists()).
+	t := pqt.NewTable("group", pqt.WithTableIfNotExists()).
 		AddColumn(pqt.NewColumn("name", pqt.TypeText(), pqt.WithNotNull(), pqt.WithUnique())).
 		AddColumn(pqt.NewColumn("description", pqt.TypeText()))
 
@@ -54,7 +54,7 @@ func databaseTablePermission(user, group *pqt.Table) (*pqt.Table, *pqt.Table, *p
 	module := notNullText("module", "")
 	action := notNullText("action", "")
 
-	permission := pqt.NewTable("permission", pqt.WithIfNotExists()).
+	permission := pqt.NewTable("permission", pqt.WithTableIfNotExists()).
 		AddColumn(subsystem).
 		AddColumn(module).
 		AddColumn(action).
@@ -63,7 +63,7 @@ func databaseTablePermission(user, group *pqt.Table) (*pqt.Table, *pqt.Table, *p
 	identifierable(permission)
 	timestampable(permission)
 
-	groupPermissions := pqt.NewTable("group_permissions", pqt.WithIfNotExists()).
+	groupPermissions := pqt.NewTable("group_permissions", pqt.WithTableIfNotExists()).
 		AddRelationship(pqt.ManyToMany(
 			group,
 			permission,
@@ -81,7 +81,7 @@ func databaseTablePermission(user, group *pqt.Table) (*pqt.Table, *pqt.Table, *p
 	ownerable(groupPermissions, user)
 	timestampable(groupPermissions)
 
-	userPermissions := pqt.NewTable("user_permissions", pqt.WithIfNotExists()).
+	userPermissions := pqt.NewTable("user_permissions", pqt.WithTableIfNotExists()).
 		AddRelationship(pqt.ManyToMany(
 			user,
 			permission,
@@ -103,7 +103,7 @@ func databaseTablePermission(user, group *pqt.Table) (*pqt.Table, *pqt.Table, *p
 }
 
 func databaseTableUserGroups(user, group *pqt.Table) *pqt.Table {
-	t := pqt.NewTable("user_groups", pqt.WithIfNotExists()).
+	t := pqt.NewTable("user_groups", pqt.WithTableIfNotExists()).
 		AddRelationship(pqt.ManyToMany(user, group, pqt.WithBidirectional()), pqt.WithNotNull())
 
 	ownerable(t, user)
