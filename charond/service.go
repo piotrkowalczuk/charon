@@ -4,10 +4,12 @@ import (
 	"database/sql"
 	"errors"
 
+	"google.golang.org/grpc"
+
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/metrics/prometheus"
 	"github.com/piotrkowalczuk/charon"
-	"github.com/piotrkowalczuk/mnemosyne"
+	"github.com/piotrkowalczuk/mnemosyne/mnemosynerpc"
 	"github.com/piotrkowalczuk/sklog"
 	stdprometheus "github.com/prometheus/client_golang/prometheus"
 )
@@ -34,22 +36,19 @@ func initPostgres(address string, env string, logger log.Logger) (*sql.DB, error
 	return postgres, nil
 }
 
-func initMnemosyne(address string, logger log.Logger) mnemosyne.Mnemosyne {
+func initMnemosyne(address string, logger log.Logger) (mnemosynerpc.SessionManagerClient, *grpc.ClientConn) {
 	if address == "" {
 		sklog.Fatal(logger, errors.New("missing mnemosyne address"))
 
 	}
-	mnemo, err := mnemosyne.New(mnemosyne.MnemosyneOpts{
-		Addresses: []string{address},
-		UserAgent: "charon",
-	})
+	conn, err := grpc.Dial(address, grpc.WithUserAgent("charon"), grpc.WithInsecure())
 	if err != nil {
 		sklog.Fatal(logger, err, "address", address)
 	}
 
 	sklog.Info(logger, "rpc connection to mnemosyne has been established", "address", address)
 
-	return mnemo
+	return mnemosynerpc.NewSessionManagerClient(conn), conn
 }
 
 func initPasswordHasher(cost int, logger log.Logger) charon.PasswordHasher {

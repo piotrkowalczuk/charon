@@ -9,7 +9,6 @@ import (
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/metrics"
 	"github.com/piotrkowalczuk/charon"
-	"github.com/piotrkowalczuk/mnemosyne"
 	"github.com/piotrkowalczuk/mnemosyne/mnemosynerpc"
 	"github.com/piotrkowalczuk/sklog"
 	"golang.org/x/net/context"
@@ -21,7 +20,7 @@ import (
 type handler struct {
 	logger     log.Logger
 	monitor    monitoringRPC
-	session    mnemosyne.Mnemosyne
+	session    mnemosynerpc.SessionManagerClient
 	repository repositories
 }
 
@@ -68,10 +67,10 @@ func (h *handler) retrieveActor(ctx context.Context) (act *actor, err error) {
 	var (
 		userID   int64
 		entities []*permissionEntity
-		ses      *mnemosynerpc.Session
+		res      *mnemosynerpc.ContextResponse
 	)
 
-	ses, err = h.session.FromContext(ctx)
+	res, err = h.session.Context(ctx, none())
 	if err != nil {
 		// TODO: make it better ;(
 		if peer, ok := peer.FromContext(ctx); ok {
@@ -85,7 +84,7 @@ func (h *handler) retrieveActor(ctx context.Context) (act *actor, err error) {
 		err = handleMnemosyneError(err)
 		return
 	}
-	userID, err = charon.SubjectID(ses.SubjectId).UserID()
+	userID, err = charon.SubjectID(res.Session.SubjectId).UserID()
 	if err != nil {
 		return
 	}

@@ -19,13 +19,13 @@ func TestHandler(t *testing.T) {
 		ctx context.Context
 		err error
 		act *actor
-		tkn mnemosynerpc.AccessToken
+		tkn string
 	)
 
 	Convey("retrieveActor", t, func() {
 		userRepositoryMock := &mockUserProvider{}
 		permissionRepositoryMock := &mockPermissionProvider{}
-		sessionMock := &mnemosynetest.Mnemosyne{}
+		sessionMock := &mnemosynetest.SessionManagerClient{}
 		h := &handler{
 			session: sessionMock,
 		}
@@ -34,7 +34,7 @@ func TestHandler(t *testing.T) {
 
 		Convey("As unauthenticated user", func() {
 			ctx = context.Background()
-			sessionMock.On("FromContext", mock.Anything).
+			sessionMock.On("Context", mock.Anything, none(), mock.Anything).
 				Return(nil, errors.New("mnemosyned: test error")).
 				Once()
 
@@ -47,12 +47,14 @@ func TestHandler(t *testing.T) {
 		})
 		Convey("As authenticated user", func() {
 			id = 7856282
-			tkn = mnemosynerpc.NewAccessToken([]byte("0000000001"), []byte("hash"))
+			tkn = mnemosynerpc.NewAccessToken("0000000001", "hash")
 			ctx = mnemosynerpc.NewAccessTokenContext(context.Background(), tkn)
-			sessionMock.On("FromContext", ctx).
-				Return(&mnemosynerpc.Session{
-					AccessToken: &tkn,
-					SubjectId:   charon.SubjectIDFromInt64(id).String(),
+			sessionMock.On("Context", ctx, none(), mock.Anything).
+				Return(&mnemosynerpc.ContextResponse{
+					Session: &mnemosynerpc.Session{
+						AccessToken: tkn,
+						SubjectId:   charon.SubjectIDFromInt64(id).String(),
+					},
 				}, nil).
 				Once()
 

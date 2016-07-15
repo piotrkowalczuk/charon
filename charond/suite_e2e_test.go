@@ -26,7 +26,7 @@ type endToEndSuite struct {
 	charonCloser io.Closer
 	charonConn   *grpc.ClientConn
 
-	mnemosyne       mnemosynerpc.RPCClient
+	mnemosyne       mnemosynerpc.SessionManagerClient
 	mnemosyneConn   *grpc.ClientConn
 	mnemosyneCloser io.Closer
 }
@@ -83,7 +83,7 @@ func (etes *endToEndSuite) setup(t *testing.T) {
 	}
 
 	etes.charon = charon.NewRPCClient(etes.charonConn)
-	etes.mnemosyne = mnemosynerpc.NewRPCClient(etes.mnemosyneConn)
+	etes.mnemosyne = mnemosynerpc.NewSessionManagerClient(etes.mnemosyneConn)
 }
 
 func (etes *endToEndSuite) teardown(t *testing.T) {

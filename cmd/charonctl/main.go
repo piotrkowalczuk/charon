@@ -47,7 +47,7 @@ func client(addr string) (client charon.RPCClient, ctx context.Context) {
 			os.Exit(1)
 		}
 
-		ctx = metadata.NewContext(ctx, metadata.Pairs(mnemosynerpc.AccessTokenMetadataKey, resp.AccessToken.Encode()))
+		ctx = metadata.NewContext(ctx, metadata.Pairs(mnemosynerpc.AccessTokenMetadataKey, string(resp.AccessToken)))
 	}
 
 	return

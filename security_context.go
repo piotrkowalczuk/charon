@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"github.com/piotrkowalczuk/mnemosyne/mnemosynerpc"
+
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
 )
@@ -19,7 +20,7 @@ type SecurityContext interface {
 	// Subject ...
 	Subject() (Subject, bool)
 	// AccessToken ...
-	AccessToken() (mnemosynerpc.AccessToken, bool)
+	AccessToken() (string, bool)
 }
 
 type securityContext struct {
@@ -37,7 +38,7 @@ func (sc *securityContext) Subject() (Subject, bool) {
 }
 
 // AccessToken implements SecurityContext interface.
-func (sc *securityContext) AccessToken() (mnemosynerpc.AccessToken, bool) {
+func (sc *securityContext) AccessToken() (string, bool) {
 	return mnemosynerpc.AccessTokenFromContext(sc.Context)
 }
 
@@ -48,6 +49,6 @@ func (sc *securityContext) Token() (*oauth2.Token, error) {
 		return nil, errors.New("charon: missing access token, oauth2 token cannot be returned")
 	}
 	return &oauth2.Token{
-		AccessToken: at.Encode(),
+		AccessToken: at,
 	}, nil
 }

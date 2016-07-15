@@ -11,7 +11,7 @@ import (
 
 	"github.com/go-kit/kit/log"
 	"github.com/piotrkowalczuk/charon"
-	"github.com/piotrkowalczuk/mnemosyne"
+	"github.com/piotrkowalczuk/mnemosyne/mnemosynerpc"
 	"github.com/piotrkowalczuk/sklog"
 	"github.com/prometheus/client_golang/prometheus"
 	"golang.org/x/crypto/bcrypt"
@@ -56,7 +56,8 @@ type Daemon struct {
 	logger        log.Logger
 	rpcListener   net.Listener
 	debugListener net.Listener
-	mnemosyne     mnemosyne.Mnemosyne
+	mnemosyneConn *grpc.ClientConn
+	mnemosyne     mnemosynerpc.SessionManagerClient
 }
 
 // NewDaemon ...
@@ -109,7 +110,7 @@ func (d *Daemon) Run() (err error) {
 		return err
 	}
 	passwordHasher := initPasswordHasher(d.opts.PasswordBCryptCost, d.logger)
-	d.mnemosyne = initMnemosyne(d.opts.MnemosyneAddress, d.logger)
+	d.mnemosyne, d.mnemosyneConn = initMnemosyne(d.opts.MnemosyneAddress, d.logger)
 
 	repos := newRepositories(postgres)
 	if d.opts.Environment == EnvironmentTest {
@@ -174,7 +175,7 @@ func (d *Daemon) Run() (err error) {
 
 // Close implements io.Closer interface.
 func (d *Daemon) Close() (err error) {
-	if err = d.mnemosyne.Close(); err != nil {
+	if err = d.mnemosyneConn.Close(); err != nil {
 		return
 	}
 	if err = d.rpcListener.Close(); err != nil {

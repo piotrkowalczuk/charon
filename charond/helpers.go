@@ -1,5 +1,7 @@
 package charond
 
+import "github.com/golang/protobuf/ptypes/empty"
+
 func untouched(given, created, removed int64) int64 {
 	switch {
 	case given < 0:
@@ -11,4 +13,8 @@ func untouched(given, created, removed int64) int64 {
 	default:
 		return given - created
 	}
+}
+
+func none() *empty.Empty {
+	return &empty.Empty{}
 }

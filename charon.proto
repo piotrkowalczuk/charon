@@ -3,7 +3,6 @@ syntax = "proto3";
 package charon;
 
 import "github.com/golang/protobuf/ptypes/timestamp/timestamp.proto";
-import "github.com/piotrkowalczuk/mnemosyne/mnemosynerpc/mnemosyne.proto";
 import "github.com/piotrkowalczuk/qtypes/qtypes.proto";
 import "github.com/piotrkowalczuk/ntypes/ntypes.proto";
 
@@ -64,17 +63,17 @@ message LoginRequest {
 }
 
 message LoginResponse {
-    mnemosynerpc.AccessToken access_token = 1;
+    string access_token = 1;
 }
 
 message LogoutRequest {
-    mnemosynerpc.AccessToken access_token = 1;
+    string access_token = 1;
 }
 
 message LogoutResponse {}
 
 message IsAuthenticatedRequest {
-    mnemosynerpc.AccessToken access_token = 1;
+    string access_token = 1;
 }
 
 message IsAuthenticatedResponse {
@@ -100,7 +99,7 @@ message BelongsToResponse {
 }
 
 message SubjectRequest {
-    mnemosynerpc.AccessToken access_token = 1;
+    string access_token = 1;
 }
 
 message SubjectResponse {

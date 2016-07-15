@@ -51,7 +51,7 @@ func testRPCServer_login(t *testing.T, suite *endToEndSuite) context.Context {
 	if err != nil {
 		t.Fatalf("unexpected login error: %s: with code %s", grpc.ErrorDesc(err), grpc.Code(err))
 	}
-	meta := metadata.Pairs(mnemosynerpc.AccessTokenMetadataKey, res.AccessToken.Encode())
+	meta := metadata.Pairs(mnemosynerpc.AccessTokenMetadataKey, res.AccessToken)
 	return metadata.NewContext(context.Background(), meta)
 }
 

@@ -3,7 +3,6 @@ package charond
 import (
 	"github.com/go-kit/kit/log"
 	"github.com/piotrkowalczuk/charon"
-	"github.com/piotrkowalczuk/mnemosyne"
 	"github.com/piotrkowalczuk/mnemosyne/mnemosynerpc"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc/metadata"
@@ -14,7 +13,7 @@ type rpcServer struct {
 	meta               metadata.MD
 	logger             log.Logger
 	monitor            monitoring
-	session            mnemosyne.Mnemosyne
+	session            mnemosynerpc.SessionManagerClient
 	passwordHasher     charon.PasswordHasher
 	permissionRegistry PermissionRegistry
 	repository         repositories

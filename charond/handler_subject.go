@@ -20,14 +20,20 @@ func (sh *subjectHandler) handle(ctx context.Context, r *charon.SubjectRequest) 
 		ses *mnemosynerpc.Session
 		err error
 	)
-	if r.AccessToken == nil {
-		if ses, err = sh.session.FromContext(ctx); err != nil {
+	if r.AccessToken == "" {
+		res, err := sh.session.Context(ctx, none())
+		if err != nil {
 			return nil, handleMnemosyneError(err)
 		}
+		ses = res.Session
 	} else {
-		if ses, err = sh.session.Get(ctx, r.AccessToken.Encode()); err != nil {
+		res, err := sh.session.Get(ctx, &mnemosynerpc.GetRequest{
+			AccessToken: r.AccessToken,
+		})
+		if err != nil {
 			return nil, handleMnemosyneError(err)
 		}
+		ses = res.Session
 	}
 
 	id, err := charon.SubjectID(ses.SubjectId).UserID()

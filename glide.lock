@@ -49,7 +49,7 @@ imports:
 - name: github.com/pborman/uuid
   version: a97ce2ca70fa5a848076093f05e639a89ca34d06
 - name: github.com/piotrkowalczuk/mnemosyne
-  version: 23126018dfe665026f50f1b99ce26c0b3d554ab7
+  version: 39b37a034f87a69f852ce7614b4026b8311ba9f8
   subpackages:
   - mnemosynerpc
   - mnemosyned

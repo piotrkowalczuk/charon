@@ -3,6 +3,7 @@ package charond
 import (
 	"github.com/go-kit/kit/log"
 	"github.com/piotrkowalczuk/charon"
+	"github.com/piotrkowalczuk/mnemosyne/mnemosynerpc"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -48,21 +49,25 @@ func (lh *loginHandler) handle(ctx context.Context, r *charon.LoginRequest) (*ch
 		return nil, grpc.Errorf(codes.Unauthenticated, "user is not active")
 	}
 
-	session, err := lh.session.Start(ctx, charon.SubjectIDFromInt64(user.ID).String(), r.Client, map[string]string{
-		"username":   user.Username,
-		"first_name": user.FirstName,
-		"last_name":  user.LastName,
+	res, err := lh.session.Start(ctx, &mnemosynerpc.StartRequest{
+		SubjectId:     charon.SubjectIDFromInt64(user.ID).String(),
+		SubjectClient: r.Client,
+		Bag: map[string]string{
+			"username":   user.Username,
+			"first_name": user.FirstName,
+			"last_name":  user.LastName,
+		},
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	lh.loggerWith("token", session.AccessToken.Encode())
+	lh.loggerWith("token", res.Session.AccessToken)
 
 	_, err = lh.repository.user.UpdateLastLoginAt(user.ID)
 	if err != nil {
 		return nil, grpc.Errorf(codes.Internal, "last login update failure: %s", err)
 	}
 
-	return &charon.LoginResponse{AccessToken: session.AccessToken}, nil
+	return &charon.LoginResponse{AccessToken: res.Session.AccessToken}, nil
 }

@@ -1,7 +1,6 @@
 package charon
 
 import (
-	"github.com/piotrkowalczuk/mnemosyne/mnemosynerpc"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
@@ -29,7 +28,7 @@ type Charon interface {
 	IsAuthenticated(context.Context, string) (bool, error)
 	Subject(context.Context, string) (*Subject, error)
 	FromContext(context.Context) (*Subject, error)
-	Login(context.Context, string, string) (*mnemosynerpc.AccessToken, error)
+	Login(context.Context, string, string) (string, error)
 	Logout(context.Context, string) error
 }
 
@@ -68,8 +67,7 @@ func (c *charon) IsGranted(ctx context.Context, userID int64, perm Permission) (
 
 // Subject implements Charon interface.
 func (c *charon) Subject(ctx context.Context, token string) (*Subject, error) {
-	at := mnemosynerpc.ParseAccessToken(token)
-	resp, err := c.client.Subject(ctx, &SubjectRequest{AccessToken: &at})
+	resp, err := c.client.Subject(ctx, &SubjectRequest{AccessToken: token})
 	if err != nil {
 		return nil, err
 	}
@@ -103,9 +101,8 @@ func (c *charon) mapSubject(resp *SubjectResponse) *Subject {
 
 // IsAuthenticated implements Charon interface.
 func (c *charon) IsAuthenticated(ctx context.Context, token string) (bool, error) {
-	at := mnemosynerpc.ParseAccessToken(token)
 	res, err := c.client.IsAuthenticated(ctx, &IsAuthenticatedRequest{
-		AccessToken: &at,
+		AccessToken: token,
 	})
 	if err != nil {
 		return false, err
@@ -116,23 +113,22 @@ func (c *charon) IsAuthenticated(ctx context.Context, token string) (bool, error
 
 // Login implements Charon interface.
 // TODO: reimplement
-func (c *charon) Login(ctx context.Context, username, password string) (*mnemosynerpc.AccessToken, error) {
+func (c *charon) Login(ctx context.Context, username, password string) (string, error) {
 	res, err := c.client.Login(ctx, &LoginRequest{
 		Username: username,
 		Password: password,
 	})
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
-	return res.AccessToken, nil
+	return string(res.AccessToken), nil
 }
 
 // Logout implements Charon interface.
 func (c *charon) Logout(ctx context.Context, token string) error {
-	at := mnemosynerpc.ParseAccessToken(token)
 	_, err := c.client.Logout(ctx, &LogoutRequest{
-		AccessToken: &at,
+		AccessToken: token,
 	})
 	return err
 }

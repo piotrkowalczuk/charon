@@ -20,7 +20,7 @@ import:
 - package: github.com/pborman/uuid
   version: ~1.0.0
 - package: github.com/piotrkowalczuk/mnemosyne
-  version: ~0.1.0
+  version: ver0.2 # TODO: change to tag when mnemosyne released
   subpackages:
   - mnemosynerpc
 - package: github.com/piotrkowalczuk/ntypes

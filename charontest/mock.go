@@ -2,7 +2,6 @@ package charontest
 
 import (
 	"github.com/piotrkowalczuk/charon"
-	"github.com/piotrkowalczuk/mnemosyne/mnemosynerpc"
 	"github.com/stretchr/testify/mock"
 	"golang.org/x/net/context"
 )
@@ -49,15 +48,15 @@ func (c *Charon) FromContext(ctx context.Context) (*charon.Subject, error) {
 }
 
 // Login implements Charon interface.
-func (c *Charon) Login(ctx context.Context, username, password string) (*mnemosynerpc.AccessToken, error) {
+func (c *Charon) Login(ctx context.Context, username, password string) (string, error) {
 	a := c.Called(ctx, username, password)
 
 	ses, err := a.Get(0), a.Error(1)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
-	return ses.(*mnemosynerpc.AccessToken), nil
+	return ses.(string), nil
 }
 
 // Logout implements Charon interface.

@@ -12,7 +12,7 @@ import (
 )
 
 func ExampleSecurityContext() {
-	token := mnemosynerpc.NewAccessToken([]byte("0000000001"), []byte("some hash"))
+	token := mnemosynerpc.NewAccessToken("0000000001", "some hash")
 	subject := Subject{
 		ID:       1,
 		Username: "j.kowalski@gmail.com",
@@ -76,7 +76,7 @@ func TestSecurityContext_Subject_empty(t *testing.T) {
 }
 
 func TestSecurityContext_Token(t *testing.T) {
-	expectedToken := mnemosynerpc.NewAccessToken([]byte("0000000001"), []byte("1"))
+	expectedToken := mnemosynerpc.NewAccessToken("0000000001", "1")
 	ctx := mnemosynerpc.NewAccessTokenContext(context.Background(), expectedToken)
 	sctx := NewSecurityContext(ctx)
 
@@ -84,7 +84,7 @@ func TestSecurityContext_Token(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %s", err.Error())
 	}
-	if token.AccessToken != expectedToken.Encode() {
+	if token.AccessToken != string(expectedToken) {
 		t.Error("provided and retrieved token should be the same")
 	}
 }
