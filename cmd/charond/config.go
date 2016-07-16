@@ -8,7 +8,7 @@ import (
 	"github.com/piotrkowalczuk/charon/charond"
 )
 
-const VERSION = "0.1.2"
+const VERSION = "0.3.1"
 
 type configuration struct {
 	host      string
