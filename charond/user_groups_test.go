@@ -44,7 +44,7 @@ func TestUserGroupsRepository_Exists(t *testing.T) {
 				UserID:  ur.got.ID,
 				GroupID: gr.got.ID,
 			}}
-			for _ = range loadUserGroupsFixtures(t, suite.repository.userGroups, add) {
+			for range loadUserGroupsFixtures(t, suite.repository.userGroups, add) {
 				exists, err := suite.repository.userGroups.Exists(ur.given.ID, gr.given.ID)
 
 				if err != nil {

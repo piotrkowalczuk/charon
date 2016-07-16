@@ -19,7 +19,7 @@ func TestGroupRepository_IsGranted(t *testing.T) {
 				PermissionModule:    pr.got.Module,
 				PermissionAction:    pr.got.Action,
 			}}
-			for _ = range loadGroupPermissionsFixtures(t, suite.repository.groupPermissions, add) {
+			for range loadGroupPermissionsFixtures(t, suite.repository.groupPermissions, add) {
 				exists, err := suite.repository.group.IsGranted(ur.given.ID, pr.given.Permission())
 
 				if err != nil {

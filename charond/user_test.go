@@ -179,7 +179,7 @@ func TestUserRepository_Find(t *testing.T) {
 	suite.setup(t)
 	defer suite.teardown(t)
 
-	for _ = range loadUserFixtures(t, suite.repository.user, userTestFixtures) {
+	for range loadUserFixtures(t, suite.repository.user, userTestFixtures) {
 		all++
 	}
 
@@ -228,7 +228,7 @@ func TestUserRepository_IsGranted(t *testing.T) {
 				PermissionModule:    pr.got.Module,
 				PermissionAction:    pr.got.Action,
 			}}
-			for _ = range loadUserPermissionsFixtures(t, suite.repository.userPermissions, add) {
+			for range loadUserPermissionsFixtures(t, suite.repository.userPermissions, add) {
 				exists, err := suite.repository.user.IsGranted(ur.given.ID, pr.given.Permission())
 
 				if err != nil {
