@@ -1,5 +1,5 @@
 hash: 6d96ad4eb700b265bcc51b02c7a291a6454360a4ad7897bd94faa9aaeb906359
-updated: 2016-07-13T19:27:40.74602823+02:00
+updated: 2016-07-16T12:34:01.262990407+02:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -59,7 +59,7 @@ imports:
 - name: github.com/piotrkowalczuk/pqcomp
   version: 631b19c36ded8bbe954cf8c15a0044c591033536
 - name: github.com/piotrkowalczuk/pqt
-  version: 3c7870c1d35d86a835e58b92d28c92fc414981aa
+  version: 556986d293c662731810bd304ebb5dc9697f44a0
   subpackages:
   - pqtgo
   - pqtsql
