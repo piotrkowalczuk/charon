@@ -20,7 +20,7 @@ import:
 - package: github.com/pborman/uuid
   version: ~1.0.0
 - package: github.com/piotrkowalczuk/mnemosyne
-  version: ~0.2.0
+  version: ~0.3.0
   subpackages:
   - mnemosynerpc
 - package: github.com/piotrkowalczuk/ntypes
@@ -50,7 +50,7 @@ import:
   - context
 - package: golang.org/x/oauth2
 - package: google.golang.org/grpc
-  version: e78224b060cf3215247b7be455f80ea22e469b66
+  version: ~1.0.0
   subpackages:
   - codes
   - credentials

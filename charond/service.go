@@ -14,13 +14,13 @@ import (
 	stdprometheus "github.com/prometheus/client_golang/prometheus"
 )
 
-func initPostgres(address string, env string, logger log.Logger) (*sql.DB, error) {
+func initPostgres(address string, test bool, logger log.Logger) (*sql.DB, error) {
 	postgres, err := sql.Open("postgres", address)
 	if err != nil {
 		return nil, err
 	}
 
-	if env == EnvironmentTest {
+	if test {
 		if err = teardownDatabase(postgres); err != nil {
 			return nil, err
 		}

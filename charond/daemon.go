@@ -20,16 +20,9 @@ import (
 	"google.golang.org/grpc/grpclog"
 )
 
-const (
-	// EnvironmentProduction ...
-	EnvironmentProduction = "prod"
-	// EnvironmentTest ...
-	EnvironmentTest = "test"
-)
-
 // DaemonOpts ...
 type DaemonOpts struct {
-	Environment        string
+	Test               bool
 	Namespace          string
 	Subsystem          string
 	MonitoringEngine   string
@@ -37,6 +30,7 @@ type DaemonOpts struct {
 	TLSCertFile        string
 	TLSKeyFile         string
 	PostgresAddress    string
+	PostgresDebug      bool
 	PasswordBCryptCost int
 	MnemosyneAddress   string
 	Logger             log.Logger
@@ -44,6 +38,7 @@ type DaemonOpts struct {
 	DebugListener      net.Listener
 }
 
+// TestDaemonOpts represent set of options that can be passed to the TestDaemon constructor.
 type TestDaemonOpts struct {
 	MnemosyneAddress string
 	PostgresAddress  string
@@ -84,7 +79,7 @@ func TestDaemon(t *testing.T, opts TestDaemonOpts) (net.Addr, io.Closer) {
 
 	d := NewDaemon(&DaemonOpts{
 		Namespace:          "charon_test",
-		Environment:        EnvironmentTest,
+		Test:               true,
 		MonitoringEngine:   MonitoringEnginePrometheus,
 		MnemosyneAddress:   opts.MnemosyneAddress,
 		Logger:             logger,
@@ -105,7 +100,7 @@ func (d *Daemon) Run() (err error) {
 		return
 	}
 
-	postgres, err := initPostgres(d.opts.PostgresAddress, d.opts.Environment, d.logger)
+	postgres, err := initPostgres(d.opts.PostgresAddress, d.opts.Test, d.logger)
 	if err != nil {
 		return err
 	}
@@ -113,7 +108,7 @@ func (d *Daemon) Run() (err error) {
 	d.mnemosyne, d.mnemosyneConn = initMnemosyne(d.opts.MnemosyneAddress, d.logger)
 
 	repos := newRepositories(postgres)
-	if d.opts.Environment == EnvironmentTest {
+	if d.opts.Test {
 		if _, err = createDummyTestUser(repos.user, passwordHasher); err != nil {
 			return
 		}

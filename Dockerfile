@@ -12,4 +12,4 @@ RUN rm -rf /go/src
 
 EXPOSE 8080
 
-CMD ["/go/bin/charond", "-host=0.0.0.0", "-namespace=charon", "-mnemo.address=mnemosyne:8080", "-p.address=postgres://postgres:postgres@postgres/postgres?sslmode=disable"]
+CMD ["/go/bin/charond", "-host=0.0.0.0", "-namespace=charon"]

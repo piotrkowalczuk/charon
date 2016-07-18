@@ -21,6 +21,7 @@ func main() {
 	debugListener := initListener(logger, config.host, config.port+1)
 
 	daemon := charond.NewDaemon(&charond.DaemonOpts{
+		Test:               config.test,
 		Namespace:          config.namespace,
 		Subsystem:          config.subsystem,
 		TLS:                config.tls.enabled,
@@ -28,6 +29,7 @@ func main() {
 		TLSKeyFile:         config.tls.keyFile,
 		MonitoringEngine:   config.monitoring.engine,
 		PostgresAddress:    config.postgres.address,
+		PostgresDebug:      config.postgres.debug,
 		PasswordBCryptCost: config.password.bcrypt.cost,
 		MnemosyneAddress:   config.mnemosyne.address,
 		Logger:             logger,

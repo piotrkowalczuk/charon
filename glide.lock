@@ -1,5 +1,5 @@
-hash: 6d96ad4eb700b265bcc51b02c7a291a6454360a4ad7897bd94faa9aaeb906359
-updated: 2016-07-16T12:34:01.262990407+02:00
+hash: 98f51df81604cb95db8559238b78ee66008126c84cd141369cdd20c4cb55e5d0
+updated: 2016-07-18T22:53:25.267810515+02:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -49,7 +49,7 @@ imports:
 - name: github.com/pborman/uuid
   version: a97ce2ca70fa5a848076093f05e639a89ca34d06
 - name: github.com/piotrkowalczuk/mnemosyne
-  version: 97720a8cce46c566e2ac7c460c7bd62efc038ddf
+  version: a48c871c1454c788251de8698dcfc1e495c0f8b1
   subpackages:
   - mnemosynerpc
   - mnemosyned
@@ -91,13 +91,13 @@ imports:
   - mock
   - assert
 - name: golang.org/x/crypto
-  version: d81fdb778bf2c40a91b24519d60cdc5767318829
+  version: f28b56427a527c2e35c0bcac123f0a6a8a943cd3
   subpackages:
   - bcrypt
   - sha3
   - blowfish
 - name: golang.org/x/net
-  version: f841c39de738b1d0df95b5a7187744f0e03d8112
+  version: 3797cd8864994d713d909eda5e61ede8683fdc12
   subpackages:
   - context
   - http2
@@ -106,7 +106,7 @@ imports:
   - lex/httplex
   - internal/timeseries
 - name: golang.org/x/oauth2
-  version: 7357e96168422ba1e6e7f21075713b72d58764e7
+  version: a8702432015187171c5120cbf5020bfca7be35b6
   subpackages:
   - internal
 - name: google.golang.org/appengine
@@ -120,7 +120,7 @@ imports:
   - internal/log
   - internal/remote_api
 - name: google.golang.org/grpc
-  version: e78224b060cf3215247b7be455f80ea22e469b66
+  version: 13edeeffdea7a41d5aad96c28deb4c7bd01a9397
   subpackages:
   - codes
   - credentials
@@ -132,7 +132,7 @@ imports:
   - transport
 testImports:
 - name: github.com/gopherjs/gopherjs
-  version: 090403452ab6979e3b7c054ceb7ee23da91b2ae4
+  version: 72e303cb5f235b23471872477b57e573dc1c71d0
   subpackages:
   - js
 - name: github.com/jtolds/gls

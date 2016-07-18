@@ -69,7 +69,7 @@ func TestBCryptPasswordHasher_Hash(t *testing.T) {
 		t.Fatalf("hash returned unexpected error: %s", err.Error())
 	}
 	if len(expected) != len(got) {
-		t.Errorf("length of hash do not match", len(expected), len(got))
+		t.Errorf("length of hash do not match, expected %d but got %d", len(expected), len(got))
 	}
 	if !bytes.HasPrefix(got, expected[:7]) {
 		t.Errorf("hash should have prefix %s but does not: %s", expected[:7], got)

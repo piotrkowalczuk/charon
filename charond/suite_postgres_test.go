@@ -23,7 +23,7 @@ func (ps *postgresSuite) setup(t *testing.T) {
 	var err error
 
 	ps.logger = sklog.NewTestLogger(t)
-	ps.db, err = initPostgres(testPostgresAddress, EnvironmentTest, ps.logger)
+	ps.db, err = initPostgres(testPostgresAddress, true, ps.logger)
 	if err != nil {
 		t.Fatalf("postgres connection (%s) error: %s", testPostgresAddress, err.Error())
 	}

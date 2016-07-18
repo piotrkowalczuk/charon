@@ -40,9 +40,5 @@ func (bph BCryptPasswordHasher) Hash(plainPassword []byte) ([]byte, error) {
 // Compare implements PasswordHasher interface.
 func (bph BCryptPasswordHasher) Compare(hashedPassword, plainPassword []byte) bool {
 	err := bcrypt.CompareHashAndPassword(hashedPassword, plainPassword)
-	if err != nil {
-		return false
-	}
-
-	return true
+	return err == nil
 }

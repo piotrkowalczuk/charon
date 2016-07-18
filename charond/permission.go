@@ -225,7 +225,7 @@ RedundantPermissionsLoop:
 	return
 }
 
-// charon.PermissionRegistry is an interface that describes in memory storage that holds information
+// PermissionRegistry is an interface that describes in memory storage that holds information
 // about permissions that was registered by 3rd party services.
 // Should be only used as a proxy for registration process to avoid multiple sql hits.
 type PermissionRegistry interface {

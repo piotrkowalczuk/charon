@@ -158,6 +158,7 @@ func (p *Permission) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
+// Permissions is collection of permission that provide convenient API.
 type Permissions []Permission
 
 // NewPermissions allocates new Permissions using given slice of strings.

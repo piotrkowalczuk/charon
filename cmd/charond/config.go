@@ -35,6 +35,7 @@ type configuration struct {
 	}
 	postgres struct {
 		address string
+		debug   bool
 	}
 	tls struct {
 		enabled  bool
@@ -53,14 +54,15 @@ func (c *configuration) init() {
 	flag.StringVar(&c.namespace, "namespace", "", "namespace")
 	flag.StringVar(&c.subsystem, "subsystem", "charon", "subsystem")
 	flag.BoolVar(&c.test, "test", false, "determines in what mode application starts")
-	flag.StringVar(&c.logger.adapter, "l.adapter", loggerAdapterStdOut, "logger adapter")
-	flag.StringVar(&c.logger.format, "l.format", loggerFormatJSON, "logger format")
-	flag.IntVar(&c.logger.level, "l.level", 6, "logger level")
-	flag.StringVar(&c.mnemosyne.address, "mnemo.address", "", "mnemosyne session store connection address")
-	flag.StringVar(&c.password.strategy, "pwd.strategy", "bcrypt", "strategy how password will be stored")
-	flag.IntVar(&c.password.bcrypt.cost, "pwd.bcryptcost", 10, "bcrypt cost, bigget than safer (and longer to create)")
-	flag.StringVar(&c.monitoring.engine, "m.engine", charond.MonitoringEnginePrometheus, "monitoring engine")
-	flag.StringVar(&c.postgres.address, "p.address", "postgres://localhost:5432?sslmode=disable", "postgres connection string")
+	flag.StringVar(&c.logger.adapter, "log.adapter", loggerAdapterStdOut, "logger adapter")
+	flag.StringVar(&c.logger.format, "log.format", loggerFormatJSON, "logger format")
+	flag.IntVar(&c.logger.level, "log.level", 6, "logger level")
+	flag.StringVar(&c.mnemosyne.address, "mnemosyne.address", "", "mnemosyne session store connection address")
+	flag.StringVar(&c.password.strategy, "password.strategy", "bcrypt", "strategy how password will be stored")
+	flag.IntVar(&c.password.bcrypt.cost, "password.bcryptcost", 10, "bcrypt cost, bigget than safer (and longer to create)")
+	flag.StringVar(&c.monitoring.engine, "monitoring.engine", charond.MonitoringEnginePrometheus, "monitoring engine")
+	flag.StringVar(&c.postgres.address, "postgres.address", "-p.address=postgres://postgres:postgres@postgres/postgres?sslmode=disable", "postgres connection string")
+	flag.BoolVar(&c.postgres.debug, "postgres.debug", false, "if true database queries are logged")
 	flag.BoolVar(&c.tls.enabled, "tls", false, "tls enable flag")
 	flag.StringVar(&c.tls.certFile, "tls.certfile", "", "path to tls cert file")
 	flag.StringVar(&c.tls.keyFile, "tls.keyfile", "", "path to tls key file")
