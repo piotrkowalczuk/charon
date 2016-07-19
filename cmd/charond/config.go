@@ -57,7 +57,7 @@ func (c *configuration) init() {
 	flag.StringVar(&c.logger.adapter, "log.adapter", loggerAdapterStdOut, "logger adapter")
 	flag.StringVar(&c.logger.format, "log.format", loggerFormatJSON, "logger format")
 	flag.IntVar(&c.logger.level, "log.level", 6, "logger level")
-	flag.StringVar(&c.mnemosyne.address, "mnemosyne.address", "", "mnemosyne session store connection address")
+	flag.StringVar(&c.mnemosyne.address, "mnemosyne.address", "mnemosyne:8080", "mnemosyne session store connection address")
 	flag.StringVar(&c.password.strategy, "password.strategy", "bcrypt", "strategy how password will be stored")
 	flag.IntVar(&c.password.bcrypt.cost, "password.bcryptcost", 10, "bcrypt cost, bigget than safer (and longer to create)")
 	flag.StringVar(&c.monitoring.engine, "monitoring.engine", charond.MonitoringEnginePrometheus, "monitoring engine")
