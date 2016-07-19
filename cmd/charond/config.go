@@ -61,7 +61,7 @@ func (c *configuration) init() {
 	flag.StringVar(&c.password.strategy, "password.strategy", "bcrypt", "strategy how password will be stored")
 	flag.IntVar(&c.password.bcrypt.cost, "password.bcryptcost", 10, "bcrypt cost, bigget than safer (and longer to create)")
 	flag.StringVar(&c.monitoring.engine, "monitoring.engine", charond.MonitoringEnginePrometheus, "monitoring engine")
-	flag.StringVar(&c.postgres.address, "postgres.address", "-p.address=postgres://postgres:postgres@postgres/postgres?sslmode=disable", "postgres connection string")
+	flag.StringVar(&c.postgres.address, "postgres.address", "postgres://postgres:postgres@postgres/postgres?sslmode=disable", "postgres connection string")
 	flag.BoolVar(&c.postgres.debug, "postgres.debug", false, "if true database queries are logged")
 	flag.BoolVar(&c.tls.enabled, "tls", false, "tls enable flag")
 	flag.StringVar(&c.tls.certFile, "tls.certfile", "", "path to tls cert file")
