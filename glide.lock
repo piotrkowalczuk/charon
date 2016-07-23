@@ -1,5 +1,5 @@
-hash: 98f51df81604cb95db8559238b78ee66008126c84cd141369cdd20c4cb55e5d0
-updated: 2016-07-18T22:53:25.267810515+02:00
+hash: fdb72784e06d54c2da242135189ef2ece0766c041bdbffffca1e86607716d702
+updated: 2016-07-23T18:07:44.336210312+02:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -59,12 +59,12 @@ imports:
 - name: github.com/piotrkowalczuk/pqcomp
   version: 631b19c36ded8bbe954cf8c15a0044c591033536
 - name: github.com/piotrkowalczuk/pqt
-  version: 556986d293c662731810bd304ebb5dc9697f44a0
+  version: 3797e02c4c2d495561f2df642c0953ffe6ac9fa1
   subpackages:
   - pqtgo
   - pqtsql
 - name: github.com/piotrkowalczuk/qtypes
-  version: 9735286d8346ebec5dfc08e2453cad1d91189872
+  version: 245111047db59a252a96b37b8d670099f185663e
 - name: github.com/piotrkowalczuk/sklog
   version: ec5c8660c571ff906c65341ba96de449706d63fa
 - name: github.com/pmezard/go-difflib
@@ -91,13 +91,13 @@ imports:
   - mock
   - assert
 - name: golang.org/x/crypto
-  version: f28b56427a527c2e35c0bcac123f0a6a8a943cd3
+  version: 911fafb28f4ee7c7bd483539a6c96190bbbccc3f
   subpackages:
   - bcrypt
   - sha3
   - blowfish
 - name: golang.org/x/net
-  version: 3797cd8864994d713d909eda5e61ede8683fdc12
+  version: 4d38db76854b199960801a1734443fd02870d7e1
   subpackages:
   - context
   - http2
@@ -106,7 +106,7 @@ imports:
   - lex/httplex
   - internal/timeseries
 - name: golang.org/x/oauth2
-  version: a8702432015187171c5120cbf5020bfca7be35b6
+  version: 1364adb2c63445016c5ed4518fc71f6a3cda6169
   subpackages:
   - internal
 - name: google.golang.org/appengine

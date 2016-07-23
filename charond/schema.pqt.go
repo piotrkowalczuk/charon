@@ -318,7 +318,7 @@ func (c *userCriteria) WriteComposition(sel string, com *pqtgo.Composer, opt *pq
 					com.WriteString(" IN (")
 					for i, v := range c.createdAt.Values {
 						if i != 0 {
-							com.WriteString(",")
+							com.WriteString(", ")
 						}
 						com.WritePlaceholder()
 						com.Add(v)
@@ -488,7 +488,7 @@ func (c *userCriteria) WriteComposition(sel string, com *pqtgo.Composer, opt *pq
 					com.WriteString(" IN (")
 					for i, v := range c.lastLoginAt.Values {
 						if i != 0 {
-							com.WriteString(",")
+							com.WriteString(", ")
 						}
 						com.WritePlaceholder()
 						com.Add(v)
@@ -639,7 +639,7 @@ func (c *userCriteria) WriteComposition(sel string, com *pqtgo.Composer, opt *pq
 					com.WriteString(" IN (")
 					for i, v := range c.updatedAt.Values {
 						if i != 0 {
-							com.WriteString(",")
+							com.WriteString(", ")
 						}
 						com.WritePlaceholder()
 						com.Add(v)
@@ -881,10 +881,9 @@ func (r *userRepositoryBase) FindIter(c *userCriteria) (*userIterator, error) {
 }
 func (r *userRepositoryBase) FindOneByID(id int64) (*userEntity, error) {
 	var (
-		query  string
 		entity userEntity
 	)
-	query = `SELECT confirmation_token,
+	query := `SELECT confirmation_token,
 created_at,
 created_by,
 first_name,
@@ -962,8 +961,131 @@ func (r *userRepositoryBase) Insert(e *userEntity) (*userEntity, error) {
 		}
 		b.WriteString(")")
 		if len(r.columns) > 0 {
-			b.WriteString("RETURNING ")
-			b.WriteString(strings.Join(r.columns, ","))
+			b.WriteString(" RETURNING ")
+			b.WriteString(strings.Join(r.columns, ", "))
+		}
+	}
+
+	if r.dbg {
+		if err := r.log.Log("msg", b.String(), "function", "Insert"); err != nil {
+			return nil, err
+		}
+	}
+
+	err := r.db.QueryRow(b.String(), insert.Args()...).Scan(
+		&e.ConfirmationToken,
+		&e.CreatedAt,
+		&e.CreatedBy,
+		&e.FirstName,
+		&e.ID,
+		&e.IsActive,
+		&e.IsConfirmed,
+		&e.IsStaff,
+		&e.IsSuperuser,
+		&e.LastLoginAt,
+		&e.LastName,
+		&e.Password,
+		&e.UpdatedAt,
+		&e.UpdatedBy,
+		&e.Username,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return e, nil
+}
+func (r *userRepositoryBase) Upsert(e *userEntity, p *userPatch, inf ...string) (*userEntity, error) {
+	insert := pqcomp.New(0, 15)
+	update := insert.Compose(15)
+	insert.AddExpr(tableUserColumnConfirmationToken, "", e.ConfirmationToken)
+	insert.AddExpr(tableUserColumnCreatedAt, "", e.CreatedAt)
+	insert.AddExpr(tableUserColumnCreatedBy, "", e.CreatedBy)
+	insert.AddExpr(tableUserColumnFirstName, "", e.FirstName)
+	insert.AddExpr(tableUserColumnIsActive, "", e.IsActive)
+	insert.AddExpr(tableUserColumnIsConfirmed, "", e.IsConfirmed)
+	insert.AddExpr(tableUserColumnIsStaff, "", e.IsStaff)
+	insert.AddExpr(tableUserColumnIsSuperuser, "", e.IsSuperuser)
+	insert.AddExpr(tableUserColumnLastLoginAt, "", e.LastLoginAt)
+	insert.AddExpr(tableUserColumnLastName, "", e.LastName)
+	insert.AddExpr(tableUserColumnPassword, "", e.Password)
+	insert.AddExpr(tableUserColumnUpdatedAt, "", e.UpdatedAt)
+	insert.AddExpr(tableUserColumnUpdatedBy, "", e.UpdatedBy)
+	insert.AddExpr(tableUserColumnUsername, "", e.Username)
+	if len(inf) > 0 {
+		update.AddExpr(tableUserColumnConfirmationToken, "=", p.confirmationToken)
+		update.AddExpr(tableUserColumnCreatedAt, "=", p.createdAt)
+		update.AddExpr(tableUserColumnCreatedBy, "=", p.createdBy)
+		update.AddExpr(tableUserColumnFirstName, "=", p.firstName)
+		update.AddExpr(tableUserColumnIsActive, "=", p.isActive)
+		update.AddExpr(tableUserColumnIsConfirmed, "=", p.isConfirmed)
+		update.AddExpr(tableUserColumnIsStaff, "=", p.isStaff)
+		update.AddExpr(tableUserColumnIsSuperuser, "=", p.isSuperuser)
+		update.AddExpr(tableUserColumnLastLoginAt, "=", p.lastLoginAt)
+		update.AddExpr(tableUserColumnLastName, "=", p.lastName)
+		update.AddExpr(tableUserColumnPassword, "=", p.password)
+		update.AddExpr(tableUserColumnUpdatedAt, "=", p.updatedAt)
+		update.AddExpr(tableUserColumnUpdatedBy, "=", p.updatedBy)
+		update.AddExpr(tableUserColumnUsername, "=", p.username)
+	}
+
+	b := bytes.NewBufferString("INSERT INTO " + r.table)
+
+	if insert.Len() > 0 {
+		b.WriteString(" (")
+		for insert.Next() {
+			if !insert.First() {
+				b.WriteString(", ")
+			}
+
+			fmt.Fprintf(b, "%s", insert.Key())
+		}
+		insert.Reset()
+		b.WriteString(") VALUES (")
+		for insert.Next() {
+			if !insert.First() {
+				b.WriteString(", ")
+			}
+
+			fmt.Fprintf(b, "%s", insert.PlaceHolder())
+		}
+		b.WriteString(")")
+	}
+	b.WriteString(" ON CONFLICT ")
+	if len(inf) > 0 && update.Len() > 0 {
+		b.WriteString(" (")
+		for j, i := range inf {
+			if j != 0 {
+				b.WriteString(", ")
+			}
+			b.WriteString(i)
+		}
+		b.WriteString(") ")
+		b.WriteString(" DO UPDATE SET ")
+		for update.Next() {
+			if !update.First() {
+				b.WriteString(", ")
+			}
+
+			b.WriteString(update.Key())
+			b.WriteString(" ")
+			b.WriteString(update.Oper())
+			b.WriteString(" ")
+			b.WriteString(update.PlaceHolder())
+		}
+	} else {
+		b.WriteString(" DO NOTHING ")
+	}
+	if insert.Len() > 0 {
+		if len(r.columns) > 0 {
+			b.WriteString(" RETURNING ")
+			b.WriteString(strings.Join(r.columns, ", "))
+		}
+	}
+
+	if r.dbg {
+		if err := r.log.Log("msg", b.String(), "function", "Upsert"); err != nil {
+			return nil, err
 		}
 	}
 
@@ -1287,7 +1409,7 @@ func (c *groupCriteria) WriteComposition(sel string, com *pqtgo.Composer, opt *p
 					com.WriteString(" IN (")
 					for i, v := range c.createdAt.Values {
 						if i != 0 {
-							com.WriteString(",")
+							com.WriteString(", ")
 						}
 						com.WritePlaceholder()
 						com.Add(v)
@@ -1421,7 +1543,7 @@ func (c *groupCriteria) WriteComposition(sel string, com *pqtgo.Composer, opt *p
 					com.WriteString(" IN (")
 					for i, v := range c.updatedAt.Values {
 						if i != 0 {
-							com.WriteString(",")
+							com.WriteString(", ")
 						}
 						com.WritePlaceholder()
 						com.Add(v)
@@ -1643,10 +1765,9 @@ func (r *groupRepositoryBase) FindIter(c *groupCriteria) (*groupIterator, error)
 }
 func (r *groupRepositoryBase) FindOneByID(id int64) (*groupEntity, error) {
 	var (
-		query  string
 		entity groupEntity
 	)
-	query = `SELECT created_at,
+	query := `SELECT created_at,
 created_by,
 description,
 id,
@@ -1700,8 +1821,107 @@ func (r *groupRepositoryBase) Insert(e *groupEntity) (*groupEntity, error) {
 		}
 		b.WriteString(")")
 		if len(r.columns) > 0 {
-			b.WriteString("RETURNING ")
-			b.WriteString(strings.Join(r.columns, ","))
+			b.WriteString(" RETURNING ")
+			b.WriteString(strings.Join(r.columns, ", "))
+		}
+	}
+
+	if r.dbg {
+		if err := r.log.Log("msg", b.String(), "function", "Insert"); err != nil {
+			return nil, err
+		}
+	}
+
+	err := r.db.QueryRow(b.String(), insert.Args()...).Scan(
+		&e.CreatedAt,
+		&e.CreatedBy,
+		&e.Description,
+		&e.ID,
+		&e.Name,
+		&e.UpdatedAt,
+		&e.UpdatedBy,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return e, nil
+}
+func (r *groupRepositoryBase) Upsert(e *groupEntity, p *groupPatch, inf ...string) (*groupEntity, error) {
+	insert := pqcomp.New(0, 7)
+	update := insert.Compose(7)
+	insert.AddExpr(tableGroupColumnCreatedAt, "", e.CreatedAt)
+	insert.AddExpr(tableGroupColumnCreatedBy, "", e.CreatedBy)
+	insert.AddExpr(tableGroupColumnDescription, "", e.Description)
+	insert.AddExpr(tableGroupColumnName, "", e.Name)
+	insert.AddExpr(tableGroupColumnUpdatedAt, "", e.UpdatedAt)
+	insert.AddExpr(tableGroupColumnUpdatedBy, "", e.UpdatedBy)
+	if len(inf) > 0 {
+		update.AddExpr(tableGroupColumnCreatedAt, "=", p.createdAt)
+		update.AddExpr(tableGroupColumnCreatedBy, "=", p.createdBy)
+		update.AddExpr(tableGroupColumnDescription, "=", p.description)
+		update.AddExpr(tableGroupColumnName, "=", p.name)
+		update.AddExpr(tableGroupColumnUpdatedAt, "=", p.updatedAt)
+		update.AddExpr(tableGroupColumnUpdatedBy, "=", p.updatedBy)
+	}
+
+	b := bytes.NewBufferString("INSERT INTO " + r.table)
+
+	if insert.Len() > 0 {
+		b.WriteString(" (")
+		for insert.Next() {
+			if !insert.First() {
+				b.WriteString(", ")
+			}
+
+			fmt.Fprintf(b, "%s", insert.Key())
+		}
+		insert.Reset()
+		b.WriteString(") VALUES (")
+		for insert.Next() {
+			if !insert.First() {
+				b.WriteString(", ")
+			}
+
+			fmt.Fprintf(b, "%s", insert.PlaceHolder())
+		}
+		b.WriteString(")")
+	}
+	b.WriteString(" ON CONFLICT ")
+	if len(inf) > 0 && update.Len() > 0 {
+		b.WriteString(" (")
+		for j, i := range inf {
+			if j != 0 {
+				b.WriteString(", ")
+			}
+			b.WriteString(i)
+		}
+		b.WriteString(") ")
+		b.WriteString(" DO UPDATE SET ")
+		for update.Next() {
+			if !update.First() {
+				b.WriteString(", ")
+			}
+
+			b.WriteString(update.Key())
+			b.WriteString(" ")
+			b.WriteString(update.Oper())
+			b.WriteString(" ")
+			b.WriteString(update.PlaceHolder())
+		}
+	} else {
+		b.WriteString(" DO NOTHING ")
+	}
+	if insert.Len() > 0 {
+		if len(r.columns) > 0 {
+			b.WriteString(" RETURNING ")
+			b.WriteString(strings.Join(r.columns, ", "))
+		}
+	}
+
+	if r.dbg {
+		if err := r.log.Log("msg", b.String(), "function", "Upsert"); err != nil {
+			return nil, err
 		}
 	}
 
@@ -1995,7 +2215,7 @@ func (c *permissionCriteria) WriteComposition(sel string, com *pqtgo.Composer, o
 					com.WriteString(" IN (")
 					for i, v := range c.createdAt.Values {
 						if i != 0 {
-							com.WriteString(",")
+							com.WriteString(", ")
 						}
 						com.WritePlaceholder()
 						com.Add(v)
@@ -2125,7 +2345,7 @@ func (c *permissionCriteria) WriteComposition(sel string, com *pqtgo.Composer, o
 					com.WriteString(" IN (")
 					for i, v := range c.updatedAt.Values {
 						if i != 0 {
-							com.WriteString(",")
+							com.WriteString(", ")
 						}
 						com.WritePlaceholder()
 						com.Add(v)
@@ -2341,10 +2561,9 @@ func (r *permissionRepositoryBase) FindIter(c *permissionCriteria) (*permissionI
 }
 func (r *permissionRepositoryBase) FindOneByID(id int64) (*permissionEntity, error) {
 	var (
-		query  string
 		entity permissionEntity
 	)
-	query = `SELECT action,
+	query := `SELECT action,
 created_at,
 id,
 module,
@@ -2352,6 +2571,25 @@ subsystem,
 updated_at
  FROM charon.permission WHERE id = $1`
 	err := r.db.QueryRow(query, id).Scan(
+		&entity.Action,
+		&entity.CreatedAt,
+		&entity.ID,
+		&entity.Module,
+		&entity.Subsystem,
+		&entity.UpdatedAt,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return &entity, nil
+}
+func (r *permissionRepositoryBase) FindOneBySubsystemAndModuleAndAction(subsystem string, module string, action string) (*permissionEntity, error) {
+	var (
+		entity permissionEntity
+	)
+	query := `SELECT action, created_at, id, module, subsystem, updated_at FROM charon.permission WHERE subsystem = $1 AND module = $2 AND action = $3`
+	err := r.db.QueryRow(query, subsystem, module, action).Scan(
 		&entity.Action,
 		&entity.CreatedAt,
 		&entity.ID,
@@ -2395,8 +2633,104 @@ func (r *permissionRepositoryBase) Insert(e *permissionEntity) (*permissionEntit
 		}
 		b.WriteString(")")
 		if len(r.columns) > 0 {
-			b.WriteString("RETURNING ")
-			b.WriteString(strings.Join(r.columns, ","))
+			b.WriteString(" RETURNING ")
+			b.WriteString(strings.Join(r.columns, ", "))
+		}
+	}
+
+	if r.dbg {
+		if err := r.log.Log("msg", b.String(), "function", "Insert"); err != nil {
+			return nil, err
+		}
+	}
+
+	err := r.db.QueryRow(b.String(), insert.Args()...).Scan(
+		&e.Action,
+		&e.CreatedAt,
+		&e.ID,
+		&e.Module,
+		&e.Subsystem,
+		&e.UpdatedAt,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return e, nil
+}
+func (r *permissionRepositoryBase) Upsert(e *permissionEntity, p *permissionPatch, inf ...string) (*permissionEntity, error) {
+	insert := pqcomp.New(0, 6)
+	update := insert.Compose(6)
+	insert.AddExpr(tablePermissionColumnAction, "", e.Action)
+	insert.AddExpr(tablePermissionColumnCreatedAt, "", e.CreatedAt)
+	insert.AddExpr(tablePermissionColumnModule, "", e.Module)
+	insert.AddExpr(tablePermissionColumnSubsystem, "", e.Subsystem)
+	insert.AddExpr(tablePermissionColumnUpdatedAt, "", e.UpdatedAt)
+	if len(inf) > 0 {
+		update.AddExpr(tablePermissionColumnAction, "=", p.action)
+		update.AddExpr(tablePermissionColumnCreatedAt, "=", p.createdAt)
+		update.AddExpr(tablePermissionColumnModule, "=", p.module)
+		update.AddExpr(tablePermissionColumnSubsystem, "=", p.subsystem)
+		update.AddExpr(tablePermissionColumnUpdatedAt, "=", p.updatedAt)
+	}
+
+	b := bytes.NewBufferString("INSERT INTO " + r.table)
+
+	if insert.Len() > 0 {
+		b.WriteString(" (")
+		for insert.Next() {
+			if !insert.First() {
+				b.WriteString(", ")
+			}
+
+			fmt.Fprintf(b, "%s", insert.Key())
+		}
+		insert.Reset()
+		b.WriteString(") VALUES (")
+		for insert.Next() {
+			if !insert.First() {
+				b.WriteString(", ")
+			}
+
+			fmt.Fprintf(b, "%s", insert.PlaceHolder())
+		}
+		b.WriteString(")")
+	}
+	b.WriteString(" ON CONFLICT ")
+	if len(inf) > 0 && update.Len() > 0 {
+		b.WriteString(" (")
+		for j, i := range inf {
+			if j != 0 {
+				b.WriteString(", ")
+			}
+			b.WriteString(i)
+		}
+		b.WriteString(") ")
+		b.WriteString(" DO UPDATE SET ")
+		for update.Next() {
+			if !update.First() {
+				b.WriteString(", ")
+			}
+
+			b.WriteString(update.Key())
+			b.WriteString(" ")
+			b.WriteString(update.Oper())
+			b.WriteString(" ")
+			b.WriteString(update.PlaceHolder())
+		}
+	} else {
+		b.WriteString(" DO NOTHING ")
+	}
+	if insert.Len() > 0 {
+		if len(r.columns) > 0 {
+			b.WriteString(" RETURNING ")
+			b.WriteString(strings.Join(r.columns, ", "))
+		}
+	}
+
+	if r.dbg {
+		if err := r.log.Log("msg", b.String(), "function", "Upsert"); err != nil {
+			return nil, err
 		}
 	}
 
@@ -2688,7 +3022,7 @@ func (c *userGroupsCriteria) WriteComposition(sel string, com *pqtgo.Composer, o
 					com.WriteString(" IN (")
 					for i, v := range c.createdAt.Values {
 						if i != 0 {
-							com.WriteString(",")
+							com.WriteString(", ")
 						}
 						com.WritePlaceholder()
 						com.Add(v)
@@ -2814,7 +3148,7 @@ func (c *userGroupsCriteria) WriteComposition(sel string, com *pqtgo.Composer, o
 					com.WriteString(" IN (")
 					for i, v := range c.updatedAt.Values {
 						if i != 0 {
-							com.WriteString(",")
+							com.WriteString(", ")
 						}
 						com.WritePlaceholder()
 						com.Add(v)
@@ -2895,6 +3229,15 @@ func (c *userGroupsCriteria) WriteComposition(sel string, com *pqtgo.Composer, o
 	}
 
 	return
+}
+
+type userGroupsPatch struct {
+	createdAt *time.Time
+	createdBy *ntypes.Int64
+	groupID   *ntypes.Int64
+	updatedAt *time.Time
+	updatedBy *ntypes.Int64
+	userID    *ntypes.Int64
 }
 
 type userGroupsRepositoryBase struct {
@@ -3028,6 +3371,25 @@ func (r *userGroupsRepositoryBase) FindIter(c *userGroupsCriteria) (*userGroupsI
 
 	return &userGroupsIterator{rows: rows}, nil
 }
+func (r *userGroupsRepositoryBase) FindOneByUserIDAndGroupID(userID int64, groupID int64) (*userGroupsEntity, error) {
+	var (
+		entity userGroupsEntity
+	)
+	query := `SELECT created_at, created_by, group_id, updated_at, updated_by, user_id FROM charon.user_groups WHERE user_id = $1 AND group_id = $2`
+	err := r.db.QueryRow(query, userID, groupID).Scan(
+		&entity.CreatedAt,
+		&entity.CreatedBy,
+		&entity.GroupID,
+		&entity.UpdatedAt,
+		&entity.UpdatedBy,
+		&entity.UserID,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return &entity, nil
+}
 func (r *userGroupsRepositoryBase) Insert(e *userGroupsEntity) (*userGroupsEntity, error) {
 	insert := pqcomp.New(0, 6)
 	insert.AddExpr(tableUserGroupsColumnCreatedAt, "", e.CreatedAt)
@@ -3059,8 +3421,106 @@ func (r *userGroupsRepositoryBase) Insert(e *userGroupsEntity) (*userGroupsEntit
 		}
 		b.WriteString(")")
 		if len(r.columns) > 0 {
-			b.WriteString("RETURNING ")
-			b.WriteString(strings.Join(r.columns, ","))
+			b.WriteString(" RETURNING ")
+			b.WriteString(strings.Join(r.columns, ", "))
+		}
+	}
+
+	if r.dbg {
+		if err := r.log.Log("msg", b.String(), "function", "Insert"); err != nil {
+			return nil, err
+		}
+	}
+
+	err := r.db.QueryRow(b.String(), insert.Args()...).Scan(
+		&e.CreatedAt,
+		&e.CreatedBy,
+		&e.GroupID,
+		&e.UpdatedAt,
+		&e.UpdatedBy,
+		&e.UserID,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return e, nil
+}
+func (r *userGroupsRepositoryBase) Upsert(e *userGroupsEntity, p *userGroupsPatch, inf ...string) (*userGroupsEntity, error) {
+	insert := pqcomp.New(0, 6)
+	update := insert.Compose(6)
+	insert.AddExpr(tableUserGroupsColumnCreatedAt, "", e.CreatedAt)
+	insert.AddExpr(tableUserGroupsColumnCreatedBy, "", e.CreatedBy)
+	insert.AddExpr(tableUserGroupsColumnGroupID, "", e.GroupID)
+	insert.AddExpr(tableUserGroupsColumnUpdatedAt, "", e.UpdatedAt)
+	insert.AddExpr(tableUserGroupsColumnUpdatedBy, "", e.UpdatedBy)
+	insert.AddExpr(tableUserGroupsColumnUserID, "", e.UserID)
+	if len(inf) > 0 {
+		update.AddExpr(tableUserGroupsColumnCreatedAt, "=", p.createdAt)
+		update.AddExpr(tableUserGroupsColumnCreatedBy, "=", p.createdBy)
+		update.AddExpr(tableUserGroupsColumnGroupID, "=", p.groupID)
+		update.AddExpr(tableUserGroupsColumnUpdatedAt, "=", p.updatedAt)
+		update.AddExpr(tableUserGroupsColumnUpdatedBy, "=", p.updatedBy)
+		update.AddExpr(tableUserGroupsColumnUserID, "=", p.userID)
+	}
+
+	b := bytes.NewBufferString("INSERT INTO " + r.table)
+
+	if insert.Len() > 0 {
+		b.WriteString(" (")
+		for insert.Next() {
+			if !insert.First() {
+				b.WriteString(", ")
+			}
+
+			fmt.Fprintf(b, "%s", insert.Key())
+		}
+		insert.Reset()
+		b.WriteString(") VALUES (")
+		for insert.Next() {
+			if !insert.First() {
+				b.WriteString(", ")
+			}
+
+			fmt.Fprintf(b, "%s", insert.PlaceHolder())
+		}
+		b.WriteString(")")
+	}
+	b.WriteString(" ON CONFLICT ")
+	if len(inf) > 0 && update.Len() > 0 {
+		b.WriteString(" (")
+		for j, i := range inf {
+			if j != 0 {
+				b.WriteString(", ")
+			}
+			b.WriteString(i)
+		}
+		b.WriteString(") ")
+		b.WriteString(" DO UPDATE SET ")
+		for update.Next() {
+			if !update.First() {
+				b.WriteString(", ")
+			}
+
+			b.WriteString(update.Key())
+			b.WriteString(" ")
+			b.WriteString(update.Oper())
+			b.WriteString(" ")
+			b.WriteString(update.PlaceHolder())
+		}
+	} else {
+		b.WriteString(" DO NOTHING ")
+	}
+	if insert.Len() > 0 {
+		if len(r.columns) > 0 {
+			b.WriteString(" RETURNING ")
+			b.WriteString(strings.Join(r.columns, ", "))
+		}
+	}
+
+	if r.dbg {
+		if err := r.log.Log("msg", b.String(), "function", "Upsert"); err != nil {
+			return nil, err
 		}
 	}
 
@@ -3311,7 +3771,7 @@ func (c *groupPermissionsCriteria) WriteComposition(sel string, com *pqtgo.Compo
 					com.WriteString(" IN (")
 					for i, v := range c.createdAt.Values {
 						if i != 0 {
-							com.WriteString(",")
+							com.WriteString(", ")
 						}
 						com.WritePlaceholder()
 						com.Add(v)
@@ -3449,7 +3909,7 @@ func (c *groupPermissionsCriteria) WriteComposition(sel string, com *pqtgo.Compo
 					com.WriteString(" IN (")
 					for i, v := range c.updatedAt.Values {
 						if i != 0 {
-							com.WriteString(",")
+							com.WriteString(", ")
 						}
 						com.WritePlaceholder()
 						com.Add(v)
@@ -3526,6 +3986,17 @@ func (c *groupPermissionsCriteria) WriteComposition(sel string, com *pqtgo.Compo
 	}
 
 	return
+}
+
+type groupPermissionsPatch struct {
+	createdAt           *time.Time
+	createdBy           *ntypes.Int64
+	groupID             *ntypes.Int64
+	permissionAction    *ntypes.String
+	permissionModule    *ntypes.String
+	permissionSubsystem *ntypes.String
+	updatedAt           *time.Time
+	updatedBy           *ntypes.Int64
 }
 
 type groupPermissionsRepositoryBase struct {
@@ -3661,6 +4132,27 @@ func (r *groupPermissionsRepositoryBase) FindIter(c *groupPermissionsCriteria) (
 
 	return &groupPermissionsIterator{rows: rows}, nil
 }
+func (r *groupPermissionsRepositoryBase) FindOneByGroupIDAndPermissionSubsystemAndPermissionModuleAndPermissionAction(groupID int64, permissionSubsystem string, permissionModule string, permissionAction string) (*groupPermissionsEntity, error) {
+	var (
+		entity groupPermissionsEntity
+	)
+	query := `SELECT created_at, created_by, group_id, permission_action, permission_module, permission_subsystem, updated_at, updated_by FROM charon.group_permissions WHERE group_id = $1 AND permission_subsystem = $2 AND permission_module = $3 AND permission_action = $4`
+	err := r.db.QueryRow(query, groupID, permissionSubsystem, permissionModule, permissionAction).Scan(
+		&entity.CreatedAt,
+		&entity.CreatedBy,
+		&entity.GroupID,
+		&entity.PermissionAction,
+		&entity.PermissionModule,
+		&entity.PermissionSubsystem,
+		&entity.UpdatedAt,
+		&entity.UpdatedBy,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return &entity, nil
+}
 func (r *groupPermissionsRepositoryBase) Insert(e *groupPermissionsEntity) (*groupPermissionsEntity, error) {
 	insert := pqcomp.New(0, 8)
 	insert.AddExpr(tableGroupPermissionsColumnCreatedAt, "", e.CreatedAt)
@@ -3694,8 +4186,112 @@ func (r *groupPermissionsRepositoryBase) Insert(e *groupPermissionsEntity) (*gro
 		}
 		b.WriteString(")")
 		if len(r.columns) > 0 {
-			b.WriteString("RETURNING ")
-			b.WriteString(strings.Join(r.columns, ","))
+			b.WriteString(" RETURNING ")
+			b.WriteString(strings.Join(r.columns, ", "))
+		}
+	}
+
+	if r.dbg {
+		if err := r.log.Log("msg", b.String(), "function", "Insert"); err != nil {
+			return nil, err
+		}
+	}
+
+	err := r.db.QueryRow(b.String(), insert.Args()...).Scan(
+		&e.CreatedAt,
+		&e.CreatedBy,
+		&e.GroupID,
+		&e.PermissionAction,
+		&e.PermissionModule,
+		&e.PermissionSubsystem,
+		&e.UpdatedAt,
+		&e.UpdatedBy,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return e, nil
+}
+func (r *groupPermissionsRepositoryBase) Upsert(e *groupPermissionsEntity, p *groupPermissionsPatch, inf ...string) (*groupPermissionsEntity, error) {
+	insert := pqcomp.New(0, 8)
+	update := insert.Compose(8)
+	insert.AddExpr(tableGroupPermissionsColumnCreatedAt, "", e.CreatedAt)
+	insert.AddExpr(tableGroupPermissionsColumnCreatedBy, "", e.CreatedBy)
+	insert.AddExpr(tableGroupPermissionsColumnGroupID, "", e.GroupID)
+	insert.AddExpr(tableGroupPermissionsColumnPermissionAction, "", e.PermissionAction)
+	insert.AddExpr(tableGroupPermissionsColumnPermissionModule, "", e.PermissionModule)
+	insert.AddExpr(tableGroupPermissionsColumnPermissionSubsystem, "", e.PermissionSubsystem)
+	insert.AddExpr(tableGroupPermissionsColumnUpdatedAt, "", e.UpdatedAt)
+	insert.AddExpr(tableGroupPermissionsColumnUpdatedBy, "", e.UpdatedBy)
+	if len(inf) > 0 {
+		update.AddExpr(tableGroupPermissionsColumnCreatedAt, "=", p.createdAt)
+		update.AddExpr(tableGroupPermissionsColumnCreatedBy, "=", p.createdBy)
+		update.AddExpr(tableGroupPermissionsColumnGroupID, "=", p.groupID)
+		update.AddExpr(tableGroupPermissionsColumnPermissionAction, "=", p.permissionAction)
+		update.AddExpr(tableGroupPermissionsColumnPermissionModule, "=", p.permissionModule)
+		update.AddExpr(tableGroupPermissionsColumnPermissionSubsystem, "=", p.permissionSubsystem)
+		update.AddExpr(tableGroupPermissionsColumnUpdatedAt, "=", p.updatedAt)
+		update.AddExpr(tableGroupPermissionsColumnUpdatedBy, "=", p.updatedBy)
+	}
+
+	b := bytes.NewBufferString("INSERT INTO " + r.table)
+
+	if insert.Len() > 0 {
+		b.WriteString(" (")
+		for insert.Next() {
+			if !insert.First() {
+				b.WriteString(", ")
+			}
+
+			fmt.Fprintf(b, "%s", insert.Key())
+		}
+		insert.Reset()
+		b.WriteString(") VALUES (")
+		for insert.Next() {
+			if !insert.First() {
+				b.WriteString(", ")
+			}
+
+			fmt.Fprintf(b, "%s", insert.PlaceHolder())
+		}
+		b.WriteString(")")
+	}
+	b.WriteString(" ON CONFLICT ")
+	if len(inf) > 0 && update.Len() > 0 {
+		b.WriteString(" (")
+		for j, i := range inf {
+			if j != 0 {
+				b.WriteString(", ")
+			}
+			b.WriteString(i)
+		}
+		b.WriteString(") ")
+		b.WriteString(" DO UPDATE SET ")
+		for update.Next() {
+			if !update.First() {
+				b.WriteString(", ")
+			}
+
+			b.WriteString(update.Key())
+			b.WriteString(" ")
+			b.WriteString(update.Oper())
+			b.WriteString(" ")
+			b.WriteString(update.PlaceHolder())
+		}
+	} else {
+		b.WriteString(" DO NOTHING ")
+	}
+	if insert.Len() > 0 {
+		if len(r.columns) > 0 {
+			b.WriteString(" RETURNING ")
+			b.WriteString(strings.Join(r.columns, ", "))
+		}
+	}
+
+	if r.dbg {
+		if err := r.log.Log("msg", b.String(), "function", "Upsert"); err != nil {
+			return nil, err
 		}
 	}
 
@@ -3948,7 +4544,7 @@ func (c *userPermissionsCriteria) WriteComposition(sel string, com *pqtgo.Compos
 					com.WriteString(" IN (")
 					for i, v := range c.createdAt.Values {
 						if i != 0 {
-							com.WriteString(",")
+							com.WriteString(", ")
 						}
 						com.WritePlaceholder()
 						com.Add(v)
@@ -4082,7 +4678,7 @@ func (c *userPermissionsCriteria) WriteComposition(sel string, com *pqtgo.Compos
 					com.WriteString(" IN (")
 					for i, v := range c.updatedAt.Values {
 						if i != 0 {
-							com.WriteString(",")
+							com.WriteString(", ")
 						}
 						com.WritePlaceholder()
 						com.Add(v)
@@ -4163,6 +4759,17 @@ func (c *userPermissionsCriteria) WriteComposition(sel string, com *pqtgo.Compos
 	}
 
 	return
+}
+
+type userPermissionsPatch struct {
+	createdAt           *time.Time
+	createdBy           *ntypes.Int64
+	permissionAction    *ntypes.String
+	permissionModule    *ntypes.String
+	permissionSubsystem *ntypes.String
+	updatedAt           *time.Time
+	updatedBy           *ntypes.Int64
+	userID              *ntypes.Int64
 }
 
 type userPermissionsRepositoryBase struct {
@@ -4298,6 +4905,27 @@ func (r *userPermissionsRepositoryBase) FindIter(c *userPermissionsCriteria) (*u
 
 	return &userPermissionsIterator{rows: rows}, nil
 }
+func (r *userPermissionsRepositoryBase) FindOneByUserIDAndPermissionSubsystemAndPermissionModuleAndPermissionAction(userID int64, permissionSubsystem string, permissionModule string, permissionAction string) (*userPermissionsEntity, error) {
+	var (
+		entity userPermissionsEntity
+	)
+	query := `SELECT created_at, created_by, permission_action, permission_module, permission_subsystem, updated_at, updated_by, user_id FROM charon.user_permissions WHERE user_id = $1 AND permission_subsystem = $2 AND permission_module = $3 AND permission_action = $4`
+	err := r.db.QueryRow(query, userID, permissionSubsystem, permissionModule, permissionAction).Scan(
+		&entity.CreatedAt,
+		&entity.CreatedBy,
+		&entity.PermissionAction,
+		&entity.PermissionModule,
+		&entity.PermissionSubsystem,
+		&entity.UpdatedAt,
+		&entity.UpdatedBy,
+		&entity.UserID,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return &entity, nil
+}
 func (r *userPermissionsRepositoryBase) Insert(e *userPermissionsEntity) (*userPermissionsEntity, error) {
 	insert := pqcomp.New(0, 8)
 	insert.AddExpr(tableUserPermissionsColumnCreatedAt, "", e.CreatedAt)
@@ -4331,8 +4959,112 @@ func (r *userPermissionsRepositoryBase) Insert(e *userPermissionsEntity) (*userP
 		}
 		b.WriteString(")")
 		if len(r.columns) > 0 {
-			b.WriteString("RETURNING ")
-			b.WriteString(strings.Join(r.columns, ","))
+			b.WriteString(" RETURNING ")
+			b.WriteString(strings.Join(r.columns, ", "))
+		}
+	}
+
+	if r.dbg {
+		if err := r.log.Log("msg", b.String(), "function", "Insert"); err != nil {
+			return nil, err
+		}
+	}
+
+	err := r.db.QueryRow(b.String(), insert.Args()...).Scan(
+		&e.CreatedAt,
+		&e.CreatedBy,
+		&e.PermissionAction,
+		&e.PermissionModule,
+		&e.PermissionSubsystem,
+		&e.UpdatedAt,
+		&e.UpdatedBy,
+		&e.UserID,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return e, nil
+}
+func (r *userPermissionsRepositoryBase) Upsert(e *userPermissionsEntity, p *userPermissionsPatch, inf ...string) (*userPermissionsEntity, error) {
+	insert := pqcomp.New(0, 8)
+	update := insert.Compose(8)
+	insert.AddExpr(tableUserPermissionsColumnCreatedAt, "", e.CreatedAt)
+	insert.AddExpr(tableUserPermissionsColumnCreatedBy, "", e.CreatedBy)
+	insert.AddExpr(tableUserPermissionsColumnPermissionAction, "", e.PermissionAction)
+	insert.AddExpr(tableUserPermissionsColumnPermissionModule, "", e.PermissionModule)
+	insert.AddExpr(tableUserPermissionsColumnPermissionSubsystem, "", e.PermissionSubsystem)
+	insert.AddExpr(tableUserPermissionsColumnUpdatedAt, "", e.UpdatedAt)
+	insert.AddExpr(tableUserPermissionsColumnUpdatedBy, "", e.UpdatedBy)
+	insert.AddExpr(tableUserPermissionsColumnUserID, "", e.UserID)
+	if len(inf) > 0 {
+		update.AddExpr(tableUserPermissionsColumnCreatedAt, "=", p.createdAt)
+		update.AddExpr(tableUserPermissionsColumnCreatedBy, "=", p.createdBy)
+		update.AddExpr(tableUserPermissionsColumnPermissionAction, "=", p.permissionAction)
+		update.AddExpr(tableUserPermissionsColumnPermissionModule, "=", p.permissionModule)
+		update.AddExpr(tableUserPermissionsColumnPermissionSubsystem, "=", p.permissionSubsystem)
+		update.AddExpr(tableUserPermissionsColumnUpdatedAt, "=", p.updatedAt)
+		update.AddExpr(tableUserPermissionsColumnUpdatedBy, "=", p.updatedBy)
+		update.AddExpr(tableUserPermissionsColumnUserID, "=", p.userID)
+	}
+
+	b := bytes.NewBufferString("INSERT INTO " + r.table)
+
+	if insert.Len() > 0 {
+		b.WriteString(" (")
+		for insert.Next() {
+			if !insert.First() {
+				b.WriteString(", ")
+			}
+
+			fmt.Fprintf(b, "%s", insert.Key())
+		}
+		insert.Reset()
+		b.WriteString(") VALUES (")
+		for insert.Next() {
+			if !insert.First() {
+				b.WriteString(", ")
+			}
+
+			fmt.Fprintf(b, "%s", insert.PlaceHolder())
+		}
+		b.WriteString(")")
+	}
+	b.WriteString(" ON CONFLICT ")
+	if len(inf) > 0 && update.Len() > 0 {
+		b.WriteString(" (")
+		for j, i := range inf {
+			if j != 0 {
+				b.WriteString(", ")
+			}
+			b.WriteString(i)
+		}
+		b.WriteString(") ")
+		b.WriteString(" DO UPDATE SET ")
+		for update.Next() {
+			if !update.First() {
+				b.WriteString(", ")
+			}
+
+			b.WriteString(update.Key())
+			b.WriteString(" ")
+			b.WriteString(update.Oper())
+			b.WriteString(" ")
+			b.WriteString(update.PlaceHolder())
+		}
+	} else {
+		b.WriteString(" DO NOTHING ")
+	}
+	if insert.Len() > 0 {
+		if len(r.columns) > 0 {
+			b.WriteString(" RETURNING ")
+			b.WriteString(strings.Join(r.columns, ", "))
+		}
+	}
+
+	if r.dbg {
+		if err := r.log.Log("msg", b.String(), "function", "Upsert"); err != nil {
+			return nil, err
 		}
 	}
 
