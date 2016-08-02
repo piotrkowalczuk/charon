@@ -79,6 +79,7 @@ func registerUser(config configuration) {
 	}
 
 	_, err = c.SetUserPermissions(ctx, &charon.SetUserPermissionsRequest{
+		UserId:      res.User.Id,
 		Permissions: config.register.permissions.Strings(),
 	})
 	if err != nil {
