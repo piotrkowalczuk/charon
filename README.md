@@ -20,7 +20,7 @@ $ go install github.com/piotrkowalczuk/charon/cmd/charonctl
 ### Superuser
 
 ```bash
-$ charonctl register -address=localhost:8080 -noauth -r.superuser=true -r.username="j.snow@gmail.com" -r.password=123 -r.firstname=John -r.lastname=Snow
+$ charonctl register -address=localhost:8080 -auth.disabled -register.superuser=true -register.username="j.snow@gmail.com" -register.password=123 -register.firstname=John -register.lastname=Snow
 ```
 
 ## Contribution

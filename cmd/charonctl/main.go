@@ -22,6 +22,8 @@ func main() {
 	config.parse()
 
 	switch config.cmd() {
+	case "help":
+		config.cl.Usage()
 	case "register":
 		registerUser(config)
 	default:
@@ -37,10 +39,10 @@ func client(addr string) (client charon.RPCClient, ctx context.Context) {
 	}
 	client = charon.NewRPCClient(conn)
 	ctx = context.Background()
-	if !config.noauth {
+	if !config.auth.disabled {
 		resp, err := client.Login(context.Background(), &charon.LoginRequest{
-			Username: config.username,
-			Password: config.password,
+			Username: config.auth.username,
+			Password: config.auth.password,
 		})
 		if err != nil {
 			fmt.Println(err)
@@ -55,12 +57,15 @@ func client(addr string) (client charon.RPCClient, ctx context.Context) {
 
 func registerUser(config configuration) {
 	c, ctx := client(config.address)
-	resp, err := c.CreateUser(ctx, &charon.CreateUserRequest{
+	res, err := c.CreateUser(ctx, &charon.CreateUserRequest{
 		Username:      config.register.username,
 		PlainPassword: config.register.password,
 		FirstName:     config.register.firstName,
 		LastName:      config.register.lastName,
 		IsSuperuser:   &ntypes.Bool{Bool: config.register.superuser, Valid: true},
+		IsConfirmed:   &ntypes.Bool{Bool: config.register.confirmed, Valid: true},
+		IsStaff:       &ntypes.Bool{Bool: config.register.staff, Valid: true},
+		IsActive:      &ntypes.Bool{Bool: config.register.active, Valid: true},
 	})
 	if err != nil {
 		fmt.Printf("registration failure: %s", grpc.ErrorDesc(err))
@@ -68,8 +73,18 @@ func registerUser(config configuration) {
 	}
 
 	if config.register.superuser {
-		fmt.Printf(`superuser "%s" has been created`, resp.User.Username)
+		fmt.Printf(`superuser "%s" has been created`, res.User.Username)
 	} else {
-		fmt.Printf(`user "%s" has been created`, resp.User.Username)
+		fmt.Printf(`user "%s" has been created`, res.User.Username)
 	}
+
+	_, err = c.SetUserPermissions(ctx, &charon.SetUserPermissionsRequest{
+		Permissions: config.register.permissions.Strings(),
+	})
+	if err != nil {
+		fmt.Printf("registration failure: %s", grpc.ErrorDesc(err))
+		os.Exit(1)
+	}
+
+	fmt.Println("users permissions has been set")
 }
