@@ -199,3 +199,34 @@ func (p Permissions) Strings() (s []string) {
 
 	return s
 }
+
+// String implements flag Value interface.
+func (p *Permissions) String() string {
+	switch {
+	case p == nil:
+		return ""
+	case len(*p) == 0:
+		return ""
+	case len(*p) == 1:
+		return (*p)[0].String()
+	}
+
+	n := len(",") * (len(*p) - 1)
+	for i := 0; i < len(*p); i++ {
+		n += len((*p)[i])
+	}
+
+	b := make([]byte, n)
+	bp := copy(b, (*p)[0])
+	for _, s := range (*p)[1:] {
+		bp += copy(b[bp:], ",")
+		bp += copy(b[bp:], s)
+	}
+	return string(b)
+}
+
+// Set implements flag Value interface.
+func (p *Permissions) Set(s string) error {
+	*p = append(*p, Permission(s))
+	return nil
+}

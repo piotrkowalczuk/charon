@@ -2,6 +2,8 @@ package charon
 
 import (
 	"encoding/json"
+	"flag"
+	"fmt"
 	"reflect"
 	"testing"
 )
@@ -180,5 +182,23 @@ func TestPermissions_Strings(t *testing.T) {
 	expected := []string{UserCanCreate.String(), UserCanDeleteAsOwner.String()}
 	if !reflect.DeepEqual(got, expected) {
 		t.Errorf("output does not match, expected %v but got %v", expected, got)
+	}
+}
+
+func TestPermissions_Set(t *testing.T) {
+	got := Permissions{}
+	expected := Permissions{PermissionCanCreate, PermissionCanDelete, PermissionCanModify}
+	fs := flag.NewFlagSet("permissions", flag.ExitOnError)
+	fs.Var(&got, "permission", "set of permissions")
+	err := fs.Parse([]string{
+		fmt.Sprintf("-permission=%s", PermissionCanCreate),
+		fmt.Sprintf("-permission=%s", PermissionCanDelete),
+		fmt.Sprintf("-permission=%s", PermissionCanModify),
+	})
+	if err != nil {
+		t.Fatalf("unexpected error: %s", err)
+	}
+	if !reflect.DeepEqual(got, expected) {
+		t.Errorf("wrong permission set, got %v but expected %v", got, expected)
 	}
 }

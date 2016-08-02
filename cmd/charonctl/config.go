@@ -4,20 +4,28 @@ import (
 	"flag"
 	"fmt"
 	"os"
+
+	"github.com/piotrkowalczuk/charon"
 )
 
 type configuration struct {
-	cl       *flag.FlagSet
-	username string
-	password string
-	noauth   bool
-	address  string
+	cl      *flag.FlagSet
+	address string
+	auth    struct {
+		username string
+		password string
+		disabled bool
+	}
 	register struct {
-		username  string
-		password  string
-		firstName string
-		lastName  string
-		superuser bool
+		username    string
+		password    string
+		firstName   string
+		lastName    string
+		superuser   bool
+		confirmed   bool
+		staff       bool
+		active      bool
+		permissions charon.Permissions
 	}
 }
 
@@ -26,15 +34,23 @@ func (c *configuration) init() {
 		cl: flag.NewFlagSet(os.Args[0], flag.ExitOnError),
 	}
 
-	c.cl.BoolVar(&c.noauth, "noauth", false, "noauth")
-	c.cl.StringVar(&c.username, "username", "", "username")
-	c.cl.StringVar(&c.password, "password", "", "password")
+	c.cl.Usage = func() {
+		fmt.Fprintf(os.Stderr, "Usage of %s:\n", os.Args[0])
+		c.cl.PrintDefaults()
+	}
 	c.cl.StringVar(&c.address, "address", "charon:8080", "charon address")
-	c.cl.StringVar(&c.register.username, "r.username", "", "username")
-	c.cl.StringVar(&c.register.password, "r.password", "", "password")
-	c.cl.StringVar(&c.register.firstName, "r.firstname", "", "first name")
-	c.cl.StringVar(&c.register.lastName, "r.lastname", "", "last name")
-	c.cl.BoolVar(&c.register.superuser, "r.superuser", false, "superuser")
+	c.cl.BoolVar(&c.auth.disabled, "auth.disabled", false, "noauth")
+	c.cl.StringVar(&c.auth.username, "auth.username", "", "username")
+	c.cl.StringVar(&c.auth.password, "auth.password", "", "password")
+	c.cl.StringVar(&c.register.username, "register.username", "", "username")
+	c.cl.StringVar(&c.register.password, "register.password", "", "password")
+	c.cl.StringVar(&c.register.firstName, "register.firstname", "", "first name")
+	c.cl.StringVar(&c.register.lastName, "register.lastname", "", "last name")
+	c.cl.Var(&c.register.permissions, "register.permission", "list of permissions that user should")
+	c.cl.BoolVar(&c.register.superuser, "register.superuser", false, "is user the superuser")
+	c.cl.BoolVar(&c.register.confirmed, "register.confirmed", false, "is user account confirmed")
+	c.cl.BoolVar(&c.register.staff, "register.staff", false, "is user part of the staff")
+	c.cl.BoolVar(&c.register.active, "register.active", false, "is user account active")
 }
 
 func (c *configuration) parse() {
@@ -42,16 +58,15 @@ func (c *configuration) parse() {
 		c.init()
 	}
 	if !c.cl.Parsed() {
-		if len(os.Args) < 2 {
-			// TODO: make it more verbose
-			fmt.Println("action is required eg. register")
-			os.Exit(1)
-		} else {
+		if len(os.Args) > 1 {
 			c.cl.Parse(os.Args[2:])
 		}
 	}
 }
 
 func (c *configuration) cmd() string {
-	return os.Args[1]
+	if len(os.Args) > 1 {
+		return os.Args[1]
+	}
+	return "help"
 }

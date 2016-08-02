@@ -1,5 +1,5 @@
 hash: fdb72784e06d54c2da242135189ef2ece0766c041bdbffffca1e86607716d702
-updated: 2016-07-23T18:07:44.336210312+02:00
+updated: 2016-08-01T19:40:01.515529579+02:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -91,13 +91,13 @@ imports:
   - mock
   - assert
 - name: golang.org/x/crypto
-  version: 911fafb28f4ee7c7bd483539a6c96190bbbccc3f
+  version: bc89c496413265e715159bdc8478ee9a92fdc265
   subpackages:
   - bcrypt
   - sha3
   - blowfish
 - name: golang.org/x/net
-  version: 4d38db76854b199960801a1734443fd02870d7e1
+  version: 35028a49ca5a73b486af60cd20ac21cd6b67bfdb
   subpackages:
   - context
   - http2
