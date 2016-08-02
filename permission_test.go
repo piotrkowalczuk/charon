@@ -202,3 +202,40 @@ func TestPermissions_Set(t *testing.T) {
 		t.Errorf("wrong permission set, got %v but expected %v", got, expected)
 	}
 }
+
+func TestPermissions_String(t *testing.T) {
+	cases := map[string]struct {
+		expected string
+		given    *Permissions
+	}{
+		"nil": {
+			expected: "",
+			given:    nil,
+		},
+		"empty": {
+			expected: "",
+			given:    &Permissions{},
+		},
+		"single": {
+			expected: UserCanCreate.String(),
+			given:    &Permissions{UserCanCreate},
+		},
+		"few": {
+			expected: fmt.Sprintf("%s,%s,%s", UserCanCreate, UserCanDeleteAsOwner, UserCanModifyStaffAsStranger),
+			given: &Permissions{
+				UserCanCreate,
+				UserCanDeleteAsOwner,
+				UserCanModifyStaffAsStranger,
+			},
+		},
+	}
+
+	for hint, c := range cases {
+		t.Run(hint, func(t *testing.T) {
+			got := c.given.String()
+			if got != c.expected {
+				t.Fatalf("wrong output, expected:\n	'%s'\nbut got:\n	'%s'", c.expected, got)
+			}
+		})
+	}
+}

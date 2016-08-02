@@ -222,6 +222,7 @@ func (p *Permissions) String() string {
 		bp += copy(b[bp:], ",")
 		bp += copy(b[bp:], s)
 	}
+
 	return string(b)
 }
 
