@@ -10,27 +10,27 @@ import (
 var (
 	permissionTestFixtures = []*permissionEntity{
 		{
-			Subsystem: "subsystem",
-			Module:    "module",
-			Action:    "action",
+			subsystem: "subsystem",
+			module:    "module",
+			action:    "action",
 		},
 		{
-			Module: "module",
-			Action: "action",
+			module: "module",
+			action: "action",
 		},
 		{
-			Action: "action",
+			action: "action",
 		},
 	}
 )
 
-func TestPermissionRepository_FindOneByID(t *testing.T) {
+func TestPermissionRepository_findOneByID(t *testing.T) {
 	suite := &postgresSuite{}
 	suite.setup(t)
 	defer suite.teardown(t)
 
 	for res := range loadPermissionFixtures(t, suite.repository.permission, permissionTestFixtures) {
-		found, err := suite.repository.permission.FindOneByID(res.got.ID)
+		found, err := suite.repository.permission.findOneByID(res.got.id)
 
 		if err != nil {
 			t.Errorf("permission cannot be found, unexpected error: %s", err.Error())
@@ -88,7 +88,7 @@ func TestPermissionRepository_Register(t *testing.T) {
 	}
 
 	for i, d := range data {
-		created, untouched, removed, err := suite.repository.permission.Register(d.permissions)
+		created, untouched, removed, err := suite.repository.permission.register(d.permissions)
 		if err != nil {
 			t.Fatalf("unexpected error: %s", err.Error())
 		}
@@ -113,12 +113,12 @@ func loadPermissionFixtures(t *testing.T, r permissionProvider, f []*permissionE
 
 	go func() {
 		for _, given := range f {
-			entity, err := r.Insert(given)
+			entity, err := r.insert(given)
 			if err != nil {
 				t.Errorf("permission cannot be created, unexpected error: %s", err.Error())
 				continue
 			} else {
-				t.Logf("permission has been created, got id %d", entity.ID)
+				t.Logf("permission has been created, got id %d", entity.id)
 			}
 
 			data <- permissionFixtures{

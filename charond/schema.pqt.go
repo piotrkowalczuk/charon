@@ -60,68 +60,68 @@ var (
 )
 
 type userEntity struct {
-	ConfirmationToken []byte
-	CreatedAt         time.Time
-	CreatedBy         *ntypes.Int64
-	FirstName         string
-	ID                int64
-	IsActive          bool
-	IsConfirmed       bool
-	IsStaff           bool
-	IsSuperuser       bool
-	LastLoginAt       *time.Time
-	LastName          string
-	Password          []byte
-	UpdatedAt         *time.Time
-	UpdatedBy         *ntypes.Int64
-	Username          string
-	Author            *userEntity
-	Modifier          *userEntity
-	Permission        []*permissionEntity
-	Group             []*groupEntity
+	confirmationToken []byte
+	createdAt         time.Time
+	createdBy         *ntypes.Int64
+	firstName         string
+	id                int64
+	isActive          bool
+	isConfirmed       bool
+	isStaff           bool
+	isSuperuser       bool
+	lastLoginAt       *time.Time
+	lastName          string
+	password          []byte
+	updatedAt         *time.Time
+	updatedBy         *ntypes.Int64
+	username          string
+	author            *userEntity
+	modifier          *userEntity
+	permission        []*permissionEntity
+	group             []*groupEntity
 }
 
-func (e *userEntity) Prop(cn string) (interface{}, bool) {
+func (e *userEntity) prop(cn string) (interface{}, bool) {
 	switch cn {
 	case tableUserColumnConfirmationToken:
-		return &e.ConfirmationToken, true
+		return &e.confirmationToken, true
 	case tableUserColumnCreatedAt:
-		return &e.CreatedAt, true
+		return &e.createdAt, true
 	case tableUserColumnCreatedBy:
-		return &e.CreatedBy, true
+		return &e.createdBy, true
 	case tableUserColumnFirstName:
-		return &e.FirstName, true
+		return &e.firstName, true
 	case tableUserColumnID:
-		return &e.ID, true
+		return &e.id, true
 	case tableUserColumnIsActive:
-		return &e.IsActive, true
+		return &e.isActive, true
 	case tableUserColumnIsConfirmed:
-		return &e.IsConfirmed, true
+		return &e.isConfirmed, true
 	case tableUserColumnIsStaff:
-		return &e.IsStaff, true
+		return &e.isStaff, true
 	case tableUserColumnIsSuperuser:
-		return &e.IsSuperuser, true
+		return &e.isSuperuser, true
 	case tableUserColumnLastLoginAt:
-		return &e.LastLoginAt, true
+		return &e.lastLoginAt, true
 	case tableUserColumnLastName:
-		return &e.LastName, true
+		return &e.lastName, true
 	case tableUserColumnPassword:
-		return &e.Password, true
+		return &e.password, true
 	case tableUserColumnUpdatedAt:
-		return &e.UpdatedAt, true
+		return &e.updatedAt, true
 	case tableUserColumnUpdatedBy:
-		return &e.UpdatedBy, true
+		return &e.updatedBy, true
 	case tableUserColumnUsername:
-		return &e.Username, true
+		return &e.username, true
 	default:
 		return nil, false
 	}
 }
-func (e *userEntity) Props(cns ...string) ([]interface{}, error) {
+func (e *userEntity) props(cns ...string) ([]interface{}, error) {
 
 	res := make([]interface{}, 0, len(cns))
 	for _, cn := range cns {
-		if prop, ok := e.Prop(cn); ok {
+		if prop, ok := e.prop(cn); ok {
 			res = append(res, prop)
 		} else {
 			return nil, fmt.Errorf("unexpected column provided: %s", cn)
@@ -172,7 +172,7 @@ func (i *userIterator) User() (*userEntity, error) {
 		return nil, err
 	}
 
-	props, err := ent.Props(cols...)
+	props, err := ent.props(cols...)
 	if err != nil {
 		return nil, err
 	}
@@ -747,7 +747,7 @@ type userRepositoryBase struct {
 	log     log.Logger
 }
 
-func ScanUserRows(rows *sql.Rows) ([]*userEntity, error) {
+func scanUserRows(rows *sql.Rows) ([]*userEntity, error) {
 	var (
 		entities []*userEntity
 		err      error
@@ -755,21 +755,21 @@ func ScanUserRows(rows *sql.Rows) ([]*userEntity, error) {
 	for rows.Next() {
 		var ent userEntity
 		err = rows.Scan(
-			&ent.ConfirmationToken,
-			&ent.CreatedAt,
-			&ent.CreatedBy,
-			&ent.FirstName,
-			&ent.ID,
-			&ent.IsActive,
-			&ent.IsConfirmed,
-			&ent.IsStaff,
-			&ent.IsSuperuser,
-			&ent.LastLoginAt,
-			&ent.LastName,
-			&ent.Password,
-			&ent.UpdatedAt,
-			&ent.UpdatedBy,
-			&ent.Username,
+			&ent.confirmationToken,
+			&ent.createdAt,
+			&ent.createdBy,
+			&ent.firstName,
+			&ent.id,
+			&ent.isActive,
+			&ent.isConfirmed,
+			&ent.isStaff,
+			&ent.isSuperuser,
+			&ent.lastLoginAt,
+			&ent.lastName,
+			&ent.password,
+			&ent.updatedAt,
+			&ent.updatedBy,
+			&ent.username,
 		)
 		if err != nil {
 			return nil, err
@@ -784,7 +784,7 @@ func ScanUserRows(rows *sql.Rows) ([]*userEntity, error) {
 	return entities, nil
 }
 
-func (r *userRepositoryBase) Count(c *userCriteria) (int64, error) {
+func (r *userRepositoryBase) count(c *userCriteria) (int64, error) {
 
 	com := pqtgo.NewComposer(15)
 	buf := bytes.NewBufferString("SELECT COUNT(*) FROM ")
@@ -813,7 +813,7 @@ func (r *userRepositoryBase) Count(c *userCriteria) (int64, error) {
 	return count, nil
 }
 
-func (r *userRepositoryBase) Find(c *userCriteria) ([]*userEntity, error) {
+func (r *userRepositoryBase) find(c *userCriteria) ([]*userEntity, error) {
 
 	com := pqtgo.NewComposer(1)
 	buf := bytes.NewBufferString("SELECT ")
@@ -845,9 +845,9 @@ func (r *userRepositoryBase) Find(c *userCriteria) ([]*userEntity, error) {
 
 	defer rows.Close()
 
-	return ScanUserRows(rows)
+	return scanUserRows(rows)
 }
-func (r *userRepositoryBase) FindIter(c *userCriteria) (*userIterator, error) {
+func (r *userRepositoryBase) findIter(c *userCriteria) (*userIterator, error) {
 
 	com := pqtgo.NewComposer(1)
 	buf := bytes.NewBufferString("SELECT ")
@@ -879,7 +879,7 @@ func (r *userRepositoryBase) FindIter(c *userCriteria) (*userIterator, error) {
 
 	return &userIterator{rows: rows}, nil
 }
-func (r *userRepositoryBase) FindOneByID(id int64) (*userEntity, error) {
+func (r *userRepositoryBase) findOneByID(id int64) (*userEntity, error) {
 	var (
 		entity userEntity
 	)
@@ -900,21 +900,21 @@ updated_by,
 username
  FROM charon.user WHERE id = $1`
 	err := r.db.QueryRow(query, id).Scan(
-		&entity.ConfirmationToken,
-		&entity.CreatedAt,
-		&entity.CreatedBy,
-		&entity.FirstName,
-		&entity.ID,
-		&entity.IsActive,
-		&entity.IsConfirmed,
-		&entity.IsStaff,
-		&entity.IsSuperuser,
-		&entity.LastLoginAt,
-		&entity.LastName,
-		&entity.Password,
-		&entity.UpdatedAt,
-		&entity.UpdatedBy,
-		&entity.Username,
+		&entity.confirmationToken,
+		&entity.createdAt,
+		&entity.createdBy,
+		&entity.firstName,
+		&entity.id,
+		&entity.isActive,
+		&entity.isConfirmed,
+		&entity.isStaff,
+		&entity.isSuperuser,
+		&entity.lastLoginAt,
+		&entity.lastName,
+		&entity.password,
+		&entity.updatedAt,
+		&entity.updatedBy,
+		&entity.username,
 	)
 	if err != nil {
 		return nil, err
@@ -922,22 +922,22 @@ username
 
 	return &entity, nil
 }
-func (r *userRepositoryBase) Insert(e *userEntity) (*userEntity, error) {
+func (r *userRepositoryBase) insert(e *userEntity) (*userEntity, error) {
 	insert := pqcomp.New(0, 15)
-	insert.AddExpr(tableUserColumnConfirmationToken, "", e.ConfirmationToken)
-	insert.AddExpr(tableUserColumnCreatedAt, "", e.CreatedAt)
-	insert.AddExpr(tableUserColumnCreatedBy, "", e.CreatedBy)
-	insert.AddExpr(tableUserColumnFirstName, "", e.FirstName)
-	insert.AddExpr(tableUserColumnIsActive, "", e.IsActive)
-	insert.AddExpr(tableUserColumnIsConfirmed, "", e.IsConfirmed)
-	insert.AddExpr(tableUserColumnIsStaff, "", e.IsStaff)
-	insert.AddExpr(tableUserColumnIsSuperuser, "", e.IsSuperuser)
-	insert.AddExpr(tableUserColumnLastLoginAt, "", e.LastLoginAt)
-	insert.AddExpr(tableUserColumnLastName, "", e.LastName)
-	insert.AddExpr(tableUserColumnPassword, "", e.Password)
-	insert.AddExpr(tableUserColumnUpdatedAt, "", e.UpdatedAt)
-	insert.AddExpr(tableUserColumnUpdatedBy, "", e.UpdatedBy)
-	insert.AddExpr(tableUserColumnUsername, "", e.Username)
+	insert.AddExpr(tableUserColumnConfirmationToken, "", e.confirmationToken)
+	insert.AddExpr(tableUserColumnCreatedAt, "", e.createdAt)
+	insert.AddExpr(tableUserColumnCreatedBy, "", e.createdBy)
+	insert.AddExpr(tableUserColumnFirstName, "", e.firstName)
+	insert.AddExpr(tableUserColumnIsActive, "", e.isActive)
+	insert.AddExpr(tableUserColumnIsConfirmed, "", e.isConfirmed)
+	insert.AddExpr(tableUserColumnIsStaff, "", e.isStaff)
+	insert.AddExpr(tableUserColumnIsSuperuser, "", e.isSuperuser)
+	insert.AddExpr(tableUserColumnLastLoginAt, "", e.lastLoginAt)
+	insert.AddExpr(tableUserColumnLastName, "", e.lastName)
+	insert.AddExpr(tableUserColumnPassword, "", e.password)
+	insert.AddExpr(tableUserColumnUpdatedAt, "", e.updatedAt)
+	insert.AddExpr(tableUserColumnUpdatedBy, "", e.updatedBy)
+	insert.AddExpr(tableUserColumnUsername, "", e.username)
 
 	b := bytes.NewBufferString("INSERT INTO " + r.table)
 
@@ -973,21 +973,21 @@ func (r *userRepositoryBase) Insert(e *userEntity) (*userEntity, error) {
 	}
 
 	err := r.db.QueryRow(b.String(), insert.Args()...).Scan(
-		&e.ConfirmationToken,
-		&e.CreatedAt,
-		&e.CreatedBy,
-		&e.FirstName,
-		&e.ID,
-		&e.IsActive,
-		&e.IsConfirmed,
-		&e.IsStaff,
-		&e.IsSuperuser,
-		&e.LastLoginAt,
-		&e.LastName,
-		&e.Password,
-		&e.UpdatedAt,
-		&e.UpdatedBy,
-		&e.Username,
+		&e.confirmationToken,
+		&e.createdAt,
+		&e.createdBy,
+		&e.firstName,
+		&e.id,
+		&e.isActive,
+		&e.isConfirmed,
+		&e.isStaff,
+		&e.isSuperuser,
+		&e.lastLoginAt,
+		&e.lastName,
+		&e.password,
+		&e.updatedAt,
+		&e.updatedBy,
+		&e.username,
 	)
 	if err != nil {
 		return nil, err
@@ -995,23 +995,23 @@ func (r *userRepositoryBase) Insert(e *userEntity) (*userEntity, error) {
 
 	return e, nil
 }
-func (r *userRepositoryBase) Upsert(e *userEntity, p *userPatch, inf ...string) (*userEntity, error) {
+func (r *userRepositoryBase) upsert(e *userEntity, p *userPatch, inf ...string) (*userEntity, error) {
 	insert := pqcomp.New(0, 15)
 	update := insert.Compose(15)
-	insert.AddExpr(tableUserColumnConfirmationToken, "", e.ConfirmationToken)
-	insert.AddExpr(tableUserColumnCreatedAt, "", e.CreatedAt)
-	insert.AddExpr(tableUserColumnCreatedBy, "", e.CreatedBy)
-	insert.AddExpr(tableUserColumnFirstName, "", e.FirstName)
-	insert.AddExpr(tableUserColumnIsActive, "", e.IsActive)
-	insert.AddExpr(tableUserColumnIsConfirmed, "", e.IsConfirmed)
-	insert.AddExpr(tableUserColumnIsStaff, "", e.IsStaff)
-	insert.AddExpr(tableUserColumnIsSuperuser, "", e.IsSuperuser)
-	insert.AddExpr(tableUserColumnLastLoginAt, "", e.LastLoginAt)
-	insert.AddExpr(tableUserColumnLastName, "", e.LastName)
-	insert.AddExpr(tableUserColumnPassword, "", e.Password)
-	insert.AddExpr(tableUserColumnUpdatedAt, "", e.UpdatedAt)
-	insert.AddExpr(tableUserColumnUpdatedBy, "", e.UpdatedBy)
-	insert.AddExpr(tableUserColumnUsername, "", e.Username)
+	insert.AddExpr(tableUserColumnConfirmationToken, "", e.confirmationToken)
+	insert.AddExpr(tableUserColumnCreatedAt, "", e.createdAt)
+	insert.AddExpr(tableUserColumnCreatedBy, "", e.createdBy)
+	insert.AddExpr(tableUserColumnFirstName, "", e.firstName)
+	insert.AddExpr(tableUserColumnIsActive, "", e.isActive)
+	insert.AddExpr(tableUserColumnIsConfirmed, "", e.isConfirmed)
+	insert.AddExpr(tableUserColumnIsStaff, "", e.isStaff)
+	insert.AddExpr(tableUserColumnIsSuperuser, "", e.isSuperuser)
+	insert.AddExpr(tableUserColumnLastLoginAt, "", e.lastLoginAt)
+	insert.AddExpr(tableUserColumnLastName, "", e.lastName)
+	insert.AddExpr(tableUserColumnPassword, "", e.password)
+	insert.AddExpr(tableUserColumnUpdatedAt, "", e.updatedAt)
+	insert.AddExpr(tableUserColumnUpdatedBy, "", e.updatedBy)
+	insert.AddExpr(tableUserColumnUsername, "", e.username)
 	if len(inf) > 0 {
 		update.AddExpr(tableUserColumnConfirmationToken, "=", p.confirmationToken)
 		update.AddExpr(tableUserColumnCreatedAt, "=", p.createdAt)
@@ -1090,21 +1090,21 @@ func (r *userRepositoryBase) Upsert(e *userEntity, p *userPatch, inf ...string) 
 	}
 
 	err := r.db.QueryRow(b.String(), insert.Args()...).Scan(
-		&e.ConfirmationToken,
-		&e.CreatedAt,
-		&e.CreatedBy,
-		&e.FirstName,
-		&e.ID,
-		&e.IsActive,
-		&e.IsConfirmed,
-		&e.IsStaff,
-		&e.IsSuperuser,
-		&e.LastLoginAt,
-		&e.LastName,
-		&e.Password,
-		&e.UpdatedAt,
-		&e.UpdatedBy,
-		&e.Username,
+		&e.confirmationToken,
+		&e.createdAt,
+		&e.createdBy,
+		&e.firstName,
+		&e.id,
+		&e.isActive,
+		&e.isConfirmed,
+		&e.isStaff,
+		&e.isSuperuser,
+		&e.lastLoginAt,
+		&e.lastName,
+		&e.password,
+		&e.updatedAt,
+		&e.updatedBy,
+		&e.username,
 	)
 	if err != nil {
 		return nil, err
@@ -1112,9 +1112,10 @@ func (r *userRepositoryBase) Upsert(e *userEntity, p *userPatch, inf ...string) 
 
 	return e, nil
 }
-func (r *userRepositoryBase) UpdateOneByID(id int64, patch *userPatch) (*userEntity, error) {
-	update := pqcomp.New(0, 15)
-	update.AddExpr(tableUserColumnID, pqcomp.Equal, id)
+func (r *userRepositoryBase) updateOneByID(id int64, patch *userPatch) (*userEntity, error) {
+	update := pqcomp.New(1, 15)
+	update.AddArg(id)
+
 	update.AddExpr(tableUserColumnConfirmationToken, pqcomp.Equal, patch.confirmationToken)
 	if patch.createdAt != nil {
 		update.AddExpr(tableUserColumnCreatedAt, pqcomp.Equal, patch.createdAt)
@@ -1151,21 +1152,21 @@ func (r *userRepositoryBase) UpdateOneByID(id int64, patch *userPatch) (*userEnt
 	query += " WHERE id = $1 RETURNING " + strings.Join(r.columns, ", ")
 	var e userEntity
 	err := r.db.QueryRow(query, update.Args()...).Scan(
-		&e.ConfirmationToken,
-		&e.CreatedAt,
-		&e.CreatedBy,
-		&e.FirstName,
-		&e.ID,
-		&e.IsActive,
-		&e.IsConfirmed,
-		&e.IsStaff,
-		&e.IsSuperuser,
-		&e.LastLoginAt,
-		&e.LastName,
-		&e.Password,
-		&e.UpdatedAt,
-		&e.UpdatedBy,
-		&e.Username,
+		&e.confirmationToken,
+		&e.createdAt,
+		&e.createdBy,
+		&e.firstName,
+		&e.id,
+		&e.isActive,
+		&e.isConfirmed,
+		&e.isStaff,
+		&e.isSuperuser,
+		&e.lastLoginAt,
+		&e.lastName,
+		&e.password,
+		&e.updatedAt,
+		&e.updatedBy,
+		&e.username,
 	)
 	if err != nil {
 		return nil, err
@@ -1173,7 +1174,8 @@ func (r *userRepositoryBase) UpdateOneByID(id int64, patch *userPatch) (*userEnt
 
 	return &e, nil
 }
-func (r *userRepositoryBase) DeleteOneByID(id int64) (int64, error) {
+
+func (r *userRepositoryBase) deleteOneByID(id int64) (int64, error) {
 	query := "DELETE FROM charon.user WHERE id = $1"
 
 	res, err := r.db.Exec(query, id)
@@ -1212,44 +1214,44 @@ var (
 )
 
 type groupEntity struct {
-	CreatedAt   time.Time
-	CreatedBy   *ntypes.Int64
-	Description *ntypes.String
-	ID          int64
-	Name        string
-	UpdatedAt   *time.Time
-	UpdatedBy   *ntypes.Int64
-	Author      *userEntity
-	Modifier    *userEntity
-	Permission  []*permissionEntity
-	Users       []*userEntity
+	createdAt   time.Time
+	createdBy   *ntypes.Int64
+	description *ntypes.String
+	id          int64
+	name        string
+	updatedAt   *time.Time
+	updatedBy   *ntypes.Int64
+	author      *userEntity
+	modifier    *userEntity
+	permission  []*permissionEntity
+	user        []*userEntity
 }
 
-func (e *groupEntity) Prop(cn string) (interface{}, bool) {
+func (e *groupEntity) prop(cn string) (interface{}, bool) {
 	switch cn {
 	case tableGroupColumnCreatedAt:
-		return &e.CreatedAt, true
+		return &e.createdAt, true
 	case tableGroupColumnCreatedBy:
-		return &e.CreatedBy, true
+		return &e.createdBy, true
 	case tableGroupColumnDescription:
-		return &e.Description, true
+		return &e.description, true
 	case tableGroupColumnID:
-		return &e.ID, true
+		return &e.id, true
 	case tableGroupColumnName:
-		return &e.Name, true
+		return &e.name, true
 	case tableGroupColumnUpdatedAt:
-		return &e.UpdatedAt, true
+		return &e.updatedAt, true
 	case tableGroupColumnUpdatedBy:
-		return &e.UpdatedBy, true
+		return &e.updatedBy, true
 	default:
 		return nil, false
 	}
 }
-func (e *groupEntity) Props(cns ...string) ([]interface{}, error) {
+func (e *groupEntity) props(cns ...string) ([]interface{}, error) {
 
 	res := make([]interface{}, 0, len(cns))
 	for _, cn := range cns {
-		if prop, ok := e.Prop(cn); ok {
+		if prop, ok := e.prop(cn); ok {
 			res = append(res, prop)
 		} else {
 			return nil, fmt.Errorf("unexpected column provided: %s", cn)
@@ -1300,7 +1302,7 @@ func (i *groupIterator) Group() (*groupEntity, error) {
 		return nil, err
 	}
 
-	props, err := ent.Props(cols...)
+	props, err := ent.props(cols...)
 	if err != nil {
 		return nil, err
 	}
@@ -1639,7 +1641,7 @@ type groupRepositoryBase struct {
 	log     log.Logger
 }
 
-func ScanGroupRows(rows *sql.Rows) ([]*groupEntity, error) {
+func scanGroupRows(rows *sql.Rows) ([]*groupEntity, error) {
 	var (
 		entities []*groupEntity
 		err      error
@@ -1647,13 +1649,13 @@ func ScanGroupRows(rows *sql.Rows) ([]*groupEntity, error) {
 	for rows.Next() {
 		var ent groupEntity
 		err = rows.Scan(
-			&ent.CreatedAt,
-			&ent.CreatedBy,
-			&ent.Description,
-			&ent.ID,
-			&ent.Name,
-			&ent.UpdatedAt,
-			&ent.UpdatedBy,
+			&ent.createdAt,
+			&ent.createdBy,
+			&ent.description,
+			&ent.id,
+			&ent.name,
+			&ent.updatedAt,
+			&ent.updatedBy,
 		)
 		if err != nil {
 			return nil, err
@@ -1668,7 +1670,7 @@ func ScanGroupRows(rows *sql.Rows) ([]*groupEntity, error) {
 	return entities, nil
 }
 
-func (r *groupRepositoryBase) Count(c *groupCriteria) (int64, error) {
+func (r *groupRepositoryBase) count(c *groupCriteria) (int64, error) {
 
 	com := pqtgo.NewComposer(7)
 	buf := bytes.NewBufferString("SELECT COUNT(*) FROM ")
@@ -1697,7 +1699,7 @@ func (r *groupRepositoryBase) Count(c *groupCriteria) (int64, error) {
 	return count, nil
 }
 
-func (r *groupRepositoryBase) Find(c *groupCriteria) ([]*groupEntity, error) {
+func (r *groupRepositoryBase) find(c *groupCriteria) ([]*groupEntity, error) {
 
 	com := pqtgo.NewComposer(1)
 	buf := bytes.NewBufferString("SELECT ")
@@ -1729,9 +1731,9 @@ func (r *groupRepositoryBase) Find(c *groupCriteria) ([]*groupEntity, error) {
 
 	defer rows.Close()
 
-	return ScanGroupRows(rows)
+	return scanGroupRows(rows)
 }
-func (r *groupRepositoryBase) FindIter(c *groupCriteria) (*groupIterator, error) {
+func (r *groupRepositoryBase) findIter(c *groupCriteria) (*groupIterator, error) {
 
 	com := pqtgo.NewComposer(1)
 	buf := bytes.NewBufferString("SELECT ")
@@ -1763,7 +1765,7 @@ func (r *groupRepositoryBase) FindIter(c *groupCriteria) (*groupIterator, error)
 
 	return &groupIterator{rows: rows}, nil
 }
-func (r *groupRepositoryBase) FindOneByID(id int64) (*groupEntity, error) {
+func (r *groupRepositoryBase) findOneByID(id int64) (*groupEntity, error) {
 	var (
 		entity groupEntity
 	)
@@ -1776,13 +1778,13 @@ updated_at,
 updated_by
  FROM charon.group WHERE id = $1`
 	err := r.db.QueryRow(query, id).Scan(
-		&entity.CreatedAt,
-		&entity.CreatedBy,
-		&entity.Description,
-		&entity.ID,
-		&entity.Name,
-		&entity.UpdatedAt,
-		&entity.UpdatedBy,
+		&entity.createdAt,
+		&entity.createdBy,
+		&entity.description,
+		&entity.id,
+		&entity.name,
+		&entity.updatedAt,
+		&entity.updatedBy,
 	)
 	if err != nil {
 		return nil, err
@@ -1790,14 +1792,14 @@ updated_by
 
 	return &entity, nil
 }
-func (r *groupRepositoryBase) Insert(e *groupEntity) (*groupEntity, error) {
+func (r *groupRepositoryBase) insert(e *groupEntity) (*groupEntity, error) {
 	insert := pqcomp.New(0, 7)
-	insert.AddExpr(tableGroupColumnCreatedAt, "", e.CreatedAt)
-	insert.AddExpr(tableGroupColumnCreatedBy, "", e.CreatedBy)
-	insert.AddExpr(tableGroupColumnDescription, "", e.Description)
-	insert.AddExpr(tableGroupColumnName, "", e.Name)
-	insert.AddExpr(tableGroupColumnUpdatedAt, "", e.UpdatedAt)
-	insert.AddExpr(tableGroupColumnUpdatedBy, "", e.UpdatedBy)
+	insert.AddExpr(tableGroupColumnCreatedAt, "", e.createdAt)
+	insert.AddExpr(tableGroupColumnCreatedBy, "", e.createdBy)
+	insert.AddExpr(tableGroupColumnDescription, "", e.description)
+	insert.AddExpr(tableGroupColumnName, "", e.name)
+	insert.AddExpr(tableGroupColumnUpdatedAt, "", e.updatedAt)
+	insert.AddExpr(tableGroupColumnUpdatedBy, "", e.updatedBy)
 
 	b := bytes.NewBufferString("INSERT INTO " + r.table)
 
@@ -1833,13 +1835,13 @@ func (r *groupRepositoryBase) Insert(e *groupEntity) (*groupEntity, error) {
 	}
 
 	err := r.db.QueryRow(b.String(), insert.Args()...).Scan(
-		&e.CreatedAt,
-		&e.CreatedBy,
-		&e.Description,
-		&e.ID,
-		&e.Name,
-		&e.UpdatedAt,
-		&e.UpdatedBy,
+		&e.createdAt,
+		&e.createdBy,
+		&e.description,
+		&e.id,
+		&e.name,
+		&e.updatedAt,
+		&e.updatedBy,
 	)
 	if err != nil {
 		return nil, err
@@ -1847,15 +1849,15 @@ func (r *groupRepositoryBase) Insert(e *groupEntity) (*groupEntity, error) {
 
 	return e, nil
 }
-func (r *groupRepositoryBase) Upsert(e *groupEntity, p *groupPatch, inf ...string) (*groupEntity, error) {
+func (r *groupRepositoryBase) upsert(e *groupEntity, p *groupPatch, inf ...string) (*groupEntity, error) {
 	insert := pqcomp.New(0, 7)
 	update := insert.Compose(7)
-	insert.AddExpr(tableGroupColumnCreatedAt, "", e.CreatedAt)
-	insert.AddExpr(tableGroupColumnCreatedBy, "", e.CreatedBy)
-	insert.AddExpr(tableGroupColumnDescription, "", e.Description)
-	insert.AddExpr(tableGroupColumnName, "", e.Name)
-	insert.AddExpr(tableGroupColumnUpdatedAt, "", e.UpdatedAt)
-	insert.AddExpr(tableGroupColumnUpdatedBy, "", e.UpdatedBy)
+	insert.AddExpr(tableGroupColumnCreatedAt, "", e.createdAt)
+	insert.AddExpr(tableGroupColumnCreatedBy, "", e.createdBy)
+	insert.AddExpr(tableGroupColumnDescription, "", e.description)
+	insert.AddExpr(tableGroupColumnName, "", e.name)
+	insert.AddExpr(tableGroupColumnUpdatedAt, "", e.updatedAt)
+	insert.AddExpr(tableGroupColumnUpdatedBy, "", e.updatedBy)
 	if len(inf) > 0 {
 		update.AddExpr(tableGroupColumnCreatedAt, "=", p.createdAt)
 		update.AddExpr(tableGroupColumnCreatedBy, "=", p.createdBy)
@@ -1926,13 +1928,13 @@ func (r *groupRepositoryBase) Upsert(e *groupEntity, p *groupPatch, inf ...strin
 	}
 
 	err := r.db.QueryRow(b.String(), insert.Args()...).Scan(
-		&e.CreatedAt,
-		&e.CreatedBy,
-		&e.Description,
-		&e.ID,
-		&e.Name,
-		&e.UpdatedAt,
-		&e.UpdatedBy,
+		&e.createdAt,
+		&e.createdBy,
+		&e.description,
+		&e.id,
+		&e.name,
+		&e.updatedAt,
+		&e.updatedBy,
 	)
 	if err != nil {
 		return nil, err
@@ -1940,9 +1942,10 @@ func (r *groupRepositoryBase) Upsert(e *groupEntity, p *groupPatch, inf ...strin
 
 	return e, nil
 }
-func (r *groupRepositoryBase) UpdateOneByID(id int64, patch *groupPatch) (*groupEntity, error) {
-	update := pqcomp.New(0, 7)
-	update.AddExpr(tableGroupColumnID, pqcomp.Equal, id)
+func (r *groupRepositoryBase) updateOneByID(id int64, patch *groupPatch) (*groupEntity, error) {
+	update := pqcomp.New(1, 7)
+	update.AddArg(id)
+
 	if patch.createdAt != nil {
 		update.AddExpr(tableGroupColumnCreatedAt, pqcomp.Equal, patch.createdAt)
 
@@ -1971,13 +1974,13 @@ func (r *groupRepositoryBase) UpdateOneByID(id int64, patch *groupPatch) (*group
 	query += " WHERE id = $1 RETURNING " + strings.Join(r.columns, ", ")
 	var e groupEntity
 	err := r.db.QueryRow(query, update.Args()...).Scan(
-		&e.CreatedAt,
-		&e.CreatedBy,
-		&e.Description,
-		&e.ID,
-		&e.Name,
-		&e.UpdatedAt,
-		&e.UpdatedBy,
+		&e.createdAt,
+		&e.createdBy,
+		&e.description,
+		&e.id,
+		&e.name,
+		&e.updatedAt,
+		&e.updatedBy,
 	)
 	if err != nil {
 		return nil, err
@@ -1985,7 +1988,8 @@ func (r *groupRepositoryBase) UpdateOneByID(id int64, patch *groupPatch) (*group
 
 	return &e, nil
 }
-func (r *groupRepositoryBase) DeleteOneByID(id int64) (int64, error) {
+
+func (r *groupRepositoryBase) deleteOneByID(id int64) (int64, error) {
 	query := "DELETE FROM charon.group WHERE id = $1"
 
 	res, err := r.db.Exec(query, id)
@@ -2020,39 +2024,39 @@ var (
 )
 
 type permissionEntity struct {
-	Action    string
-	CreatedAt time.Time
-	ID        int64
-	Module    string
-	Subsystem string
-	UpdatedAt *time.Time
-	Groups    []*groupEntity
-	Users     []*userEntity
+	action    string
+	createdAt time.Time
+	id        int64
+	module    string
+	subsystem string
+	updatedAt *time.Time
+	group     []*groupEntity
+	user      []*userEntity
 }
 
-func (e *permissionEntity) Prop(cn string) (interface{}, bool) {
+func (e *permissionEntity) prop(cn string) (interface{}, bool) {
 	switch cn {
 	case tablePermissionColumnAction:
-		return &e.Action, true
+		return &e.action, true
 	case tablePermissionColumnCreatedAt:
-		return &e.CreatedAt, true
+		return &e.createdAt, true
 	case tablePermissionColumnID:
-		return &e.ID, true
+		return &e.id, true
 	case tablePermissionColumnModule:
-		return &e.Module, true
+		return &e.module, true
 	case tablePermissionColumnSubsystem:
-		return &e.Subsystem, true
+		return &e.subsystem, true
 	case tablePermissionColumnUpdatedAt:
-		return &e.UpdatedAt, true
+		return &e.updatedAt, true
 	default:
 		return nil, false
 	}
 }
-func (e *permissionEntity) Props(cns ...string) ([]interface{}, error) {
+func (e *permissionEntity) props(cns ...string) ([]interface{}, error) {
 
 	res := make([]interface{}, 0, len(cns))
 	for _, cn := range cns {
-		if prop, ok := e.Prop(cn); ok {
+		if prop, ok := e.prop(cn); ok {
 			res = append(res, prop)
 		} else {
 			return nil, fmt.Errorf("unexpected column provided: %s", cn)
@@ -2103,7 +2107,7 @@ func (i *permissionIterator) Permission() (*permissionEntity, error) {
 		return nil, err
 	}
 
-	props, err := ent.Props(cols...)
+	props, err := ent.props(cols...)
 	if err != nil {
 		return nil, err
 	}
@@ -2436,7 +2440,7 @@ type permissionRepositoryBase struct {
 	log     log.Logger
 }
 
-func ScanPermissionRows(rows *sql.Rows) ([]*permissionEntity, error) {
+func scanPermissionRows(rows *sql.Rows) ([]*permissionEntity, error) {
 	var (
 		entities []*permissionEntity
 		err      error
@@ -2444,12 +2448,12 @@ func ScanPermissionRows(rows *sql.Rows) ([]*permissionEntity, error) {
 	for rows.Next() {
 		var ent permissionEntity
 		err = rows.Scan(
-			&ent.Action,
-			&ent.CreatedAt,
-			&ent.ID,
-			&ent.Module,
-			&ent.Subsystem,
-			&ent.UpdatedAt,
+			&ent.action,
+			&ent.createdAt,
+			&ent.id,
+			&ent.module,
+			&ent.subsystem,
+			&ent.updatedAt,
 		)
 		if err != nil {
 			return nil, err
@@ -2464,7 +2468,7 @@ func ScanPermissionRows(rows *sql.Rows) ([]*permissionEntity, error) {
 	return entities, nil
 }
 
-func (r *permissionRepositoryBase) Count(c *permissionCriteria) (int64, error) {
+func (r *permissionRepositoryBase) count(c *permissionCriteria) (int64, error) {
 
 	com := pqtgo.NewComposer(6)
 	buf := bytes.NewBufferString("SELECT COUNT(*) FROM ")
@@ -2493,7 +2497,7 @@ func (r *permissionRepositoryBase) Count(c *permissionCriteria) (int64, error) {
 	return count, nil
 }
 
-func (r *permissionRepositoryBase) Find(c *permissionCriteria) ([]*permissionEntity, error) {
+func (r *permissionRepositoryBase) find(c *permissionCriteria) ([]*permissionEntity, error) {
 
 	com := pqtgo.NewComposer(1)
 	buf := bytes.NewBufferString("SELECT ")
@@ -2525,9 +2529,9 @@ func (r *permissionRepositoryBase) Find(c *permissionCriteria) ([]*permissionEnt
 
 	defer rows.Close()
 
-	return ScanPermissionRows(rows)
+	return scanPermissionRows(rows)
 }
-func (r *permissionRepositoryBase) FindIter(c *permissionCriteria) (*permissionIterator, error) {
+func (r *permissionRepositoryBase) findIter(c *permissionCriteria) (*permissionIterator, error) {
 
 	com := pqtgo.NewComposer(1)
 	buf := bytes.NewBufferString("SELECT ")
@@ -2559,7 +2563,7 @@ func (r *permissionRepositoryBase) FindIter(c *permissionCriteria) (*permissionI
 
 	return &permissionIterator{rows: rows}, nil
 }
-func (r *permissionRepositoryBase) FindOneByID(id int64) (*permissionEntity, error) {
+func (r *permissionRepositoryBase) findOneByID(id int64) (*permissionEntity, error) {
 	var (
 		entity permissionEntity
 	)
@@ -2571,12 +2575,12 @@ subsystem,
 updated_at
  FROM charon.permission WHERE id = $1`
 	err := r.db.QueryRow(query, id).Scan(
-		&entity.Action,
-		&entity.CreatedAt,
-		&entity.ID,
-		&entity.Module,
-		&entity.Subsystem,
-		&entity.UpdatedAt,
+		&entity.action,
+		&entity.createdAt,
+		&entity.id,
+		&entity.module,
+		&entity.subsystem,
+		&entity.updatedAt,
 	)
 	if err != nil {
 		return nil, err
@@ -2584,18 +2588,18 @@ updated_at
 
 	return &entity, nil
 }
-func (r *permissionRepositoryBase) FindOneBySubsystemAndModuleAndAction(subsystem string, module string, action string) (*permissionEntity, error) {
+func (r *permissionRepositoryBase) findOneBySubsystemAndModuleAndAction(subsystem string, module string, action string) (*permissionEntity, error) {
 	var (
 		entity permissionEntity
 	)
 	query := `SELECT action, created_at, id, module, subsystem, updated_at FROM charon.permission WHERE subsystem = $1 AND module = $2 AND action = $3`
 	err := r.db.QueryRow(query, subsystem, module, action).Scan(
-		&entity.Action,
-		&entity.CreatedAt,
-		&entity.ID,
-		&entity.Module,
-		&entity.Subsystem,
-		&entity.UpdatedAt,
+		&entity.action,
+		&entity.createdAt,
+		&entity.id,
+		&entity.module,
+		&entity.subsystem,
+		&entity.updatedAt,
 	)
 	if err != nil {
 		return nil, err
@@ -2603,13 +2607,13 @@ func (r *permissionRepositoryBase) FindOneBySubsystemAndModuleAndAction(subsyste
 
 	return &entity, nil
 }
-func (r *permissionRepositoryBase) Insert(e *permissionEntity) (*permissionEntity, error) {
+func (r *permissionRepositoryBase) insert(e *permissionEntity) (*permissionEntity, error) {
 	insert := pqcomp.New(0, 6)
-	insert.AddExpr(tablePermissionColumnAction, "", e.Action)
-	insert.AddExpr(tablePermissionColumnCreatedAt, "", e.CreatedAt)
-	insert.AddExpr(tablePermissionColumnModule, "", e.Module)
-	insert.AddExpr(tablePermissionColumnSubsystem, "", e.Subsystem)
-	insert.AddExpr(tablePermissionColumnUpdatedAt, "", e.UpdatedAt)
+	insert.AddExpr(tablePermissionColumnAction, "", e.action)
+	insert.AddExpr(tablePermissionColumnCreatedAt, "", e.createdAt)
+	insert.AddExpr(tablePermissionColumnModule, "", e.module)
+	insert.AddExpr(tablePermissionColumnSubsystem, "", e.subsystem)
+	insert.AddExpr(tablePermissionColumnUpdatedAt, "", e.updatedAt)
 
 	b := bytes.NewBufferString("INSERT INTO " + r.table)
 
@@ -2645,12 +2649,12 @@ func (r *permissionRepositoryBase) Insert(e *permissionEntity) (*permissionEntit
 	}
 
 	err := r.db.QueryRow(b.String(), insert.Args()...).Scan(
-		&e.Action,
-		&e.CreatedAt,
-		&e.ID,
-		&e.Module,
-		&e.Subsystem,
-		&e.UpdatedAt,
+		&e.action,
+		&e.createdAt,
+		&e.id,
+		&e.module,
+		&e.subsystem,
+		&e.updatedAt,
 	)
 	if err != nil {
 		return nil, err
@@ -2658,14 +2662,14 @@ func (r *permissionRepositoryBase) Insert(e *permissionEntity) (*permissionEntit
 
 	return e, nil
 }
-func (r *permissionRepositoryBase) Upsert(e *permissionEntity, p *permissionPatch, inf ...string) (*permissionEntity, error) {
+func (r *permissionRepositoryBase) upsert(e *permissionEntity, p *permissionPatch, inf ...string) (*permissionEntity, error) {
 	insert := pqcomp.New(0, 6)
 	update := insert.Compose(6)
-	insert.AddExpr(tablePermissionColumnAction, "", e.Action)
-	insert.AddExpr(tablePermissionColumnCreatedAt, "", e.CreatedAt)
-	insert.AddExpr(tablePermissionColumnModule, "", e.Module)
-	insert.AddExpr(tablePermissionColumnSubsystem, "", e.Subsystem)
-	insert.AddExpr(tablePermissionColumnUpdatedAt, "", e.UpdatedAt)
+	insert.AddExpr(tablePermissionColumnAction, "", e.action)
+	insert.AddExpr(tablePermissionColumnCreatedAt, "", e.createdAt)
+	insert.AddExpr(tablePermissionColumnModule, "", e.module)
+	insert.AddExpr(tablePermissionColumnSubsystem, "", e.subsystem)
+	insert.AddExpr(tablePermissionColumnUpdatedAt, "", e.updatedAt)
 	if len(inf) > 0 {
 		update.AddExpr(tablePermissionColumnAction, "=", p.action)
 		update.AddExpr(tablePermissionColumnCreatedAt, "=", p.createdAt)
@@ -2735,12 +2739,12 @@ func (r *permissionRepositoryBase) Upsert(e *permissionEntity, p *permissionPatc
 	}
 
 	err := r.db.QueryRow(b.String(), insert.Args()...).Scan(
-		&e.Action,
-		&e.CreatedAt,
-		&e.ID,
-		&e.Module,
-		&e.Subsystem,
-		&e.UpdatedAt,
+		&e.action,
+		&e.createdAt,
+		&e.id,
+		&e.module,
+		&e.subsystem,
+		&e.updatedAt,
 	)
 	if err != nil {
 		return nil, err
@@ -2748,9 +2752,10 @@ func (r *permissionRepositoryBase) Upsert(e *permissionEntity, p *permissionPatc
 
 	return e, nil
 }
-func (r *permissionRepositoryBase) UpdateOneByID(id int64, patch *permissionPatch) (*permissionEntity, error) {
-	update := pqcomp.New(0, 6)
-	update.AddExpr(tablePermissionColumnID, pqcomp.Equal, id)
+func (r *permissionRepositoryBase) updateOneByID(id int64, patch *permissionPatch) (*permissionEntity, error) {
+	update := pqcomp.New(1, 6)
+	update.AddArg(id)
+
 	update.AddExpr(tablePermissionColumnAction, pqcomp.Equal, patch.action)
 	if patch.createdAt != nil {
 		update.AddExpr(tablePermissionColumnCreatedAt, pqcomp.Equal, patch.createdAt)
@@ -2778,12 +2783,12 @@ func (r *permissionRepositoryBase) UpdateOneByID(id int64, patch *permissionPatc
 	query += " WHERE id = $1 RETURNING " + strings.Join(r.columns, ", ")
 	var e permissionEntity
 	err := r.db.QueryRow(query, update.Args()...).Scan(
-		&e.Action,
-		&e.CreatedAt,
-		&e.ID,
-		&e.Module,
-		&e.Subsystem,
-		&e.UpdatedAt,
+		&e.action,
+		&e.createdAt,
+		&e.id,
+		&e.module,
+		&e.subsystem,
+		&e.updatedAt,
 	)
 	if err != nil {
 		return nil, err
@@ -2791,7 +2796,58 @@ func (r *permissionRepositoryBase) UpdateOneByID(id int64, patch *permissionPatc
 
 	return &e, nil
 }
-func (r *permissionRepositoryBase) DeleteOneByID(id int64) (int64, error) {
+func (r *permissionRepositoryBase) updateOneBySubsystemAndModuleAndAction(subsystem string, module string, action string, patch *permissionPatch) (*permissionEntity, error) {
+	update := pqcomp.New(2, 6)
+	update.AddArg(subsystem)
+	update.AddArg(module)
+	update.AddArg(action)
+	update.AddExpr(tablePermissionColumnAction, pqcomp.Equal, patch.action)
+	if patch.createdAt != nil {
+		update.AddExpr(tablePermissionColumnCreatedAt, pqcomp.Equal, patch.createdAt)
+
+	}
+	update.AddExpr(tablePermissionColumnModule, pqcomp.Equal, patch.module)
+	update.AddExpr(tablePermissionColumnSubsystem, pqcomp.Equal, patch.subsystem)
+	if patch.updatedAt != nil {
+		update.AddExpr(tablePermissionColumnUpdatedAt, pqcomp.Equal, patch.updatedAt)
+	} else {
+		update.AddExpr(tablePermissionColumnUpdatedAt, pqcomp.Equal, "NOW()")
+	}
+
+	if update.Len() == 0 {
+		return nil, errors.New("permission update failure, nothing to update")
+	}
+	query := "UPDATE charon.permission SET "
+	for update.Next() {
+		if !update.First() {
+			query += ", "
+		}
+
+		query += update.Key() + " " + update.Oper() + " " + update.PlaceHolder()
+	}
+	query += " WHERE subsystem = $1 AND module = $2 AND action = $3 RETURNING " + strings.Join(r.columns, ", ")
+	if r.dbg {
+		if err := r.log.Log("msg", query, "function", "UpdateOneBySubsystemAndModuleAndAction"); err != nil {
+			return nil, err
+		}
+	}
+	var e permissionEntity
+	err := r.db.QueryRow(query, update.Args()...).Scan(
+		&e.action,
+		&e.createdAt,
+		&e.id,
+		&e.module,
+		&e.subsystem,
+		&e.updatedAt,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return &e, nil
+}
+
+func (r *permissionRepositoryBase) deleteOneByID(id int64) (int64, error) {
 	query := "DELETE FROM charon.permission WHERE id = $1"
 
 	res, err := r.db.Exec(query, id)
@@ -2829,41 +2885,41 @@ var (
 )
 
 type userGroupsEntity struct {
-	CreatedAt time.Time
-	CreatedBy *ntypes.Int64
-	GroupID   int64
-	UpdatedAt *time.Time
-	UpdatedBy *ntypes.Int64
-	UserID    int64
-	User      *userEntity
-	Group     *groupEntity
-	Author    *userEntity
-	Modifier  *userEntity
+	createdAt time.Time
+	createdBy *ntypes.Int64
+	groupID   int64
+	updatedAt *time.Time
+	updatedBy *ntypes.Int64
+	userID    int64
+	user      *userEntity
+	group     *groupEntity
+	author    *userEntity
+	modifier  *userEntity
 }
 
-func (e *userGroupsEntity) Prop(cn string) (interface{}, bool) {
+func (e *userGroupsEntity) prop(cn string) (interface{}, bool) {
 	switch cn {
 	case tableUserGroupsColumnCreatedAt:
-		return &e.CreatedAt, true
+		return &e.createdAt, true
 	case tableUserGroupsColumnCreatedBy:
-		return &e.CreatedBy, true
+		return &e.createdBy, true
 	case tableUserGroupsColumnGroupID:
-		return &e.GroupID, true
+		return &e.groupID, true
 	case tableUserGroupsColumnUpdatedAt:
-		return &e.UpdatedAt, true
+		return &e.updatedAt, true
 	case tableUserGroupsColumnUpdatedBy:
-		return &e.UpdatedBy, true
+		return &e.updatedBy, true
 	case tableUserGroupsColumnUserID:
-		return &e.UserID, true
+		return &e.userID, true
 	default:
 		return nil, false
 	}
 }
-func (e *userGroupsEntity) Props(cns ...string) ([]interface{}, error) {
+func (e *userGroupsEntity) props(cns ...string) ([]interface{}, error) {
 
 	res := make([]interface{}, 0, len(cns))
 	for _, cn := range cns {
-		if prop, ok := e.Prop(cn); ok {
+		if prop, ok := e.prop(cn); ok {
 			res = append(res, prop)
 		} else {
 			return nil, fmt.Errorf("unexpected column provided: %s", cn)
@@ -2914,7 +2970,7 @@ func (i *userGroupsIterator) UserGroups() (*userGroupsEntity, error) {
 		return nil, err
 	}
 
-	props, err := ent.Props(cols...)
+	props, err := ent.props(cols...)
 	if err != nil {
 		return nil, err
 	}
@@ -3248,7 +3304,7 @@ type userGroupsRepositoryBase struct {
 	log     log.Logger
 }
 
-func ScanUserGroupsRows(rows *sql.Rows) ([]*userGroupsEntity, error) {
+func scanUserGroupsRows(rows *sql.Rows) ([]*userGroupsEntity, error) {
 	var (
 		entities []*userGroupsEntity
 		err      error
@@ -3256,12 +3312,12 @@ func ScanUserGroupsRows(rows *sql.Rows) ([]*userGroupsEntity, error) {
 	for rows.Next() {
 		var ent userGroupsEntity
 		err = rows.Scan(
-			&ent.CreatedAt,
-			&ent.CreatedBy,
-			&ent.GroupID,
-			&ent.UpdatedAt,
-			&ent.UpdatedBy,
-			&ent.UserID,
+			&ent.createdAt,
+			&ent.createdBy,
+			&ent.groupID,
+			&ent.updatedAt,
+			&ent.updatedBy,
+			&ent.userID,
 		)
 		if err != nil {
 			return nil, err
@@ -3276,7 +3332,7 @@ func ScanUserGroupsRows(rows *sql.Rows) ([]*userGroupsEntity, error) {
 	return entities, nil
 }
 
-func (r *userGroupsRepositoryBase) Count(c *userGroupsCriteria) (int64, error) {
+func (r *userGroupsRepositoryBase) count(c *userGroupsCriteria) (int64, error) {
 
 	com := pqtgo.NewComposer(6)
 	buf := bytes.NewBufferString("SELECT COUNT(*) FROM ")
@@ -3305,7 +3361,7 @@ func (r *userGroupsRepositoryBase) Count(c *userGroupsCriteria) (int64, error) {
 	return count, nil
 }
 
-func (r *userGroupsRepositoryBase) Find(c *userGroupsCriteria) ([]*userGroupsEntity, error) {
+func (r *userGroupsRepositoryBase) find(c *userGroupsCriteria) ([]*userGroupsEntity, error) {
 
 	com := pqtgo.NewComposer(1)
 	buf := bytes.NewBufferString("SELECT ")
@@ -3337,9 +3393,9 @@ func (r *userGroupsRepositoryBase) Find(c *userGroupsCriteria) ([]*userGroupsEnt
 
 	defer rows.Close()
 
-	return ScanUserGroupsRows(rows)
+	return scanUserGroupsRows(rows)
 }
-func (r *userGroupsRepositoryBase) FindIter(c *userGroupsCriteria) (*userGroupsIterator, error) {
+func (r *userGroupsRepositoryBase) findIter(c *userGroupsCriteria) (*userGroupsIterator, error) {
 
 	com := pqtgo.NewComposer(1)
 	buf := bytes.NewBufferString("SELECT ")
@@ -3371,18 +3427,18 @@ func (r *userGroupsRepositoryBase) FindIter(c *userGroupsCriteria) (*userGroupsI
 
 	return &userGroupsIterator{rows: rows}, nil
 }
-func (r *userGroupsRepositoryBase) FindOneByUserIDAndGroupID(userID int64, groupID int64) (*userGroupsEntity, error) {
+func (r *userGroupsRepositoryBase) findOneByUserIDAndGroupID(userID int64, groupID int64) (*userGroupsEntity, error) {
 	var (
 		entity userGroupsEntity
 	)
 	query := `SELECT created_at, created_by, group_id, updated_at, updated_by, user_id FROM charon.user_groups WHERE user_id = $1 AND group_id = $2`
 	err := r.db.QueryRow(query, userID, groupID).Scan(
-		&entity.CreatedAt,
-		&entity.CreatedBy,
-		&entity.GroupID,
-		&entity.UpdatedAt,
-		&entity.UpdatedBy,
-		&entity.UserID,
+		&entity.createdAt,
+		&entity.createdBy,
+		&entity.groupID,
+		&entity.updatedAt,
+		&entity.updatedBy,
+		&entity.userID,
 	)
 	if err != nil {
 		return nil, err
@@ -3390,14 +3446,14 @@ func (r *userGroupsRepositoryBase) FindOneByUserIDAndGroupID(userID int64, group
 
 	return &entity, nil
 }
-func (r *userGroupsRepositoryBase) Insert(e *userGroupsEntity) (*userGroupsEntity, error) {
+func (r *userGroupsRepositoryBase) insert(e *userGroupsEntity) (*userGroupsEntity, error) {
 	insert := pqcomp.New(0, 6)
-	insert.AddExpr(tableUserGroupsColumnCreatedAt, "", e.CreatedAt)
-	insert.AddExpr(tableUserGroupsColumnCreatedBy, "", e.CreatedBy)
-	insert.AddExpr(tableUserGroupsColumnGroupID, "", e.GroupID)
-	insert.AddExpr(tableUserGroupsColumnUpdatedAt, "", e.UpdatedAt)
-	insert.AddExpr(tableUserGroupsColumnUpdatedBy, "", e.UpdatedBy)
-	insert.AddExpr(tableUserGroupsColumnUserID, "", e.UserID)
+	insert.AddExpr(tableUserGroupsColumnCreatedAt, "", e.createdAt)
+	insert.AddExpr(tableUserGroupsColumnCreatedBy, "", e.createdBy)
+	insert.AddExpr(tableUserGroupsColumnGroupID, "", e.groupID)
+	insert.AddExpr(tableUserGroupsColumnUpdatedAt, "", e.updatedAt)
+	insert.AddExpr(tableUserGroupsColumnUpdatedBy, "", e.updatedBy)
+	insert.AddExpr(tableUserGroupsColumnUserID, "", e.userID)
 
 	b := bytes.NewBufferString("INSERT INTO " + r.table)
 
@@ -3433,12 +3489,12 @@ func (r *userGroupsRepositoryBase) Insert(e *userGroupsEntity) (*userGroupsEntit
 	}
 
 	err := r.db.QueryRow(b.String(), insert.Args()...).Scan(
-		&e.CreatedAt,
-		&e.CreatedBy,
-		&e.GroupID,
-		&e.UpdatedAt,
-		&e.UpdatedBy,
-		&e.UserID,
+		&e.createdAt,
+		&e.createdBy,
+		&e.groupID,
+		&e.updatedAt,
+		&e.updatedBy,
+		&e.userID,
 	)
 	if err != nil {
 		return nil, err
@@ -3446,15 +3502,15 @@ func (r *userGroupsRepositoryBase) Insert(e *userGroupsEntity) (*userGroupsEntit
 
 	return e, nil
 }
-func (r *userGroupsRepositoryBase) Upsert(e *userGroupsEntity, p *userGroupsPatch, inf ...string) (*userGroupsEntity, error) {
+func (r *userGroupsRepositoryBase) upsert(e *userGroupsEntity, p *userGroupsPatch, inf ...string) (*userGroupsEntity, error) {
 	insert := pqcomp.New(0, 6)
 	update := insert.Compose(6)
-	insert.AddExpr(tableUserGroupsColumnCreatedAt, "", e.CreatedAt)
-	insert.AddExpr(tableUserGroupsColumnCreatedBy, "", e.CreatedBy)
-	insert.AddExpr(tableUserGroupsColumnGroupID, "", e.GroupID)
-	insert.AddExpr(tableUserGroupsColumnUpdatedAt, "", e.UpdatedAt)
-	insert.AddExpr(tableUserGroupsColumnUpdatedBy, "", e.UpdatedBy)
-	insert.AddExpr(tableUserGroupsColumnUserID, "", e.UserID)
+	insert.AddExpr(tableUserGroupsColumnCreatedAt, "", e.createdAt)
+	insert.AddExpr(tableUserGroupsColumnCreatedBy, "", e.createdBy)
+	insert.AddExpr(tableUserGroupsColumnGroupID, "", e.groupID)
+	insert.AddExpr(tableUserGroupsColumnUpdatedAt, "", e.updatedAt)
+	insert.AddExpr(tableUserGroupsColumnUpdatedBy, "", e.updatedBy)
+	insert.AddExpr(tableUserGroupsColumnUserID, "", e.userID)
 	if len(inf) > 0 {
 		update.AddExpr(tableUserGroupsColumnCreatedAt, "=", p.createdAt)
 		update.AddExpr(tableUserGroupsColumnCreatedBy, "=", p.createdBy)
@@ -3525,18 +3581,68 @@ func (r *userGroupsRepositoryBase) Upsert(e *userGroupsEntity, p *userGroupsPatc
 	}
 
 	err := r.db.QueryRow(b.String(), insert.Args()...).Scan(
-		&e.CreatedAt,
-		&e.CreatedBy,
-		&e.GroupID,
-		&e.UpdatedAt,
-		&e.UpdatedBy,
-		&e.UserID,
+		&e.createdAt,
+		&e.createdBy,
+		&e.groupID,
+		&e.updatedAt,
+		&e.updatedBy,
+		&e.userID,
 	)
 	if err != nil {
 		return nil, err
 	}
 
 	return e, nil
+}
+func (r *userGroupsRepositoryBase) updateOneByUserIDAndGroupID(userID int64, groupID int64, patch *userGroupsPatch) (*userGroupsEntity, error) {
+	update := pqcomp.New(2, 6)
+	update.AddArg(userID)
+	update.AddArg(groupID)
+	if patch.createdAt != nil {
+		update.AddExpr(tableUserGroupsColumnCreatedAt, pqcomp.Equal, patch.createdAt)
+
+	}
+	update.AddExpr(tableUserGroupsColumnCreatedBy, pqcomp.Equal, patch.createdBy)
+	update.AddExpr(tableUserGroupsColumnGroupID, pqcomp.Equal, patch.groupID)
+	if patch.updatedAt != nil {
+		update.AddExpr(tableUserGroupsColumnUpdatedAt, pqcomp.Equal, patch.updatedAt)
+	} else {
+		update.AddExpr(tableUserGroupsColumnUpdatedAt, pqcomp.Equal, "NOW()")
+	}
+	update.AddExpr(tableUserGroupsColumnUpdatedBy, pqcomp.Equal, patch.updatedBy)
+	update.AddExpr(tableUserGroupsColumnUserID, pqcomp.Equal, patch.userID)
+
+	if update.Len() == 0 {
+		return nil, errors.New("userGroups update failure, nothing to update")
+	}
+	query := "UPDATE charon.user_groups SET "
+	for update.Next() {
+		if !update.First() {
+			query += ", "
+		}
+
+		query += update.Key() + " " + update.Oper() + " " + update.PlaceHolder()
+	}
+	query += " WHERE user_id = $1 AND group_id = $2 RETURNING " + strings.Join(r.columns, ", ")
+	if r.dbg {
+		if err := r.log.Log("msg", query, "function", "UpdateOneByUserIDAndGroupID"); err != nil {
+			return nil, err
+		}
+	}
+	var e userGroupsEntity
+	err := r.db.QueryRow(query, update.Args()...).Scan(
+		&e.createdAt,
+		&e.createdBy,
+		&e.groupID,
+		&e.updatedAt,
+		&e.updatedBy,
+		&e.userID,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return &e, nil
 }
 
 const (
@@ -3570,47 +3676,47 @@ var (
 )
 
 type groupPermissionsEntity struct {
-	CreatedAt           time.Time
-	CreatedBy           *ntypes.Int64
-	GroupID             int64
-	PermissionAction    string
-	PermissionModule    string
-	PermissionSubsystem string
-	UpdatedAt           *time.Time
-	UpdatedBy           *ntypes.Int64
-	Group               *groupEntity
-	Permission          *permissionEntity
-	Author              *userEntity
-	Modifier            *userEntity
+	createdAt           time.Time
+	createdBy           *ntypes.Int64
+	groupID             int64
+	permissionAction    string
+	permissionModule    string
+	permissionSubsystem string
+	updatedAt           *time.Time
+	updatedBy           *ntypes.Int64
+	group               *groupEntity
+	permission          *permissionEntity
+	author              *userEntity
+	modifier            *userEntity
 }
 
-func (e *groupPermissionsEntity) Prop(cn string) (interface{}, bool) {
+func (e *groupPermissionsEntity) prop(cn string) (interface{}, bool) {
 	switch cn {
 	case tableGroupPermissionsColumnCreatedAt:
-		return &e.CreatedAt, true
+		return &e.createdAt, true
 	case tableGroupPermissionsColumnCreatedBy:
-		return &e.CreatedBy, true
+		return &e.createdBy, true
 	case tableGroupPermissionsColumnGroupID:
-		return &e.GroupID, true
+		return &e.groupID, true
 	case tableGroupPermissionsColumnPermissionAction:
-		return &e.PermissionAction, true
+		return &e.permissionAction, true
 	case tableGroupPermissionsColumnPermissionModule:
-		return &e.PermissionModule, true
+		return &e.permissionModule, true
 	case tableGroupPermissionsColumnPermissionSubsystem:
-		return &e.PermissionSubsystem, true
+		return &e.permissionSubsystem, true
 	case tableGroupPermissionsColumnUpdatedAt:
-		return &e.UpdatedAt, true
+		return &e.updatedAt, true
 	case tableGroupPermissionsColumnUpdatedBy:
-		return &e.UpdatedBy, true
+		return &e.updatedBy, true
 	default:
 		return nil, false
 	}
 }
-func (e *groupPermissionsEntity) Props(cns ...string) ([]interface{}, error) {
+func (e *groupPermissionsEntity) props(cns ...string) ([]interface{}, error) {
 
 	res := make([]interface{}, 0, len(cns))
 	for _, cn := range cns {
-		if prop, ok := e.Prop(cn); ok {
+		if prop, ok := e.prop(cn); ok {
 			res = append(res, prop)
 		} else {
 			return nil, fmt.Errorf("unexpected column provided: %s", cn)
@@ -3661,7 +3767,7 @@ func (i *groupPermissionsIterator) GroupPermissions() (*groupPermissionsEntity, 
 		return nil, err
 	}
 
-	props, err := ent.Props(cols...)
+	props, err := ent.props(cols...)
 	if err != nil {
 		return nil, err
 	}
@@ -4007,7 +4113,7 @@ type groupPermissionsRepositoryBase struct {
 	log     log.Logger
 }
 
-func ScanGroupPermissionsRows(rows *sql.Rows) ([]*groupPermissionsEntity, error) {
+func scanGroupPermissionsRows(rows *sql.Rows) ([]*groupPermissionsEntity, error) {
 	var (
 		entities []*groupPermissionsEntity
 		err      error
@@ -4015,14 +4121,14 @@ func ScanGroupPermissionsRows(rows *sql.Rows) ([]*groupPermissionsEntity, error)
 	for rows.Next() {
 		var ent groupPermissionsEntity
 		err = rows.Scan(
-			&ent.CreatedAt,
-			&ent.CreatedBy,
-			&ent.GroupID,
-			&ent.PermissionAction,
-			&ent.PermissionModule,
-			&ent.PermissionSubsystem,
-			&ent.UpdatedAt,
-			&ent.UpdatedBy,
+			&ent.createdAt,
+			&ent.createdBy,
+			&ent.groupID,
+			&ent.permissionAction,
+			&ent.permissionModule,
+			&ent.permissionSubsystem,
+			&ent.updatedAt,
+			&ent.updatedBy,
 		)
 		if err != nil {
 			return nil, err
@@ -4037,7 +4143,7 @@ func ScanGroupPermissionsRows(rows *sql.Rows) ([]*groupPermissionsEntity, error)
 	return entities, nil
 }
 
-func (r *groupPermissionsRepositoryBase) Count(c *groupPermissionsCriteria) (int64, error) {
+func (r *groupPermissionsRepositoryBase) count(c *groupPermissionsCriteria) (int64, error) {
 
 	com := pqtgo.NewComposer(8)
 	buf := bytes.NewBufferString("SELECT COUNT(*) FROM ")
@@ -4066,7 +4172,7 @@ func (r *groupPermissionsRepositoryBase) Count(c *groupPermissionsCriteria) (int
 	return count, nil
 }
 
-func (r *groupPermissionsRepositoryBase) Find(c *groupPermissionsCriteria) ([]*groupPermissionsEntity, error) {
+func (r *groupPermissionsRepositoryBase) find(c *groupPermissionsCriteria) ([]*groupPermissionsEntity, error) {
 
 	com := pqtgo.NewComposer(1)
 	buf := bytes.NewBufferString("SELECT ")
@@ -4098,9 +4204,9 @@ func (r *groupPermissionsRepositoryBase) Find(c *groupPermissionsCriteria) ([]*g
 
 	defer rows.Close()
 
-	return ScanGroupPermissionsRows(rows)
+	return scanGroupPermissionsRows(rows)
 }
-func (r *groupPermissionsRepositoryBase) FindIter(c *groupPermissionsCriteria) (*groupPermissionsIterator, error) {
+func (r *groupPermissionsRepositoryBase) findIter(c *groupPermissionsCriteria) (*groupPermissionsIterator, error) {
 
 	com := pqtgo.NewComposer(1)
 	buf := bytes.NewBufferString("SELECT ")
@@ -4132,20 +4238,20 @@ func (r *groupPermissionsRepositoryBase) FindIter(c *groupPermissionsCriteria) (
 
 	return &groupPermissionsIterator{rows: rows}, nil
 }
-func (r *groupPermissionsRepositoryBase) FindOneByGroupIDAndPermissionSubsystemAndPermissionModuleAndPermissionAction(groupID int64, permissionSubsystem string, permissionModule string, permissionAction string) (*groupPermissionsEntity, error) {
+func (r *groupPermissionsRepositoryBase) findOneByGroupIDAndPermissionSubsystemAndPermissionModuleAndPermissionAction(groupID int64, permissionSubsystem string, permissionModule string, permissionAction string) (*groupPermissionsEntity, error) {
 	var (
 		entity groupPermissionsEntity
 	)
 	query := `SELECT created_at, created_by, group_id, permission_action, permission_module, permission_subsystem, updated_at, updated_by FROM charon.group_permissions WHERE group_id = $1 AND permission_subsystem = $2 AND permission_module = $3 AND permission_action = $4`
 	err := r.db.QueryRow(query, groupID, permissionSubsystem, permissionModule, permissionAction).Scan(
-		&entity.CreatedAt,
-		&entity.CreatedBy,
-		&entity.GroupID,
-		&entity.PermissionAction,
-		&entity.PermissionModule,
-		&entity.PermissionSubsystem,
-		&entity.UpdatedAt,
-		&entity.UpdatedBy,
+		&entity.createdAt,
+		&entity.createdBy,
+		&entity.groupID,
+		&entity.permissionAction,
+		&entity.permissionModule,
+		&entity.permissionSubsystem,
+		&entity.updatedAt,
+		&entity.updatedBy,
 	)
 	if err != nil {
 		return nil, err
@@ -4153,16 +4259,16 @@ func (r *groupPermissionsRepositoryBase) FindOneByGroupIDAndPermissionSubsystemA
 
 	return &entity, nil
 }
-func (r *groupPermissionsRepositoryBase) Insert(e *groupPermissionsEntity) (*groupPermissionsEntity, error) {
+func (r *groupPermissionsRepositoryBase) insert(e *groupPermissionsEntity) (*groupPermissionsEntity, error) {
 	insert := pqcomp.New(0, 8)
-	insert.AddExpr(tableGroupPermissionsColumnCreatedAt, "", e.CreatedAt)
-	insert.AddExpr(tableGroupPermissionsColumnCreatedBy, "", e.CreatedBy)
-	insert.AddExpr(tableGroupPermissionsColumnGroupID, "", e.GroupID)
-	insert.AddExpr(tableGroupPermissionsColumnPermissionAction, "", e.PermissionAction)
-	insert.AddExpr(tableGroupPermissionsColumnPermissionModule, "", e.PermissionModule)
-	insert.AddExpr(tableGroupPermissionsColumnPermissionSubsystem, "", e.PermissionSubsystem)
-	insert.AddExpr(tableGroupPermissionsColumnUpdatedAt, "", e.UpdatedAt)
-	insert.AddExpr(tableGroupPermissionsColumnUpdatedBy, "", e.UpdatedBy)
+	insert.AddExpr(tableGroupPermissionsColumnCreatedAt, "", e.createdAt)
+	insert.AddExpr(tableGroupPermissionsColumnCreatedBy, "", e.createdBy)
+	insert.AddExpr(tableGroupPermissionsColumnGroupID, "", e.groupID)
+	insert.AddExpr(tableGroupPermissionsColumnPermissionAction, "", e.permissionAction)
+	insert.AddExpr(tableGroupPermissionsColumnPermissionModule, "", e.permissionModule)
+	insert.AddExpr(tableGroupPermissionsColumnPermissionSubsystem, "", e.permissionSubsystem)
+	insert.AddExpr(tableGroupPermissionsColumnUpdatedAt, "", e.updatedAt)
+	insert.AddExpr(tableGroupPermissionsColumnUpdatedBy, "", e.updatedBy)
 
 	b := bytes.NewBufferString("INSERT INTO " + r.table)
 
@@ -4198,14 +4304,14 @@ func (r *groupPermissionsRepositoryBase) Insert(e *groupPermissionsEntity) (*gro
 	}
 
 	err := r.db.QueryRow(b.String(), insert.Args()...).Scan(
-		&e.CreatedAt,
-		&e.CreatedBy,
-		&e.GroupID,
-		&e.PermissionAction,
-		&e.PermissionModule,
-		&e.PermissionSubsystem,
-		&e.UpdatedAt,
-		&e.UpdatedBy,
+		&e.createdAt,
+		&e.createdBy,
+		&e.groupID,
+		&e.permissionAction,
+		&e.permissionModule,
+		&e.permissionSubsystem,
+		&e.updatedAt,
+		&e.updatedBy,
 	)
 	if err != nil {
 		return nil, err
@@ -4213,17 +4319,17 @@ func (r *groupPermissionsRepositoryBase) Insert(e *groupPermissionsEntity) (*gro
 
 	return e, nil
 }
-func (r *groupPermissionsRepositoryBase) Upsert(e *groupPermissionsEntity, p *groupPermissionsPatch, inf ...string) (*groupPermissionsEntity, error) {
+func (r *groupPermissionsRepositoryBase) upsert(e *groupPermissionsEntity, p *groupPermissionsPatch, inf ...string) (*groupPermissionsEntity, error) {
 	insert := pqcomp.New(0, 8)
 	update := insert.Compose(8)
-	insert.AddExpr(tableGroupPermissionsColumnCreatedAt, "", e.CreatedAt)
-	insert.AddExpr(tableGroupPermissionsColumnCreatedBy, "", e.CreatedBy)
-	insert.AddExpr(tableGroupPermissionsColumnGroupID, "", e.GroupID)
-	insert.AddExpr(tableGroupPermissionsColumnPermissionAction, "", e.PermissionAction)
-	insert.AddExpr(tableGroupPermissionsColumnPermissionModule, "", e.PermissionModule)
-	insert.AddExpr(tableGroupPermissionsColumnPermissionSubsystem, "", e.PermissionSubsystem)
-	insert.AddExpr(tableGroupPermissionsColumnUpdatedAt, "", e.UpdatedAt)
-	insert.AddExpr(tableGroupPermissionsColumnUpdatedBy, "", e.UpdatedBy)
+	insert.AddExpr(tableGroupPermissionsColumnCreatedAt, "", e.createdAt)
+	insert.AddExpr(tableGroupPermissionsColumnCreatedBy, "", e.createdBy)
+	insert.AddExpr(tableGroupPermissionsColumnGroupID, "", e.groupID)
+	insert.AddExpr(tableGroupPermissionsColumnPermissionAction, "", e.permissionAction)
+	insert.AddExpr(tableGroupPermissionsColumnPermissionModule, "", e.permissionModule)
+	insert.AddExpr(tableGroupPermissionsColumnPermissionSubsystem, "", e.permissionSubsystem)
+	insert.AddExpr(tableGroupPermissionsColumnUpdatedAt, "", e.updatedAt)
+	insert.AddExpr(tableGroupPermissionsColumnUpdatedBy, "", e.updatedBy)
 	if len(inf) > 0 {
 		update.AddExpr(tableGroupPermissionsColumnCreatedAt, "=", p.createdAt)
 		update.AddExpr(tableGroupPermissionsColumnCreatedBy, "=", p.createdBy)
@@ -4296,20 +4402,76 @@ func (r *groupPermissionsRepositoryBase) Upsert(e *groupPermissionsEntity, p *gr
 	}
 
 	err := r.db.QueryRow(b.String(), insert.Args()...).Scan(
-		&e.CreatedAt,
-		&e.CreatedBy,
-		&e.GroupID,
-		&e.PermissionAction,
-		&e.PermissionModule,
-		&e.PermissionSubsystem,
-		&e.UpdatedAt,
-		&e.UpdatedBy,
+		&e.createdAt,
+		&e.createdBy,
+		&e.groupID,
+		&e.permissionAction,
+		&e.permissionModule,
+		&e.permissionSubsystem,
+		&e.updatedAt,
+		&e.updatedBy,
 	)
 	if err != nil {
 		return nil, err
 	}
 
 	return e, nil
+}
+func (r *groupPermissionsRepositoryBase) updateOneByGroupIDAndPermissionSubsystemAndPermissionModuleAndPermissionAction(groupID int64, permissionSubsystem string, permissionModule string, permissionAction string, patch *groupPermissionsPatch) (*groupPermissionsEntity, error) {
+	update := pqcomp.New(2, 8)
+	update.AddArg(groupID)
+	update.AddArg(permissionSubsystem)
+	update.AddArg(permissionModule)
+	update.AddArg(permissionAction)
+	if patch.createdAt != nil {
+		update.AddExpr(tableGroupPermissionsColumnCreatedAt, pqcomp.Equal, patch.createdAt)
+
+	}
+	update.AddExpr(tableGroupPermissionsColumnCreatedBy, pqcomp.Equal, patch.createdBy)
+	update.AddExpr(tableGroupPermissionsColumnGroupID, pqcomp.Equal, patch.groupID)
+	update.AddExpr(tableGroupPermissionsColumnPermissionAction, pqcomp.Equal, patch.permissionAction)
+	update.AddExpr(tableGroupPermissionsColumnPermissionModule, pqcomp.Equal, patch.permissionModule)
+	update.AddExpr(tableGroupPermissionsColumnPermissionSubsystem, pqcomp.Equal, patch.permissionSubsystem)
+	if patch.updatedAt != nil {
+		update.AddExpr(tableGroupPermissionsColumnUpdatedAt, pqcomp.Equal, patch.updatedAt)
+	} else {
+		update.AddExpr(tableGroupPermissionsColumnUpdatedAt, pqcomp.Equal, "NOW()")
+	}
+	update.AddExpr(tableGroupPermissionsColumnUpdatedBy, pqcomp.Equal, patch.updatedBy)
+
+	if update.Len() == 0 {
+		return nil, errors.New("groupPermissions update failure, nothing to update")
+	}
+	query := "UPDATE charon.group_permissions SET "
+	for update.Next() {
+		if !update.First() {
+			query += ", "
+		}
+
+		query += update.Key() + " " + update.Oper() + " " + update.PlaceHolder()
+	}
+	query += " WHERE group_id = $1 AND permission_subsystem = $2 AND permission_module = $3 AND permission_action = $4 RETURNING " + strings.Join(r.columns, ", ")
+	if r.dbg {
+		if err := r.log.Log("msg", query, "function", "UpdateOneByGroupIDAndPermissionSubsystemAndPermissionModuleAndPermissionAction"); err != nil {
+			return nil, err
+		}
+	}
+	var e groupPermissionsEntity
+	err := r.db.QueryRow(query, update.Args()...).Scan(
+		&e.createdAt,
+		&e.createdBy,
+		&e.groupID,
+		&e.permissionAction,
+		&e.permissionModule,
+		&e.permissionSubsystem,
+		&e.updatedAt,
+		&e.updatedBy,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return &e, nil
 }
 
 const (
@@ -4343,47 +4505,47 @@ var (
 )
 
 type userPermissionsEntity struct {
-	CreatedAt           time.Time
-	CreatedBy           *ntypes.Int64
-	PermissionAction    string
-	PermissionModule    string
-	PermissionSubsystem string
-	UpdatedAt           *time.Time
-	UpdatedBy           *ntypes.Int64
-	UserID              int64
-	User                *userEntity
-	Permission          *permissionEntity
-	Author              *userEntity
-	Modifier            *userEntity
+	createdAt           time.Time
+	createdBy           *ntypes.Int64
+	permissionAction    string
+	permissionModule    string
+	permissionSubsystem string
+	updatedAt           *time.Time
+	updatedBy           *ntypes.Int64
+	userID              int64
+	user                *userEntity
+	permission          *permissionEntity
+	author              *userEntity
+	modifier            *userEntity
 }
 
-func (e *userPermissionsEntity) Prop(cn string) (interface{}, bool) {
+func (e *userPermissionsEntity) prop(cn string) (interface{}, bool) {
 	switch cn {
 	case tableUserPermissionsColumnCreatedAt:
-		return &e.CreatedAt, true
+		return &e.createdAt, true
 	case tableUserPermissionsColumnCreatedBy:
-		return &e.CreatedBy, true
+		return &e.createdBy, true
 	case tableUserPermissionsColumnPermissionAction:
-		return &e.PermissionAction, true
+		return &e.permissionAction, true
 	case tableUserPermissionsColumnPermissionModule:
-		return &e.PermissionModule, true
+		return &e.permissionModule, true
 	case tableUserPermissionsColumnPermissionSubsystem:
-		return &e.PermissionSubsystem, true
+		return &e.permissionSubsystem, true
 	case tableUserPermissionsColumnUpdatedAt:
-		return &e.UpdatedAt, true
+		return &e.updatedAt, true
 	case tableUserPermissionsColumnUpdatedBy:
-		return &e.UpdatedBy, true
+		return &e.updatedBy, true
 	case tableUserPermissionsColumnUserID:
-		return &e.UserID, true
+		return &e.userID, true
 	default:
 		return nil, false
 	}
 }
-func (e *userPermissionsEntity) Props(cns ...string) ([]interface{}, error) {
+func (e *userPermissionsEntity) props(cns ...string) ([]interface{}, error) {
 
 	res := make([]interface{}, 0, len(cns))
 	for _, cn := range cns {
-		if prop, ok := e.Prop(cn); ok {
+		if prop, ok := e.prop(cn); ok {
 			res = append(res, prop)
 		} else {
 			return nil, fmt.Errorf("unexpected column provided: %s", cn)
@@ -4434,7 +4596,7 @@ func (i *userPermissionsIterator) UserPermissions() (*userPermissionsEntity, err
 		return nil, err
 	}
 
-	props, err := ent.Props(cols...)
+	props, err := ent.props(cols...)
 	if err != nil {
 		return nil, err
 	}
@@ -4780,7 +4942,7 @@ type userPermissionsRepositoryBase struct {
 	log     log.Logger
 }
 
-func ScanUserPermissionsRows(rows *sql.Rows) ([]*userPermissionsEntity, error) {
+func scanUserPermissionsRows(rows *sql.Rows) ([]*userPermissionsEntity, error) {
 	var (
 		entities []*userPermissionsEntity
 		err      error
@@ -4788,14 +4950,14 @@ func ScanUserPermissionsRows(rows *sql.Rows) ([]*userPermissionsEntity, error) {
 	for rows.Next() {
 		var ent userPermissionsEntity
 		err = rows.Scan(
-			&ent.CreatedAt,
-			&ent.CreatedBy,
-			&ent.PermissionAction,
-			&ent.PermissionModule,
-			&ent.PermissionSubsystem,
-			&ent.UpdatedAt,
-			&ent.UpdatedBy,
-			&ent.UserID,
+			&ent.createdAt,
+			&ent.createdBy,
+			&ent.permissionAction,
+			&ent.permissionModule,
+			&ent.permissionSubsystem,
+			&ent.updatedAt,
+			&ent.updatedBy,
+			&ent.userID,
 		)
 		if err != nil {
 			return nil, err
@@ -4810,7 +4972,7 @@ func ScanUserPermissionsRows(rows *sql.Rows) ([]*userPermissionsEntity, error) {
 	return entities, nil
 }
 
-func (r *userPermissionsRepositoryBase) Count(c *userPermissionsCriteria) (int64, error) {
+func (r *userPermissionsRepositoryBase) count(c *userPermissionsCriteria) (int64, error) {
 
 	com := pqtgo.NewComposer(8)
 	buf := bytes.NewBufferString("SELECT COUNT(*) FROM ")
@@ -4839,7 +5001,7 @@ func (r *userPermissionsRepositoryBase) Count(c *userPermissionsCriteria) (int64
 	return count, nil
 }
 
-func (r *userPermissionsRepositoryBase) Find(c *userPermissionsCriteria) ([]*userPermissionsEntity, error) {
+func (r *userPermissionsRepositoryBase) find(c *userPermissionsCriteria) ([]*userPermissionsEntity, error) {
 
 	com := pqtgo.NewComposer(1)
 	buf := bytes.NewBufferString("SELECT ")
@@ -4871,9 +5033,9 @@ func (r *userPermissionsRepositoryBase) Find(c *userPermissionsCriteria) ([]*use
 
 	defer rows.Close()
 
-	return ScanUserPermissionsRows(rows)
+	return scanUserPermissionsRows(rows)
 }
-func (r *userPermissionsRepositoryBase) FindIter(c *userPermissionsCriteria) (*userPermissionsIterator, error) {
+func (r *userPermissionsRepositoryBase) findIter(c *userPermissionsCriteria) (*userPermissionsIterator, error) {
 
 	com := pqtgo.NewComposer(1)
 	buf := bytes.NewBufferString("SELECT ")
@@ -4905,20 +5067,20 @@ func (r *userPermissionsRepositoryBase) FindIter(c *userPermissionsCriteria) (*u
 
 	return &userPermissionsIterator{rows: rows}, nil
 }
-func (r *userPermissionsRepositoryBase) FindOneByUserIDAndPermissionSubsystemAndPermissionModuleAndPermissionAction(userID int64, permissionSubsystem string, permissionModule string, permissionAction string) (*userPermissionsEntity, error) {
+func (r *userPermissionsRepositoryBase) findOneByUserIDAndPermissionSubsystemAndPermissionModuleAndPermissionAction(userID int64, permissionSubsystem string, permissionModule string, permissionAction string) (*userPermissionsEntity, error) {
 	var (
 		entity userPermissionsEntity
 	)
 	query := `SELECT created_at, created_by, permission_action, permission_module, permission_subsystem, updated_at, updated_by, user_id FROM charon.user_permissions WHERE user_id = $1 AND permission_subsystem = $2 AND permission_module = $3 AND permission_action = $4`
 	err := r.db.QueryRow(query, userID, permissionSubsystem, permissionModule, permissionAction).Scan(
-		&entity.CreatedAt,
-		&entity.CreatedBy,
-		&entity.PermissionAction,
-		&entity.PermissionModule,
-		&entity.PermissionSubsystem,
-		&entity.UpdatedAt,
-		&entity.UpdatedBy,
-		&entity.UserID,
+		&entity.createdAt,
+		&entity.createdBy,
+		&entity.permissionAction,
+		&entity.permissionModule,
+		&entity.permissionSubsystem,
+		&entity.updatedAt,
+		&entity.updatedBy,
+		&entity.userID,
 	)
 	if err != nil {
 		return nil, err
@@ -4926,16 +5088,16 @@ func (r *userPermissionsRepositoryBase) FindOneByUserIDAndPermissionSubsystemAnd
 
 	return &entity, nil
 }
-func (r *userPermissionsRepositoryBase) Insert(e *userPermissionsEntity) (*userPermissionsEntity, error) {
+func (r *userPermissionsRepositoryBase) insert(e *userPermissionsEntity) (*userPermissionsEntity, error) {
 	insert := pqcomp.New(0, 8)
-	insert.AddExpr(tableUserPermissionsColumnCreatedAt, "", e.CreatedAt)
-	insert.AddExpr(tableUserPermissionsColumnCreatedBy, "", e.CreatedBy)
-	insert.AddExpr(tableUserPermissionsColumnPermissionAction, "", e.PermissionAction)
-	insert.AddExpr(tableUserPermissionsColumnPermissionModule, "", e.PermissionModule)
-	insert.AddExpr(tableUserPermissionsColumnPermissionSubsystem, "", e.PermissionSubsystem)
-	insert.AddExpr(tableUserPermissionsColumnUpdatedAt, "", e.UpdatedAt)
-	insert.AddExpr(tableUserPermissionsColumnUpdatedBy, "", e.UpdatedBy)
-	insert.AddExpr(tableUserPermissionsColumnUserID, "", e.UserID)
+	insert.AddExpr(tableUserPermissionsColumnCreatedAt, "", e.createdAt)
+	insert.AddExpr(tableUserPermissionsColumnCreatedBy, "", e.createdBy)
+	insert.AddExpr(tableUserPermissionsColumnPermissionAction, "", e.permissionAction)
+	insert.AddExpr(tableUserPermissionsColumnPermissionModule, "", e.permissionModule)
+	insert.AddExpr(tableUserPermissionsColumnPermissionSubsystem, "", e.permissionSubsystem)
+	insert.AddExpr(tableUserPermissionsColumnUpdatedAt, "", e.updatedAt)
+	insert.AddExpr(tableUserPermissionsColumnUpdatedBy, "", e.updatedBy)
+	insert.AddExpr(tableUserPermissionsColumnUserID, "", e.userID)
 
 	b := bytes.NewBufferString("INSERT INTO " + r.table)
 
@@ -4971,14 +5133,14 @@ func (r *userPermissionsRepositoryBase) Insert(e *userPermissionsEntity) (*userP
 	}
 
 	err := r.db.QueryRow(b.String(), insert.Args()...).Scan(
-		&e.CreatedAt,
-		&e.CreatedBy,
-		&e.PermissionAction,
-		&e.PermissionModule,
-		&e.PermissionSubsystem,
-		&e.UpdatedAt,
-		&e.UpdatedBy,
-		&e.UserID,
+		&e.createdAt,
+		&e.createdBy,
+		&e.permissionAction,
+		&e.permissionModule,
+		&e.permissionSubsystem,
+		&e.updatedAt,
+		&e.updatedBy,
+		&e.userID,
 	)
 	if err != nil {
 		return nil, err
@@ -4986,17 +5148,17 @@ func (r *userPermissionsRepositoryBase) Insert(e *userPermissionsEntity) (*userP
 
 	return e, nil
 }
-func (r *userPermissionsRepositoryBase) Upsert(e *userPermissionsEntity, p *userPermissionsPatch, inf ...string) (*userPermissionsEntity, error) {
+func (r *userPermissionsRepositoryBase) upsert(e *userPermissionsEntity, p *userPermissionsPatch, inf ...string) (*userPermissionsEntity, error) {
 	insert := pqcomp.New(0, 8)
 	update := insert.Compose(8)
-	insert.AddExpr(tableUserPermissionsColumnCreatedAt, "", e.CreatedAt)
-	insert.AddExpr(tableUserPermissionsColumnCreatedBy, "", e.CreatedBy)
-	insert.AddExpr(tableUserPermissionsColumnPermissionAction, "", e.PermissionAction)
-	insert.AddExpr(tableUserPermissionsColumnPermissionModule, "", e.PermissionModule)
-	insert.AddExpr(tableUserPermissionsColumnPermissionSubsystem, "", e.PermissionSubsystem)
-	insert.AddExpr(tableUserPermissionsColumnUpdatedAt, "", e.UpdatedAt)
-	insert.AddExpr(tableUserPermissionsColumnUpdatedBy, "", e.UpdatedBy)
-	insert.AddExpr(tableUserPermissionsColumnUserID, "", e.UserID)
+	insert.AddExpr(tableUserPermissionsColumnCreatedAt, "", e.createdAt)
+	insert.AddExpr(tableUserPermissionsColumnCreatedBy, "", e.createdBy)
+	insert.AddExpr(tableUserPermissionsColumnPermissionAction, "", e.permissionAction)
+	insert.AddExpr(tableUserPermissionsColumnPermissionModule, "", e.permissionModule)
+	insert.AddExpr(tableUserPermissionsColumnPermissionSubsystem, "", e.permissionSubsystem)
+	insert.AddExpr(tableUserPermissionsColumnUpdatedAt, "", e.updatedAt)
+	insert.AddExpr(tableUserPermissionsColumnUpdatedBy, "", e.updatedBy)
+	insert.AddExpr(tableUserPermissionsColumnUserID, "", e.userID)
 	if len(inf) > 0 {
 		update.AddExpr(tableUserPermissionsColumnCreatedAt, "=", p.createdAt)
 		update.AddExpr(tableUserPermissionsColumnCreatedBy, "=", p.createdBy)
@@ -5069,20 +5231,76 @@ func (r *userPermissionsRepositoryBase) Upsert(e *userPermissionsEntity, p *user
 	}
 
 	err := r.db.QueryRow(b.String(), insert.Args()...).Scan(
-		&e.CreatedAt,
-		&e.CreatedBy,
-		&e.PermissionAction,
-		&e.PermissionModule,
-		&e.PermissionSubsystem,
-		&e.UpdatedAt,
-		&e.UpdatedBy,
-		&e.UserID,
+		&e.createdAt,
+		&e.createdBy,
+		&e.permissionAction,
+		&e.permissionModule,
+		&e.permissionSubsystem,
+		&e.updatedAt,
+		&e.updatedBy,
+		&e.userID,
 	)
 	if err != nil {
 		return nil, err
 	}
 
 	return e, nil
+}
+func (r *userPermissionsRepositoryBase) updateOneByUserIDAndPermissionSubsystemAndPermissionModuleAndPermissionAction(userID int64, permissionSubsystem string, permissionModule string, permissionAction string, patch *userPermissionsPatch) (*userPermissionsEntity, error) {
+	update := pqcomp.New(2, 8)
+	update.AddArg(userID)
+	update.AddArg(permissionSubsystem)
+	update.AddArg(permissionModule)
+	update.AddArg(permissionAction)
+	if patch.createdAt != nil {
+		update.AddExpr(tableUserPermissionsColumnCreatedAt, pqcomp.Equal, patch.createdAt)
+
+	}
+	update.AddExpr(tableUserPermissionsColumnCreatedBy, pqcomp.Equal, patch.createdBy)
+	update.AddExpr(tableUserPermissionsColumnPermissionAction, pqcomp.Equal, patch.permissionAction)
+	update.AddExpr(tableUserPermissionsColumnPermissionModule, pqcomp.Equal, patch.permissionModule)
+	update.AddExpr(tableUserPermissionsColumnPermissionSubsystem, pqcomp.Equal, patch.permissionSubsystem)
+	if patch.updatedAt != nil {
+		update.AddExpr(tableUserPermissionsColumnUpdatedAt, pqcomp.Equal, patch.updatedAt)
+	} else {
+		update.AddExpr(tableUserPermissionsColumnUpdatedAt, pqcomp.Equal, "NOW()")
+	}
+	update.AddExpr(tableUserPermissionsColumnUpdatedBy, pqcomp.Equal, patch.updatedBy)
+	update.AddExpr(tableUserPermissionsColumnUserID, pqcomp.Equal, patch.userID)
+
+	if update.Len() == 0 {
+		return nil, errors.New("userPermissions update failure, nothing to update")
+	}
+	query := "UPDATE charon.user_permissions SET "
+	for update.Next() {
+		if !update.First() {
+			query += ", "
+		}
+
+		query += update.Key() + " " + update.Oper() + " " + update.PlaceHolder()
+	}
+	query += " WHERE user_id = $1 AND permission_subsystem = $2 AND permission_module = $3 AND permission_action = $4 RETURNING " + strings.Join(r.columns, ", ")
+	if r.dbg {
+		if err := r.log.Log("msg", query, "function", "UpdateOneByUserIDAndPermissionSubsystemAndPermissionModuleAndPermissionAction"); err != nil {
+			return nil, err
+		}
+	}
+	var e userPermissionsEntity
+	err := r.db.QueryRow(query, update.Args()...).Scan(
+		&e.createdAt,
+		&e.createdBy,
+		&e.permissionAction,
+		&e.permissionModule,
+		&e.permissionSubsystem,
+		&e.updatedAt,
+		&e.updatedBy,
+		&e.userID,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return &e, nil
 }
 
 const schemaSQL = `

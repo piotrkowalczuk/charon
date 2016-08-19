@@ -59,22 +59,22 @@ func TestHandler(t *testing.T) {
 				Once()
 
 			Convey("When user exists", func() {
-				userRepositoryMock.On("FindOneByID", id).
-					Return(&userEntity{ID: id}, nil).
+				userRepositoryMock.On("findOneByID", id).
+					Return(&userEntity{id: id}, nil).
 					Once()
 
 				Convey("And it has some permissions", func() {
-					permissionRepositoryMock.On("FindByUserID", id).
+					permissionRepositoryMock.On("findByUserID", id).
 						Return([]*permissionEntity{
 							{
-								Subsystem: charon.PermissionCanRetrieve.Subsystem(),
-								Module:    charon.PermissionCanRetrieve.Module(),
-								Action:    charon.PermissionCanRetrieve.Action(),
+								subsystem: charon.PermissionCanRetrieve.Subsystem(),
+								module:    charon.PermissionCanRetrieve.Module(),
+								action:    charon.PermissionCanRetrieve.Action(),
 							},
 							{
-								Subsystem: charon.UserCanRetrieveAsOwner.Subsystem(),
-								Module:    charon.UserCanRetrieveAsOwner.Module(),
-								Action:    charon.UserCanRetrieveAsOwner.Action(),
+								subsystem: charon.UserCanRetrieveAsOwner.Subsystem(),
+								module:    charon.UserCanRetrieveAsOwner.Module(),
+								action:    charon.UserCanRetrieveAsOwner.Action(),
 							},
 						}, nil).
 						Once()
@@ -84,12 +84,12 @@ func TestHandler(t *testing.T) {
 
 						So(err, ShouldBeNil)
 						So(act, ShouldNotBeNil)
-						So(act.user.ID, ShouldEqual, id)
+						So(act.user.id, ShouldEqual, id)
 						So(act.permissions, ShouldHaveLength, 2)
 					})
 				})
 				Convey("And it has no permissions", func() {
-					permissionRepositoryMock.On("FindByUserID", id).
+					permissionRepositoryMock.On("findByUserID", id).
 						Return(nil, sql.ErrNoRows).
 						Once()
 
@@ -98,7 +98,7 @@ func TestHandler(t *testing.T) {
 
 						So(err, ShouldBeNil)
 						So(act, ShouldNotBeNil)
-						So(act.user.ID, ShouldEqual, id)
+						So(act.user.id, ShouldEqual, id)
 						So(act.permissions, ShouldHaveLength, 0)
 					})
 				})

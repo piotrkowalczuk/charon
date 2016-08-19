@@ -15,7 +15,7 @@ func TestCreateUserHandler_firewall_success(t *testing.T) {
 		{
 			req: charon.CreateUserRequest{},
 			act: actor{
-				user: &userEntity{ID: 2},
+				user: &userEntity{id: 2},
 				permissions: charon.Permissions{
 					charon.UserCanCreate,
 				},
@@ -26,7 +26,7 @@ func TestCreateUserHandler_firewall_success(t *testing.T) {
 				IsStaff: &ntypes.Bool{Bool: true, Valid: true},
 			},
 			act: actor{
-				user: &userEntity{ID: 2},
+				user: &userEntity{id: 2},
 				permissions: charon.Permissions{
 					charon.UserCanCreateStaff,
 				},
@@ -37,13 +37,13 @@ func TestCreateUserHandler_firewall_success(t *testing.T) {
 				IsSuperuser: &ntypes.Bool{Bool: true, Valid: true},
 			},
 			act: actor{
-				user: &userEntity{ID: 2, IsSuperuser: true},
+				user: &userEntity{id: 2, isSuperuser: true},
 			},
 		},
 		{
 			req: charon.CreateUserRequest{},
 			act: actor{
-				user: &userEntity{ID: 2, IsSuperuser: true},
+				user: &userEntity{id: 2, isSuperuser: true},
 			},
 		},
 		{
@@ -77,15 +77,15 @@ func TestCreateUserHandler_firewall_failure(t *testing.T) {
 		{
 			req: charon.CreateUserRequest{},
 			act: actor{
-				user: &userEntity{ID: 2},
+				user: &userEntity{id: 2},
 			},
 		},
 		{
 			req: charon.CreateUserRequest{},
 			act: actor{
 				user: &userEntity{
-					ID:      2,
-					IsStaff: true,
+					id:      2,
+					isStaff: true,
 				},
 			},
 		},
@@ -95,8 +95,8 @@ func TestCreateUserHandler_firewall_failure(t *testing.T) {
 			},
 			act: actor{
 				user: &userEntity{
-					ID:      2,
-					IsStaff: true,
+					id:      2,
+					isStaff: true,
 				},
 			},
 		},
@@ -105,7 +105,7 @@ func TestCreateUserHandler_firewall_failure(t *testing.T) {
 				IsSuperuser: &ntypes.Bool{Bool: true, Valid: true},
 			},
 			act: actor{
-				user: &userEntity{ID: 1},
+				user: &userEntity{id: 1},
 				permissions: charon.Permissions{
 					charon.UserCanCreateStaff,
 				},
@@ -117,7 +117,7 @@ func TestCreateUserHandler_firewall_failure(t *testing.T) {
 			},
 			act: actor{
 				user: &userEntity{
-					ID: 2,
+					id: 2,
 				},
 				permissions: charon.Permissions{
 					charon.UserCanCreate,
@@ -129,7 +129,7 @@ func TestCreateUserHandler_firewall_failure(t *testing.T) {
 	h := &createUserHandler{}
 	for _, d := range data {
 		if err := h.firewall(&d.req, &d.act); err == nil {
-			t.Errorf("expected error, got nil")
+			t.Error("expected error, got nil")
 		}
 	}
 }

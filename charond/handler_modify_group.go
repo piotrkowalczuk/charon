@@ -22,9 +22,9 @@ func (mgh *modifyGroupHandler) handle(ctx context.Context, req *charon.ModifyGro
 		return nil, err
 	}
 
-	mgh.loggerWith("user_id", actor.user.ID)
+	mgh.loggerWith("user_id", actor.user.id)
 
-	group, err := mgh.repository.group.UpdateOneByID(req.Id, actor.user.ID, req.Name, req.Description)
+	group, err := mgh.repository.group.updateOneByID(req.Id, actor.user.id, req.Name, req.Description)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, grpc.Errorf(codes.NotFound, "group does not exists")

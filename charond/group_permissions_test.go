@@ -1,30 +1,36 @@
 package charond
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/piotrkowalczuk/ntypes"
+)
 
 var (
 	groupPermissionsTestFixtures = []*groupEntity{
 		{
-			ID:   1,
-			Name: "group_1",
-			Permission: []*permissionEntity{
+			id:          1,
+			name:        "group_1",
+			description: &ntypes.String{String: "first group", Valid: true},
+			permission: []*permissionEntity{
 				{
-					ID:        1,
-					Subsystem: "subsystem_1",
-					Module:    "module_1",
-					Action:    "action_1",
+					id:        1,
+					subsystem: "subsystem_1",
+					module:    "module_1",
+					action:    "action_1",
 				},
 			},
 		},
 		{
-			ID:   2,
-			Name: "group_2",
-			Permission: []*permissionEntity{
+			id:          2,
+			name:        "group_2",
+			description: &ntypes.String{String: "second group", Valid: true},
+			permission: []*permissionEntity{
 				{
-					ID:        2,
-					Subsystem: "subsystem_2",
-					Module:    "module_2",
-					Action:    "action_2",
+					id:        2,
+					subsystem: "subsystem_2",
+					module:    "module_2",
+					action:    "action_2",
 				},
 			},
 		},
@@ -40,12 +46,12 @@ func loadGroupPermissionsFixtures(t *testing.T, r groupPermissionsProvider, f []
 
 	go func() {
 		for _, given := range f {
-			entity, err := r.Insert(given)
+			entity, err := r.insert(given)
 			if err != nil {
 				t.Errorf("group permission cannot be created, unexpected error: %s", err.Error())
 				continue
 			} else {
-				t.Logf("group permission has been created")
+				t.Log("group permission has been created")
 			}
 
 			data <- groupPermissionsFixtures{

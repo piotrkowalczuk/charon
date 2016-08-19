@@ -21,7 +21,7 @@ func (cgh *createGroupHandler) handle(ctx context.Context, req *charon.CreateGro
 		return nil, err
 	}
 
-	ent, err := cgh.repository.group.Create(act.user.ID, req.Name, req.Description)
+	ent, err := cgh.repository.group.create(act.user.id, req.Name, req.Description)
 	if err != nil {
 		switch pqt.ErrorConstraint(err) {
 		case tableGroupConstraintNameUnique:
@@ -35,7 +35,7 @@ func (cgh *createGroupHandler) handle(ctx context.Context, req *charon.CreateGro
 }
 
 func (cgh *createGroupHandler) firewall(req *charon.CreateGroupRequest, act *actor) error {
-	if act.user.IsSuperuser {
+	if act.user.isSuperuser {
 		return nil
 	}
 	if act.permissions.Contains(charon.GroupCanCreate) {

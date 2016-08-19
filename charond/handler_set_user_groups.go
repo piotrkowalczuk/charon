@@ -36,7 +36,7 @@ func (sugh *setUserGroupsHandler) handle(ctx context.Context, req *charon.SetUse
 }
 
 func (sugh *setUserGroupsHandler) firewall(req *charon.SetUserGroupsRequest, act *actor) error {
-	if act.user.IsSuperuser {
+	if act.user.isSuperuser {
 		return nil
 	}
 	if act.permissions.Contains(charon.UserGroupCanCreate) && act.permissions.Contains(charon.UserGroupCanDelete) {

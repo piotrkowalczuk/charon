@@ -46,7 +46,7 @@ func (cuh *createUserHandler) handle(ctx context.Context, req *charon.CreateUser
 		}
 	} else {
 		// TODO: only one superuser can be defined so this else statement makes no sense in this place.
-		if !act.user.IsSuperuser {
+		if !act.user.isSuperuser {
 			return nil, grpc.Errorf(codes.PermissionDenied, "only superuser can create an user with manualy defined secure password")
 		}
 	}
@@ -77,7 +77,7 @@ func (cuh *createUserHandler) handle(ctx context.Context, req *charon.CreateUser
 }
 
 func (cuh *createUserHandler) firewall(req *charon.CreateUserRequest, act *actor) error {
-	if act.isLocal || act.user.IsSuperuser {
+	if act.isLocal || act.user.isSuperuser {
 		return nil
 	}
 	if req.IsSuperuser.BoolOr(false) {

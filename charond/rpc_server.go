@@ -2,20 +2,24 @@ package charond
 
 import (
 	"github.com/go-kit/kit/log"
+	"github.com/go-ldap/ldap"
 	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/mnemosyne/mnemosynerpc"
+	"github.com/piotrkowalczuk/sklog"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/peer"
 )
 
 type rpcServer struct {
+	opts               DaemonOpts
 	meta               metadata.MD
 	logger             log.Logger
+	ldap               *ldap.Conn
 	monitor            monitoring
 	session            mnemosynerpc.SessionManagerClient
 	passwordHasher     charon.PasswordHasher
-	permissionRegistry PermissionRegistry
+	permissionRegistry permissionRegistry
 	repository         repositories
 }
 
@@ -68,12 +72,13 @@ func (rs *rpcServer) Login(ctx context.Context, req *charon.LoginRequest) (*char
 		handler: newHandler(rs, ctx, "login"),
 		hasher:  rs.passwordHasher,
 	}
-	h.addRequest(1)
 
 	resp, err := h.handle(ctx, req)
-	if err = h.handler.handle(err, "subject has been logged in"); err != nil {
+	if err != nil {
 		return nil, err
 	}
+
+	sklog.Debug(rs.logger, "subject has been logged in")
 
 	return resp, err
 }
@@ -83,12 +88,13 @@ func (rs *rpcServer) Logout(ctx context.Context, req *charon.LogoutRequest) (*ch
 	h := &logoutHandler{
 		handler: newHandler(rs, ctx, "logout"),
 	}
-	h.addRequest(1)
 
 	resp, err := h.handle(ctx, req)
-	if err = h.handler.handle(err, "subject has been logged out"); err != nil {
+	if err != nil {
 		return nil, err
 	}
+
+	sklog.Debug(rs.logger, "subject has been logged out")
 
 	return resp, err
 }
@@ -98,12 +104,13 @@ func (rs *rpcServer) IsAuthenticated(ctx context.Context, req *charon.IsAuthenti
 	h := &isAuthenticatedHandler{
 		handler: newHandler(rs, ctx, "is_authenticated"),
 	}
-	h.addRequest(1)
 
 	resp, err := h.handle(ctx, req)
-	if err = h.handler.handle(err, "subject authentication status has been checked"); err != nil {
+	if err != nil {
 		return nil, err
 	}
+
+	sklog.Debug(rs.logger, "subject authentication status has been checked")
 
 	return resp, err
 }
@@ -113,12 +120,13 @@ func (rs *rpcServer) Subject(ctx context.Context, req *charon.SubjectRequest) (*
 	h := &subjectHandler{
 		handler: newHandler(rs, ctx, "subject"),
 	}
-	h.addRequest(1)
 
 	resp, err := h.handle(ctx, req)
-	if err = h.handler.handle(err, "subject has been retrieved"); err != nil {
+	if err != nil {
 		return nil, err
 	}
+
+	sklog.Debug(rs.logger, "subject has been retrieved")
 
 	return resp, err
 }
@@ -128,12 +136,13 @@ func (rs *rpcServer) IsGranted(ctx context.Context, req *charon.IsGrantedRequest
 	h := &isGrantedHandler{
 		handler: newHandler(rs, ctx, "is_granted"),
 	}
-	h.addRequest(1)
 
 	resp, err := h.handle(ctx, req)
-	if err = h.handler.handle(err, "permission has been checked"); err != nil {
+	if err != nil {
 		return nil, err
 	}
+
+	sklog.Debug(rs.logger, "permission has been checked")
 
 	return resp, err
 }
@@ -143,12 +152,13 @@ func (rs *rpcServer) BelongsTo(ctx context.Context, req *charon.BelongsToRequest
 	h := &belongsToHandler{
 		handler: newHandler(rs, ctx, "belongs_to"),
 	}
-	h.addRequest(1)
 
 	resp, err := h.handle(ctx, req)
-	if err = h.handler.handle(err, "belonging to the group has been checked"); err != nil {
+	if err != nil {
 		return nil, err
 	}
+
+	sklog.Debug(rs.logger, "belonging to the group has been checked")
 
 	return resp, err
 }
@@ -158,12 +168,13 @@ func (rs *rpcServer) CreateGroup(ctx context.Context, req *charon.CreateGroupReq
 	h := &createGroupHandler{
 		handler: newHandler(rs, ctx, "create_group"),
 	}
-	h.addRequest(1)
 
 	resp, err := h.handle(ctx, req)
-	if err = h.handler.handle(err, "group has been created"); err != nil {
+	if err != nil {
 		return nil, err
 	}
+
+	sklog.Debug(rs.logger, "group has been created")
 
 	return resp, err
 }
@@ -173,12 +184,13 @@ func (rs *rpcServer) ModifyGroup(ctx context.Context, req *charon.ModifyGroupReq
 	h := &modifyGroupHandler{
 		handler: newHandler(rs, ctx, "modify_group"),
 	}
-	h.addRequest(1)
 
 	resp, err := h.handle(ctx, req)
-	if err = h.handler.handle(err, "group has been created"); err != nil {
+	if err != nil {
 		return nil, err
 	}
+
+	sklog.Debug(rs.logger, "group has been modified")
 
 	return resp, err
 }
@@ -188,12 +200,13 @@ func (rs *rpcServer) DeleteGroup(ctx context.Context, req *charon.DeleteGroupReq
 	h := &deleteGroupHandler{
 		handler: newHandler(rs, ctx, "delete_group"),
 	}
-	h.addRequest(1)
 
 	resp, err := h.handle(ctx, req)
-	if err = h.handler.handle(err, "group has been deleted"); err != nil {
+	if err != nil {
 		return nil, err
 	}
+
+	sklog.Debug(rs.logger, "group has been deleted")
 
 	return resp, err
 }
@@ -203,12 +216,13 @@ func (rs *rpcServer) GetGroup(ctx context.Context, req *charon.GetGroupRequest) 
 	h := &getGroupHandler{
 		handler: newHandler(rs, ctx, "get_group"),
 	}
-	h.addRequest(1)
 
 	resp, err := h.handle(ctx, req)
-	if err = h.handler.handle(err, "group has been retrieved"); err != nil {
+	if err != nil {
 		return nil, err
 	}
+
+	sklog.Debug(rs.logger, "group has been retrieved")
 
 	return resp, err
 }
@@ -218,12 +232,13 @@ func (rs *rpcServer) ListGroups(ctx context.Context, req *charon.ListGroupsReque
 	h := &listGroupsHandler{
 		handler: newHandler(rs, ctx, "list_groups"),
 	}
-	h.addRequest(1)
 
 	resp, err := h.handle(ctx, req)
-	if err = h.handler.handle(err, "list of groups has been retrieved"); err != nil {
+	if err != nil {
 		return nil, err
 	}
+
+	sklog.Debug(rs.logger, "list of groups has been retrieved")
 
 	return resp, err
 }
@@ -233,12 +248,13 @@ func (rs *rpcServer) ListGroupPermissions(ctx context.Context, req *charon.ListG
 	h := &listGroupPermissionsHandler{
 		handler: newHandler(rs, ctx, "list_group_permissions"),
 	}
-	h.addRequest(1)
 
 	resp, err := h.handle(ctx, req)
-	if err = h.handler.handle(err, "list of group permissions has been retrieved"); err != nil {
+	if err != nil {
 		return nil, err
 	}
+
+	sklog.Debug(rs.logger, "list of group permissions has been retrieved")
 
 	return resp, err
 }
@@ -248,12 +264,13 @@ func (rs *rpcServer) SetGroupPermissions(ctx context.Context, req *charon.SetGro
 	h := &setGroupPermissionsHandler{
 		handler: newHandler(rs, ctx, "set_group_permissions"),
 	}
-	h.addRequest(1)
 
 	resp, err := h.handle(ctx, req)
-	if err = h.handler.handle(err, "group permissions has been set"); err != nil {
+	if err != nil {
 		return nil, err
 	}
+
+	sklog.Debug(rs.logger, "group permissions has been set")
 
 	return resp, err
 }
@@ -263,12 +280,13 @@ func (rs *rpcServer) GetPermission(ctx context.Context, req *charon.GetPermissio
 	h := &getPermissionHandler{
 		handler: newHandler(rs, ctx, "get_permission"),
 	}
-	h.addRequest(1)
 
 	resp, err := h.handle(ctx, req)
-	if err = h.handler.handle(err, "permission has been retrieved"); err != nil {
+	if err != nil {
 		return nil, err
 	}
+
+	sklog.Debug(rs.logger, "permission has been retrieved")
 
 	return resp, err
 }
@@ -279,12 +297,13 @@ func (rs *rpcServer) RegisterPermissions(ctx context.Context, req *charon.Regist
 		handler:  newHandler(rs, ctx, "register_permissions"),
 		registry: rs.permissionRegistry,
 	}
-	h.addRequest(1)
 
 	resp, err := h.handle(ctx, req)
-	if err = h.handler.handle(err, "permissions has been registered"); err != nil {
+	if err != nil {
 		return nil, err
 	}
+
+	sklog.Debug(rs.logger, "permissions has been registered")
 
 	return resp, err
 }
@@ -294,12 +313,13 @@ func (rs *rpcServer) ListPermissions(ctx context.Context, req *charon.ListPermis
 	h := &listPermissionsHandler{
 		handler: newHandler(rs, ctx, "list_permissions"),
 	}
-	h.addRequest(1)
 
 	resp, err := h.handle(ctx, req)
-	if err = h.handler.handle(err, "list of permissions has been retrieved"); err != nil {
+	if err != nil {
 		return nil, err
 	}
+
+	sklog.Debug(rs.logger, "list of permissions has been retrieved")
 
 	return resp, err
 }
@@ -310,12 +330,13 @@ func (rs *rpcServer) CreateUser(ctx context.Context, req *charon.CreateUserReque
 		handler: newHandler(rs, ctx, "create_user"),
 		hasher:  rs.passwordHasher,
 	}
-	h.addRequest(1)
 
 	resp, err := h.handle(ctx, req)
-	if err = h.handler.handle(err, "user has been created"); err != nil {
+	if err != nil {
 		return nil, err
 	}
+
+	sklog.Debug(rs.logger, "user has been created")
 
 	return resp, err
 }
@@ -325,12 +346,13 @@ func (rs *rpcServer) ModifyUser(ctx context.Context, req *charon.ModifyUserReque
 	h := &modifyUserHandler{
 		handler: newHandler(rs, ctx, "modify_user"),
 	}
-	h.addRequest(1)
 
 	resp, err := h.handle(ctx, req)
-	if err = h.handler.handle(err, "user has been modified"); err != nil {
+	if err != nil {
 		return nil, err
 	}
+
+	sklog.Debug(rs.logger, "user has been modified")
 
 	return resp, err
 }
@@ -340,12 +362,13 @@ func (rs *rpcServer) GetUser(ctx context.Context, req *charon.GetUserRequest) (*
 	h := &getUserHandler{
 		handler: newHandler(rs, ctx, "get_user"),
 	}
-	h.addRequest(1)
 
 	resp, err := h.handle(ctx, req)
-	if err = h.handler.handle(err, "user has been retrieved"); err != nil {
+	if err != nil {
 		return nil, err
 	}
+
+	sklog.Debug(rs.logger, "user has been retrieved")
 
 	return resp, err
 }
@@ -355,12 +378,13 @@ func (rs *rpcServer) ListUsers(ctx context.Context, req *charon.ListUsersRequest
 	h := &listUsersHandler{
 		handler: newHandler(rs, ctx, "list_users"),
 	}
-	h.addRequest(1)
 
 	resp, err := h.handle(ctx, req)
-	if err = h.handler.handle(err, "list of users has been retrieved"); err != nil {
+	if err != nil {
 		return nil, err
 	}
+
+	sklog.Debug(rs.logger, "list of users has been retrieved")
 
 	return resp, err
 }
@@ -370,12 +394,13 @@ func (rs *rpcServer) DeleteUser(ctx context.Context, req *charon.DeleteUserReque
 	h := &deleteUserHandler{
 		handler: newHandler(rs, ctx, "delete_user"),
 	}
-	h.addRequest(1)
 
 	resp, err := h.handle(ctx, req)
-	if err = h.handler.handle(err, "user has been deleted"); err != nil {
+	if err != nil {
 		return nil, err
 	}
+
+	sklog.Debug(rs.logger, "user has been deleted")
 
 	return resp, err
 }
@@ -385,12 +410,13 @@ func (rs *rpcServer) SetUserGroups(ctx context.Context, req *charon.SetUserGroup
 	h := &setUserGroupsHandler{
 		handler: newHandler(rs, ctx, "set_user_groups"),
 	}
-	h.addRequest(1)
 
 	resp, err := h.handle(ctx, req)
-	if err = h.handler.handle(err, "user groups has been set"); err != nil {
+	if err != nil {
 		return nil, err
 	}
+
+	sklog.Debug(rs.logger, "user groups has been set")
 
 	return resp, err
 }
@@ -400,12 +426,13 @@ func (rs *rpcServer) ListUserGroups(ctx context.Context, req *charon.ListUserGro
 	h := &listUserGroupsHandler{
 		handler: newHandler(rs, ctx, "list_user_groups"),
 	}
-	h.addRequest(1)
 
 	resp, err := h.handle(ctx, req)
-	if err = h.handler.handle(err, "list of user groups has been retrieved"); err != nil {
+	if err != nil {
 		return nil, err
 	}
+
+	sklog.Debug(rs.logger, "list of user groups has been retrieved")
 
 	return resp, err
 }
@@ -415,12 +442,13 @@ func (rs *rpcServer) SetUserPermissions(ctx context.Context, req *charon.SetUser
 	h := &setUserPermissionsHandler{
 		handler: newHandler(rs, ctx, "set_user_permissions"),
 	}
-	h.addRequest(1)
 
 	resp, err := h.handle(ctx, req)
-	if err = h.handler.handle(err, "user permissions has been set"); err != nil {
+	if err != nil {
 		return nil, err
 	}
+
+	sklog.Debug(rs.logger, "user permissions has been set")
 
 	return resp, err
 }
@@ -430,12 +458,13 @@ func (rs *rpcServer) ListUserPermissions(ctx context.Context, req *charon.ListUs
 	h := &listUserPermissionsHandler{
 		handler: newHandler(rs, ctx, "list_user_permissions"),
 	}
-	h.addRequest(1)
 
 	resp, err := h.handle(ctx, req)
-	if err = h.handler.handle(err, "list of user permissions has been retrieved"); err != nil {
+	if err != nil {
 		return nil, err
 	}
+
+	sklog.Debug(rs.logger, "list of user permissions has been retrieved")
 
 	return resp, err
 }

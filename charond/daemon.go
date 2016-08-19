@@ -1,6 +1,7 @@
 package charond
 
 import (
+	"database/sql"
 	"errors"
 	"io"
 	"net"
@@ -10,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/go-kit/kit/log"
+	"github.com/go-ldap/ldap"
 	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/mnemosyne/mnemosynerpc"
 	"github.com/piotrkowalczuk/sklog"
@@ -22,20 +24,22 @@ import (
 
 // DaemonOpts ...
 type DaemonOpts struct {
-	Test               bool
-	Namespace          string
-	Subsystem          string
-	MonitoringEngine   string
-	TLS                bool
-	TLSCertFile        string
-	TLSKeyFile         string
-	PostgresAddress    string
-	PostgresDebug      bool
-	PasswordBCryptCost int
-	MnemosyneAddress   string
-	Logger             log.Logger
-	RPCListener        net.Listener
-	DebugListener      net.Listener
+	Test                  bool
+	Monitoring            bool
+	TLS                   bool
+	TLSCertFile           string
+	TLSKeyFile            string
+	PostgresAddress       string
+	PostgresDebug         bool
+	PasswordBCryptCost    int
+	MnemosyneAddress      string
+	LDAP                  bool
+	LDAPAddress           string
+	LDAPDistinguishedName string
+	LDAPPassword          string
+	Logger                log.Logger
+	RPCListener           net.Listener
+	DebugListener         net.Listener
 }
 
 // TestDaemonOpts represent set of options that can be passed to the TestDaemon constructor.
@@ -46,8 +50,9 @@ type TestDaemonOpts struct {
 
 // Daemon ...
 type Daemon struct {
-	opts          *DaemonOpts
+	opts          DaemonOpts
 	monitor       *monitoring
+	ldap          *ldap.Conn
 	logger        log.Logger
 	rpcListener   net.Listener
 	debugListener net.Listener
@@ -56,7 +61,7 @@ type Daemon struct {
 }
 
 // NewDaemon ...
-func NewDaemon(opts *DaemonOpts) *Daemon {
+func NewDaemon(opts DaemonOpts) *Daemon {
 	d := &Daemon{
 		opts:          opts,
 		logger:        opts.Logger,
@@ -77,10 +82,9 @@ func TestDaemon(t *testing.T, opts TestDaemonOpts) (net.Addr, io.Closer) {
 	logger := sklog.NewTestLogger(t)
 	grpclog.SetLogger(sklog.NewGRPCLogger(logger))
 
-	d := NewDaemon(&DaemonOpts{
-		Namespace:          "charon_test",
+	d := NewDaemon(DaemonOpts{
 		Test:               true,
-		MonitoringEngine:   MonitoringEnginePrometheus,
+		Monitoring:         false,
 		MnemosyneAddress:   opts.MnemosyneAddress,
 		Logger:             logger,
 		PostgresAddress:    opts.PostgresAddress,
@@ -100,19 +104,28 @@ func (d *Daemon) Run() (err error) {
 		return
 	}
 
-	postgres, err := initPostgres(d.opts.PostgresAddress, d.opts.Test, d.logger)
+	var db *sql.DB
+	db, err = initPostgres(d.opts.PostgresAddress, d.opts.Test, d.logger)
 	if err != nil {
 		return err
 	}
-	passwordHasher := initPasswordHasher(d.opts.PasswordBCryptCost, d.logger)
+	repos := newRepositories(db)
+
 	d.mnemosyne, d.mnemosyneConn = initMnemosyne(d.opts.MnemosyneAddress, d.logger)
 
-	repos := newRepositories(postgres)
-	if d.opts.Test {
-		if _, err = createDummyTestUser(repos.user, passwordHasher); err != nil {
+	var passwordHasher charon.PasswordHasher
+	if d.opts.LDAP {
+		if d.ldap, err = initLDAP(d.opts.LDAPAddress, d.opts.LDAPDistinguishedName, d.opts.LDAPPassword, d.logger); err != nil {
 			return
 		}
-		sklog.Info(d.logger, "test super user has been created")
+	} else {
+		passwordHasher = initPasswordHasher(d.opts.PasswordBCryptCost, d.logger)
+		if d.opts.Test {
+			if _, err = createDummyTestUser(repos.user, passwordHasher); err != nil {
+				return
+			}
+			sklog.Info(d.logger, "test super user has been created")
+		}
 	}
 
 	permissionReg := initPermissionRegistry(repos.permission, charon.AllPermissions, d.logger)
@@ -129,16 +142,18 @@ func (d *Daemon) Run() (err error) {
 	grpclog.SetLogger(sklog.NewGRPCLogger(d.logger))
 	gRPCServer := grpc.NewServer(opts...)
 	charonServer := &rpcServer{
+		opts:               d.opts,
 		logger:             d.logger,
 		session:            d.mnemosyne,
 		passwordHasher:     passwordHasher,
 		permissionRegistry: permissionReg,
 		repository:         repos,
+		ldap:               d.ldap,
 	}
 	charon.RegisterRPCServer(gRPCServer, charonServer)
 
 	go func() {
-		sklog.Info(d.logger, "rpc server is running", "address", d.rpcListener.Addr().String(), "subsystem", d.opts.Subsystem, "namespace", d.opts.Namespace)
+		sklog.Info(d.logger, "rpc server is running", "address", d.rpcListener.Addr().String())
 
 		if err := gRPCServer.Serve(d.rpcListener); err != nil {
 			if err == grpc.ErrServerStopped {
@@ -152,7 +167,7 @@ func (d *Daemon) Run() (err error) {
 
 	if d.debugListener != nil {
 		go func() {
-			sklog.Info(d.logger, "debug server is running", "address", d.debugListener.Addr().String(), "subsystem", d.opts.Subsystem, "namespace", d.opts.Namespace)
+			sklog.Info(d.logger, "debug server is running", "address", d.debugListener.Addr().String())
 			// TODO: implement keep alive
 
 			mux := http.NewServeMux()
@@ -161,6 +176,7 @@ func (d *Daemon) Run() (err error) {
 			mux.Handle("/debug/pprof/profile", http.HandlerFunc(pprof.Profile))
 			mux.Handle("/debug/pprof/symbol", http.HandlerFunc(pprof.Symbol))
 			mux.Handle("/debug/pprof/trace", http.HandlerFunc(pprof.Trace))
+			mux.Handle("/metrics", prometheus.Handler())
 			sklog.Error(d.logger, http.Serve(d.debugListener, mux))
 		}()
 	}
@@ -170,6 +186,9 @@ func (d *Daemon) Run() (err error) {
 
 // Close implements io.Closer interface.
 func (d *Daemon) Close() (err error) {
+	if d.ldap != nil {
+		d.ldap.Close()
+	}
 	if err = d.mnemosyneConn.Close(); err != nil {
 		return
 	}
@@ -192,14 +211,6 @@ func (d *Daemon) initMonitoring() (err error) {
 	if err != nil {
 		return errors.New("getting hostname failed")
 	}
-
-	switch d.opts.MonitoringEngine {
-	case "":
-		return errors.New("monitoring is mandatory, at least for now")
-	case MonitoringEnginePrometheus:
-		d.monitor = initPrometheus(d.opts.Namespace, d.opts.Subsystem, prometheus.Labels{"server": hostname})
-		return
-	default:
-		return errors.New("unknown monitoring engine")
-	}
+	d.monitor = initPrometheus("charon", d.opts.Monitoring, prometheus.Labels{"server": hostname})
+	return nil
 }

@@ -40,10 +40,10 @@ func (ig *belongsToHandler) handle(ctx context.Context, req *charon.BelongsToReq
 }
 
 func (ig *belongsToHandler) firewall(req *charon.BelongsToRequest, act *actor) error {
-	if act.user.ID == req.UserId {
+	if act.user.id == req.UserId {
 		return nil
 	}
-	if act.user.IsSuperuser {
+	if act.user.isSuperuser {
 		return nil
 	}
 	if act.permissions.Contains(charon.UserGroupCanCheckBelongingAsStranger) {

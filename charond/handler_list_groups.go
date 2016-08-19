@@ -20,7 +20,7 @@ func (lgh *listGroupsHandler) handle(ctx context.Context, req *charon.ListGroups
 		return nil, err
 	}
 
-	ents, err := lgh.repository.group.Find(&groupCriteria{
+	ents, err := lgh.repository.group.find(&groupCriteria{
 		offset: req.Offset.Int64Or(0),
 		limit:  req.Limit.Int64Or(10),
 	})
@@ -32,7 +32,7 @@ func (lgh *listGroupsHandler) handle(ctx context.Context, req *charon.ListGroups
 }
 
 func (lgh *listGroupsHandler) firewall(req *charon.ListGroupsRequest, act *actor) error {
-	if act.user.IsSuperuser {
+	if act.user.isSuperuser {
 		return nil
 	}
 	if act.permissions.Contains(charon.GroupCanRetrieve) {

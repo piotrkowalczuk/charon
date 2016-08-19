@@ -5,9 +5,9 @@ import (
 )
 
 type userGroupsProvider interface {
-	Insert(entity *userGroupsEntity) (*userGroupsEntity, error)
+	insert(entity *userGroupsEntity) (*userGroupsEntity, error)
 	Exists(userID, groupID int64) (bool, error)
-	Find(criteria *userGroupsCriteria) ([]*userGroupsEntity, error)
+	find(criteria *userGroupsCriteria) ([]*userGroupsEntity, error)
 	Set(userID int64, groupIDs []int64) (int64, int64, error)
 }
 

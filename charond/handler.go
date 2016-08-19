@@ -1,16 +1,14 @@
 package charond
 
 import (
-	"errors"
 	"strings"
 
 	"database/sql"
 
 	"github.com/go-kit/kit/log"
-	"github.com/go-kit/kit/metrics"
+	"github.com/go-ldap/ldap"
 	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/mnemosyne/mnemosynerpc"
-	"github.com/piotrkowalczuk/sklog"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -18,37 +16,24 @@ import (
 )
 
 type handler struct {
+	opts       DaemonOpts
 	logger     log.Logger
 	monitor    monitoringRPC
 	session    mnemosynerpc.SessionManagerClient
 	repository repositories
+	ldap       *ldap.Conn
 }
 
 func newHandler(rs *rpcServer, ctx context.Context, endpoint string) *handler {
 	h := &handler{
+		opts:       rs.opts,
 		logger:     rs.loggerBackground(ctx, "endpoint", endpoint),
 		session:    rs.session,
 		repository: rs.repository,
-	}
-	if rs.monitor.enabled {
-		h.monitor = rs.monitor.rpc.with(metrics.Field{Key: "endpoint", Value: endpoint})
+		ldap:       rs.ldap,
 	}
 
 	return h
-}
-
-func (h *handler) handle(err error, msg string) error {
-	if err != nil {
-		if h.monitor.enabled {
-			h.monitor.errors.With(metrics.Field{Key: "code", Value: grpc.Code(err).String()}).Add(1)
-		}
-		sklog.Error(h.logger, errors.New(grpc.ErrorDesc(err)))
-
-		return grpc.Errorf(grpc.Code(err), "%s", grpc.ErrorDesc(err))
-	}
-
-	sklog.Debug(h.logger, msg)
-	return nil
 }
 
 func handleMnemosyneError(err error) error {
@@ -90,11 +75,11 @@ func (h *handler) retrieveActor(ctx context.Context) (act *actor, err error) {
 	}
 
 	act = &actor{}
-	act.user, err = h.repository.user.FindOneByID(userID)
+	act.user, err = h.repository.user.findOneByID(userID)
 	if err != nil {
 		return
 	}
-	entities, err = h.repository.permission.FindByUserID(userID)
+	entities, err = h.repository.permission.findByUserID(userID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return act, nil
@@ -108,10 +93,4 @@ func (h *handler) retrieveActor(ctx context.Context) (act *actor, err error) {
 	}
 
 	return
-}
-
-func (h *handler) addRequest(i uint64) {
-	if h.monitor.enabled {
-		h.monitor.requests.Add(i)
-	}
 }

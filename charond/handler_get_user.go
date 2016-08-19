@@ -20,7 +20,7 @@ func (guh *getUserHandler) handle(ctx context.Context, req *charon.GetUserReques
 	if err != nil {
 		return nil, err
 	}
-	ent, err := guh.repository.user.FindOneByID(req.Id)
+	ent, err := guh.repository.user.findOneByID(req.Id)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, grpc.Errorf(codes.NotFound, "user does not exists")
@@ -35,14 +35,14 @@ func (guh *getUserHandler) handle(ctx context.Context, req *charon.GetUserReques
 }
 
 func (guh *getUserHandler) firewall(req *charon.GetUserRequest, act *actor, ent *userEntity) error {
-	if act.user.IsSuperuser {
+	if act.user.isSuperuser {
 		return nil
 	}
-	if ent.IsSuperuser {
+	if ent.isSuperuser {
 		return grpc.Errorf(codes.PermissionDenied, "only superuser is permited to retrieve other superuser")
 	}
-	if ent.IsStaff {
-		if ent.CreatedBy.Int64Or(0) == act.user.ID {
+	if ent.isStaff {
+		if ent.createdBy.Int64Or(0) == act.user.id {
 			if !act.permissions.Contains(charon.UserCanRetrieveStaffAsOwner) {
 				return grpc.Errorf(codes.PermissionDenied, "staff user cannot be retrieved as an owner, missing permission")
 			}
@@ -53,7 +53,7 @@ func (guh *getUserHandler) firewall(req *charon.GetUserRequest, act *actor, ent 
 		}
 		return nil
 	}
-	if ent.CreatedBy.Int64Or(0) == act.user.ID {
+	if ent.createdBy.Int64Or(0) == act.user.id {
 		if !act.permissions.Contains(charon.UserCanRetrieveAsOwner) {
 			return grpc.Errorf(codes.PermissionDenied, "user cannot be retrieved as an owner, missing permission")
 		}

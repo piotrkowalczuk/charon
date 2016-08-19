@@ -12,15 +12,15 @@ func TestGroupRepository_IsGranted(t *testing.T) {
 	defer suite.teardown(t)
 
 	for ur := range loadGroupFixtures(t, suite.repository.group, groupPermissionsTestFixtures) {
-		for pr := range loadPermissionFixtures(t, suite.repository.permission, ur.given.Permission) {
+		for pr := range loadPermissionFixtures(t, suite.repository.permission, ur.given.permission) {
 			add := []*groupPermissionsEntity{{
-				GroupID:             ur.got.ID,
-				PermissionSubsystem: pr.got.Subsystem,
-				PermissionModule:    pr.got.Module,
-				PermissionAction:    pr.got.Action,
+				groupID:             ur.got.id,
+				permissionSubsystem: pr.got.subsystem,
+				permissionModule:    pr.got.module,
+				permissionAction:    pr.got.action,
 			}}
 			for range loadGroupPermissionsFixtures(t, suite.repository.groupPermissions, add) {
-				exists, err := suite.repository.group.IsGranted(ur.given.ID, pr.given.Permission())
+				exists, err := suite.repository.group.isGranted(ur.given.id, pr.given.Permission())
 
 				if err != nil {
 					t.Errorf("group permission cannot be found, unexpected error: %s", err.Error())
@@ -28,9 +28,9 @@ func TestGroupRepository_IsGranted(t *testing.T) {
 				}
 
 				if !exists {
-					t.Errorf("group permission not found for group %d and permission %d", ur.given.ID, pr.given.ID)
+					t.Errorf("group permission not found for group %d and permission %d", ur.given.id, pr.given.id)
 				} else {
-					t.Logf("group permission relationship exists for group %d and permission %d", ur.given.ID, pr.given.ID)
+					t.Logf("group permission relationship exists for group %d and permission %d", ur.given.id, pr.given.id)
 				}
 			}
 		}
@@ -46,12 +46,12 @@ func loadGroupFixtures(t *testing.T, r groupProvider, f []*groupEntity) chan gro
 
 	go func() {
 		for _, given := range f {
-			entity, err := r.Insert(given)
+			entity, err := r.insert(given)
 			if err != nil {
 				t.Errorf("group cannot be created, unexpected error: %s", err.Error())
 				continue
 			} else {
-				t.Logf("group has been created, got id %d", entity.ID)
+				t.Logf("group has been created, got id %d", entity.id)
 			}
 
 			data <- groupFixtures{

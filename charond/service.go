@@ -3,15 +3,15 @@ package charond
 import (
 	"database/sql"
 	"errors"
-
-	"google.golang.org/grpc"
+	"fmt"
 
 	"github.com/go-kit/kit/log"
-	"github.com/go-kit/kit/metrics/prometheus"
+	"github.com/go-ldap/ldap"
 	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/mnemosyne/mnemosynerpc"
 	"github.com/piotrkowalczuk/sklog"
-	stdprometheus "github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus"
+	"google.golang.org/grpc"
 )
 
 func initPostgres(address string, test bool, logger log.Logger) (*sql.DB, error) {
@@ -60,9 +60,9 @@ func initPasswordHasher(cost int, logger log.Logger) charon.PasswordHasher {
 	return bh
 }
 
-func initPermissionRegistry(r permissionProvider, permissions charon.Permissions, logger log.Logger) (pr PermissionRegistry) {
+func initPermissionRegistry(r permissionProvider, permissions charon.Permissions, logger log.Logger) (pr permissionRegistry) {
 	pr = newPermissionRegistry(r)
-	created, untouched, removed, err := pr.Register(permissions)
+	created, untouched, removed, err := pr.register(permissions)
 	if err != nil {
 		sklog.Fatal(logger, err)
 	}
@@ -77,42 +77,52 @@ const (
 	MonitoringEnginePrometheus = "prometheus"
 )
 
-func initPrometheus(namespace, subsystem string, constLabels stdprometheus.Labels) *monitoring {
-	rpcRequests := prometheus.NewCounter(
-		stdprometheus.CounterOpts{
+func initPrometheus(namespace string, enabled bool, constLabels prometheus.Labels) *monitoring {
+	rpcRequests := prometheus.NewCounterVec(
+		prometheus.CounterOpts{
 			Namespace:   namespace,
-			Subsystem:   subsystem,
-			Name:        "rpc_requests_total",
+			Subsystem:   "rpc",
+			Name:        "requests_total",
 			Help:        "Total number of RPC requests made.",
 			ConstLabels: constLabels,
 		},
 		monitoringRPCLabels,
 	)
-	rpcErrors := prometheus.NewCounter(
-		stdprometheus.CounterOpts{
+	rpcErrors := prometheus.NewCounterVec(
+		prometheus.CounterOpts{
 			Namespace:   namespace,
-			Subsystem:   subsystem,
-			Name:        "rpc_errors_total",
+			Subsystem:   "rpc",
+			Name:        "errors_total",
 			Help:        "Total number of errors that happen during RPC calles.",
 			ConstLabels: constLabels,
 		},
 		monitoringRPCLabels,
 	)
-
-	postgresQueries := prometheus.NewCounter(
-		stdprometheus.CounterOpts{
+	rpcDuration := prometheus.NewSummaryVec(
+		prometheus.SummaryOpts{
 			Namespace:   namespace,
-			Subsystem:   subsystem,
+			Subsystem:   "rpc",
+			Name:        "request_duration_microseconds",
+			Help:        "The RPC request latencies in microseconds.",
+			ConstLabels: constLabels,
+		},
+		[]string{"handler", "code"},
+	)
+
+	postgresQueries := prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace:   namespace,
+			Subsystem:   "dal",
 			Name:        "postgres_queries_total",
 			Help:        "Total number of SQL queries made.",
 			ConstLabels: constLabels,
 		},
 		monitoringPostgresLabels,
 	)
-	postgresErrors := prometheus.NewCounter(
-		stdprometheus.CounterOpts{
+	postgresErrors := prometheus.NewCounterVec(
+		prometheus.CounterOpts{
 			Namespace:   namespace,
-			Subsystem:   subsystem,
+			Subsystem:   "dal",
 			Name:        "postgres_errors_total",
 			Help:        "Total number of errors that happen during SQL queries.",
 			ConstLabels: constLabels,
@@ -120,12 +130,21 @@ func initPrometheus(namespace, subsystem string, constLabels stdprometheus.Label
 		monitoringPostgresLabels,
 	)
 
+	if enabled {
+		prometheus.MustRegisterOrGet(rpcRequests)
+		prometheus.MustRegisterOrGet(rpcDuration)
+		prometheus.MustRegisterOrGet(rpcErrors)
+		prometheus.MustRegisterOrGet(postgresQueries)
+		prometheus.MustRegisterOrGet(postgresErrors)
+	}
+
 	return &monitoring{
 		enabled: true,
 		rpc: monitoringRPC{
 			enabled:  true,
 			requests: rpcRequests,
 			errors:   rpcErrors,
+			duration: rpcDuration,
 		},
 		postgres: monitoringPostgres{
 			enabled: true,
@@ -133,4 +152,16 @@ func initPrometheus(namespace, subsystem string, constLabels stdprometheus.Label
 			errors:  postgresErrors,
 		},
 	}
+}
+
+func initLDAP(address, dn, password string, logger log.Logger) (*ldap.Conn, error) {
+	conn, err := ldap.Dial("tcp", address)
+	if err != nil {
+		return nil, fmt.Errorf("ldap connection failure: %s", err.Error())
+	}
+	if err = conn.Bind(dn, password); err != nil {
+		return nil, fmt.Errorf("ldap bind failure: %s", err.Error())
+	}
+	sklog.Info(logger, "ldap connection has been established", "address", address, "dn", dn)
+	return conn, nil
 }

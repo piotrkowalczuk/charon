@@ -47,7 +47,7 @@ func TestNewSecurityContext(t *testing.T) {
 	sctx := NewSecurityContext(context.Background())
 
 	if _, ok := sctx.(SecurityContext); !ok {
-		t.Errorf("result should imeplement SecurityContext interface")
+		t.Error("result should imeplement SecurityContext interface")
 	}
 }
 
@@ -62,7 +62,7 @@ func TestSecurityContext_Subject(t *testing.T) {
 			t.Error("provided and retrieved subject should be the same")
 		}
 	} else {
-		t.Errorf("subject should be able retrieved")
+		t.Error("subject should be able retrieved")
 	}
 }
 
@@ -71,7 +71,7 @@ func TestSecurityContext_Subject_empty(t *testing.T) {
 
 	_, ok := sctx.Subject()
 	if ok {
-		t.Errorf("subject should not be there")
+		t.Error("subject should not be there")
 	}
 }
 
@@ -94,6 +94,6 @@ func TestSecurityContext_Token_empty(t *testing.T) {
 
 	_, err := sctx.Token()
 	if err == nil {
-		t.Errorf("expected error, got nil")
+		t.Error("expected error, got nil")
 	}
 }

@@ -24,7 +24,7 @@ func (dgh *deleteGroupHandler) handle(ctx context.Context, req *charon.DeleteGro
 		return nil, err
 	}
 
-	affected, err := dgh.repository.group.DeleteOneByID(req.Id)
+	affected, err := dgh.repository.group.deleteOneByID(req.Id)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, grpc.Errorf(codes.NotFound, "group does not exists")
@@ -38,7 +38,7 @@ func (dgh *deleteGroupHandler) handle(ctx context.Context, req *charon.DeleteGro
 }
 
 func (dgh *deleteGroupHandler) firewall(req *charon.DeleteGroupRequest, act *actor) error {
-	if act.user.IsSuperuser {
+	if act.user.isSuperuser {
 		return nil
 	}
 	if act.permissions.Contains(charon.GroupCanDelete) {

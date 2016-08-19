@@ -24,7 +24,7 @@ func (duh *deleteUserHandler) handle(ctx context.Context, req *charon.DeleteUser
 	if err != nil {
 		return nil, err
 	}
-	ent, err := duh.repository.user.FindOneByID(req.Id)
+	ent, err := duh.repository.user.findOneByID(req.Id)
 	if err != nil {
 		return nil, err
 	}
@@ -32,7 +32,7 @@ func (duh *deleteUserHandler) handle(ctx context.Context, req *charon.DeleteUser
 		return nil, err
 	}
 
-	affected, err := duh.repository.user.DeleteOneByID(req.Id)
+	affected, err := duh.repository.user.deleteOneByID(req.Id)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, grpc.Errorf(codes.NotFound, "user does not exists")
@@ -46,18 +46,18 @@ func (duh *deleteUserHandler) handle(ctx context.Context, req *charon.DeleteUser
 }
 
 func (duh *deleteUserHandler) firewall(req *charon.DeleteUserRequest, act *actor, ent *userEntity) error {
-	if act.user.ID == ent.ID {
+	if act.user.id == ent.id {
 		return grpc.Errorf(codes.PermissionDenied, "user is not permited to remove himself")
 	}
-	if act.user.IsSuperuser {
+	if act.user.isSuperuser {
 		return nil
 	}
-	if ent.IsSuperuser {
+	if ent.isSuperuser {
 		return grpc.Errorf(codes.PermissionDenied, "only superuser can remove other superuser")
 	}
-	if ent.IsStaff {
+	if ent.isStaff {
 		switch {
-		case act.user.ID == ent.CreatedBy.Int64Or(0):
+		case act.user.id == ent.createdBy.Int64Or(0):
 			if !act.permissions.Contains(charon.UserCanDeleteStaffAsOwner) {
 				return grpc.Errorf(codes.PermissionDenied, "staff user cannot be removed by owner, missing permission")
 			}
@@ -68,7 +68,7 @@ func (duh *deleteUserHandler) firewall(req *charon.DeleteUserRequest, act *actor
 		return nil
 	}
 
-	if act.user.ID == ent.CreatedBy.Int64Or(0) {
+	if act.user.id == ent.createdBy.Int64Or(0) {
 		if !act.permissions.Contains(charon.UserCanDeleteAsOwner) {
 			return grpc.Errorf(codes.PermissionDenied, "user cannot be removed by owner, missing permission")
 		}

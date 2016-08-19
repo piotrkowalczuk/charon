@@ -18,7 +18,7 @@ func TestListUsersHandler_firewall_success(t *testing.T) {
 				CreatedBy: qtypes.EqualInt64(1),
 			},
 			act: actor{
-				user: &userEntity{ID: 1},
+				user: &userEntity{id: 1},
 				permissions: charon.Permissions{
 					charon.UserCanRetrieveAsOwner,
 				},
@@ -29,7 +29,7 @@ func TestListUsersHandler_firewall_success(t *testing.T) {
 				CreatedBy: qtypes.EqualInt64(3),
 			},
 			act: actor{
-				user: &userEntity{ID: 1},
+				user: &userEntity{id: 1},
 				permissions: charon.Permissions{
 					charon.UserCanRetrieveAsStranger,
 				},
@@ -41,8 +41,8 @@ func TestListUsersHandler_firewall_success(t *testing.T) {
 			},
 			act: actor{
 				user: &userEntity{
-					ID:          1,
-					IsSuperuser: true,
+					id:          1,
+					isSuperuser: true,
 				},
 			},
 		},
@@ -50,8 +50,8 @@ func TestListUsersHandler_firewall_success(t *testing.T) {
 			req: charon.ListUsersRequest{},
 			act: actor{
 				user: &userEntity{
-					ID:          1,
-					IsSuperuser: true,
+					id:          1,
+					isSuperuser: true,
 				},
 			},
 		},
@@ -62,7 +62,7 @@ func TestListUsersHandler_firewall_success(t *testing.T) {
 			},
 			act: actor{
 				user: &userEntity{
-					ID: 1,
+					id: 1,
 				},
 				permissions: charon.Permissions{
 					charon.UserCanRetrieveStaffAsOwner,
@@ -76,7 +76,7 @@ func TestListUsersHandler_firewall_success(t *testing.T) {
 			},
 			act: actor{
 				user: &userEntity{
-					ID: 1,
+					id: 1,
 				},
 				permissions: charon.Permissions{
 					charon.UserCanRetrieveStaffAsStranger,
@@ -86,7 +86,7 @@ func TestListUsersHandler_firewall_success(t *testing.T) {
 		{
 			req: charon.ListUsersRequest{},
 			act: actor{
-				user: &userEntity{ID: 1},
+				user: &userEntity{id: 1},
 				permissions: charon.Permissions{
 					charon.UserCanRetrieveAsStranger,
 					charon.UserCanRetrieveAsOwner,
@@ -100,7 +100,7 @@ func TestListUsersHandler_firewall_success(t *testing.T) {
 				IsSuperuser: &ntypes.Bool{Bool: true, Valid: true},
 			},
 			act: actor{
-				user: &userEntity{ID: 1, IsSuperuser: true},
+				user: &userEntity{id: 1, isSuperuser: true},
 				permissions: charon.Permissions{
 					charon.UserCanRetrieveAsStranger,
 					charon.UserCanRetrieveAsOwner,
@@ -133,7 +133,7 @@ func TestListUsersHandler_firewall_failure(t *testing.T) {
 		{
 			req: charon.ListUsersRequest{},
 			act: actor{
-				user: &userEntity{ID: 1},
+				user: &userEntity{id: 1},
 			},
 		},
 		{
@@ -141,7 +141,7 @@ func TestListUsersHandler_firewall_failure(t *testing.T) {
 				IsSuperuser: &ntypes.Bool{Bool: true, Valid: true},
 			},
 			act: actor{
-				user: &userEntity{ID: 1},
+				user: &userEntity{id: 1},
 				permissions: charon.Permissions{
 					charon.UserCanRetrieveAsStranger,
 					charon.UserCanRetrieveAsOwner,

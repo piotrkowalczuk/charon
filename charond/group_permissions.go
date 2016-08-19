@@ -3,7 +3,7 @@ package charond
 import "database/sql"
 
 type groupPermissionsProvider interface {
-	Insert(entity *groupPermissionsEntity) (*groupPermissionsEntity, error)
+	insert(entity *groupPermissionsEntity) (*groupPermissionsEntity, error)
 }
 
 type groupPermissionsRepository struct {

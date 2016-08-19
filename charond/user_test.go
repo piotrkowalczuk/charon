@@ -12,18 +12,18 @@ import (
 var (
 	userTestFixtures = []*userEntity{
 		{
-			Username:          "johnsnow@gmail.com",
-			Password:          []byte("secret"),
-			FirstName:         "John",
-			LastName:          "Snow",
-			ConfirmationToken: []byte("1234567890"),
+			username:          "johnsnow@gmail.com",
+			password:          []byte("secret"),
+			firstName:         "John",
+			lastName:          "Snow",
+			confirmationToken: []byte("1234567890"),
 		},
 		{
-			Username:          "1",
-			Password:          []byte("2"),
-			FirstName:         "3",
-			LastName:          "4",
-			ConfirmationToken: []byte("5"),
+			username:          "1",
+			password:          []byte("2"),
+			firstName:         "3",
+			lastName:          "4",
+			confirmationToken: []byte("5"),
 		},
 	}
 )
@@ -31,14 +31,14 @@ var (
 func TestUserEntity_String(t *testing.T) {
 	cases := map[string]userEntity{
 		"John Snow": {
-			FirstName: "John",
-			LastName:  "Snow",
+			firstName: "John",
+			lastName:  "Snow",
 		},
 		"Snow": {
-			LastName: "Snow",
+			lastName: "Snow",
 		},
 		"John": {
-			FirstName: "John",
+			firstName: "John",
 		},
 	}
 
@@ -55,19 +55,19 @@ func TestUserRepository_Create(t *testing.T) {
 	defer suite.teardown(t)
 
 	for res := range loadUserFixtures(t, suite.repository.user, userTestFixtures) {
-		if res.got.CreatedAt.IsZero() {
-			t.Errorf("invalid created at field, expected valid time but got %v", res.got.CreatedAt)
+		if res.got.createdAt.IsZero() {
+			t.Errorf("invalid created at field, expected valid time but got %v", res.got.createdAt)
 		} else {
-			t.Logf("user has been properly created at %v", res.got.CreatedAt)
+			t.Logf("user has been properly created at %v", res.got.createdAt)
 		}
 
-		if res.got.Username != res.given.Username {
-			t.Errorf("wrong username, expected %s but got %s", res.given.Username, res.got.Username)
+		if res.got.username != res.given.username {
+			t.Errorf("wrong username, expected %s but got %s", res.given.username, res.got.username)
 		}
 	}
 }
 
-func TestUserRepository_UpdateByID(t *testing.T) {
+func TestUserRepository_updateByID(t *testing.T) {
 	suffix := "_modified"
 	suite := &postgresSuite{}
 	suite.setup(t)
@@ -75,35 +75,35 @@ func TestUserRepository_UpdateByID(t *testing.T) {
 
 	for res := range loadUserFixtures(t, suite.repository.user, userTestFixtures) {
 		user := res.got
-		modified, err := suite.repository.user.UpdateOneByID(user.ID, &userPatch{
-			firstName:   &ntypes.String{String: user.FirstName + suffix, Valid: true},
+		modified, err := suite.repository.user.updateOneByID(user.id, &userPatch{
+			firstName:   &ntypes.String{String: user.firstName + suffix, Valid: true},
 			isActive:    &ntypes.Bool{Bool: true, Valid: true},
 			isConfirmed: &ntypes.Bool{Bool: true, Valid: true},
 			isStaff:     &ntypes.Bool{Bool: true, Valid: true},
 			isSuperuser: &ntypes.Bool{Bool: true, Valid: true},
-			lastName:    &ntypes.String{String: user.LastName + suffix, Valid: true},
-			password:    user.Password,
-			username:    &ntypes.String{String: user.Username + suffix, Valid: true},
+			lastName:    &ntypes.String{String: user.lastName + suffix, Valid: true},
+			password:    user.password,
+			username:    &ntypes.String{String: user.username + suffix, Valid: true},
 		})
 
 		if err != nil {
 			t.Errorf("user cannot be modified, unexpected error: %s", err.Error())
 			continue
 		} else {
-			t.Logf("user with id %d has been modified", modified.ID)
+			t.Logf("user with id %d has been modified", modified.id)
 		}
 
-		if assertfTime(t, modified.UpdatedAt, "invalid updated at field, expected valid time but got %v", modified.UpdatedAt) {
-			t.Logf("user has been properly modified at %v", modified.UpdatedAt)
+		if assertfTime(t, modified.updatedAt, "invalid updated at field, expected valid time but got %v", modified.updatedAt) {
+			t.Logf("user has been properly modified at %v", modified.updatedAt)
 		}
-		assertf(t, modified.Username == user.Username+suffix, "wrong username, expected %s but got %s", user.Username+suffix, modified.Username)
-		assertf(t, reflect.DeepEqual(modified.Password, user.Password), "wrong password, expected %s but got %s", user.Password, modified.Password)
-		assertf(t, modified.FirstName == user.FirstName+suffix, "wrong first name, expected %s but got %s", user.FirstName+suffix, modified.FirstName)
-		assertf(t, modified.LastName == user.LastName+suffix, "wrong last name, expected %s but got %s", user.LastName+suffix, modified.LastName)
-		assert(t, modified.IsSuperuser, "user should become a superuser")
-		assert(t, modified.IsActive, "user should be active")
-		assert(t, modified.IsConfirmed, "user should be confirmed")
-		assert(t, modified.IsStaff, "user should become a staff")
+		assertf(t, modified.username == user.username+suffix, "wrong username, expected %s but got %s", user.username+suffix, modified.username)
+		assertf(t, reflect.DeepEqual(modified.password, user.password), "wrong password, expected %s but got %s", user.password, modified.password)
+		assertf(t, modified.firstName == user.firstName+suffix, "wrong first name, expected %s but got %s", user.firstName+suffix, modified.firstName)
+		assertf(t, modified.lastName == user.lastName+suffix, "wrong last name, expected %s but got %s", user.lastName+suffix, modified.lastName)
+		assert(t, modified.isSuperuser, "user should become a superuser")
+		assert(t, modified.isActive, "user should be active")
+		assert(t, modified.isConfirmed, "user should be confirmed")
+		assert(t, modified.isStaff, "user should become a staff")
 	}
 }
 
@@ -113,7 +113,7 @@ func TestUserRepository_DeleteByID(t *testing.T) {
 	defer suite.teardown(t)
 
 	for res := range loadUserFixtures(t, suite.repository.user, userTestFixtures) {
-		affected, err := suite.repository.user.DeleteOneByID(res.got.ID)
+		affected, err := suite.repository.user.deleteOneByID(res.got.id)
 		if err != nil {
 			t.Errorf("user cannot be deleted, unexpected error: %s", err.Error())
 			continue
@@ -124,14 +124,14 @@ func TestUserRepository_DeleteByID(t *testing.T) {
 	}
 }
 
-func TestUserRepository_FindOneByID(t *testing.T) {
+func TestUserRepository_findOneByID(t *testing.T) {
 	suite := &postgresSuite{}
 	suite.setup(t)
 	defer suite.teardown(t)
 
 	for res := range loadUserFixtures(t, suite.repository.user, userTestFixtures) {
 		user := res.got
-		found, err := suite.repository.user.FindOneByID(user.ID)
+		found, err := suite.repository.user.findOneByID(user.id)
 
 		if err != nil {
 			t.Errorf("user cannot be found, unexpected error: %s", err.Error())
@@ -144,13 +144,13 @@ func TestUserRepository_FindOneByID(t *testing.T) {
 	}
 }
 
-func TestUserRepository_UpdateLastLoginAt(t *testing.T) {
+func TestUserRepository_updateLastLoginAt(t *testing.T) {
 	suite := &postgresSuite{}
 	suite.setup(t)
 	defer suite.teardown(t)
 
 	for res := range loadUserFixtures(t, suite.repository.user, userTestFixtures) {
-		affected, err := suite.repository.user.UpdateLastLoginAt(res.got.ID)
+		affected, err := suite.repository.user.updateLastLoginAt(res.got.id)
 
 		if err != nil {
 			t.Errorf("user cannot be updated, unexpected error: %s", err.Error())
@@ -158,18 +158,18 @@ func TestUserRepository_UpdateLastLoginAt(t *testing.T) {
 		}
 
 		if assert(t, affected == 1, "user was not updated, no rows affected") {
-			entity, err := suite.repository.user.FindOneByID(res.got.ID)
+			entity, err := suite.repository.user.findOneByID(res.got.id)
 			if err != nil {
 				t.Errorf("user cannot be found, unexpected error: %s", err.Error())
 				continue
 			}
 
-			assertfTime(t, entity.LastLoginAt, "user last login at property was not properly updated, got %v", entity.LastLoginAt)
+			assertfTime(t, entity.lastLoginAt, "user last login at property was not properly updated, got %v", entity.lastLoginAt)
 		}
 	}
 }
 
-func TestUserRepository_Find(t *testing.T) {
+func TestUserRepository_find(t *testing.T) {
 	var (
 		err      error
 		entities []*userEntity
@@ -183,14 +183,14 @@ func TestUserRepository_Find(t *testing.T) {
 		all++
 	}
 
-	entities, err = suite.repository.user.Find(&userCriteria{limit: all})
+	entities, err = suite.repository.user.find(&userCriteria{limit: all})
 	if err != nil {
 		t.Errorf("users can not be retrieved, unexpected error: %s", err.Error())
 	} else {
 		assertf(t, int64(len(entities)) == all, "number of users retrived do not match, expected %d got %d", all, len(entities))
 	}
 
-	entities, err = suite.repository.user.Find(&userCriteria{
+	entities, err = suite.repository.user.find(&userCriteria{
 		offset: all,
 		limit:  all,
 	})
@@ -199,7 +199,7 @@ func TestUserRepository_Find(t *testing.T) {
 	} else {
 		assertf(t, len(entities) == 0, "number of users retrived do not match, expected %d got %d", 0, len(entities))
 	}
-	entities, err = suite.repository.user.Find(&userCriteria{
+	entities, err = suite.repository.user.find(&userCriteria{
 		limit:             all,
 		username:          qtypes.EqualString("johnsnow@gmail.com"),
 		password:          []byte("secret"),
@@ -221,15 +221,15 @@ func TestUserRepository_IsGranted(t *testing.T) {
 	defer suite.teardown(t)
 
 	for ur := range loadUserFixtures(t, suite.repository.user, userPermissionsTestFixtures) {
-		for pr := range loadPermissionFixtures(t, suite.repository.permission, ur.given.Permission) {
+		for pr := range loadPermissionFixtures(t, suite.repository.permission, ur.given.permission) {
 			add := []*userPermissionsEntity{{
-				UserID:              ur.got.ID,
-				PermissionSubsystem: pr.got.Subsystem,
-				PermissionModule:    pr.got.Module,
-				PermissionAction:    pr.got.Action,
+				userID:              ur.got.id,
+				permissionSubsystem: pr.got.subsystem,
+				permissionModule:    pr.got.module,
+				permissionAction:    pr.got.action,
 			}}
 			for range loadUserPermissionsFixtures(t, suite.repository.userPermissions, add) {
-				exists, err := suite.repository.user.IsGranted(ur.given.ID, pr.given.Permission())
+				exists, err := suite.repository.user.IsGranted(ur.given.id, pr.given.Permission())
 
 				if err != nil {
 					t.Errorf("user permission cannot be found, unexpected error: %s", err.Error())
@@ -237,9 +237,9 @@ func TestUserRepository_IsGranted(t *testing.T) {
 				}
 
 				if !exists {
-					t.Errorf("user permission not found for user %d and permission %d", ur.given.ID, pr.given.ID)
+					t.Errorf("user permission not found for user %d and permission %d", ur.given.id, pr.given.id)
 				} else {
-					t.Logf("user permission relationship exists for user %d and permission %d", ur.given.ID, pr.given.ID)
+					t.Logf("user permission relationship exists for user %d and permission %d", ur.given.id, pr.given.id)
 				}
 			}
 		}
@@ -259,12 +259,12 @@ func loadUserFixtures(t *testing.T, r userProvider, f []*userEntity) chan userFi
 
 	go func() {
 		for _, given := range f {
-			entity, err := r.Insert(given)
+			entity, err := r.insert(given)
 			if err != nil {
 				t.Errorf("user cannot be created, unexpected error: %s", err.Error())
 				continue
 			} else {
-				t.Logf("user has been created, got id %d", entity.ID)
+				t.Logf("user has been created, got id %d", entity.id)
 			}
 
 			data <- userFixtures{

@@ -41,7 +41,7 @@ func (sh *subjectHandler) handle(ctx context.Context, r *charon.SubjectRequest) 
 		return nil, fmt.Errorf("invalid session subject id: %s", ses.SubjectId)
 	}
 
-	userEntity, err := sh.repository.user.FindOneByID(id)
+	ent, err := sh.repository.user.findOneByID(id)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, grpc.Errorf(codes.NotFound, "subject does not exists with id: %d", id)
@@ -50,7 +50,7 @@ func (sh *subjectHandler) handle(ctx context.Context, r *charon.SubjectRequest) 
 		return nil, err
 	}
 
-	permissionEntities, err := sh.repository.permission.FindByUserID(id)
+	permissionEntities, err := sh.repository.permission.findByUserID(id)
 	if err != nil && err != sql.ErrNoRows {
 		return nil, grpc.Errorf(codes.Internal, "subject list of permissions failure: %s", err.Error())
 	}
@@ -63,14 +63,14 @@ func (sh *subjectHandler) handle(ctx context.Context, r *charon.SubjectRequest) 
 	sh.loggerWith("subject_id", ses.SubjectId)
 
 	return &charon.SubjectResponse{
-		Id:          int64(userEntity.ID),
-		Username:    userEntity.Username,
-		FirstName:   userEntity.FirstName,
-		LastName:    userEntity.LastName,
+		Id:          int64(ent.id),
+		Username:    ent.username,
+		FirstName:   ent.firstName,
+		LastName:    ent.lastName,
 		Permissions: permissions,
-		IsActive:    userEntity.IsActive,
-		IsConfirmed: userEntity.IsConfirmed,
-		IsStuff:     userEntity.IsStaff,
-		IsSuperuser: userEntity.IsSuperuser,
+		IsActive:    ent.isActive,
+		IsConfirmed: ent.isConfirmed,
+		IsStuff:     ent.isStaff,
+		IsSuperuser: ent.isSuperuser,
 	}, nil
 }

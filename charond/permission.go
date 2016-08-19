@@ -12,18 +12,18 @@ import (
 // charon.Permission returns charon.Permission value that is concatenated
 // using entity properties like subsystem, module and action.
 func (pe *permissionEntity) Permission() charon.Permission {
-	return charon.Permission(pe.Subsystem + ":" + pe.Module + ":" + pe.Action)
+	return charon.Permission(pe.subsystem + ":" + pe.module + ":" + pe.action)
 }
 
 type permissionProvider interface {
-	Find(criteria *permissionCriteria) ([]*permissionEntity, error)
-	FindOneByID(id int64) (entity *permissionEntity, err error)
-	// FindByUserID retrieves all permissions for user represented by given id.
-	FindByUserID(userID int64) (entities []*permissionEntity, err error)
-	// FindByGroupID retrieves all permissions for group represented by given id.
-	FindByGroupID(groupID int64) (entities []*permissionEntity, err error)
-	Register(permissions charon.Permissions) (created, untouched, removed int64, err error)
-	Insert(entity *permissionEntity) (*permissionEntity, error)
+	find(criteria *permissionCriteria) ([]*permissionEntity, error)
+	findOneByID(id int64) (entity *permissionEntity, err error)
+	// findByUserID retrieves all permissions for user represented by given id.
+	findByUserID(userID int64) (entities []*permissionEntity, err error)
+	// findByGroupID retrieves all permissions for group represented by given id.
+	findByGroupID(groupID int64) (entities []*permissionEntity, err error)
+	register(permissions charon.Permissions) (created, untouched, removed int64, err error)
+	insert(entity *permissionEntity) (*permissionEntity, error)
 }
 
 type permissionRepository struct {
@@ -40,8 +40,8 @@ func newPermissionRepository(dbPool *sql.DB) *permissionRepository {
 	}
 }
 
-// FindByUserID implements charon.PermissionRepository interface.
-func (pr *permissionRepository) FindByUserID(userID int64) ([]*permissionEntity, error) {
+// findByUserID implements charon.PermissionRepository interface.
+func (pr *permissionRepository) findByUserID(userID int64) ([]*permissionEntity, error) {
 	// TODO: does it work?
 	return pr.findBy(`
 		SELECT DISTINCT ON (p.id)
@@ -61,8 +61,8 @@ func (pr *permissionRepository) FindByUserID(userID int64) ([]*permissionEntity,
 	`, userID)
 }
 
-// FindByGroupID implements charon.PermissionRepository interface.
-func (pr *permissionRepository) FindByGroupID(userID int64) ([]*permissionEntity, error) {
+// findByGroupID implements charon.PermissionRepository interface.
+func (pr *permissionRepository) findByGroupID(userID int64) ([]*permissionEntity, error) {
 	// TODO: does it work?
 	return pr.findBy(`
 		SELECT DISTINCT ON (p.id)
@@ -84,12 +84,12 @@ func (pr *permissionRepository) findBy(query string, args ...interface{}) ([]*pe
 	for rows.Next() {
 		var p permissionEntity
 		err = rows.Scan(
-			&p.Action,
-			&p.CreatedAt,
-			&p.ID,
-			&p.Module,
-			&p.Subsystem,
-			&p.UpdatedAt,
+			&p.action,
+			&p.createdAt,
+			&p.id,
+			&p.module,
+			&p.subsystem,
+			&p.updatedAt,
 		)
 		if err != nil {
 			return nil, err
@@ -112,8 +112,7 @@ func (pr *permissionRepository) findOneStmt() (*sql.Stmt, error) {
 	)
 }
 
-// Register implements charon.PermissionRepository interface.
-func (pr *permissionRepository) Register(permissions charon.Permissions) (created, unt, removed int64, err error) {
+func (pr *permissionRepository) register(permissions charon.Permissions) (created, unt, removed int64, err error) {
 	var (
 		tx             *sql.Tx
 		insert, delete *sql.Stmt
@@ -161,12 +160,12 @@ func (pr *permissionRepository) Register(permissions charon.Permissions) (create
 	for rows.Next() {
 		var entity permissionEntity
 		err = rows.Scan(
-			&entity.Action,
-			&entity.CreatedAt,
-			&entity.ID,
-			&entity.Module,
-			&entity.Subsystem,
-			&entity.UpdatedAt,
+			&entity.action,
+			&entity.createdAt,
+			&entity.id,
+			&entity.module,
+			&entity.subsystem,
+			&entity.updatedAt,
 		)
 		if err != nil {
 			return
@@ -212,7 +211,7 @@ RedundantPermissionsLoop:
 			}
 		}
 
-		if res, err = delete.Exec(e.ID); err != nil {
+		if res, err = delete.Exec(e.id); err != nil {
 			return
 		}
 		if affected, err = res.RowsAffected(); err != nil {
@@ -225,33 +224,32 @@ RedundantPermissionsLoop:
 	return
 }
 
-// PermissionRegistry is an interface that describes in memory storage that holds information
+// permissionRegistry is an interface that describes in memory storage that holds information
 // about permissions that was registered by 3rd party services.
 // Should be only used as a proxy for registration process to avoid multiple sql hits.
-type PermissionRegistry interface {
+type permissionRegistry interface {
 	// Exists returns true if given charon.Permission was already registered.
-	Exists(permission charon.Permission) (exists bool)
+	exists(permission charon.Permission) (exists bool)
 	// Register checks if given collection is valid and
 	// calls charon.PermissionRepository to store provided permissions
 	// in persistent way.
-	Register(permissions charon.Permissions) (created, untouched, removed int64, err error)
+	register(permissions charon.Permissions) (created, untouched, removed int64, err error)
 }
 
-type permissionRegistry struct {
+type permissionReg struct {
 	sync.RWMutex
 	repository  permissionProvider
 	permissions map[charon.Permission]struct{}
 }
 
-func newPermissionRegistry(r permissionProvider) PermissionRegistry {
-	return &permissionRegistry{
+func newPermissionRegistry(r permissionProvider) permissionRegistry {
+	return &permissionReg{
 		repository:  r,
 		permissions: make(map[charon.Permission]struct{}),
 	}
 }
 
-// Exists implements charon.PermissionRegistry interface.
-func (pr *permissionRegistry) Exists(permission charon.Permission) (ok bool) {
+func (pr *permissionReg) exists(permission charon.Permission) (ok bool) {
 	pr.RLock()
 	pr.RUnlock()
 
@@ -259,8 +257,7 @@ func (pr *permissionRegistry) Exists(permission charon.Permission) (ok bool) {
 	return
 }
 
-// Register implements charon.PermissionRegistry interface.
-func (pr *permissionRegistry) Register(permissions charon.Permissions) (created, untouched, removed int64, err error) {
+func (pr *permissionReg) register(permissions charon.Permissions) (created, untouched, removed int64, err error) {
 	pr.Lock()
 	defer pr.Unlock()
 
@@ -273,14 +270,13 @@ func (pr *permissionRegistry) Register(permissions charon.Permissions) (created,
 	}
 
 	if nb > 0 {
-		return pr.repository.Register(permissions)
+		return pr.repository.register(permissions)
 	}
 
 	return 0, 0, 0, nil
 }
 
-// FindByTag implements charon.PermissionRepository interface.
-func (pr *permissionRepository) FindByTag(userID int64) ([]*permissionEntity, error) {
+func (pr *permissionRepository) findByTag(userID int64) ([]*permissionEntity, error) {
 	query := `
 		SELECT DISTINCT ON (p.id)
 			` + columns(tablePermissionColumns, "p") + `
@@ -301,12 +297,12 @@ func (pr *permissionRepository) FindByTag(userID int64) ([]*permissionEntity, er
 	for rows.Next() {
 		var p permissionEntity
 		err = rows.Scan(
-			&p.Action,
-			&p.CreatedAt,
-			&p.ID,
-			&p.Module,
-			&p.Subsystem,
-			&p.UpdatedAt,
+			&p.action,
+			&p.createdAt,
+			&p.id,
+			&p.module,
+			&p.subsystem,
+			&p.updatedAt,
 		)
 		if err != nil {
 			return nil, err
