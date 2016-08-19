@@ -9,7 +9,7 @@ addons:
   code_climate:
     repo_token: 6e0f648267827e942b80676d93220b191a0cd2122e87a24be5a9eb45c680bbda
 env:
-  CHARON_POSTGRES_ADDRESS: postgres://postgres:@localhost/travis_ci_test?sslmode=disable
+  CHAROND_POSTGRES_ADDRESS: postgres://postgres:@localhost/travis_ci_test?sslmode=disable
   global:
   - secure: SKpsbHvr6qav31iUk2Pdx0grpaCZaVDsklPZ3GJdGisrI4kt+RfiOEKpEVkXD1X5sZ7AmqAS0weQmRUv/byr1FgoD5Vzjx/WMjnW5xAupjZVeOu+QqrJ4qYDrC4ZOBGb6XQa7aFEjFYet2l/+j145e9uW8XCq7m05wPps1TtyLI=
   - secure: HdBDqrI0p78/tPTC7HC1LBpL3pgzBEZJJC55l6lsNwgttLZqhVvFtHBN5v9+GBYoKmBVIzk4oI3s+IrYMqd2suR5i1EjNQjnLewFX1OM26oy6mr9wNhjNQMHOdN7JCHfPJdpUq9AjVPIcxMRik6AdTjFDs6JnplfGUrlMbbrtaI=
