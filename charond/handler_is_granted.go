@@ -40,10 +40,10 @@ func (ig *isGrantedHandler) handle(ctx context.Context, req *charon.IsGrantedReq
 }
 
 func (ig *isGrantedHandler) firewall(req *charon.IsGrantedRequest, act *actor) error {
-	if act.user.ID == req.UserId {
+	if act.user.id == req.UserId {
 		return nil
 	}
-	if act.user.IsSuperuser {
+	if act.user.isSuperuser {
 		return nil
 	}
 	if act.permissions.Contains(charon.UserPermissionCanCheckGrantingAsStranger) {

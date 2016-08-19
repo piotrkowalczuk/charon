@@ -30,10 +30,10 @@ func (luh *listUsersHandler) handle(ctx context.Context, req *charon.ListUsersRe
 		createdBy:   req.CreatedBy,
 	}
 	if act.permissions.Contains(charon.UserCanRetrieveAsOwner, charon.UserCanRetrieveStaffAsOwner) {
-		criteria.createdBy = qtypes.EqualInt64(act.user.ID)
+		criteria.createdBy = qtypes.EqualInt64(act.user.id)
 	}
 
-	ents, err := luh.repository.user.Find(criteria)
+	ents, err := luh.repository.user.find(criteria)
 	if err != nil {
 		return nil, err
 	}
@@ -43,7 +43,7 @@ func (luh *listUsersHandler) handle(ctx context.Context, req *charon.ListUsersRe
 }
 
 func (luh *listUsersHandler) firewall(req *charon.ListUsersRequest, act *actor) error {
-	if act.user.IsSuperuser {
+	if act.user.isSuperuser {
 		return nil
 	}
 	if req.IsSuperuser.BoolOr(false) {
@@ -56,7 +56,7 @@ func (luh *listUsersHandler) firewall(req *charon.ListUsersRequest, act *actor) 
 		return nil
 	}
 	if req.IsStaff.BoolOr(false) {
-		if req.CreatedBy.Value() == act.user.ID {
+		if req.CreatedBy.Value() == act.user.id {
 			if !act.permissions.Contains(charon.UserCanRetrieveStaffAsOwner) {
 				return grpc.Errorf(codes.PermissionDenied, "list of staff users cannot be retrieved as an owner, missing permission")
 			}
@@ -67,7 +67,7 @@ func (luh *listUsersHandler) firewall(req *charon.ListUsersRequest, act *actor) 
 		}
 		return nil
 	}
-	if req.CreatedBy.Value() == act.user.ID {
+	if req.CreatedBy.Value() == act.user.id {
 		if !act.permissions.Contains(charon.UserCanRetrieveAsOwner) {
 			return grpc.Errorf(codes.PermissionDenied, "list of users cannot be retrieved as an owner, missing permission")
 		}

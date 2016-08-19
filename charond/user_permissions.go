@@ -3,7 +3,7 @@ package charond
 import "database/sql"
 
 type userPermissionsProvider interface {
-	Insert(entity *userPermissionsEntity) (*userPermissionsEntity, error)
+	insert(entity *userPermissionsEntity) (*userPermissionsEntity, error)
 }
 
 type userPermissionsRepository struct {

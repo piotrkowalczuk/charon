@@ -14,7 +14,7 @@ func TestListPermissionsHandler_firewall_success(t *testing.T) {
 		{
 			req: charon.ListPermissionsRequest{},
 			act: actor{
-				user: &userEntity{ID: 1},
+				user: &userEntity{id: 1},
 				permissions: charon.Permissions{
 					charon.PermissionCanRetrieve,
 				},
@@ -23,7 +23,7 @@ func TestListPermissionsHandler_firewall_success(t *testing.T) {
 		{
 			req: charon.ListPermissionsRequest{},
 			act: actor{
-				user: &userEntity{ID: 2, IsSuperuser: true},
+				user: &userEntity{id: 2, isSuperuser: true},
 			},
 		},
 	}
@@ -44,15 +44,15 @@ func TestListPermissionsHandler_firewall_failure(t *testing.T) {
 		{
 			req: charon.ListPermissionsRequest{},
 			act: actor{
-				user: &userEntity{ID: 1},
+				user: &userEntity{id: 1},
 			},
 		},
 		{
 			req: charon.ListPermissionsRequest{},
 			act: actor{
 				user: &userEntity{
-					ID:      2,
-					IsStaff: true,
+					id:      2,
+					isStaff: true,
 				},
 			},
 		},
@@ -61,7 +61,7 @@ func TestListPermissionsHandler_firewall_failure(t *testing.T) {
 	h := &listPermissionsHandler{}
 	for _, d := range data {
 		if err := h.firewall(&d.req, &d.act); err == nil {
-			t.Errorf("expected error, got nil")
+			t.Error("expected error, got nil")
 		}
 	}
 }

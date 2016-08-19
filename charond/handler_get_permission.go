@@ -28,7 +28,7 @@ func (gph *getPermissionHandler) handle(ctx context.Context, req *charon.GetPerm
 		return nil, err
 	}
 
-	permission, err := gph.repository.permission.FindOneByID(req.Id)
+	permission, err := gph.repository.permission.findOneByID(req.Id)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, grpc.Errorf(codes.NotFound, "permission does not exists")
@@ -42,7 +42,7 @@ func (gph *getPermissionHandler) handle(ctx context.Context, req *charon.GetPerm
 }
 
 func (gph *getPermissionHandler) firewall(req *charon.GetPermissionRequest, act *actor) error {
-	if act.user.IsSuperuser {
+	if act.user.isSuperuser {
 		return nil
 	}
 	if act.permissions.Contains(charon.PermissionCanRetrieve) {

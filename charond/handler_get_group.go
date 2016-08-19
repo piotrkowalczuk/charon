@@ -25,7 +25,7 @@ func (ggh *getGroupHandler) handle(ctx context.Context, req *charon.GetGroupRequ
 		return nil, err
 	}
 
-	ent, err := ggh.repository.group.FindOneByID(req.Id)
+	ent, err := ggh.repository.group.findOneByID(req.Id)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, grpc.Errorf(codes.NotFound, "group does not exists")
@@ -37,7 +37,7 @@ func (ggh *getGroupHandler) handle(ctx context.Context, req *charon.GetGroupRequ
 }
 
 func (ggh *getGroupHandler) firewall(req *charon.GetGroupRequest, act *actor) error {
-	if act.user.IsSuperuser {
+	if act.user.isSuperuser {
 		return nil
 	}
 	if act.permissions.Contains(charon.GroupCanRetrieve) {

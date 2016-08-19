@@ -9,12 +9,15 @@ import (
 
 type registerPermissionsHandler struct {
 	*handler
-	registry PermissionRegistry
+	registry permissionRegistry
 }
 
 func (rph *registerPermissionsHandler) handle(ctx context.Context, req *charon.RegisterPermissionsRequest) (*charon.RegisterPermissionsResponse, error) {
+	if rph.opts.LDAP {
+		return nil, grpc.Errorf(codes.FailedPrecondition, "registration is not possible when ldap is enabled")
+	}
 	permissions := charon.NewPermissions(req.Permissions...)
-	created, untouched, removed, err := rph.registry.Register(permissions)
+	created, untouched, removed, err := rph.registry.register(permissions)
 	if err != nil {
 		return nil, grpc.Errorf(codes.Internal, err.Error())
 	}

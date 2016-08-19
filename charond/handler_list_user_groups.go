@@ -15,7 +15,7 @@ type listUserGroupsHandler struct {
 func (lugh *listUserGroupsHandler) handle(ctx context.Context, req *charon.ListUserGroupsRequest) (*charon.ListUserGroupsResponse, error) {
 	lugh.loggerWith("user_id", req.Id)
 
-	ents, err := lugh.repository.group.FindByUserID(req.Id)
+	ents, err := lugh.repository.group.findByUserID(req.Id)
 	if err != nil {
 		return nil, err
 	}
@@ -24,7 +24,7 @@ func (lugh *listUserGroupsHandler) handle(ctx context.Context, req *charon.ListU
 }
 
 func (lugh *listUserGroupsHandler) firewall(req *charon.ListUserGroupsRequest, act *actor) error {
-	if act.user.IsSuperuser {
+	if act.user.isSuperuser {
 		return nil
 	}
 	if act.permissions.Contains(charon.UserGroupCanRetrieve) {

@@ -18,7 +18,7 @@ type listUserPermissionsHandler struct {
 func (luph *listUserPermissionsHandler) handle(ctx context.Context, req *charon.ListUserPermissionsRequest) (*charon.ListUserPermissionsResponse, error) {
 	luph.loggerWith("user_id", req.Id)
 
-	permissions, err := luph.repository.permission.FindByUserID(req.Id)
+	permissions, err := luph.repository.permission.findByUserID(req.Id)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			sklog.Debug(luph.logger, "user permissions retrieved", "user_id", req.Id, "count", len(permissions))
@@ -41,7 +41,7 @@ func (luph *listUserPermissionsHandler) handle(ctx context.Context, req *charon.
 }
 
 func (luph *listUserPermissionsHandler) firewall(req *charon.ListUserPermissionsRequest, act *actor) error {
-	if act.user.IsSuperuser {
+	if act.user.isSuperuser {
 		return nil
 	}
 	if act.permissions.Contains(charon.UserPermissionCanRetrieve) {

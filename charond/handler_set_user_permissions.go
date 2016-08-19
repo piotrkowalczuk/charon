@@ -34,7 +34,7 @@ func (suph *setUserPermissionsHandler) handle(ctx context.Context, req *charon.S
 }
 
 func (suph *setUserPermissionsHandler) firewall(req *charon.SetUserPermissionsRequest, act *actor) error {
-	if act.user.IsSuperuser {
+	if act.user.isSuperuser {
 		return nil
 	}
 	if act.permissions.Contains(charon.UserPermissionCanCreate) && act.permissions.Contains(charon.UserPermissionCanDelete) {

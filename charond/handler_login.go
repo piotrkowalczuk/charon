@@ -1,7 +1,10 @@
 package charond
 
 import (
+	"fmt"
+
 	"github.com/go-kit/kit/log"
+	"github.com/go-ldap/ldap"
 	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/mnemosyne/mnemosynerpc"
 	"golang.org/x/net/context"
@@ -18,44 +21,71 @@ func (lh *loginHandler) handle(ctx context.Context, r *charon.LoginRequest) (*ch
 	lh.logger = log.NewContext(lh.logger).With("username", r.Username)
 
 	if r.Username == "" {
-		return nil, grpc.Errorf(codes.Unauthenticated, "empty username")
+		return nil, grpc.Errorf(codes.InvalidArgument, "empty username")
 	}
 	if len(r.Password) == 0 {
-		return nil, grpc.Errorf(codes.Unauthenticated, "empty password")
+		return nil, grpc.Errorf(codes.InvalidArgument, "empty password")
 	}
 
-	user, err := lh.repository.user.FindOneByUsername(r.Username)
+	if lh.opts.LDAP {
+		res, err := lh.ldap.Search(ldap.NewSearchRequest(
+			lh.opts.LDAPDistinguishedName,
+			ldap.ScopeWholeSubtree, ldap.NeverDerefAliases, 0, 0, false,
+			fmt.Sprintf("(&(objectClass=organizationalPerson)&(mail=%s))", r.Username),
+			[]string{"dn"},
+			nil,
+		))
+		if err != nil {
+			return nil, err
+		}
+		if len(res.Entries) != 1 {
+			return nil, grpc.Errorf(codes.Unauthenticated, "user does not exist or too many entries returned")
+		}
+
+		conn, err := ldap.Dial("tcp", lh.opts.LDAPAddress)
+		if err != nil {
+			return nil, grpc.Errorf(codes.Internal, "ldap connection failure: %s", err.Error())
+		}
+		defer conn.Close()
+
+		if err = conn.Bind(res.Entries[0].DN, r.Password); err != nil {
+			return nil, grpc.Errorf(codes.Unauthenticated, "the username and password do not match")
+		}
+	}
+	usr, err := lh.repository.user.findOneByUsername(r.Username)
 	if err != nil {
 		return nil, grpc.Errorf(codes.Unauthenticated, "the username and password do not match")
 	}
 
-	if matches := lh.hasher.Compare(user.Password, []byte(r.Password)); !matches {
-		return nil, grpc.Errorf(codes.Unauthenticated, "the username and password do not match")
+	if !lh.opts.LDAP {
+		if matches := lh.hasher.Compare(usr.password, []byte(r.Password)); !matches {
+			return nil, grpc.Errorf(codes.Unauthenticated, "the username and password do not match")
+		}
 	}
 
 	lh.loggerWith(
-		"is_confirmed", user.IsConfirmed,
-		"is_staff", user.IsStaff,
-		"is_superuser", user.IsSuperuser,
-		"is_active", user.IsActive,
-		"first_name", user.FirstName,
-		"last_name", user.LastName,
+		"is_confirmed", usr.isConfirmed,
+		"is_staff", usr.isStaff,
+		"is_superuser", usr.isSuperuser,
+		"is_active", usr.isActive,
+		"first_name", usr.firstName,
+		"last_name", usr.lastName,
 	)
-	if !user.IsConfirmed {
+	if !usr.isConfirmed {
 		return nil, grpc.Errorf(codes.Unauthenticated, "user is not confirmed")
 	}
 
-	if !user.IsActive {
+	if !usr.isActive {
 		return nil, grpc.Errorf(codes.Unauthenticated, "user is not active")
 	}
 
 	res, err := lh.session.Start(ctx, &mnemosynerpc.StartRequest{
-		SubjectId:     charon.SubjectIDFromInt64(user.ID).String(),
+		SubjectId:     charon.SubjectIDFromInt64(usr.id).String(),
 		SubjectClient: r.Client,
 		Bag: map[string]string{
-			"username":   user.Username,
-			"first_name": user.FirstName,
-			"last_name":  user.LastName,
+			"username":   usr.username,
+			"first_name": usr.firstName,
+			"last_name":  usr.lastName,
 		},
 	})
 	if err != nil {
@@ -64,7 +94,7 @@ func (lh *loginHandler) handle(ctx context.Context, r *charon.LoginRequest) (*ch
 
 	lh.loggerWith("token", res.Session.AccessToken)
 
-	_, err = lh.repository.user.UpdateLastLoginAt(user.ID)
+	_, err = lh.repository.user.updateLastLoginAt(usr.id)
 	if err != nil {
 		return nil, grpc.Errorf(codes.Internal, "last login update failure: %s", err)
 	}

@@ -18,7 +18,7 @@ type listGroupPermissionsHandler struct {
 func (luph *listGroupPermissionsHandler) handle(ctx context.Context, req *charon.ListGroupPermissionsRequest) (*charon.ListGroupPermissionsResponse, error) {
 	luph.loggerWith("group_id", req.Id)
 
-	permissions, err := luph.repository.permission.FindByGroupID(req.Id)
+	permissions, err := luph.repository.permission.findByGroupID(req.Id)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			sklog.Debug(luph.logger, "group permissions retrieved", "group_id", req.Id, "count", len(permissions))
@@ -41,7 +41,7 @@ func (luph *listGroupPermissionsHandler) handle(ctx context.Context, req *charon
 }
 
 func (luph *listGroupPermissionsHandler) firewall(req *charon.ListGroupPermissionsRequest, act *actor) error {
-	if act.user.IsSuperuser {
+	if act.user.isSuperuser {
 		return nil
 	}
 	if act.permissions.Contains(charon.GroupPermissionCanRetrieve) {

@@ -19,44 +19,44 @@ func (ge *groupEntity) message() (*charon.Group, error) {
 		createdAt, updatedAt *pbts.Timestamp
 	)
 
-	if createdAt, err = ptypes.TimestampProto(ge.CreatedAt); err != nil {
+	if createdAt, err = ptypes.TimestampProto(ge.createdAt); err != nil {
 		return nil, err
 	}
-	if ge.UpdatedAt != nil {
-		if updatedAt, err = ptypes.TimestampProto(*ge.UpdatedAt); err != nil {
+	if ge.updatedAt != nil {
+		if updatedAt, err = ptypes.TimestampProto(*ge.updatedAt); err != nil {
 			return nil, err
 		}
 	}
 
 	return &charon.Group{
-		Id:          ge.ID,
-		Name:        ge.Name,
-		Description: ge.Description.String,
+		Id:          ge.id,
+		Name:        ge.name,
+		Description: ge.description.StringOr(""),
 		CreatedAt:   createdAt,
-		CreatedBy:   ge.CreatedBy,
+		CreatedBy:   ge.createdBy,
 		UpdatedAt:   updatedAt,
-		UpdatedBy:   ge.UpdatedBy,
+		UpdatedBy:   ge.updatedBy,
 	}, nil
 }
 
 type groupProvider interface {
-	Insert(entity *groupEntity) (*groupEntity, error)
-	// FindByUserID retrieves all groups for user represented by given id.
-	FindByUserID(int64) ([]*groupEntity, error)
-	// FindOneByID retrieves group for given id.
-	FindOneByID(int64) (*groupEntity, error)
-	// Find ...
-	Find(c *groupCriteria) ([]*groupEntity, error)
+	insert(entity *groupEntity) (*groupEntity, error)
+	// findByUserID retrieves all groups for user represented by given id.
+	findByUserID(int64) ([]*groupEntity, error)
+	// findOneByID retrieves group for given id.
+	findOneByID(int64) (*groupEntity, error)
+	// find ...
+	find(c *groupCriteria) ([]*groupEntity, error)
 	// Create ...
-	Create(createdBy int64, name string, description *ntypes.String) (*groupEntity, error)
-	// UpdateOneByID ...
-	UpdateOneByID(id, updatedBy int64, name, description *ntypes.String) (*groupEntity, error)
+	create(createdBy int64, name string, description *ntypes.String) (*groupEntity, error)
+	// updateOneByID ...
+	updateOneByID(id, updatedBy int64, name, description *ntypes.String) (*groupEntity, error)
 	// DeleteByID ...
-	DeleteOneByID(id int64) (int64, error)
+	deleteOneByID(id int64) (int64, error)
 	// IsGranted ...
-	IsGranted(id int64, permission charon.Permission) (bool, error)
+	isGranted(id int64, permission charon.Permission) (bool, error)
 	// SetPermissions ...
-	SetPermissions(id int64, permissions ...charon.Permission) (int64, int64, error)
+	setPermissions(id int64, permissions ...charon.Permission) (int64, int64, error)
 }
 
 type groupRepository struct {
@@ -76,13 +76,13 @@ func newGroupRepository(dbPool *sql.DB) groupProvider {
 func (gr *groupRepository) queryRow(query string, args ...interface{}) (*groupEntity, error) {
 	var entity groupEntity
 	err := gr.db.QueryRow(query, args...).Scan(
-		&entity.CreatedAt,
-		&entity.CreatedBy,
-		&entity.Description,
-		&entity.ID,
-		&entity.Name,
-		&entity.UpdatedAt,
-		&entity.UpdatedBy,
+		&entity.createdAt,
+		&entity.createdBy,
+		&entity.description,
+		&entity.id,
+		&entity.name,
+		&entity.updatedAt,
+		&entity.updatedBy,
 	)
 	if err != nil {
 		return nil, err
@@ -91,8 +91,8 @@ func (gr *groupRepository) queryRow(query string, args ...interface{}) (*groupEn
 	return &entity, nil
 }
 
-// FindByUserID implements GroupRepository interface.
-func (gr *groupRepository) FindByUserID(userID int64) ([]*groupEntity, error) {
+// findByUserID implements GroupRepository interface.
+func (gr *groupRepository) findByUserID(userID int64) ([]*groupEntity, error) {
 	query := `
 		SELECT  ` + strings.Join(tableGroupColumns, ",") + `
 		FROM ` + tableGroup + ` AS g
@@ -109,13 +109,13 @@ func (gr *groupRepository) FindByUserID(userID int64) ([]*groupEntity, error) {
 	for rows.Next() {
 		var g groupEntity
 		err = rows.Scan(
-			&g.CreatedAt,
-			&g.CreatedBy,
-			&g.Description,
-			&g.ID,
-			&g.Name,
-			&g.UpdatedAt,
-			&g.UpdatedBy,
+			&g.createdAt,
+			&g.createdBy,
+			&g.description,
+			&g.id,
+			&g.name,
+			&g.updatedAt,
+			&g.updatedBy,
 		)
 		if err != nil {
 			return nil, err
@@ -130,47 +130,24 @@ func (gr *groupRepository) FindByUserID(userID int64) ([]*groupEntity, error) {
 	return groups, nil
 }
 
-// Create implements GroupRepository interface.
-func (gr *groupRepository) Create(createdBy int64, name string, description *ntypes.String) (*groupEntity, error) {
+func (gr *groupRepository) create(createdBy int64, name string, description *ntypes.String) (ent *groupEntity, err error) {
 	if description == nil {
 		description = &ntypes.String{}
 	}
-	entity := groupEntity{
-		Name:        name,
-		Description: description,
-		CreatedBy:   &ntypes.Int64{Int64: createdBy, Valid: createdBy > 0},
+	ent = &groupEntity{
+		name:        name,
+		description: description,
+		createdBy:   &ntypes.Int64{Int64: createdBy, Valid: createdBy > 0},
 	}
 
-	err := gr.insert(&entity)
-	if err != nil {
-		return nil, err
-	}
-
-	return &entity, nil
+	return gr.insert(ent)
 }
 
-func (gr *groupRepository) insert(e *groupEntity) error {
-	query := `
-		INSERT INTO ` + tableGroup + ` (
-			name, description, created_at, created_by
-		)
-		VALUES ($1, $2, NOW(), $3)
-		RETURNING id, created_at
-	`
-	return gr.db.QueryRow(
-		query,
-		e.Name,
-		e.Description,
-		e.CreatedBy,
-	).Scan(&e.ID, &e.CreatedAt)
-}
-
-// UpdateOneByID implements GroupRepository interface.
-func (gr *groupRepository) UpdateOneByID(id, updatedBy int64, name, description *ntypes.String) (*groupEntity, error) {
+func (gr *groupRepository) updateOneByID(id, updatedBy int64, name, description *ntypes.String) (*groupEntity, error) {
 	var (
 		err    error
-		entity groupEntity
 		query  string
+		entity groupEntity
 	)
 
 	comp := pqcomp.New(2, 2)
@@ -199,13 +176,13 @@ func (gr *groupRepository) UpdateOneByID(id, updatedBy int64, name, description 
 	`
 
 	err = gr.db.QueryRow(query, comp.Args()).Scan(
-		&entity.CreatedAt,
-		&entity.CreatedBy,
-		&entity.Description,
-		&entity.ID,
-		&entity.Name,
-		&entity.UpdatedAt,
-		&entity.UpdatedBy,
+		&entity.createdAt,
+		&entity.createdBy,
+		&entity.description,
+		&entity.id,
+		&entity.name,
+		&entity.updatedAt,
+		&entity.updatedBy,
 	)
 	if err != nil {
 		return nil, err
@@ -214,8 +191,7 @@ func (gr *groupRepository) UpdateOneByID(id, updatedBy int64, name, description 
 	return &entity, nil
 }
 
-// IsGranted implements GroupRepository interface.
-func (gr *groupRepository) IsGranted(id int64, p charon.Permission) (bool, error) {
+func (gr *groupRepository) isGranted(id int64, p charon.Permission) (bool, error) {
 	var exists bool
 	subsystem, module, action := p.Split()
 	if err := gr.db.QueryRow(isGrantedQuery(
@@ -231,8 +207,7 @@ func (gr *groupRepository) IsGranted(id int64, p charon.Permission) (bool, error
 	return exists, nil
 }
 
-// SetPermissions implements GroupRepository interface.
-func (gr *groupRepository) SetPermissions(id int64, p ...charon.Permission) (int64, int64, error) {
+func (gr *groupRepository) setPermissions(id int64, p ...charon.Permission) (int64, int64, error) {
 	return setPermissions(gr.db, tableGroupPermissions,
 		tableUserPermissionsColumnUserID,
 		tableUserPermissionsColumnPermissionSubsystem,

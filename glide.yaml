@@ -4,11 +4,9 @@ owners:
   email: p.kowalczuk.priv@gmail.com
 import:
 - package: github.com/go-kit/kit
-  version: ~0.1.0
+  version: ~0.2.0
   subpackages:
   - log
-  - metrics
-  - metrics/prometheus
 - package: github.com/golang/protobuf
   version: 0c1f6d65b5a189c2250d10e71a5506f06f9fa0a0
   subpackages:
@@ -20,14 +18,14 @@ import:
 - package: github.com/pborman/uuid
   version: ~1.0.0
 - package: github.com/piotrkowalczuk/mnemosyne
-  version: ~0.3.0
+  version: ~0.4.0
   subpackages:
   - mnemosynerpc
 - package: github.com/piotrkowalczuk/ntypes
   version: ~0.1.0
 - package: github.com/piotrkowalczuk/pqcomp
 - package: github.com/piotrkowalczuk/pqt
-  version: ~0.5.0
+  version: ~0.7.0
   subpackages:
   - pqtgo
   - pqtsql
@@ -35,7 +33,7 @@ import:
   version: ~0.2.0
 - package: github.com/piotrkowalczuk/sklog
 - package: github.com/prometheus/client_golang
-  version: ~0.7.0
+  version: ~0.8.0
   subpackages:
   - prometheus
 - package: github.com/stretchr/testify
@@ -60,3 +58,5 @@ import:
 - package: github.com/ernesto-jimenez/gogen
   subpackages:
   - imports
+- package: github.com/go-ldap/ldap
+  version: ~2.4.0

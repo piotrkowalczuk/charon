@@ -21,7 +21,7 @@ func (sgph *setGroupPermissionsHandler) handle(ctx context.Context, req *charon.
 		return nil, err
 	}
 
-	created, removed, err := sgph.repository.group.SetPermissions(req.GroupId, charon.NewPermissions(req.Permissions...)...)
+	created, removed, err := sgph.repository.group.setPermissions(req.GroupId, charon.NewPermissions(req.Permissions...)...)
 	if err != nil {
 		return nil, err
 	}
@@ -34,7 +34,7 @@ func (sgph *setGroupPermissionsHandler) handle(ctx context.Context, req *charon.
 }
 
 func (sgph *setGroupPermissionsHandler) firewall(req *charon.SetGroupPermissionsRequest, act *actor) error {
-	if act.user.IsSuperuser {
+	if act.user.isSuperuser {
 		return nil
 	}
 	if act.permissions.Contains(charon.GroupPermissionCanCreate) && act.permissions.Contains(charon.GroupPermissionCanDelete) {

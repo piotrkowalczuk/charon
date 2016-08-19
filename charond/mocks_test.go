@@ -13,8 +13,8 @@ type mockGroupProvider struct {
 	mock.Mock
 }
 
-// Insert provides a mock function with given fields: entity
-func (_m *mockGroupProvider) Insert(entity *groupEntity) (*groupEntity, error) {
+// insert provides a mock function with given fields: entity
+func (_m *mockGroupProvider) insert(entity *groupEntity) (*groupEntity, error) {
 	ret := _m.Called(entity)
 
 	var r0 *groupEntity
@@ -36,8 +36,8 @@ func (_m *mockGroupProvider) Insert(entity *groupEntity) (*groupEntity, error) {
 	return r0, r1
 }
 
-// FindByUserID provides a mock function with given fields: _a0
-func (_m *mockGroupProvider) FindByUserID(_a0 int64) ([]*groupEntity, error) {
+// findByUserID provides a mock function with given fields: _a0
+func (_m *mockGroupProvider) findByUserID(_a0 int64) ([]*groupEntity, error) {
 	ret := _m.Called(_a0)
 
 	var r0 []*groupEntity
@@ -59,8 +59,8 @@ func (_m *mockGroupProvider) FindByUserID(_a0 int64) ([]*groupEntity, error) {
 	return r0, r1
 }
 
-// FindOneByID provides a mock function with given fields: _a0
-func (_m *mockGroupProvider) FindOneByID(_a0 int64) (*groupEntity, error) {
+// findOneByID provides a mock function with given fields: _a0
+func (_m *mockGroupProvider) findOneByID(_a0 int64) (*groupEntity, error) {
 	ret := _m.Called(_a0)
 
 	var r0 *groupEntity
@@ -82,8 +82,8 @@ func (_m *mockGroupProvider) FindOneByID(_a0 int64) (*groupEntity, error) {
 	return r0, r1
 }
 
-// Find provides a mock function with given fields: c
-func (_m *mockGroupProvider) Find(c *groupCriteria) ([]*groupEntity, error) {
+// find provides a mock function with given fields: c
+func (_m *mockGroupProvider) find(c *groupCriteria) ([]*groupEntity, error) {
 	ret := _m.Called(c)
 
 	var r0 []*groupEntity
@@ -105,8 +105,8 @@ func (_m *mockGroupProvider) Find(c *groupCriteria) ([]*groupEntity, error) {
 	return r0, r1
 }
 
-// Create provides a mock function with given fields: createdBy, name, description
-func (_m *mockGroupProvider) Create(createdBy int64, name string, description *ntypes.String) (*groupEntity, error) {
+// create provides a mock function with given fields: createdBy, name, description
+func (_m *mockGroupProvider) create(createdBy int64, name string, description *ntypes.String) (*groupEntity, error) {
 	ret := _m.Called(createdBy, name, description)
 
 	var r0 *groupEntity
@@ -128,8 +128,8 @@ func (_m *mockGroupProvider) Create(createdBy int64, name string, description *n
 	return r0, r1
 }
 
-// UpdateOneByID provides a mock function with given fields: id, updatedBy, name, description
-func (_m *mockGroupProvider) UpdateOneByID(id int64, updatedBy int64, name *ntypes.String, description *ntypes.String) (*groupEntity, error) {
+// updateOneByID provides a mock function with given fields: id, updatedBy, name, description
+func (_m *mockGroupProvider) updateOneByID(id int64, updatedBy int64, name *ntypes.String, description *ntypes.String) (*groupEntity, error) {
 	ret := _m.Called(id, updatedBy, name, description)
 
 	var r0 *groupEntity
@@ -151,8 +151,8 @@ func (_m *mockGroupProvider) UpdateOneByID(id int64, updatedBy int64, name *ntyp
 	return r0, r1
 }
 
-// DeleteOneByID provides a mock function with given fields: id
-func (_m *mockGroupProvider) DeleteOneByID(id int64) (int64, error) {
+// deleteOneByID provides a mock function with given fields: id
+func (_m *mockGroupProvider) deleteOneByID(id int64) (int64, error) {
 	ret := _m.Called(id)
 
 	var r0 int64
@@ -172,8 +172,8 @@ func (_m *mockGroupProvider) DeleteOneByID(id int64) (int64, error) {
 	return r0, r1
 }
 
-// IsGranted provides a mock function with given fields: id, permission
-func (_m *mockGroupProvider) IsGranted(id int64, permission charon.Permission) (bool, error) {
+// isGranted provides a mock function with given fields: id, permission
+func (_m *mockGroupProvider) isGranted(id int64, permission charon.Permission) (bool, error) {
 	ret := _m.Called(id, permission)
 
 	var r0 bool
@@ -193,8 +193,8 @@ func (_m *mockGroupProvider) IsGranted(id int64, permission charon.Permission) (
 	return r0, r1
 }
 
-// SetPermissions provides a mock function with given fields: id, permissions
-func (_m *mockGroupProvider) SetPermissions(id int64, permissions ...charon.Permission) (int64, int64, error) {
+// setPermissions provides a mock function with given fields: id, permissions
+func (_m *mockGroupProvider) setPermissions(id int64, permissions ...charon.Permission) (int64, int64, error) {
 	ret := _m.Called(id, permissions)
 
 	var r0 int64
@@ -225,8 +225,8 @@ type mockGroupPermissionsProvider struct {
 	mock.Mock
 }
 
-// Insert provides a mock function with given fields: entity
-func (_m *mockGroupPermissionsProvider) Insert(entity *groupPermissionsEntity) (*groupPermissionsEntity, error) {
+// insert provides a mock function with given fields: entity
+func (_m *mockGroupPermissionsProvider) insert(entity *groupPermissionsEntity) (*groupPermissionsEntity, error) {
 	ret := _m.Called(entity)
 
 	var r0 *groupPermissionsEntity
@@ -252,8 +252,8 @@ type mockPermissionProvider struct {
 	mock.Mock
 }
 
-// Find provides a mock function with given fields: criteria
-func (_m *mockPermissionProvider) Find(criteria *permissionCriteria) ([]*permissionEntity, error) {
+// find provides a mock function with given fields: criteria
+func (_m *mockPermissionProvider) find(criteria *permissionCriteria) ([]*permissionEntity, error) {
 	ret := _m.Called(criteria)
 
 	var r0 []*permissionEntity
@@ -275,8 +275,8 @@ func (_m *mockPermissionProvider) Find(criteria *permissionCriteria) ([]*permiss
 	return r0, r1
 }
 
-// FindOneByID provides a mock function with given fields: id
-func (_m *mockPermissionProvider) FindOneByID(id int64) (*permissionEntity, error) {
+// findOneByID provides a mock function with given fields: id
+func (_m *mockPermissionProvider) findOneByID(id int64) (*permissionEntity, error) {
 	ret := _m.Called(id)
 
 	var r0 *permissionEntity
@@ -298,8 +298,8 @@ func (_m *mockPermissionProvider) FindOneByID(id int64) (*permissionEntity, erro
 	return r0, r1
 }
 
-// FindByUserID provides a mock function with given fields: userID
-func (_m *mockPermissionProvider) FindByUserID(userID int64) ([]*permissionEntity, error) {
+// findByUserID provides a mock function with given fields: userID
+func (_m *mockPermissionProvider) findByUserID(userID int64) ([]*permissionEntity, error) {
 	ret := _m.Called(userID)
 
 	var r0 []*permissionEntity
@@ -321,8 +321,8 @@ func (_m *mockPermissionProvider) FindByUserID(userID int64) ([]*permissionEntit
 	return r0, r1
 }
 
-// FindByGroupID provides a mock function with given fields: groupID
-func (_m *mockPermissionProvider) FindByGroupID(groupID int64) ([]*permissionEntity, error) {
+// findByGroupID provides a mock function with given fields: groupID
+func (_m *mockPermissionProvider) findByGroupID(groupID int64) ([]*permissionEntity, error) {
 	ret := _m.Called(groupID)
 
 	var r0 []*permissionEntity
@@ -344,8 +344,8 @@ func (_m *mockPermissionProvider) FindByGroupID(groupID int64) ([]*permissionEnt
 	return r0, r1
 }
 
-// Register provides a mock function with given fields: permissions
-func (_m *mockPermissionProvider) Register(permissions charon.Permissions) (int64, int64, int64, error) {
+// register provides a mock function with given fields: permissions
+func (_m *mockPermissionProvider) register(permissions charon.Permissions) (int64, int64, int64, error) {
 	ret := _m.Called(permissions)
 
 	var r0 int64
@@ -379,8 +379,8 @@ func (_m *mockPermissionProvider) Register(permissions charon.Permissions) (int6
 	return r0, r1, r2, r3
 }
 
-// Insert provides a mock function with given fields: entity
-func (_m *mockPermissionProvider) Insert(entity *permissionEntity) (*permissionEntity, error) {
+// insert provides a mock function with given fields: entity
+func (_m *mockPermissionProvider) insert(entity *permissionEntity) (*permissionEntity, error) {
 	ret := _m.Called(entity)
 
 	var r0 *permissionEntity
@@ -402,12 +402,12 @@ func (_m *mockPermissionProvider) Insert(entity *permissionEntity) (*permissionE
 	return r0, r1
 }
 
-type MockPermissionRegistry struct {
+type mockPermissionRegistry struct {
 	mock.Mock
 }
 
-// Exists provides a mock function with given fields: permission
-func (_m *MockPermissionRegistry) Exists(permission charon.Permission) bool {
+// exists provides a mock function with given fields: permission
+func (_m *mockPermissionRegistry) exists(permission charon.Permission) bool {
 	ret := _m.Called(permission)
 
 	var r0 bool
@@ -420,8 +420,8 @@ func (_m *MockPermissionRegistry) Exists(permission charon.Permission) bool {
 	return r0
 }
 
-// Register provides a mock function with given fields: permissions
-func (_m *MockPermissionRegistry) Register(permissions charon.Permissions) (int64, int64, int64, error) {
+// register provides a mock function with given fields: permissions
+func (_m *mockPermissionRegistry) register(permissions charon.Permissions) (int64, int64, int64, error) {
 	ret := _m.Called(permissions)
 
 	var r0 int64
@@ -517,8 +517,8 @@ func (_m *mockUserProvider) Create(username string, password []byte, firstName s
 	return r0, r1
 }
 
-// Insert provides a mock function with given fields: _a0
-func (_m *mockUserProvider) Insert(_a0 *userEntity) (*userEntity, error) {
+// insert provides a mock function with given fields: _a0
+func (_m *mockUserProvider) insert(_a0 *userEntity) (*userEntity, error) {
 	ret := _m.Called(_a0)
 
 	var r0 *userEntity
@@ -584,8 +584,8 @@ func (_m *mockUserProvider) Count() (int64, error) {
 	return r0, r1
 }
 
-// UpdateLastLoginAt provides a mock function with given fields: id
-func (_m *mockUserProvider) UpdateLastLoginAt(id int64) (int64, error) {
+// updateLastLoginAt provides a mock function with given fields: id
+func (_m *mockUserProvider) updateLastLoginAt(id int64) (int64, error) {
 	ret := _m.Called(id)
 
 	var r0 int64
@@ -619,8 +619,8 @@ func (_m *mockUserProvider) ChangePassword(id int64, password string) error {
 	return r0
 }
 
-// Find provides a mock function with given fields: criteria
-func (_m *mockUserProvider) Find(criteria *userCriteria) ([]*userEntity, error) {
+// find provides a mock function with given fields: criteria
+func (_m *mockUserProvider) find(criteria *userCriteria) ([]*userEntity, error) {
 	ret := _m.Called(criteria)
 
 	var r0 []*userEntity
@@ -642,8 +642,8 @@ func (_m *mockUserProvider) Find(criteria *userCriteria) ([]*userEntity, error) 
 	return r0, r1
 }
 
-// FindOneByID provides a mock function with given fields: id
-func (_m *mockUserProvider) FindOneByID(id int64) (*userEntity, error) {
+// findOneByID provides a mock function with given fields: id
+func (_m *mockUserProvider) findOneByID(id int64) (*userEntity, error) {
 	ret := _m.Called(id)
 
 	var r0 *userEntity
@@ -665,8 +665,8 @@ func (_m *mockUserProvider) FindOneByID(id int64) (*userEntity, error) {
 	return r0, r1
 }
 
-// FindOneByUsername provides a mock function with given fields: username
-func (_m *mockUserProvider) FindOneByUsername(username string) (*userEntity, error) {
+// findOneByUsername provides a mock function with given fields: username
+func (_m *mockUserProvider) findOneByUsername(username string) (*userEntity, error) {
 	ret := _m.Called(username)
 
 	var r0 *userEntity
@@ -688,8 +688,8 @@ func (_m *mockUserProvider) FindOneByUsername(username string) (*userEntity, err
 	return r0, r1
 }
 
-// DeleteOneByID provides a mock function with given fields: id
-func (_m *mockUserProvider) DeleteOneByID(id int64) (int64, error) {
+// deleteOneByID provides a mock function with given fields: id
+func (_m *mockUserProvider) deleteOneByID(id int64) (int64, error) {
 	ret := _m.Called(id)
 
 	var r0 int64
@@ -709,8 +709,8 @@ func (_m *mockUserProvider) DeleteOneByID(id int64) (int64, error) {
 	return r0, r1
 }
 
-// UpdateOneByID provides a mock function with given fields: _a0, _a1
-func (_m *mockUserProvider) UpdateOneByID(_a0 int64, _a1 *userPatch) (*userEntity, error) {
+// updateOneByID provides a mock function with given fields: _a0, _a1
+func (_m *mockUserProvider) updateOneByID(_a0 int64, _a1 *userPatch) (*userEntity, error) {
 	ret := _m.Called(_a0, _a1)
 
 	var r0 *userEntity
@@ -799,8 +799,8 @@ type mockUserGroupsProvider struct {
 	mock.Mock
 }
 
-// Insert provides a mock function with given fields: entity
-func (_m *mockUserGroupsProvider) Insert(entity *userGroupsEntity) (*userGroupsEntity, error) {
+// insert provides a mock function with given fields: entity
+func (_m *mockUserGroupsProvider) insert(entity *userGroupsEntity) (*userGroupsEntity, error) {
 	ret := _m.Called(entity)
 
 	var r0 *userGroupsEntity
@@ -843,8 +843,8 @@ func (_m *mockUserGroupsProvider) Exists(userID int64, groupID int64) (bool, err
 	return r0, r1
 }
 
-// Find provides a mock function with given fields: criteria
-func (_m *mockUserGroupsProvider) Find(criteria *userGroupsCriteria) ([]*userGroupsEntity, error) {
+// find provides a mock function with given fields: criteria
+func (_m *mockUserGroupsProvider) find(criteria *userGroupsCriteria) ([]*userGroupsEntity, error) {
 	ret := _m.Called(criteria)
 
 	var r0 []*userGroupsEntity
@@ -898,8 +898,8 @@ type mockUserPermissionsProvider struct {
 	mock.Mock
 }
 
-// Insert provides a mock function with given fields: entity
-func (_m *mockUserPermissionsProvider) Insert(entity *userPermissionsEntity) (*userPermissionsEntity, error) {
+// insert provides a mock function with given fields: entity
+func (_m *mockUserPermissionsProvider) insert(entity *userPermissionsEntity) (*userPermissionsEntity, error) {
 	ret := _m.Called(entity)
 
 	var r0 *userPermissionsEntity

@@ -20,21 +20,23 @@ func main() {
 	rpcListener := initListener(logger, config.host, config.port)
 	debugListener := initListener(logger, config.host, config.port+1)
 
-	daemon := charond.NewDaemon(&charond.DaemonOpts{
-		Test:               config.test,
-		Namespace:          config.namespace,
-		Subsystem:          config.subsystem,
-		TLS:                config.tls.enabled,
-		TLSCertFile:        config.tls.certFile,
-		TLSKeyFile:         config.tls.keyFile,
-		MonitoringEngine:   config.monitoring.engine,
-		PostgresAddress:    config.postgres.address,
-		PostgresDebug:      config.postgres.debug,
-		PasswordBCryptCost: config.password.bcrypt.cost,
-		MnemosyneAddress:   config.mnemosyne.address,
-		Logger:             logger,
-		RPCListener:        rpcListener,
-		DebugListener:      debugListener,
+	daemon := charond.NewDaemon(charond.DaemonOpts{
+		Test:                  config.test,
+		TLS:                   config.tls.enabled,
+		TLSCertFile:           config.tls.certFile,
+		TLSKeyFile:            config.tls.keyFile,
+		Monitoring:            config.monitoring.enabled,
+		PostgresAddress:       config.postgres.address,
+		PostgresDebug:         config.postgres.debug,
+		PasswordBCryptCost:    config.password.bcrypt.cost,
+		MnemosyneAddress:      config.mnemosyned.address,
+		Logger:                logger,
+		RPCListener:           rpcListener,
+		DebugListener:         debugListener,
+		LDAP:                  config.ldap.enabled,
+		LDAPAddress:           config.ldap.address,
+		LDAPDistinguishedName: config.ldap.dn,
+		LDAPPassword:          config.ldap.password,
 	})
 
 	grpclog.SetLogger(sklog.NewGRPCLogger(logger))

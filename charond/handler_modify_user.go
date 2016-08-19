@@ -22,21 +22,21 @@ func (muh *modifyUserHandler) handle(ctx context.Context, req *charon.ModifyUser
 
 	muh.loggerWith("user_id", req.Id)
 
-	actor, err := muh.retrieveActor(ctx)
+	act, err := muh.retrieveActor(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	ent, err := muh.repository.user.FindOneByID(req.Id)
+	ent, err := muh.repository.user.findOneByID(req.Id)
 	if err != nil {
 		return nil, err
 	}
 
-	if hint, ok := muh.firewall(req, ent, actor); !ok {
+	if hint, ok := muh.firewall(req, ent, act); !ok {
 		return nil, grpc.Errorf(codes.PermissionDenied, hint)
 	}
 
-	ent, err = muh.repository.user.UpdateOneByID(req.Id, &userPatch{
+	ent, err = muh.repository.user.updateOneByID(req.Id, &userPatch{
 		firstName:   req.FirstName,
 		isActive:    req.IsActive,
 		isConfirmed: req.IsConfirmed,
@@ -44,7 +44,7 @@ func (muh *modifyUserHandler) handle(ctx context.Context, req *charon.ModifyUser
 		isSuperuser: req.IsSuperuser,
 		lastName:    req.LastName,
 		password:    req.SecurePassword,
-		updatedBy:   &ntypes.Int64{Int64: actor.user.ID, Valid: actor.user.ID != 0},
+		updatedBy:   &ntypes.Int64{Int64: act.user.id, Valid: act.user.id != 0},
 		username:    req.Username,
 	})
 	if err != nil {
@@ -62,16 +62,16 @@ func (muh *modifyUserHandler) handle(ctx context.Context, req *charon.ModifyUser
 	return muh.response(ent)
 }
 
-func (muh *modifyUserHandler) firewall(req *charon.ModifyUserRequest, entity *userEntity, actor *actor) (string, bool) {
-	isOwner := actor.user.ID == entity.ID
+func (muh *modifyUserHandler) firewall(req *charon.ModifyUserRequest, ent *userEntity, actor *actor) (string, bool) {
+	isOwner := actor.user.id == ent.id
 
-	if !actor.user.IsSuperuser {
+	if !actor.user.isSuperuser {
 		switch {
-		case entity.IsSuperuser:
+		case ent.isSuperuser:
 			return "only superuser can modify a superuser account", false
-		case entity.IsStaff && !isOwner && actor.permissions.Contains(charon.UserCanModifyStaffAsStranger):
+		case ent.isStaff && !isOwner && actor.permissions.Contains(charon.UserCanModifyStaffAsStranger):
 			return "missing permission to modify an account as a stranger", false
-		case entity.IsStaff && isOwner && actor.permissions.Contains(charon.UserCanModifyStaffAsOwner):
+		case ent.isStaff && isOwner && actor.permissions.Contains(charon.UserCanModifyStaffAsOwner):
 			return "missing permission to modify an account as an owner", false
 		case req.IsSuperuser != nil && req.IsSuperuser.Valid:
 			return "only superuser can change existing account to superuser", false

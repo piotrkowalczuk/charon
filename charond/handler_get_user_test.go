@@ -16,105 +16,90 @@ func TestGetUserHandler_firewall_success(t *testing.T) {
 		{
 			req: charon.GetUserRequest{},
 			act: actor{
-				user: &userEntity{ID: 1},
+				user: &userEntity{id: 1},
 				permissions: charon.Permissions{
 					charon.UserCanRetrieveAsOwner,
 				},
 			},
 			ent: userEntity{
-				ID:        2,
-				CreatedBy: &ntypes.Int64{Int64: 1, Valid: true},
+				id:        2,
+				createdBy: &ntypes.Int64{Int64: 1, Valid: true},
 			},
 		},
 		{
 			req: charon.GetUserRequest{},
 			act: actor{
-				user: &userEntity{ID: 1},
+				user: &userEntity{id: 1},
 				permissions: charon.Permissions{
 					charon.UserCanRetrieveAsStranger,
 				},
 			},
 			ent: userEntity{
-				ID:        2,
-				CreatedBy: &ntypes.Int64{Int64: 3, Valid: true},
+				id:        2,
+				createdBy: &ntypes.Int64{Int64: 3, Valid: true},
 			},
 		},
 		{
 			req: charon.GetUserRequest{},
 			act: actor{
 				user: &userEntity{
-					ID:          1,
-					IsSuperuser: true,
+					id:          1,
+					isSuperuser: true,
 				},
 			},
 			ent: userEntity{
-				ID:          2,
-				IsSuperuser: true,
+				id:          2,
+				isSuperuser: true,
 			},
 		},
 		{
 			req: charon.GetUserRequest{},
 			act: actor{
 				user: &userEntity{
-					ID:          1,
-					IsSuperuser: true,
+					id:          1,
+					isSuperuser: true,
 				},
 			},
 			ent: userEntity{
-				ID: 2,
+				id: 2,
 			},
 		},
 		{
 			req: charon.GetUserRequest{},
 			act: actor{
 				user: &userEntity{
-					ID: 1,
+					id: 1,
 				},
 				permissions: charon.Permissions{
 					charon.UserCanRetrieveStaffAsOwner,
 				},
 			},
 			ent: userEntity{
-				ID:        2,
-				IsStaff:   true,
-				CreatedBy: &ntypes.Int64{Int64: 1, Valid: true},
+				id:        2,
+				isStaff:   true,
+				createdBy: &ntypes.Int64{Int64: 1, Valid: true},
 			},
 		},
 		{
 			req: charon.GetUserRequest{},
 			act: actor{
 				user: &userEntity{
-					ID: 1,
+					id: 1,
 				},
 				permissions: charon.Permissions{
 					charon.UserCanRetrieveStaffAsStranger,
 				},
 			},
 			ent: userEntity{
-				ID:        2,
-				IsStaff:   true,
-				CreatedBy: &ntypes.Int64{Int64: 3, Valid: true},
+				id:        2,
+				isStaff:   true,
+				createdBy: &ntypes.Int64{Int64: 3, Valid: true},
 			},
 		},
 		{
 			req: charon.GetUserRequest{},
 			act: actor{
-				user: &userEntity{ID: 1},
-				permissions: charon.Permissions{
-					charon.UserCanRetrieveAsStranger,
-					charon.UserCanRetrieveAsOwner,
-					charon.UserCanRetrieveStaffAsStranger,
-					charon.UserCanRetrieveStaffAsOwner,
-				},
-			},
-			ent: userEntity{
-				ID: 1,
-			},
-		},
-		{
-			req: charon.GetUserRequest{},
-			act: actor{
-				user: &userEntity{ID: 1, IsSuperuser: true},
+				user: &userEntity{id: 1},
 				permissions: charon.Permissions{
 					charon.UserCanRetrieveAsStranger,
 					charon.UserCanRetrieveAsOwner,
@@ -123,8 +108,23 @@ func TestGetUserHandler_firewall_success(t *testing.T) {
 				},
 			},
 			ent: userEntity{
-				ID:          1,
-				IsSuperuser: true,
+				id: 1,
+			},
+		},
+		{
+			req: charon.GetUserRequest{},
+			act: actor{
+				user: &userEntity{id: 1, isSuperuser: true},
+				permissions: charon.Permissions{
+					charon.UserCanRetrieveAsStranger,
+					charon.UserCanRetrieveAsOwner,
+					charon.UserCanRetrieveStaffAsStranger,
+					charon.UserCanRetrieveStaffAsOwner,
+				},
+			},
+			ent: userEntity{
+				id:          1,
+				isSuperuser: true,
 			},
 		},
 	}
@@ -153,16 +153,16 @@ func TestGetUserHandler_firewall_failure(t *testing.T) {
 		{
 			req: charon.GetUserRequest{},
 			act: actor{
-				user: &userEntity{ID: 1},
+				user: &userEntity{id: 1},
 			},
 			ent: userEntity{
-				ID: 2,
+				id: 2,
 			},
 		},
 		{
 			req: charon.GetUserRequest{},
 			act: actor{
-				user: &userEntity{ID: 1},
+				user: &userEntity{id: 1},
 				permissions: charon.Permissions{
 					charon.UserCanRetrieveAsStranger,
 					charon.UserCanRetrieveAsOwner,
@@ -171,8 +171,8 @@ func TestGetUserHandler_firewall_failure(t *testing.T) {
 				},
 			},
 			ent: userEntity{
-				ID:          2,
-				IsSuperuser: true,
+				id:          2,
+				isSuperuser: true,
 			},
 		},
 	}

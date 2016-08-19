@@ -20,7 +20,7 @@ func (lph *listPermissionsHandler) handle(ctx context.Context, req *charon.ListP
 		return nil, err
 	}
 
-	entities, err := lph.repository.permission.Find(&permissionCriteria{
+	entities, err := lph.repository.permission.find(&permissionCriteria{
 		offset:    req.Offset.Int64Or(0),
 		limit:     req.Limit.Int64Or(10),
 		subsystem: req.Subsystem,
@@ -41,7 +41,7 @@ func (lph *listPermissionsHandler) handle(ctx context.Context, req *charon.ListP
 }
 
 func (lph *listPermissionsHandler) firewall(req *charon.ListPermissionsRequest, act *actor) error {
-	if act.user.IsSuperuser {
+	if act.user.isSuperuser {
 		return nil
 	}
 	if act.permissions.Contains(charon.PermissionCanRetrieve) {

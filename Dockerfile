@@ -1,15 +1,22 @@
-FROM golang
+FROM alpine:latest
 MAINTAINER  Piotr Kowalczuk <p.kowalczuk.priv@gmail.com>
 
-ADD . /go/src/github.com/piotrkowalczuk/charon
+ARG BUILD_DATE
+ARG VCS_REF
 
-WORKDIR /go/src/github.com/piotrkowalczuk/charon
+LABEL org.label-schema.build-date=$BUILD_DATE \
+	org.label-schema.docker.dockerfile="Dockerfile" \
+	org.label-schema.license="ASL" \
+	org.label-schema.name="charon" \
+	org.label-schema.url="https://github.com/piotrkowalczuk/charon" \
+	org.label-schema.vcs-ref=$VCS_REF \
+	org.label-schema.vcs-type="git" \
+	org.label-schema.vcs-url="https://github.com/piotrkowalczuk/charon"
 
-RUN make get
-RUN go install github.com/piotrkowalczuk/charon/cmd/charond
-RUN go install github.com/piotrkowalczuk/charon/cmd/charonctl
-RUN rm -rf /go/src
+COPY ./bin /usr/local/bin/
+COPY ./scripts/docker-entrypoint.sh /
 
 EXPOSE 8080
 
-CMD ["/go/bin/charond", "-host=0.0.0.0", "-namespace=charon"]
+ENTRYPOINT ["/docker-entrypoint.sh"]
+CMD ["charond"]

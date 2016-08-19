@@ -7,7 +7,7 @@ import (
 )
 
 func TestInitPrometheus(t *testing.T) {
-	monitoring := initPrometheus("namespace", "subsystem", prometheus.Labels{"server": "travis-ci"})
+	monitoring := initPrometheus("namespace", true, prometheus.Labels{"server": "travis-ci"})
 	if monitoring == nil {
 		t.Fatalf("nil monitoring")
 	}

@@ -2,7 +2,6 @@ package charond
 
 import (
 	"flag"
-	"net"
 	"os"
 	"testing"
 
@@ -13,11 +12,8 @@ var (
 	testPostgresAddress string
 )
 
-func init() {
-	flag.StringVar(&testPostgresAddress, "p.address", "postgres://postgres:@localhost/test?sslmode=disable", "")
-}
-
 func TestMain(m *testing.M) {
+	flag.StringVar(&testPostgresAddress, "postgres.address", getStringEnvOr("CHAROND_POSTGRES_ADDRESS", "postgres://localhost/test?sslmode=disable"), "")
 	flag.Parse()
 
 	os.Exit(m.Run())
@@ -28,10 +24,9 @@ type suite interface {
 	teardown(testing.T)
 }
 
-func listenTCP(t *testing.T) net.Listener {
-	l, err := net.Listen("tcp", "127.0.0.1:0") // any available address
-	if err != nil {
-		t.Fatalf("net.Listen tcp :0: %s", err.Error())
+func getStringEnvOr(env, or string) string {
+	if v := os.Getenv(env); v != "" {
+		return v
 	}
-	return l
+	return or
 }

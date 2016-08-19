@@ -18,12 +18,12 @@ const (
 // Implements fmt Stringer interface.
 func (ue *userEntity) String() string {
 	switch {
-	case ue.FirstName == "":
-		return ue.LastName
-	case ue.LastName == "":
-		return ue.FirstName
+	case ue.firstName == "":
+		return ue.lastName
+	case ue.lastName == "":
+		return ue.firstName
 	default:
-		return ue.FirstName + " " + ue.LastName
+		return ue.firstName + " " + ue.lastName
 	}
 }
 
@@ -33,45 +33,45 @@ func (ue *userEntity) message() (*charon.User, error) {
 		createdAt, updatedAt *pbts.Timestamp
 	)
 
-	if createdAt, err = ptypes.TimestampProto(ue.CreatedAt); err != nil {
+	if createdAt, err = ptypes.TimestampProto(ue.createdAt); err != nil {
 		return nil, err
 	}
-	if ue.UpdatedAt != nil {
-		if createdAt, err = ptypes.TimestampProto(*ue.UpdatedAt); err != nil {
+	if ue.updatedAt != nil {
+		if createdAt, err = ptypes.TimestampProto(*ue.updatedAt); err != nil {
 			return nil, err
 		}
 	}
 
 	return &charon.User{
-		Id:          ue.ID,
-		Username:    ue.Username,
-		FirstName:   ue.FirstName,
-		LastName:    ue.LastName,
-		IsSuperuser: ue.IsSuperuser,
-		IsActive:    ue.IsActive,
-		IsStaff:     ue.IsStaff,
-		IsConfirmed: ue.IsConfirmed,
+		Id:          ue.id,
+		Username:    ue.username,
+		FirstName:   ue.firstName,
+		LastName:    ue.lastName,
+		IsSuperuser: ue.isSuperuser,
+		IsActive:    ue.isActive,
+		IsStaff:     ue.isStaff,
+		IsConfirmed: ue.isConfirmed,
 		CreatedAt:   createdAt,
-		CreatedBy:   ue.CreatedBy,
+		CreatedBy:   ue.createdBy,
 		UpdatedAt:   updatedAt,
-		UpdatedBy:   ue.UpdatedBy,
+		UpdatedBy:   ue.updatedBy,
 	}, nil
 }
 
 type userProvider interface {
 	Exists(id int64) (bool, error)
 	Create(username string, password []byte, firstName, lastName string, confirmationToken []byte, isSuperuser, isStaff, isActive, isConfirmed bool) (*userEntity, error)
-	Insert(*userEntity) (*userEntity, error)
+	insert(*userEntity) (*userEntity, error)
 	CreateSuperuser(username string, password []byte, firstName, lastName string) (*userEntity, error)
 	// Count retrieves number of all users.
 	Count() (int64, error)
-	UpdateLastLoginAt(id int64) (int64, error)
+	updateLastLoginAt(id int64) (int64, error)
 	ChangePassword(id int64, password string) error
-	Find(criteria *userCriteria) ([]*userEntity, error)
-	FindOneByID(id int64) (*userEntity, error)
-	FindOneByUsername(username string) (*userEntity, error)
-	DeleteOneByID(id int64) (int64, error)
-	UpdateOneByID(int64, *userPatch) (*userEntity, error)
+	find(criteria *userCriteria) ([]*userEntity, error)
+	findOneByID(id int64) (*userEntity, error)
+	findOneByUsername(username string) (*userEntity, error)
+	deleteOneByID(id int64) (int64, error)
+	updateOneByID(int64, *userPatch) (*userEntity, error)
 	RegistrationConfirmation(id int64, confirmationToken string) error
 	IsGranted(id int64, permission charon.Permission) (bool, error)
 	SetPermissions(id int64, permissions ...charon.Permission) (int64, int64, error)
@@ -100,17 +100,17 @@ func (ur *userRepository) Create(username string, password []byte, firstName, la
 	}
 
 	entity := &userEntity{
-		Username:          username,
-		Password:          password,
-		FirstName:         firstName,
-		LastName:          lastName,
-		ConfirmationToken: confirmationToken,
-		IsSuperuser:       isSuperuser,
-		IsStaff:           isStaff,
-		IsActive:          isActive,
-		IsConfirmed:       isConfirmed,
+		username:          username,
+		password:          password,
+		firstName:         firstName,
+		lastName:          lastName,
+		confirmationToken: confirmationToken,
+		isSuperuser:       isSuperuser,
+		isStaff:           isStaff,
+		isActive:          isActive,
+		isConfirmed:       isConfirmed,
 	}
-	return ur.Insert(entity)
+	return ur.insert(entity)
 }
 
 // CreateSuperuser implements userProvider interface.
@@ -168,8 +168,8 @@ func (ur *userRepository) ChangePassword(userID int64, password string) error {
 	return err
 }
 
-// FindOneByUsername ...
-func (ur *userRepository) FindOneByUsername(username string) (*userEntity, error) {
+// findOneByUsername ...
+func (ur *userRepository) findOneByUsername(username string) (*userEntity, error) {
 	return ur.findOneBy("username", username)
 }
 
@@ -181,34 +181,34 @@ func (ur *userRepository) findOneBy(fieldName string, value interface{}) (*userE
 		LIMIT 1
 	`
 
-	var user userEntity
+	var ent userEntity
 	err := ur.db.QueryRow(query, value).Scan(
-		&user.ConfirmationToken,
-		&user.CreatedAt,
-		&user.CreatedBy,
-		&user.FirstName,
-		&user.ID,
-		&user.IsActive,
-		&user.IsConfirmed,
-		&user.IsStaff,
-		&user.IsSuperuser,
-		&user.LastLoginAt,
-		&user.LastName,
-		&user.Password,
-		&user.UpdatedAt,
-		&user.UpdatedBy,
-		&user.Username,
+		&ent.confirmationToken,
+		&ent.createdAt,
+		&ent.createdBy,
+		&ent.firstName,
+		&ent.id,
+		&ent.isActive,
+		&ent.isConfirmed,
+		&ent.isStaff,
+		&ent.isSuperuser,
+		&ent.lastLoginAt,
+		&ent.lastName,
+		&ent.password,
+		&ent.updatedAt,
+		&ent.updatedBy,
+		&ent.username,
 	)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return &user, nil
+	return &ent, nil
 }
 
-// UpdateLastLoginAt implements userProvider interface.
-func (ur *userRepository) UpdateLastLoginAt(userID int64) (int64, error) {
+// updateLastLoginAt implements userProvider interface.
+func (ur *userRepository) updateLastLoginAt(userID int64) (int64, error) {
 	query := `
 		UPDATE ` + ur.table + `
 		SET ` + tableUserColumnLastLoginAt + ` = NOW()

@@ -5,8 +5,8 @@ example/client/client
 /temp
 vendor
 charon.iml
-test.sh
 run.sh
 coverage.txt
 *.out
+bin
 
