@@ -27,7 +27,7 @@ func main() {
 	case "register":
 		registerUser(config)
 	default:
-		fmt.Printf("unknown command %s", config.cmd())
+		fmt.Printf("unknown command %s\n", config.cmd())
 	}
 }
 
@@ -49,7 +49,7 @@ func client(addr string) (client charon.RPCClient, ctx context.Context) {
 			os.Exit(1)
 		}
 
-		ctx = metadata.NewContext(ctx, metadata.Pairs(mnemosynerpc.AccessTokenMetadataKey, string(resp.AccessToken)))
+		ctx = metadata.NewContext(ctx, metadata.Pairs(mnemosynerpc.AccessTokenMetadataKey, resp.AccessToken))
 	}
 
 	return
@@ -68,24 +68,39 @@ func registerUser(config configuration) {
 		IsActive:      &ntypes.Bool{Bool: config.register.active, Valid: true},
 	})
 	if err != nil {
-		fmt.Printf("registration failure: %s", grpc.ErrorDesc(err))
+		fmt.Printf("registration failure: %s\n", grpc.ErrorDesc(err))
 		os.Exit(1)
 	}
 
 	if config.register.superuser {
-		fmt.Printf(`superuser "%s" has been created`, res.User.Username)
+		fmt.Printf("superuser has been created: %s\n", res.User.Username)
 	} else {
-		fmt.Printf(`user "%s" has been created`, res.User.Username)
+		fmt.Printf("user has been created: %s\n", res.User.Username)
 	}
 
-	_, err = c.SetUserPermissions(ctx, &charon.SetUserPermissionsRequest{
-		UserId:      res.User.Id,
-		Permissions: config.register.permissions.Strings(),
-	})
-	if err != nil {
-		fmt.Printf("registration failure: %s", grpc.ErrorDesc(err))
-		os.Exit(1)
+	if config.register.superuser {
+		resLogin, err := c.Login(ctx, &charon.LoginRequest{
+			Username: config.register.username,
+			Password: config.register.password,
+			Client:   "charonctl",
+		})
+		if err != nil {
+			fmt.Printf("login failure: %s\n", grpc.ErrorDesc(err))
+			os.Exit(1)
+		}
+		ctx = metadata.NewContext(context.Background(), metadata.Pairs(mnemosynerpc.AccessTokenMetadataKey, resLogin.AccessToken))
 	}
 
-	fmt.Println("users permissions has been set")
+	if len(config.register.permissions) > 0 {
+		_, err = c.SetUserPermissions(ctx, &charon.SetUserPermissionsRequest{
+			UserId:      res.User.Id,
+			Permissions: config.register.permissions.Strings(),
+		})
+		if err != nil {
+			fmt.Printf("permission assigment failure: %s\n", grpc.ErrorDesc(err))
+			os.Exit(1)
+		}
+
+		fmt.Println("users permissions has been set")
+	}
 }

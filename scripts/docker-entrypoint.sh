@@ -3,6 +3,7 @@ set -e
 
 : ${CHAROND_PORT:=8080}
 : ${CHAROND_HOST:=0.0.0.0}
+: ${CHAROND_ADDRESS:=127.0.0.1:8080}
 : ${CHAROND_LOG_ADAPTER:=stdout}
 : ${CHAROND_LOG_FORMAT:=json}
 : ${CHAROND_LOG_LEVEL:=6}
@@ -41,7 +42,7 @@ fi
 
 if [ "$1" = 'charonctl register' ]; then
 exec charonctl register \
-	-address="$CHAROND_HOST:$CHAROND_PORT" \
+	-address=$CHAROND_ADDRESS \
 	-auth.disabled=$CHARONCTL_AUTH_DISABLED \
 	-auth.username=$CHARONCTL_AUTH_USERNAME \
 	-auth.password=$CHARONCTL_AUTH_PASSWORD \
