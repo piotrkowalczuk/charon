@@ -8,10 +8,12 @@ set -e
 : ${CHAROND_LOG_LEVEL:=6}
 : ${CHAROND_STORAGE:=postgres}
 : ${CHAROND_MONITORING:=false}
-: ${CHAROND_MNEMOSYNED_ADDRESS:=postgres://postgres:postgres@postgres/postgres?sslmode=disable}
+: ${CHAROND_PASSWORD_BCRYPT_COST:=10}
+: ${CHAROND_MNEMOSYNED_ADDRESS:=mnemosyned:8080}
 : ${CHAROND_POSTGRES_ADDRESS:=postgres://postgres:postgres@postgres/postgres?sslmode=disable}
 : ${CHAROND_POSTGRES_DEBUG:=false}
 : ${CHAROND_TLS_ENABLED:=false}
+: ${CHAROND_LDAP_ENABLED:=false}
 
 if [ "$1" = 'charond' ]; then
 exec charond \
