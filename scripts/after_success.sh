@@ -3,7 +3,7 @@
 bash <(curl -s https://codecov.io/bash)
 if [ "TRAVIS_GO_VERSION" == "1.7" ]; then
 	docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
-	if [ ! -z "$TRAVIS_TAG" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
+	if [ ! -z "$TRAVIS_TAG" ]; then
 		export VCS_REF=$TRAVIS_TAG
 		make publish
 	fi
