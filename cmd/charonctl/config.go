@@ -14,7 +14,7 @@ type configuration struct {
 	auth    struct {
 		username string
 		password string
-		disabled bool
+		enabled  bool
 	}
 	register struct {
 		username    string
@@ -38,8 +38,8 @@ func (c *configuration) init() {
 		fmt.Fprintf(os.Stderr, "Usage of %s:\n", os.Args[0])
 		c.cl.PrintDefaults()
 	}
-	c.cl.StringVar(&c.address, "address", "charon:8080", "charon address")
-	c.cl.BoolVar(&c.auth.disabled, "auth.disabled", false, "noauth")
+	c.cl.StringVar(&c.address, "address", "charond:8080", "charon address")
+	c.cl.BoolVar(&c.auth.enabled, "auth", true, "authorization check flag")
 	c.cl.StringVar(&c.auth.username, "auth.username", "", "username")
 	c.cl.StringVar(&c.auth.password, "auth.password", "", "password")
 	c.cl.StringVar(&c.register.username, "register.username", "", "username")

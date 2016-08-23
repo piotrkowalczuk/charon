@@ -32,20 +32,22 @@ func main() {
 }
 
 func client(addr string) (client charon.RPCClient, ctx context.Context) {
-	conn, err := grpc.Dial(addr, grpc.WithInsecure())
+	conn, err := grpc.Dial(addr, grpc.WithInsecure(), grpc.WithUserAgent("charonctl"))
 	if err != nil {
-		fmt.Println(err)
+		fmt.Printf("charond connection failure to %s with error: %s\n", addr, grpc.ErrorDesc(err))
 		os.Exit(1)
 	}
+
 	client = charon.NewRPCClient(conn)
 	ctx = context.Background()
-	if !config.auth.disabled {
+
+	if config.auth.enabled {
 		resp, err := client.Login(context.Background(), &charon.LoginRequest{
 			Username: config.auth.username,
 			Password: config.auth.password,
 		})
 		if err != nil {
-			fmt.Println(err)
+			fmt.Printf("(initial) login failure: %s\n", grpc.ErrorDesc(err))
 			os.Exit(1)
 		}
 
@@ -78,20 +80,20 @@ func registerUser(config configuration) {
 		fmt.Printf("user has been created: %s\n", res.User.Username)
 	}
 
-	if config.register.superuser {
-		resLogin, err := c.Login(ctx, &charon.LoginRequest{
-			Username: config.register.username,
-			Password: config.register.password,
-			Client:   "charonctl",
-		})
-		if err != nil {
-			fmt.Printf("login failure: %s\n", grpc.ErrorDesc(err))
-			os.Exit(1)
-		}
-		ctx = metadata.NewContext(context.Background(), metadata.Pairs(mnemosynerpc.AccessTokenMetadataKey, resLogin.AccessToken))
-	}
-
 	if len(config.register.permissions) > 0 {
+		if config.register.superuser {
+			resLogin, err := c.Login(ctx, &charon.LoginRequest{
+				Username: config.register.username,
+				Password: config.register.password,
+				Client:   "charonctl",
+			})
+			if err != nil {
+				fmt.Printf("(superuser) login failure: %s\n", grpc.ErrorDesc(err))
+				os.Exit(1)
+			}
+			ctx = metadata.NewContext(context.Background(), metadata.Pairs(mnemosynerpc.AccessTokenMetadataKey, resLogin.AccessToken))
+		}
+
 		_, err = c.SetUserPermissions(ctx, &charon.SetUserPermissionsRequest{
 			UserId:      res.User.Id,
 			Permissions: config.register.permissions.Strings(),
