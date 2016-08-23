@@ -66,6 +66,7 @@ if [ "$1" = 'charonctl' ]; then
 			-register.staff=${CHARONCTL_REGISTER_STAFF} \
 			-register.active=${CHARONCTL_REGISTER_ACTIVE} \
 			${permissions} # if not last then it can break rest of the script
+		exit $?
 	fi
 fi
 
