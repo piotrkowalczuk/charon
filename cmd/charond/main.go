@@ -16,7 +16,7 @@ func init() {
 func main() {
 	config.parse()
 
-	logger := initLogger(config.logger.adapter, config.logger.format, config.logger.level, sklog.KeySubsystem, config.subsystem)
+	logger := initLogger(config.logger.adapter, config.logger.format, config.logger.level)
 	rpcListener := initListener(logger, config.host, config.port)
 	debugListener := initListener(logger, config.host, config.port+1)
 

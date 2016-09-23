@@ -1,6 +1,9 @@
 package charon
 
-import "bytes"
+import (
+	"bytes"
+	"strings"
+)
 
 const (
 	UserCanCreate      Permission = "charon:user:can create"
@@ -228,6 +231,8 @@ func (p *Permissions) String() string {
 
 // Set implements flag Value interface.
 func (p *Permissions) Set(s string) error {
-	*p = append(*p, Permission(s))
+	for _, p := range strings.Split(s, ",") {
+		*p = append(*p, Permission(p))
+	}
 	return nil
 }

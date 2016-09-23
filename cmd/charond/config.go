@@ -11,8 +11,6 @@ const VERSION = "0.3.1"
 type configuration struct {
 	host      string
 	port      int
-	namespace string
-	subsystem string
 	test      bool
 	logger    struct {
 		adapter string
