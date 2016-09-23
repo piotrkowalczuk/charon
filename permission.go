@@ -231,8 +231,8 @@ func (p *Permissions) String() string {
 
 // Set implements flag Value interface.
 func (p *Permissions) Set(s string) error {
-	for _, p := range strings.Split(s, ",") {
-		*p = append(*p, Permission(p))
+	for _, perm := range strings.Split(s, ",") {
+		*p = append(*p, Permission(perm))
 	}
 	return nil
 }
