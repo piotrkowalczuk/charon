@@ -3,7 +3,8 @@ package charon
 import (
 	"errors"
 
-	"github.com/piotrkowalczuk/mnemosyne/mnemosynerpc"
+	"github.com/piotrkowalczuk/mnemosyne"
+
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
 )
@@ -38,7 +39,7 @@ func (sc *securityContext) Subject() (Subject, bool) {
 
 // AccessToken implements SecurityContext interface.
 func (sc *securityContext) AccessToken() (string, bool) {
-	return mnemosynerpc.AccessTokenFromContext(sc.Context)
+	return mnemosyne.AccessTokenFromContext(sc.Context)
 }
 
 // Token implements oauth2.TokenSource interface.

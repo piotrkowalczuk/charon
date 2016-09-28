@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/piotrkowalczuk/charon"
-	"github.com/piotrkowalczuk/mnemosyne/mnemosynerpc"
+	"github.com/piotrkowalczuk/mnemosyne"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
@@ -51,7 +51,7 @@ func testRPCServer_login(t *testing.T, suite *endToEndSuite) context.Context {
 	if err != nil {
 		t.Fatalf("unexpected login error: %s: with code %s", grpc.ErrorDesc(err), grpc.Code(err))
 	}
-	meta := metadata.Pairs(mnemosynerpc.AccessTokenMetadataKey, res.AccessToken)
+	meta := metadata.Pairs(mnemosyne.AccessTokenMetadataKey, res.AccessToken)
 	return metadata.NewContext(context.Background(), meta)
 }
 

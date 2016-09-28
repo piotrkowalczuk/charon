@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/piotrkowalczuk/charon"
+	"github.com/piotrkowalczuk/mnemosyne"
 	"github.com/piotrkowalczuk/mnemosyne/mnemosynerpc"
 	"github.com/piotrkowalczuk/mnemosyne/mnemosynetest"
 	. "github.com/smartystreets/goconvey/convey"
@@ -47,8 +48,8 @@ func TestHandler(t *testing.T) {
 		})
 		Convey("As authenticated user", func() {
 			id = 7856282
-			tkn = mnemosynerpc.NewAccessToken("0000000001", "hash")
-			ctx = mnemosynerpc.NewAccessTokenContext(context.Background(), tkn)
+			tkn = "0000000001hash"
+			ctx = mnemosyne.NewAccessTokenContext(context.Background(), tkn)
 			sessionMock.On("Context", ctx, none(), mock.Anything).
 				Return(&mnemosynerpc.ContextResponse{
 					Session: &mnemosynerpc.Session{

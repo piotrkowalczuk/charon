@@ -1,12 +1,12 @@
-hash: dadb933d3e9d738a52bbe507f468b4a05ed9334e62c735cacb75504da0523120
-updated: 2016-08-19T11:06:24.030568607+02:00
+hash: f687251e894fdcfbcb8030b55048fb3f63c9f44ee876b5eeee1cd6ce8f248830
+updated: 2016-09-28T23:31:57.201419167+02:00
 imports:
 - name: github.com/beorn7/perks
   version: b965b613227fddccbfffe13eae360ed3fa822f8d
   subpackages:
   - quantile
 - name: github.com/davecgh/go-spew
-  version: 2df174808ee097f90d259e432cc04442cf60be21
+  version: 6d212800a42e8ab5c146b8ace3490ee17e5225f9
   subpackages:
   - spew
 - name: github.com/ernesto-jimenez/gogen
@@ -47,17 +47,19 @@ imports:
 - name: github.com/pborman/uuid
   version: a97ce2ca70fa5a848076093f05e639a89ca34d06
 - name: github.com/piotrkowalczuk/mnemosyne
-  version: 91649f9e1518b22ba00bb6ce52871d8baea3531e
+  version: 52e37671c236ae0bcf5dbe6aeb94710f0720c565
   subpackages:
   - mnemosynerpc
   - mnemosyned
   - mnemosynetest
+  - internal/cluster
+  - internal/jump
 - name: github.com/piotrkowalczuk/ntypes
-  version: cbae64559b0582ebff16136c0c48cc9134307c71
+  version: baa62c0dd74181a89b70ade60f40a3c48e298b9d
 - name: github.com/piotrkowalczuk/pqcomp
   version: 631b19c36ded8bbe954cf8c15a0044c591033536
 - name: github.com/piotrkowalczuk/pqt
-  version: 097efdd4410e901b96a9e31b2fc5605492c7d7ce
+  version: 9409266c8bba8fe18355361ab96029d39f0bc4da
   subpackages:
   - pqtgo
   - pqtsql
@@ -88,7 +90,7 @@ imports:
 - name: github.com/stretchr/objx
   version: cbeaeb16a013161a98496fad62933b1d21786672
 - name: github.com/stretchr/testify
-  version: f390dcf405f7b83c997eac1b06768bb9f44dec18
+  version: 69483b4bd14f5845b5a1e55bca19e954e827f1d0
   subpackages:
   - mock
   - assert
@@ -99,12 +101,13 @@ imports:
   - sha3
   - blowfish
 - name: golang.org/x/net
-  version: 07b51741c1d6423d4a6abab1c49940ec09cb1aaf
+  version: f09c4662a0bd6bd8943ac7b4931e185df9471da4
   subpackages:
   - context
   - http2
   - trace
   - http2/hpack
+  - idna
   - lex/httplex
   - internal/timeseries
 - name: golang.org/x/oauth2
@@ -122,7 +125,7 @@ imports:
   - internal/log
   - internal/remote_api
 - name: google.golang.org/grpc
-  version: 13edeeffdea7a41d5aad96c28deb4c7bd01a9397
+  version: 0032a855ba5c8a3c8e0d71c2deef354b70af1584
   subpackages:
   - codes
   - credentials

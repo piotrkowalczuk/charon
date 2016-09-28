@@ -5,20 +5,19 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/piotrkowalczuk/mnemosyne/mnemosynerpc"
-
+	"github.com/piotrkowalczuk/mnemosyne"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
 )
 
 func ExampleSecurityContext() {
-	token := mnemosynerpc.NewAccessToken("0000000001", "some hash")
+	token := "0000000001some hash"
 	subject := Subject{
 		ID:       1,
 		Username: "j.kowalski@gmail.com",
 	}
 	ctx := NewSubjectContext(context.Background(), subject)
-	ctx = mnemosynerpc.NewAccessTokenContext(ctx, token)
+	ctx = mnemosyne.NewAccessTokenContext(ctx, token)
 	sctx := NewSecurityContext(ctx)
 
 	var (
@@ -76,8 +75,8 @@ func TestSecurityContext_Subject_empty(t *testing.T) {
 }
 
 func TestSecurityContext_Token(t *testing.T) {
-	expectedToken := mnemosynerpc.NewAccessToken("0000000001", "1")
-	ctx := mnemosynerpc.NewAccessTokenContext(context.Background(), expectedToken)
+	expectedToken := "00000000011"
+	ctx := mnemosyne.NewAccessTokenContext(context.Background(), expectedToken)
 	sctx := NewSecurityContext(ctx)
 
 	token, err := sctx.Token()

@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"net"
 
 	"github.com/go-kit/kit/log"
 	"github.com/go-ldap/ldap"
@@ -155,13 +156,33 @@ func initPrometheus(namespace string, enabled bool, constLabels prometheus.Label
 }
 
 func initLDAP(address, dn, password string, logger log.Logger) (*ldap.Conn, error) {
-	conn, err := ldap.Dial("tcp", address)
+	init := func(addr string) (*ldap.Conn, error) {
+		conn, err := ldap.Dial("tcp", addr)
+		if err != nil {
+			return nil, fmt.Errorf("ldap connection failure: %s", err.Error())
+		}
+		if err = conn.Bind(dn, password); err != nil {
+			return nil, fmt.Errorf("ldap bind failure: %s", err.Error())
+		}
+		sklog.Info(logger, "ldap connection has been established", "address", address, "dn", dn)
+		return conn, nil
+	}
+	_, addresses, err := net.LookupSRV("ldap", "tcp", address)
 	if err != nil {
-		return nil, fmt.Errorf("ldap connection failure: %s", err.Error())
+		return nil, fmt.Errorf("ldap srv record lookup failure: %s", err.Error())
 	}
-	if err = conn.Bind(dn, password); err != nil {
-		return nil, fmt.Errorf("ldap bind failure: %s", err.Error())
+	if len(addresses) == 0 {
+		return init(address)
 	}
-	sklog.Info(logger, "ldap connection has been established", "address", address, "dn", dn)
-	return conn, nil
+
+	for _, addr := range addresses {
+		c, err := init(fmt.Sprintf("%s:%d", addr.Target, addr.Port))
+		if err != nil {
+			sklog.Error(logger, err, "target", addr.Target, "port", addr.Port)
+			continue
+		}
+		return c, nil
+	}
+
+	return nil, errors.New("ldap connection failed to a single server")
 }

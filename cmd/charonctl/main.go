@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/piotrkowalczuk/charon"
-	"github.com/piotrkowalczuk/mnemosyne/mnemosynerpc"
+	"github.com/piotrkowalczuk/mnemosyne"
 	"github.com/piotrkowalczuk/ntypes"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
@@ -51,7 +51,7 @@ func client(addr string) (client charon.RPCClient, ctx context.Context) {
 			os.Exit(1)
 		}
 
-		ctx = metadata.NewContext(ctx, metadata.Pairs(mnemosynerpc.AccessTokenMetadataKey, resp.AccessToken))
+		ctx = metadata.NewContext(ctx, metadata.Pairs(mnemosyne.AccessTokenMetadataKey, resp.AccessToken))
 	}
 
 	return
@@ -91,7 +91,7 @@ func registerUser(config configuration) {
 				fmt.Printf("(superuser) login failure: %s\n", grpc.ErrorDesc(err))
 				os.Exit(1)
 			}
-			ctx = metadata.NewContext(context.Background(), metadata.Pairs(mnemosynerpc.AccessTokenMetadataKey, resLogin.AccessToken))
+			ctx = metadata.NewContext(context.Background(), metadata.Pairs(mnemosyne.AccessTokenMetadataKey, resLogin.AccessToken))
 		}
 
 		_, err = c.SetUserPermissions(ctx, &charon.SetUserPermissionsRequest{

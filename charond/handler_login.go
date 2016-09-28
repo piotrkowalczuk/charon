@@ -31,15 +31,16 @@ func (lh *loginHandler) handle(ctx context.Context, r *charon.LoginRequest) (*ch
 		res, err := lh.ldap.Search(ldap.NewSearchRequest(
 			lh.opts.LDAPDistinguishedName,
 			ldap.ScopeWholeSubtree, ldap.NeverDerefAliases, 0, 0, false,
-			fmt.Sprintf("(&(objectClass=organizationalPerson)&(mail=%s))", r.Username),
+			fmt.Sprintf("(&(objectClass=organizationalPerson)(uid=%s))", ldap.EscapeFilter(r.Username)),
 			[]string{"dn"},
 			nil,
 		))
 		if err != nil {
 			return nil, err
 		}
+
 		if len(res.Entries) != 1 {
-			return nil, grpc.Errorf(codes.Unauthenticated, "user does not exist or too many entries returned")
+			return nil, grpc.Errorf(codes.Unauthenticated, "user does not exist, number of LDAP entries found: %d", len(res.Entries))
 		}
 
 		conn, err := ldap.Dial("tcp", lh.opts.LDAPAddress)
@@ -80,12 +81,14 @@ func (lh *loginHandler) handle(ctx context.Context, r *charon.LoginRequest) (*ch
 	}
 
 	res, err := lh.session.Start(ctx, &mnemosynerpc.StartRequest{
-		SubjectId:     charon.SubjectIDFromInt64(usr.id).String(),
-		SubjectClient: r.Client,
-		Bag: map[string]string{
-			"username":   usr.username,
-			"first_name": usr.firstName,
-			"last_name":  usr.lastName,
+		Session: &mnemosynerpc.Session{
+			SubjectId:     charon.SubjectIDFromInt64(usr.id).String(),
+			SubjectClient: r.Client,
+			Bag: map[string]string{
+				"username":   usr.username,
+				"first_name": usr.firstName,
+				"last_name":  usr.lastName,
+			},
 		},
 	})
 	if err != nil {
