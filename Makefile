@@ -6,6 +6,9 @@ PACKAGE_CMD_DAEMON=$(PACKAGE)/cmd/$(SERVICE)d
 PACKAGE_CMD_CONTROL=$(PACKAGE)/cmd/$(SERVICE)ctl
 PACKAGE_CMD_GENERATOR=$(PACKAGE)/cmd/$(SERVICE)g
 
+
+LDFLAGS = -X 'main.version=$(VERSION)'
+
 .PHONY:	all build install gen test cover get publish
 
 all: get install
@@ -16,9 +19,9 @@ build:
 	@CGO_ENABLED=0 GOOS=linux go build -ldflags "${LDFLAGS}" -a -o bin/${SERVICE}ctl ${PACKAGE_CMD_CONTROL}
 
 install:
-	@go install ${PACKAGE_CMD_GENERATOR}
-	@go install ${PACKAGE_CMD_DAEMON}
-	@go install ${PACKAGE_CMD_CONTROL}
+	@go install -ldflags "${LDFLAGS}" ${PACKAGE_CMD_GENERATOR}
+	@go install -ldflags "${LDFLAGS}" ${PACKAGE_CMD_DAEMON}
+	@go install -ldflags "${LDFLAGS}" ${PACKAGE_CMD_CONTROL}
 
 gen:
 	@go generate ./${SERVICE}d

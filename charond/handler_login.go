@@ -2,6 +2,7 @@ package charond
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/go-kit/kit/log"
 	"github.com/go-ldap/ldap"
@@ -28,10 +29,14 @@ func (lh *loginHandler) handle(ctx context.Context, r *charon.LoginRequest) (*ch
 	}
 
 	if lh.opts.LDAP {
+		parts := strings.Split(r.Username, "@")
+		if len(parts) != 2 {
+			return nil, grpc.Errorf(codes.InvalidArgument, "invalid email address")
+		}
 		res, err := lh.ldap.Search(ldap.NewSearchRequest(
 			lh.opts.LDAPDistinguishedName,
 			ldap.ScopeWholeSubtree, ldap.NeverDerefAliases, 0, 0, false,
-			fmt.Sprintf("(&(objectClass=organizationalPerson)(uid=%s))", ldap.EscapeFilter(r.Username)),
+			fmt.Sprintf("(&(objectClass=organizationalPerson)(uid=%s))", ldap.EscapeFilter(parts[0])),
 			[]string{"dn"},
 			nil,
 		))

@@ -6,13 +6,13 @@ import (
 	"os"
 )
 
-const VERSION = "0.3.1"
+var version string
 
 type configuration struct {
-	host      string
-	port      int
-	test      bool
-	logger    struct {
+	host   string
+	port   int
+	test   bool
+	logger struct {
 		adapter string
 		format  string
 		level   int
@@ -77,7 +77,7 @@ func (c *configuration) parse() {
 		ver := flag.Bool("version", false, "print version and exit")
 		flag.Parse()
 		if *ver {
-			fmt.Printf("%s", VERSION)
+			fmt.Printf("%s\n", version)
 			os.Exit(0)
 		}
 	}

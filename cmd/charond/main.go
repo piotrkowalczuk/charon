@@ -26,7 +26,7 @@ func main() {
 		TLSCertFile:           config.tls.certFile,
 		TLSKeyFile:            config.tls.keyFile,
 		Monitoring:            config.monitoring.enabled,
-		PostgresAddress:       config.postgres.address,
+		PostgresAddress:       config.postgres.address + "&application_name=charond_" + version,
 		PostgresDebug:         config.postgres.debug,
 		PasswordBCryptCost:    config.password.bcrypt.cost,
 		MnemosyneAddress:      config.mnemosyned.address,
