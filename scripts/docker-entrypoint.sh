@@ -43,6 +43,7 @@ fi
 : ${CHARONCTL_REGISTER_CONFIRMED:=false}
 : ${CHARONCTL_REGISTER_STAFF:=false}
 : ${CHARONCTL_REGISTER_ACTIVE:=false}
+: ${CHARONCTL_REGISTER_IF_NOT_EXISTS:=false}
 
 if [ "$1" = 'charonctl' ]; then
 	if [ "$2" = 'register' ]; then
@@ -57,6 +58,7 @@ if [ "$1" = 'charonctl' ]; then
 			-auth=${CHARONCTL_AUTH_ENABLED} \
 			-auth.username="${CHARONCTL_AUTH_USERNAME}" \
 			-auth.password="${CHARONCTL_AUTH_PASSWORD}" \
+			-register.ifnotexists="${CHARONCTL_REGISTER_IF_NOT_EXISTS}" \
 			-register.username="${CHARONCTL_REGISTER_USERNAME}" \
 			-register.password="${CHARONCTL_REGISTER_PASSWORD}" \
 			-register.firstname="${CHARONCTL_REGISTER_FIRSTNAME}" \

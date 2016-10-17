@@ -17,6 +17,7 @@ type configuration struct {
 		enabled  bool
 	}
 	register struct {
+		ifNotExists bool
 		username    string
 		password    string
 		firstName   string
@@ -42,6 +43,7 @@ func (c *configuration) init() {
 	c.cl.BoolVar(&c.auth.enabled, "auth", true, "authorization check flag")
 	c.cl.StringVar(&c.auth.username, "auth.username", "", "username")
 	c.cl.StringVar(&c.auth.password, "auth.password", "", "password")
+	c.cl.BoolVar(&c.register.ifNotExists, "register.ifnotexists", false, "application does not fail if user already exists")
 	c.cl.StringVar(&c.register.username, "register.username", "", "username")
 	c.cl.StringVar(&c.register.password, "register.password", "", "password")
 	c.cl.StringVar(&c.register.firstName, "register.firstname", "", "first name")

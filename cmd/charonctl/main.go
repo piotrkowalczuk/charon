@@ -9,6 +9,7 @@ import (
 	"github.com/piotrkowalczuk/ntypes"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 )
 
@@ -70,6 +71,10 @@ func registerUser(config configuration) {
 		IsActive:      &ntypes.Bool{Bool: config.register.active, Valid: true},
 	})
 	if err != nil {
+		if config.register.ifNotExists && grpc.Code(err) == codes.AlreadyExists {
+			fmt.Printf("user already exists: %s\n", config.register.username)
+			return
+		}
 		fmt.Printf("registration failure: %s\n", grpc.ErrorDesc(err))
 		os.Exit(1)
 	}
