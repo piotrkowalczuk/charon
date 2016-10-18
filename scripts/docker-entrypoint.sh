@@ -44,30 +44,25 @@ fi
 : ${CHARONCTL_REGISTER_STAFF:=false}
 : ${CHARONCTL_REGISTER_ACTIVE:=false}
 : ${CHARONCTL_REGISTER_IF_NOT_EXISTS:=false}
+: ${CHARONCTL_REGISTER_PERMISSIONS:=""}
 
 if [ "$1" = 'charonctl' ]; then
 	if [ "$2" = 'register' ]; then
-		IFS=$'\n'
-		permissions=""
-		for i in $(echo $CHARONCTL_REGISTER_PERMISSIONS | tr "," "\n")
-		do
-		  permissions=$permissions" -register.permission='$i' "
-		done
 		eval charonctl register \
-			-address="${CHARONCTL_CHAROND_HOST}:${CHAROND_PORT}" \
+			-address='${CHARONCTL_CHAROND_HOST}:${CHAROND_PORT}' \
 			-auth=${CHARONCTL_AUTH_ENABLED} \
-			-auth.username="${CHARONCTL_AUTH_USERNAME}" \
-			-auth.password="${CHARONCTL_AUTH_PASSWORD}" \
-			-register.ifnotexists="${CHARONCTL_REGISTER_IF_NOT_EXISTS}" \
-			-register.username="${CHARONCTL_REGISTER_USERNAME}" \
-			-register.password="${CHARONCTL_REGISTER_PASSWORD}" \
-			-register.firstname="${CHARONCTL_REGISTER_FIRSTNAME}" \
-			-register.lastname="${CHARONCTL_REGISTER_LASTNAME}" \
+			-auth.username=\"${CHARONCTL_AUTH_USERNAME}\" \
+			-auth.password=\"${CHARONCTL_AUTH_PASSWORD}\" \
+			-register.ifnotexists=${CHARONCTL_REGISTER_IF_NOT_EXISTS} \
+			-register.username=\"${CHARONCTL_REGISTER_USERNAME}\" \
+			-register.password=\"${CHARONCTL_REGISTER_PASSWORD}\" \
+			-register.firstname=\"${CHARONCTL_REGISTER_FIRSTNAME}\" \
+			-register.lastname=\"${CHARONCTL_REGISTER_LASTNAME}\" \
 			-register.superuser=${CHARONCTL_REGISTER_SUPERUSER} \
 			-register.confirmed=${CHARONCTL_REGISTER_CONFIRMED} \
 			-register.staff=${CHARONCTL_REGISTER_STAFF} \
 			-register.active=${CHARONCTL_REGISTER_ACTIVE} \
-			${permissions} # if not last then it can break rest of the script
+			-register.permission=\"${CHARONCTL_REGISTER_PERMISSIONS}\"
 		exit $?
 	fi
 fi

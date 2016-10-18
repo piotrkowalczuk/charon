@@ -99,11 +99,10 @@ func registerUser(config configuration) {
 			ctx = metadata.NewContext(context.Background(), metadata.Pairs(mnemosyne.AccessTokenMetadataKey, resLogin.AccessToken))
 		}
 
-		_, err = c.SetUserPermissions(ctx, &charon.SetUserPermissionsRequest{
+		if _, err = c.SetUserPermissions(ctx, &charon.SetUserPermissionsRequest{
 			UserId:      res.User.Id,
 			Permissions: config.register.permissions.Strings(),
-		})
-		if err != nil {
+		}); err != nil {
 			fmt.Printf("permission assigment failure: %s\n", grpc.ErrorDesc(err))
 			os.Exit(1)
 		}
