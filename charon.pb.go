@@ -586,7 +586,7 @@ func (m *ListUserGroupsResponse) GetGroups() []*Group {
 
 type SetUserGroupsRequest struct {
 	UserId int64   `protobuf:"varint,1,opt,name=user_id,json=userId" json:"user_id,omitempty"`
-	Groups []int64 `protobuf:"varint,2,rep,name=groups" json:"groups,omitempty"`
+	Groups []int64 `protobuf:"varint,2,rep,packed,name=groups" json:"groups,omitempty"`
 }
 
 func (m *SetUserGroupsRequest) Reset()                    { *m = SetUserGroupsRequest{} }
@@ -1024,7 +1024,7 @@ var _ grpc.ClientConn
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
-const _ = grpc.SupportPackageIsVersion3
+const _ = grpc.SupportPackageIsVersion4
 
 // Client API for RPC service
 
@@ -1879,7 +1879,7 @@ var _RPC_serviceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: fileDescriptor0,
+	Metadata: "charon.proto",
 }
 
 func init() { proto.RegisterFile("charon.proto", fileDescriptor0) }

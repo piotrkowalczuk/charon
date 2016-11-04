@@ -10,7 +10,7 @@ var (
 			firstName: "first_name_1",
 			lastName:  "last_name_1",
 			password:  []byte("0123456789"),
-			group: []*groupEntity{
+			groups: []*groupEntity{
 				{
 					id:   1,
 					name: "group_1",
@@ -23,7 +23,7 @@ var (
 			firstName: "first_name_2",
 			lastName:  "last_name_2",
 			password:  []byte("9876543210"),
-			group: []*groupEntity{
+			groups: []*groupEntity{
 				{
 					id:   2,
 					name: "group_2",
@@ -39,7 +39,7 @@ func TestUserGroupsRepository_Exists(t *testing.T) {
 	defer suite.teardown(t)
 
 	for ur := range loadUserFixtures(t, suite.repository.user, userGroupsTestFixtures) {
-		for gr := range loadGroupFixtures(t, suite.repository.group, ur.given.group) {
+		for gr := range loadGroupFixtures(t, suite.repository.group, ur.given.groups) {
 			add := []*userGroupsEntity{{
 				userID:  ur.got.id,
 				groupID: gr.got.id,
@@ -69,7 +69,7 @@ func TestUserGroupsRepository_Set(t *testing.T) {
 
 	groups := make([]int64, 0, len(userGroupsTestFixtures))
 	for ur := range loadUserFixtures(t, suite.repository.user, userGroupsTestFixtures) {
-		for gr := range loadGroupFixtures(t, suite.repository.group, ur.given.group) {
+		for gr := range loadGroupFixtures(t, suite.repository.group, ur.given.groups) {
 			groups = append(groups, gr.got.id)
 		}
 	}
@@ -122,7 +122,7 @@ func loadUserGroupsFixtures(t *testing.T, r userGroupsProvider, f []*userGroupsE
 				t.Errorf("user group cannot be created, unexpected error: %s", err.Error())
 				continue
 			} else {
-				t.Logf("user group has been created")
+				t.Log("user group has been created")
 			}
 
 			data <- userGroupsFixtures{

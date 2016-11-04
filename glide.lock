@@ -1,5 +1,5 @@
-hash: f687251e894fdcfbcb8030b55048fb3f63c9f44ee876b5eeee1cd6ce8f248830
-updated: 2016-09-28T23:31:57.201419167+02:00
+hash: 537282131e2a4f8f7a6f8e889aa7fbe51791e1743284e586f9257038baf42695
+updated: 2016-11-04T13:29:09.076675558+01:00
 imports:
 - name: github.com/beorn7/perks
   version: b965b613227fddccbfffe13eae360ed3fa822f8d
@@ -10,7 +10,7 @@ imports:
   subpackages:
   - spew
 - name: github.com/ernesto-jimenez/gogen
-  version: ef88648669ee09ce567a536316dcc318c76e897d
+  version: 957c4ec2f9b517715281e61363e76421d7617f99
   subpackages:
   - imports
 - name: github.com/go-kit/kit
@@ -24,20 +24,20 @@ imports:
 - name: github.com/go-stack/stack
   version: 100eb0c0a9c5b306ca2fb4f165df21d80ada4b82
 - name: github.com/golang/protobuf
-  version: 0c1f6d65b5a189c2250d10e71a5506f06f9fa0a0
+  version: 2bc9827a78f95c6665b5fe0abd1fd66b496ae2d8
   subpackages:
   - proto
   - ptypes
-  - ptypes/empty
-  - ptypes/timestamp
   - ptypes/any
   - ptypes/duration
+  - ptypes/empty
+  - ptypes/timestamp
 - name: github.com/huandu/xstrings
   version: 3959339b333561bf62a38b424fd41517c2c90f40
 - name: github.com/kr/logfmt
   version: b84e30acd515aadc4b783ad4ff83aff3299bdfe0
 - name: github.com/lib/pq
-  version: 80f8150043c80fb52dee6bc863a709cdac7ec8f8
+  version: ae8357db35d721c58dcdc911318b55bef6b1b001
   subpackages:
   - oid
 - name: github.com/matttproud/golang_protobuf_extensions
@@ -47,19 +47,19 @@ imports:
 - name: github.com/pborman/uuid
   version: a97ce2ca70fa5a848076093f05e639a89ca34d06
 - name: github.com/piotrkowalczuk/mnemosyne
-  version: 52e37671c236ae0bcf5dbe6aeb94710f0720c565
+  version: 68f0633c426e5a7cd4d21195f80ae8a4da260886
   subpackages:
-  - mnemosynerpc
-  - mnemosyned
-  - mnemosynetest
   - internal/cluster
   - internal/jump
+  - mnemosyned
+  - mnemosynerpc
+  - mnemosynetest
 - name: github.com/piotrkowalczuk/ntypes
   version: baa62c0dd74181a89b70ade60f40a3c48e298b9d
 - name: github.com/piotrkowalczuk/pqcomp
   version: 631b19c36ded8bbe954cf8c15a0044c591033536
 - name: github.com/piotrkowalczuk/pqt
-  version: 9409266c8bba8fe18355361ab96029d39f0bc4da
+  version: 2f441d43bf14359cc751fc7997a517dac8a71436
   subpackages:
   - pqtgo
   - pqtsql
@@ -80,11 +80,11 @@ imports:
   subpackages:
   - go
 - name: github.com/prometheus/common
-  version: ebdfc6da46522d58825777cf1f90490a5b1ef1d8
+  version: 85637ea67b04b5c3bb25e671dacded2977f8f9f6
   subpackages:
   - expfmt
-  - model
   - internal/bitbucket.org/ww/goautoneg
+  - model
 - name: github.com/prometheus/procfs
   version: abf152e5f3e97f2fafac028d2cc06c1feb87ffa5
 - name: github.com/stretchr/objx
@@ -92,54 +92,54 @@ imports:
 - name: github.com/stretchr/testify
   version: 69483b4bd14f5845b5a1e55bca19e954e827f1d0
   subpackages:
-  - mock
   - assert
+  - mock
 - name: golang.org/x/crypto
-  version: 9fbab14f903f89e23047b5971369b86380230e56
+  version: 5f4e837b98443e9e7a65072235205993af565d85
   subpackages:
   - bcrypt
-  - sha3
   - blowfish
+  - sha3
 - name: golang.org/x/net
-  version: f09c4662a0bd6bd8943ac7b4931e185df9471da4
+  version: f4b625ec9b21d620bb5ce57f2dfc3e08ca97fce6
   subpackages:
   - context
   - http2
-  - trace
   - http2/hpack
   - idna
-  - lex/httplex
   - internal/timeseries
+  - lex/httplex
+  - trace
 - name: golang.org/x/oauth2
-  version: 3b966c7f301c0c71c53d94dc632a62df0a682cd7
+  version: 1e695b1c8febf17aad3bfa7bf0a819ef94b98ad5
   subpackages:
   - internal
 - name: google.golang.org/appengine
-  version: e951d3868b377b14f4e60efa3a301532ee3c1ebf
+  version: 3f4dbbc0ec153a39878fd524ece9f39732bd4998
   subpackages:
-  - urlfetch
   - internal
-  - internal/urlfetch
   - internal/base
   - internal/datastore
   - internal/log
   - internal/remote_api
+  - internal/urlfetch
+  - urlfetch
 - name: google.golang.org/grpc
-  version: 0032a855ba5c8a3c8e0d71c2deef354b70af1584
+  version: 777daa17ff9b5daef1cfdf915088a2ada3332bf0
   subpackages:
   - codes
   - credentials
   - grpclog
-  - metadata
-  - peer
   - internal
+  - metadata
   - naming
+  - peer
   - transport
 - name: gopkg.in/asn1-ber.v1
   version: 4e86f4367175e39f69d9358a5f17b4dda270378d
 testImports:
 - name: github.com/gopherjs/gopherjs
-  version: 72e303cb5f235b23471872477b57e573dc1c71d0
+  version: be543c9733215e9146ce12ee932d0a52ee9b82e5
   subpackages:
   - js
 - name: github.com/jtolds/gls
@@ -150,8 +150,8 @@ testImports:
   - internal/go-render/render
   - internal/oglematchers
 - name: github.com/smartystreets/goconvey
-  version: 4622128e06c77c0174e17a7f0ed2db19a989b473
+  version: d4c757aa9afd1e2fc1832aaab209b5794eb336e1
   subpackages:
   - convey
-  - convey/reporting
   - convey/gotest
+  - convey/reporting

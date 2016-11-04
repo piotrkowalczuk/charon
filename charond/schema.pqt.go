@@ -60,25 +60,44 @@ var (
 )
 
 type userEntity struct {
+	// confirmationToken ...
 	confirmationToken []byte
-	createdAt         time.Time
-	createdBy         *ntypes.Int64
-	firstName         string
-	id                int64
-	isActive          bool
-	isConfirmed       bool
-	isStaff           bool
-	isSuperuser       bool
-	lastLoginAt       *time.Time
-	lastName          string
-	password          []byte
-	updatedAt         *time.Time
-	updatedBy         *ntypes.Int64
-	username          string
-	author            *userEntity
-	modifier          *userEntity
-	permission        []*permissionEntity
-	group             []*groupEntity
+	// createdAt ...
+	createdAt time.Time
+	// createdBy ...
+	createdBy *ntypes.Int64
+	// firstName ...
+	firstName string
+	// id ...
+	id int64
+	// isActive ...
+	isActive bool
+	// isConfirmed ...
+	isConfirmed bool
+	// isStaff ...
+	isStaff bool
+	// isSuperuser ...
+	isSuperuser bool
+	// lastLoginAt ...
+	lastLoginAt *time.Time
+	// lastName ...
+	lastName string
+	// password ...
+	password []byte
+	// updatedAt ...
+	updatedAt *time.Time
+	// updatedBy ...
+	updatedBy *ntypes.Int64
+	// username ...
+	username string
+	// author ...
+	author *userEntity
+	// modifier ...
+	modifier *userEntity
+	// permissions ...
+	permissions []*permissionEntity
+	// groups ...
+	groups []*groupEntity
 }
 
 func (e *userEntity) prop(cn string) (interface{}, bool) {
@@ -160,7 +179,7 @@ func (i *userIterator) Columns() ([]string, error) {
 	return i.cols, nil
 }
 
-// Ent is wrapper arround user method that makes iterator more generic.
+// Ent is wrapper around user method that makes iterator more generic.
 func (i *userIterator) Ent() (interface{}, error) {
 	return i.User()
 }
@@ -683,15 +702,21 @@ func (c *userCriteria) WriteComposition(sel string, com *pqtgo.Composer, opt *pq
 	if len(c.sort) > 0 {
 		i := 0
 		com.WriteString(" ORDER BY ")
+
 		for cn, asc := range c.sort {
-			if i > 0 {
-				com.WriteString(", ")
+			for _, tcn := range tableUserColumns {
+				if cn == tcn {
+					if i > 0 {
+						com.WriteString(", ")
+					}
+					com.WriteString(cn)
+					if !asc {
+						com.WriteString(" DESC ")
+					}
+					i++
+					break
+				}
 			}
-			com.WriteString(cn)
-			if !asc {
-				com.WriteString(" DESC ")
-			}
-			i++
 		}
 	}
 	if c.offset > 0 {
@@ -881,7 +906,7 @@ func (r *userRepositoryBase) findIter(c *userCriteria) (*userIterator, error) {
 }
 func (r *userRepositoryBase) findOneByID(id int64) (*userEntity, error) {
 	var (
-		entity userEntity
+		ent userEntity
 	)
 	query := `SELECT confirmation_token,
 created_at,
@@ -900,27 +925,55 @@ updated_by,
 username
  FROM charon.user WHERE id = $1`
 	err := r.db.QueryRow(query, id).Scan(
-		&entity.confirmationToken,
-		&entity.createdAt,
-		&entity.createdBy,
-		&entity.firstName,
-		&entity.id,
-		&entity.isActive,
-		&entity.isConfirmed,
-		&entity.isStaff,
-		&entity.isSuperuser,
-		&entity.lastLoginAt,
-		&entity.lastName,
-		&entity.password,
-		&entity.updatedAt,
-		&entity.updatedBy,
-		&entity.username,
+		&ent.confirmationToken,
+		&ent.createdAt,
+		&ent.createdBy,
+		&ent.firstName,
+		&ent.id,
+		&ent.isActive,
+		&ent.isConfirmed,
+		&ent.isStaff,
+		&ent.isSuperuser,
+		&ent.lastLoginAt,
+		&ent.lastName,
+		&ent.password,
+		&ent.updatedAt,
+		&ent.updatedBy,
+		&ent.username,
 	)
 	if err != nil {
 		return nil, err
 	}
 
-	return &entity, nil
+	return &ent, nil
+}
+func (r *userRepositoryBase) findOneByUsername(userUsername string) (*userEntity, error) {
+	var (
+		ent userEntity
+	)
+	query := `SELECT confirmation_token, created_at, created_by, first_name, id, is_active, is_confirmed, is_staff, is_superuser, last_login_at, last_name, password, updated_at, updated_by, username FROM charon.user WHERE username = $1`
+	err := r.db.QueryRow(query, userUsername).Scan(
+		&ent.confirmationToken,
+		&ent.createdAt,
+		&ent.createdBy,
+		&ent.firstName,
+		&ent.id,
+		&ent.isActive,
+		&ent.isConfirmed,
+		&ent.isStaff,
+		&ent.isSuperuser,
+		&ent.lastLoginAt,
+		&ent.lastName,
+		&ent.password,
+		&ent.updatedAt,
+		&ent.updatedBy,
+		&ent.username,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return &ent, nil
 }
 func (r *userRepositoryBase) insert(e *userEntity) (*userEntity, error) {
 	insert := pqcomp.New(0, 15)
@@ -1174,6 +1227,72 @@ func (r *userRepositoryBase) updateOneByID(id int64, patch *userPatch) (*userEnt
 
 	return &e, nil
 }
+func (r *userRepositoryBase) updateOneByUsername(userUsername string, patch *userPatch) (*userEntity, error) {
+	update := pqcomp.New(1, 15)
+	update.AddArg(userUsername)
+	update.AddExpr(tableUserColumnConfirmationToken, pqcomp.Equal, patch.confirmationToken)
+	if patch.createdAt != nil {
+		update.AddExpr(tableUserColumnCreatedAt, pqcomp.Equal, patch.createdAt)
+
+	}
+	update.AddExpr(tableUserColumnCreatedBy, pqcomp.Equal, patch.createdBy)
+	update.AddExpr(tableUserColumnFirstName, pqcomp.Equal, patch.firstName)
+	update.AddExpr(tableUserColumnIsActive, pqcomp.Equal, patch.isActive)
+	update.AddExpr(tableUserColumnIsConfirmed, pqcomp.Equal, patch.isConfirmed)
+	update.AddExpr(tableUserColumnIsStaff, pqcomp.Equal, patch.isStaff)
+	update.AddExpr(tableUserColumnIsSuperuser, pqcomp.Equal, patch.isSuperuser)
+	update.AddExpr(tableUserColumnLastLoginAt, pqcomp.Equal, patch.lastLoginAt)
+	update.AddExpr(tableUserColumnLastName, pqcomp.Equal, patch.lastName)
+	update.AddExpr(tableUserColumnPassword, pqcomp.Equal, patch.password)
+	if patch.updatedAt != nil {
+		update.AddExpr(tableUserColumnUpdatedAt, pqcomp.Equal, patch.updatedAt)
+	} else {
+		update.AddExpr(tableUserColumnUpdatedAt, pqcomp.Equal, "NOW()")
+	}
+	update.AddExpr(tableUserColumnUpdatedBy, pqcomp.Equal, patch.updatedBy)
+	update.AddExpr(tableUserColumnUsername, pqcomp.Equal, patch.username)
+
+	if update.Len() == 0 {
+		return nil, errors.New("user update failure, nothing to update")
+	}
+	query := "UPDATE charon.user SET "
+	for update.Next() {
+		if !update.First() {
+			query += ", "
+		}
+
+		query += update.Key() + " " + update.Oper() + " " + update.PlaceHolder()
+	}
+	query += " WHERE username = $1 RETURNING " + strings.Join(r.columns, ", ")
+	if r.dbg {
+		if err := r.log.Log("msg", query, "function", "UpdateOneByUsername"); err != nil {
+			return nil, err
+		}
+	}
+	var e userEntity
+	err := r.db.QueryRow(query, update.Args()...).Scan(
+		&e.confirmationToken,
+		&e.createdAt,
+		&e.createdBy,
+		&e.firstName,
+		&e.id,
+		&e.isActive,
+		&e.isConfirmed,
+		&e.isStaff,
+		&e.isSuperuser,
+		&e.lastLoginAt,
+		&e.lastName,
+		&e.password,
+		&e.updatedAt,
+		&e.updatedBy,
+		&e.username,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return &e, nil
+}
 
 func (r *userRepositoryBase) deleteOneByID(id int64) (int64, error) {
 	query := "DELETE FROM charon.user WHERE id = $1"
@@ -1214,17 +1333,28 @@ var (
 )
 
 type groupEntity struct {
-	createdAt   time.Time
-	createdBy   *ntypes.Int64
+	// createdAt ...
+	createdAt time.Time
+	// createdBy ...
+	createdBy *ntypes.Int64
+	// description ...
 	description *ntypes.String
-	id          int64
-	name        string
-	updatedAt   *time.Time
-	updatedBy   *ntypes.Int64
-	author      *userEntity
-	modifier    *userEntity
-	permission  []*permissionEntity
-	user        []*userEntity
+	// id ...
+	id int64
+	// name ...
+	name string
+	// updatedAt ...
+	updatedAt *time.Time
+	// updatedBy ...
+	updatedBy *ntypes.Int64
+	// author ...
+	author *userEntity
+	// modifier ...
+	modifier *userEntity
+	// permissions ...
+	permissions []*permissionEntity
+	// users ...
+	users []*userEntity
 }
 
 func (e *groupEntity) prop(cn string) (interface{}, bool) {
@@ -1290,7 +1420,7 @@ func (i *groupIterator) Columns() ([]string, error) {
 	return i.cols, nil
 }
 
-// Ent is wrapper arround group method that makes iterator more generic.
+// Ent is wrapper around group method that makes iterator more generic.
 func (i *groupIterator) Ent() (interface{}, error) {
 	return i.Group()
 }
@@ -1585,15 +1715,21 @@ func (c *groupCriteria) WriteComposition(sel string, com *pqtgo.Composer, opt *p
 	if len(c.sort) > 0 {
 		i := 0
 		com.WriteString(" ORDER BY ")
+
 		for cn, asc := range c.sort {
-			if i > 0 {
-				com.WriteString(", ")
+			for _, tcn := range tableGroupColumns {
+				if cn == tcn {
+					if i > 0 {
+						com.WriteString(", ")
+					}
+					com.WriteString(cn)
+					if !asc {
+						com.WriteString(" DESC ")
+					}
+					i++
+					break
+				}
 			}
-			com.WriteString(cn)
-			if !asc {
-				com.WriteString(" DESC ")
-			}
-			i++
 		}
 	}
 	if c.offset > 0 {
@@ -1767,7 +1903,7 @@ func (r *groupRepositoryBase) findIter(c *groupCriteria) (*groupIterator, error)
 }
 func (r *groupRepositoryBase) findOneByID(id int64) (*groupEntity, error) {
 	var (
-		entity groupEntity
+		ent groupEntity
 	)
 	query := `SELECT created_at,
 created_by,
@@ -1778,19 +1914,39 @@ updated_at,
 updated_by
  FROM charon.group WHERE id = $1`
 	err := r.db.QueryRow(query, id).Scan(
-		&entity.createdAt,
-		&entity.createdBy,
-		&entity.description,
-		&entity.id,
-		&entity.name,
-		&entity.updatedAt,
-		&entity.updatedBy,
+		&ent.createdAt,
+		&ent.createdBy,
+		&ent.description,
+		&ent.id,
+		&ent.name,
+		&ent.updatedAt,
+		&ent.updatedBy,
 	)
 	if err != nil {
 		return nil, err
 	}
 
-	return &entity, nil
+	return &ent, nil
+}
+func (r *groupRepositoryBase) findOneByName(groupName string) (*groupEntity, error) {
+	var (
+		ent groupEntity
+	)
+	query := `SELECT created_at, created_by, description, id, name, updated_at, updated_by FROM charon.group WHERE name = $1`
+	err := r.db.QueryRow(query, groupName).Scan(
+		&ent.createdAt,
+		&ent.createdBy,
+		&ent.description,
+		&ent.id,
+		&ent.name,
+		&ent.updatedAt,
+		&ent.updatedBy,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return &ent, nil
 }
 func (r *groupRepositoryBase) insert(e *groupEntity) (*groupEntity, error) {
 	insert := pqcomp.New(0, 7)
@@ -1988,6 +2144,56 @@ func (r *groupRepositoryBase) updateOneByID(id int64, patch *groupPatch) (*group
 
 	return &e, nil
 }
+func (r *groupRepositoryBase) updateOneByName(groupName string, patch *groupPatch) (*groupEntity, error) {
+	update := pqcomp.New(1, 7)
+	update.AddArg(groupName)
+	if patch.createdAt != nil {
+		update.AddExpr(tableGroupColumnCreatedAt, pqcomp.Equal, patch.createdAt)
+
+	}
+	update.AddExpr(tableGroupColumnCreatedBy, pqcomp.Equal, patch.createdBy)
+	update.AddExpr(tableGroupColumnDescription, pqcomp.Equal, patch.description)
+	update.AddExpr(tableGroupColumnName, pqcomp.Equal, patch.name)
+	if patch.updatedAt != nil {
+		update.AddExpr(tableGroupColumnUpdatedAt, pqcomp.Equal, patch.updatedAt)
+	} else {
+		update.AddExpr(tableGroupColumnUpdatedAt, pqcomp.Equal, "NOW()")
+	}
+	update.AddExpr(tableGroupColumnUpdatedBy, pqcomp.Equal, patch.updatedBy)
+
+	if update.Len() == 0 {
+		return nil, errors.New("group update failure, nothing to update")
+	}
+	query := "UPDATE charon.group SET "
+	for update.Next() {
+		if !update.First() {
+			query += ", "
+		}
+
+		query += update.Key() + " " + update.Oper() + " " + update.PlaceHolder()
+	}
+	query += " WHERE name = $1 RETURNING " + strings.Join(r.columns, ", ")
+	if r.dbg {
+		if err := r.log.Log("msg", query, "function", "UpdateOneByName"); err != nil {
+			return nil, err
+		}
+	}
+	var e groupEntity
+	err := r.db.QueryRow(query, update.Args()...).Scan(
+		&e.createdAt,
+		&e.createdBy,
+		&e.description,
+		&e.id,
+		&e.name,
+		&e.updatedAt,
+		&e.updatedBy,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return &e, nil
+}
 
 func (r *groupRepositoryBase) deleteOneByID(id int64) (int64, error) {
 	query := "DELETE FROM charon.group WHERE id = $1"
@@ -2024,14 +2230,22 @@ var (
 )
 
 type permissionEntity struct {
-	action    string
+	// action ...
+	action string
+	// createdAt ...
 	createdAt time.Time
-	id        int64
-	module    string
+	// id ...
+	id int64
+	// module ...
+	module string
+	// subsystem ...
 	subsystem string
+	// updatedAt ...
 	updatedAt *time.Time
-	group     []*groupEntity
-	user      []*userEntity
+	// groups ...
+	groups []*groupEntity
+	// users ...
+	users []*userEntity
 }
 
 func (e *permissionEntity) prop(cn string) (interface{}, bool) {
@@ -2095,7 +2309,7 @@ func (i *permissionIterator) Columns() ([]string, error) {
 	return i.cols, nil
 }
 
-// Ent is wrapper arround permission method that makes iterator more generic.
+// Ent is wrapper around permission method that makes iterator more generic.
 func (i *permissionIterator) Ent() (interface{}, error) {
 	return i.Permission()
 }
@@ -2385,15 +2599,21 @@ func (c *permissionCriteria) WriteComposition(sel string, com *pqtgo.Composer, o
 	if len(c.sort) > 0 {
 		i := 0
 		com.WriteString(" ORDER BY ")
+
 		for cn, asc := range c.sort {
-			if i > 0 {
-				com.WriteString(", ")
+			for _, tcn := range tablePermissionColumns {
+				if cn == tcn {
+					if i > 0 {
+						com.WriteString(", ")
+					}
+					com.WriteString(cn)
+					if !asc {
+						com.WriteString(" DESC ")
+					}
+					i++
+					break
+				}
 			}
-			com.WriteString(cn)
-			if !asc {
-				com.WriteString(" DESC ")
-			}
-			i++
 		}
 	}
 	if c.offset > 0 {
@@ -2565,7 +2785,7 @@ func (r *permissionRepositoryBase) findIter(c *permissionCriteria) (*permissionI
 }
 func (r *permissionRepositoryBase) findOneByID(id int64) (*permissionEntity, error) {
 	var (
-		entity permissionEntity
+		ent permissionEntity
 	)
 	query := `SELECT action,
 created_at,
@@ -2575,37 +2795,37 @@ subsystem,
 updated_at
  FROM charon.permission WHERE id = $1`
 	err := r.db.QueryRow(query, id).Scan(
-		&entity.action,
-		&entity.createdAt,
-		&entity.id,
-		&entity.module,
-		&entity.subsystem,
-		&entity.updatedAt,
+		&ent.action,
+		&ent.createdAt,
+		&ent.id,
+		&ent.module,
+		&ent.subsystem,
+		&ent.updatedAt,
 	)
 	if err != nil {
 		return nil, err
 	}
 
-	return &entity, nil
+	return &ent, nil
 }
-func (r *permissionRepositoryBase) findOneBySubsystemAndModuleAndAction(subsystem string, module string, action string) (*permissionEntity, error) {
+func (r *permissionRepositoryBase) findOneBySubsystemAndModuleAndAction(permissionSubsystem string, permissionModule string, permissionAction string) (*permissionEntity, error) {
 	var (
-		entity permissionEntity
+		ent permissionEntity
 	)
 	query := `SELECT action, created_at, id, module, subsystem, updated_at FROM charon.permission WHERE subsystem = $1 AND module = $2 AND action = $3`
-	err := r.db.QueryRow(query, subsystem, module, action).Scan(
-		&entity.action,
-		&entity.createdAt,
-		&entity.id,
-		&entity.module,
-		&entity.subsystem,
-		&entity.updatedAt,
+	err := r.db.QueryRow(query, permissionSubsystem, permissionModule, permissionAction).Scan(
+		&ent.action,
+		&ent.createdAt,
+		&ent.id,
+		&ent.module,
+		&ent.subsystem,
+		&ent.updatedAt,
 	)
 	if err != nil {
 		return nil, err
 	}
 
-	return &entity, nil
+	return &ent, nil
 }
 func (r *permissionRepositoryBase) insert(e *permissionEntity) (*permissionEntity, error) {
 	insert := pqcomp.New(0, 6)
@@ -2796,11 +3016,11 @@ func (r *permissionRepositoryBase) updateOneByID(id int64, patch *permissionPatc
 
 	return &e, nil
 }
-func (r *permissionRepositoryBase) updateOneBySubsystemAndModuleAndAction(subsystem string, module string, action string, patch *permissionPatch) (*permissionEntity, error) {
-	update := pqcomp.New(2, 6)
-	update.AddArg(subsystem)
-	update.AddArg(module)
-	update.AddArg(action)
+func (r *permissionRepositoryBase) updateOneBySubsystemAndModuleAndAction(permissionSubsystem string, permissionModule string, permissionAction string, patch *permissionPatch) (*permissionEntity, error) {
+	update := pqcomp.New(3, 6)
+	update.AddArg(permissionSubsystem)
+	update.AddArg(permissionModule)
+	update.AddArg(permissionAction)
 	update.AddExpr(tablePermissionColumnAction, pqcomp.Equal, patch.action)
 	if patch.createdAt != nil {
 		update.AddExpr(tablePermissionColumnCreatedAt, pqcomp.Equal, patch.createdAt)
@@ -2885,16 +3105,26 @@ var (
 )
 
 type userGroupsEntity struct {
+	// createdAt ...
 	createdAt time.Time
+	// createdBy ...
 	createdBy *ntypes.Int64
-	groupID   int64
+	// groupID ...
+	groupID int64
+	// updatedAt ...
 	updatedAt *time.Time
+	// updatedBy ...
 	updatedBy *ntypes.Int64
-	userID    int64
-	user      *userEntity
-	group     *groupEntity
-	author    *userEntity
-	modifier  *userEntity
+	// userID ...
+	userID int64
+	// user ...
+	user *userEntity
+	// group ...
+	group *groupEntity
+	// author ...
+	author *userEntity
+	// modifier ...
+	modifier *userEntity
 }
 
 func (e *userGroupsEntity) prop(cn string) (interface{}, bool) {
@@ -2958,7 +3188,7 @@ func (i *userGroupsIterator) Columns() ([]string, error) {
 	return i.cols, nil
 }
 
-// Ent is wrapper arround userGroups method that makes iterator more generic.
+// Ent is wrapper around userGroups method that makes iterator more generic.
 func (i *userGroupsIterator) Ent() (interface{}, error) {
 	return i.UserGroups()
 }
@@ -3248,15 +3478,21 @@ func (c *userGroupsCriteria) WriteComposition(sel string, com *pqtgo.Composer, o
 	if len(c.sort) > 0 {
 		i := 0
 		com.WriteString(" ORDER BY ")
+
 		for cn, asc := range c.sort {
-			if i > 0 {
-				com.WriteString(", ")
+			for _, tcn := range tableUserGroupsColumns {
+				if cn == tcn {
+					if i > 0 {
+						com.WriteString(", ")
+					}
+					com.WriteString(cn)
+					if !asc {
+						com.WriteString(" DESC ")
+					}
+					i++
+					break
+				}
 			}
-			com.WriteString(cn)
-			if !asc {
-				com.WriteString(" DESC ")
-			}
-			i++
 		}
 	}
 	if c.offset > 0 {
@@ -3427,24 +3663,24 @@ func (r *userGroupsRepositoryBase) findIter(c *userGroupsCriteria) (*userGroupsI
 
 	return &userGroupsIterator{rows: rows}, nil
 }
-func (r *userGroupsRepositoryBase) findOneByUserIDAndGroupID(userID int64, groupID int64) (*userGroupsEntity, error) {
+func (r *userGroupsRepositoryBase) findOneByUserIDAndGroupID(userGroupsUserID int64, userGroupsGroupID int64) (*userGroupsEntity, error) {
 	var (
-		entity userGroupsEntity
+		ent userGroupsEntity
 	)
 	query := `SELECT created_at, created_by, group_id, updated_at, updated_by, user_id FROM charon.user_groups WHERE user_id = $1 AND group_id = $2`
-	err := r.db.QueryRow(query, userID, groupID).Scan(
-		&entity.createdAt,
-		&entity.createdBy,
-		&entity.groupID,
-		&entity.updatedAt,
-		&entity.updatedBy,
-		&entity.userID,
+	err := r.db.QueryRow(query, userGroupsUserID, userGroupsGroupID).Scan(
+		&ent.createdAt,
+		&ent.createdBy,
+		&ent.groupID,
+		&ent.updatedAt,
+		&ent.updatedBy,
+		&ent.userID,
 	)
 	if err != nil {
 		return nil, err
 	}
 
-	return &entity, nil
+	return &ent, nil
 }
 func (r *userGroupsRepositoryBase) insert(e *userGroupsEntity) (*userGroupsEntity, error) {
 	insert := pqcomp.New(0, 6)
@@ -3594,10 +3830,10 @@ func (r *userGroupsRepositoryBase) upsert(e *userGroupsEntity, p *userGroupsPatc
 
 	return e, nil
 }
-func (r *userGroupsRepositoryBase) updateOneByUserIDAndGroupID(userID int64, groupID int64, patch *userGroupsPatch) (*userGroupsEntity, error) {
+func (r *userGroupsRepositoryBase) updateOneByUserIDAndGroupID(userGroupsUserID int64, userGroupsGroupID int64, patch *userGroupsPatch) (*userGroupsEntity, error) {
 	update := pqcomp.New(2, 6)
-	update.AddArg(userID)
-	update.AddArg(groupID)
+	update.AddArg(userGroupsUserID)
+	update.AddArg(userGroupsGroupID)
 	if patch.createdAt != nil {
 		update.AddExpr(tableUserGroupsColumnCreatedAt, pqcomp.Equal, patch.createdAt)
 
@@ -3676,18 +3912,28 @@ var (
 )
 
 type groupPermissionsEntity struct {
-	createdAt           time.Time
-	createdBy           *ntypes.Int64
-	groupID             int64
-	permissionAction    string
-	permissionModule    string
+	// createdAt ...
+	createdAt time.Time
+	// createdBy ...
+	createdBy *ntypes.Int64
+	// groupID ...
+	groupID int64
+	// permissionAction ...
+	permissionAction string
+	// permissionModule ...
+	permissionModule string
+	// permissionSubsystem ...
 	permissionSubsystem string
-	updatedAt           *time.Time
-	updatedBy           *ntypes.Int64
-	group               *groupEntity
-	permission          *permissionEntity
-	author              *userEntity
-	modifier            *userEntity
+	// updatedAt ...
+	updatedAt *time.Time
+	// updatedBy ...
+	updatedBy *ntypes.Int64
+	// group ...
+	group *groupEntity
+	// author ...
+	author *userEntity
+	// modifier ...
+	modifier *userEntity
 }
 
 func (e *groupPermissionsEntity) prop(cn string) (interface{}, bool) {
@@ -3755,7 +4001,7 @@ func (i *groupPermissionsIterator) Columns() ([]string, error) {
 	return i.cols, nil
 }
 
-// Ent is wrapper arround groupPermissions method that makes iterator more generic.
+// Ent is wrapper around groupPermissions method that makes iterator more generic.
 func (i *groupPermissionsIterator) Ent() (interface{}, error) {
 	return i.GroupPermissions()
 }
@@ -4055,15 +4301,21 @@ func (c *groupPermissionsCriteria) WriteComposition(sel string, com *pqtgo.Compo
 	if len(c.sort) > 0 {
 		i := 0
 		com.WriteString(" ORDER BY ")
+
 		for cn, asc := range c.sort {
-			if i > 0 {
-				com.WriteString(", ")
+			for _, tcn := range tableGroupPermissionsColumns {
+				if cn == tcn {
+					if i > 0 {
+						com.WriteString(", ")
+					}
+					com.WriteString(cn)
+					if !asc {
+						com.WriteString(" DESC ")
+					}
+					i++
+					break
+				}
 			}
-			com.WriteString(cn)
-			if !asc {
-				com.WriteString(" DESC ")
-			}
-			i++
 		}
 	}
 	if c.offset > 0 {
@@ -4238,26 +4490,26 @@ func (r *groupPermissionsRepositoryBase) findIter(c *groupPermissionsCriteria) (
 
 	return &groupPermissionsIterator{rows: rows}, nil
 }
-func (r *groupPermissionsRepositoryBase) findOneByGroupIDAndPermissionSubsystemAndPermissionModuleAndPermissionAction(groupID int64, permissionSubsystem string, permissionModule string, permissionAction string) (*groupPermissionsEntity, error) {
+func (r *groupPermissionsRepositoryBase) findOneByGroupIDAndPermissionSubsystemAndPermissionModuleAndPermissionAction(groupPermissionsGroupID int64, groupPermissionsPermissionSubsystem string, groupPermissionsPermissionModule string, groupPermissionsPermissionAction string) (*groupPermissionsEntity, error) {
 	var (
-		entity groupPermissionsEntity
+		ent groupPermissionsEntity
 	)
 	query := `SELECT created_at, created_by, group_id, permission_action, permission_module, permission_subsystem, updated_at, updated_by FROM charon.group_permissions WHERE group_id = $1 AND permission_subsystem = $2 AND permission_module = $3 AND permission_action = $4`
-	err := r.db.QueryRow(query, groupID, permissionSubsystem, permissionModule, permissionAction).Scan(
-		&entity.createdAt,
-		&entity.createdBy,
-		&entity.groupID,
-		&entity.permissionAction,
-		&entity.permissionModule,
-		&entity.permissionSubsystem,
-		&entity.updatedAt,
-		&entity.updatedBy,
+	err := r.db.QueryRow(query, groupPermissionsGroupID, groupPermissionsPermissionSubsystem, groupPermissionsPermissionModule, groupPermissionsPermissionAction).Scan(
+		&ent.createdAt,
+		&ent.createdBy,
+		&ent.groupID,
+		&ent.permissionAction,
+		&ent.permissionModule,
+		&ent.permissionSubsystem,
+		&ent.updatedAt,
+		&ent.updatedBy,
 	)
 	if err != nil {
 		return nil, err
 	}
 
-	return &entity, nil
+	return &ent, nil
 }
 func (r *groupPermissionsRepositoryBase) insert(e *groupPermissionsEntity) (*groupPermissionsEntity, error) {
 	insert := pqcomp.New(0, 8)
@@ -4417,12 +4669,12 @@ func (r *groupPermissionsRepositoryBase) upsert(e *groupPermissionsEntity, p *gr
 
 	return e, nil
 }
-func (r *groupPermissionsRepositoryBase) updateOneByGroupIDAndPermissionSubsystemAndPermissionModuleAndPermissionAction(groupID int64, permissionSubsystem string, permissionModule string, permissionAction string, patch *groupPermissionsPatch) (*groupPermissionsEntity, error) {
-	update := pqcomp.New(2, 8)
-	update.AddArg(groupID)
-	update.AddArg(permissionSubsystem)
-	update.AddArg(permissionModule)
-	update.AddArg(permissionAction)
+func (r *groupPermissionsRepositoryBase) updateOneByGroupIDAndPermissionSubsystemAndPermissionModuleAndPermissionAction(groupPermissionsGroupID int64, groupPermissionsPermissionSubsystem string, groupPermissionsPermissionModule string, groupPermissionsPermissionAction string, patch *groupPermissionsPatch) (*groupPermissionsEntity, error) {
+	update := pqcomp.New(4, 8)
+	update.AddArg(groupPermissionsGroupID)
+	update.AddArg(groupPermissionsPermissionSubsystem)
+	update.AddArg(groupPermissionsPermissionModule)
+	update.AddArg(groupPermissionsPermissionAction)
 	if patch.createdAt != nil {
 		update.AddExpr(tableGroupPermissionsColumnCreatedAt, pqcomp.Equal, patch.createdAt)
 
@@ -4505,18 +4757,28 @@ var (
 )
 
 type userPermissionsEntity struct {
-	createdAt           time.Time
-	createdBy           *ntypes.Int64
-	permissionAction    string
-	permissionModule    string
+	// createdAt ...
+	createdAt time.Time
+	// createdBy ...
+	createdBy *ntypes.Int64
+	// permissionAction ...
+	permissionAction string
+	// permissionModule ...
+	permissionModule string
+	// permissionSubsystem ...
 	permissionSubsystem string
-	updatedAt           *time.Time
-	updatedBy           *ntypes.Int64
-	userID              int64
-	user                *userEntity
-	permission          *permissionEntity
-	author              *userEntity
-	modifier            *userEntity
+	// updatedAt ...
+	updatedAt *time.Time
+	// updatedBy ...
+	updatedBy *ntypes.Int64
+	// userID ...
+	userID int64
+	// user ...
+	user *userEntity
+	// author ...
+	author *userEntity
+	// modifier ...
+	modifier *userEntity
 }
 
 func (e *userPermissionsEntity) prop(cn string) (interface{}, bool) {
@@ -4584,7 +4846,7 @@ func (i *userPermissionsIterator) Columns() ([]string, error) {
 	return i.cols, nil
 }
 
-// Ent is wrapper arround userPermissions method that makes iterator more generic.
+// Ent is wrapper around userPermissions method that makes iterator more generic.
 func (i *userPermissionsIterator) Ent() (interface{}, error) {
 	return i.UserPermissions()
 }
@@ -4884,15 +5146,21 @@ func (c *userPermissionsCriteria) WriteComposition(sel string, com *pqtgo.Compos
 	if len(c.sort) > 0 {
 		i := 0
 		com.WriteString(" ORDER BY ")
+
 		for cn, asc := range c.sort {
-			if i > 0 {
-				com.WriteString(", ")
+			for _, tcn := range tableUserPermissionsColumns {
+				if cn == tcn {
+					if i > 0 {
+						com.WriteString(", ")
+					}
+					com.WriteString(cn)
+					if !asc {
+						com.WriteString(" DESC ")
+					}
+					i++
+					break
+				}
 			}
-			com.WriteString(cn)
-			if !asc {
-				com.WriteString(" DESC ")
-			}
-			i++
 		}
 	}
 	if c.offset > 0 {
@@ -5067,26 +5335,26 @@ func (r *userPermissionsRepositoryBase) findIter(c *userPermissionsCriteria) (*u
 
 	return &userPermissionsIterator{rows: rows}, nil
 }
-func (r *userPermissionsRepositoryBase) findOneByUserIDAndPermissionSubsystemAndPermissionModuleAndPermissionAction(userID int64, permissionSubsystem string, permissionModule string, permissionAction string) (*userPermissionsEntity, error) {
+func (r *userPermissionsRepositoryBase) findOneByUserIDAndPermissionSubsystemAndPermissionModuleAndPermissionAction(userPermissionsUserID int64, userPermissionsPermissionSubsystem string, userPermissionsPermissionModule string, userPermissionsPermissionAction string) (*userPermissionsEntity, error) {
 	var (
-		entity userPermissionsEntity
+		ent userPermissionsEntity
 	)
 	query := `SELECT created_at, created_by, permission_action, permission_module, permission_subsystem, updated_at, updated_by, user_id FROM charon.user_permissions WHERE user_id = $1 AND permission_subsystem = $2 AND permission_module = $3 AND permission_action = $4`
-	err := r.db.QueryRow(query, userID, permissionSubsystem, permissionModule, permissionAction).Scan(
-		&entity.createdAt,
-		&entity.createdBy,
-		&entity.permissionAction,
-		&entity.permissionModule,
-		&entity.permissionSubsystem,
-		&entity.updatedAt,
-		&entity.updatedBy,
-		&entity.userID,
+	err := r.db.QueryRow(query, userPermissionsUserID, userPermissionsPermissionSubsystem, userPermissionsPermissionModule, userPermissionsPermissionAction).Scan(
+		&ent.createdAt,
+		&ent.createdBy,
+		&ent.permissionAction,
+		&ent.permissionModule,
+		&ent.permissionSubsystem,
+		&ent.updatedAt,
+		&ent.updatedBy,
+		&ent.userID,
 	)
 	if err != nil {
 		return nil, err
 	}
 
-	return &entity, nil
+	return &ent, nil
 }
 func (r *userPermissionsRepositoryBase) insert(e *userPermissionsEntity) (*userPermissionsEntity, error) {
 	insert := pqcomp.New(0, 8)
@@ -5246,12 +5514,12 @@ func (r *userPermissionsRepositoryBase) upsert(e *userPermissionsEntity, p *user
 
 	return e, nil
 }
-func (r *userPermissionsRepositoryBase) updateOneByUserIDAndPermissionSubsystemAndPermissionModuleAndPermissionAction(userID int64, permissionSubsystem string, permissionModule string, permissionAction string, patch *userPermissionsPatch) (*userPermissionsEntity, error) {
-	update := pqcomp.New(2, 8)
-	update.AddArg(userID)
-	update.AddArg(permissionSubsystem)
-	update.AddArg(permissionModule)
-	update.AddArg(permissionAction)
+func (r *userPermissionsRepositoryBase) updateOneByUserIDAndPermissionSubsystemAndPermissionModuleAndPermissionAction(userPermissionsUserID int64, userPermissionsPermissionSubsystem string, userPermissionsPermissionModule string, userPermissionsPermissionAction string, patch *userPermissionsPatch) (*userPermissionsEntity, error) {
+	update := pqcomp.New(4, 8)
+	update.AddArg(userPermissionsUserID)
+	update.AddArg(userPermissionsPermissionSubsystem)
+	update.AddArg(userPermissionsPermissionModule)
+	update.AddArg(userPermissionsPermissionAction)
 	if patch.createdAt != nil {
 		update.AddExpr(tableUserPermissionsColumnCreatedAt, pqcomp.Equal, patch.createdAt)
 

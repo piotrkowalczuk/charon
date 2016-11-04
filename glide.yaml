@@ -8,7 +8,7 @@ import:
   subpackages:
   - log
 - package: github.com/golang/protobuf
-  version: 0c1f6d65b5a189c2250d10e71a5506f06f9fa0a0
+  version: 2bc9827a78f95c6665b5fe0abd1fd66b496ae2d8
   subpackages:
   - proto
   - ptypes
@@ -18,14 +18,14 @@ import:
 - package: github.com/pborman/uuid
   version: ~1.0.0
 - package: github.com/piotrkowalczuk/mnemosyne
-  version: ~0.5.0
+  version: ~0.6.0
   subpackages:
   - mnemosynerpc
 - package: github.com/piotrkowalczuk/ntypes
   version: ~0.1.0
 - package: github.com/piotrkowalczuk/pqcomp
 - package: github.com/piotrkowalczuk/pqt
-  version: ~0.7.0
+  version: ~0.8.0
   subpackages:
   - pqtgo
   - pqtsql

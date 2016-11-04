@@ -221,7 +221,7 @@ func TestUserRepository_IsGranted(t *testing.T) {
 	defer suite.teardown(t)
 
 	for ur := range loadUserFixtures(t, suite.repository.user, userPermissionsTestFixtures) {
-		for pr := range loadPermissionFixtures(t, suite.repository.permission, ur.given.permission) {
+		for pr := range loadPermissionFixtures(t, suite.repository.permission, ur.given.permissions) {
 			add := []*userPermissionsEntity{{
 				userID:              ur.got.id,
 				permissionSubsystem: pr.got.subsystem,

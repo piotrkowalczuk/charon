@@ -10,7 +10,7 @@ var (
 			firstName: "first_name_1",
 			lastName:  "last_name_1",
 			password:  []byte("0123456789"),
-			permission: []*permissionEntity{
+			permissions: []*permissionEntity{
 				{
 					id:        1,
 					subsystem: "subsystem_1",
@@ -25,7 +25,7 @@ var (
 			firstName: "first_name_2",
 			lastName:  "last_name_2",
 			password:  []byte("9876543210"),
-			permission: []*permissionEntity{
+			permissions: []*permissionEntity{
 				{
 					id:        2,
 					subsystem: "subsystem_2",
@@ -51,7 +51,7 @@ func loadUserPermissionsFixtures(t *testing.T, r userPermissionsProvider, f []*u
 				t.Errorf("user permission cannot be created, unexpected error: %s", err.Error())
 				continue
 			} else {
-				t.Logf("user permission has been created")
+				t.Log("user permission has been created")
 			}
 
 			data <- userPermissionsFixtures{
