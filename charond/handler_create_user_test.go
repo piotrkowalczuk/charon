@@ -4,52 +4,55 @@ import (
 	"testing"
 
 	"github.com/piotrkowalczuk/charon"
+	"github.com/piotrkowalczuk/charon/charonrpc"
+	"github.com/piotrkowalczuk/charon/internal/model"
 	"github.com/piotrkowalczuk/ntypes"
 )
 
 func TestCreateUserHandler_firewall_success(t *testing.T) {
 	data := []struct {
-		req charon.CreateUserRequest
+		req charonrpc.CreateUserRequest
 		act actor
 	}{
 		{
-			req: charon.CreateUserRequest{},
+			req: charonrpc.CreateUserRequest{},
 			act: actor{
-				user: &userEntity{id: 2},
+				user: &model.UserEntity{ID: 2},
 				permissions: charon.Permissions{
 					charon.UserCanCreate,
 				},
 			},
 		},
 		{
-			req: charon.CreateUserRequest{
+
+			req: charonrpc.CreateUserRequest{
 				IsStaff: &ntypes.Bool{Bool: true, Valid: true},
 			},
 			act: actor{
-				user: &userEntity{id: 2},
+				user: &model.UserEntity{ID: 2},
 				permissions: charon.Permissions{
 					charon.UserCanCreateStaff,
 				},
 			},
 		},
 		{
-			req: charon.CreateUserRequest{
+			req: charonrpc.CreateUserRequest{
 				IsSuperuser: &ntypes.Bool{Bool: true, Valid: true},
 			},
 			act: actor{
-				user: &userEntity{id: 2, isSuperuser: true},
+				user: &model.UserEntity{ID: 2, IsSuperuser: true},
 			},
 		},
 		{
-			req: charon.CreateUserRequest{},
+			req: charonrpc.CreateUserRequest{},
 			act: actor{
-				user: &userEntity{id: 2, isSuperuser: true},
+				user: &model.UserEntity{ID: 2, IsSuperuser: true},
 			},
 		},
 		{
-			req: charon.CreateUserRequest{},
+			req: charonrpc.CreateUserRequest{},
 			act: actor{
-				user:    &userEntity{},
+				user:    &model.UserEntity{},
 				isLocal: true,
 			},
 		},
@@ -65,59 +68,59 @@ func TestCreateUserHandler_firewall_success(t *testing.T) {
 
 func TestCreateUserHandler_firewall_failure(t *testing.T) {
 	data := []struct {
-		req charon.CreateUserRequest
+		req charonrpc.CreateUserRequest
 		act actor
 	}{
 		{
-			req: charon.CreateUserRequest{},
+			req: charonrpc.CreateUserRequest{},
 			act: actor{
-				user: &userEntity{},
+				user: &model.UserEntity{},
 			},
 		},
 		{
-			req: charon.CreateUserRequest{},
+			req: charonrpc.CreateUserRequest{},
 			act: actor{
-				user: &userEntity{id: 2},
+				user: &model.UserEntity{ID: 2},
 			},
 		},
 		{
-			req: charon.CreateUserRequest{},
+			req: charonrpc.CreateUserRequest{},
 			act: actor{
-				user: &userEntity{
-					id:      2,
-					isStaff: true,
+				user: &model.UserEntity{
+					ID:      2,
+					IsStaff: true,
 				},
 			},
 		},
 		{
-			req: charon.CreateUserRequest{
+			req: charonrpc.CreateUserRequest{
 				IsStaff: &ntypes.Bool{Bool: true, Valid: true},
 			},
 			act: actor{
-				user: &userEntity{
-					id:      2,
-					isStaff: true,
+				user: &model.UserEntity{
+					ID:      2,
+					IsStaff: true,
 				},
 			},
 		},
 		{
-			req: charon.CreateUserRequest{
+			req: charonrpc.CreateUserRequest{
 				IsSuperuser: &ntypes.Bool{Bool: true, Valid: true},
 			},
 			act: actor{
-				user: &userEntity{id: 1},
+				user: &model.UserEntity{ID: 1},
 				permissions: charon.Permissions{
 					charon.UserCanCreateStaff,
 				},
 			},
 		},
 		{
-			req: charon.CreateUserRequest{
+			req: charonrpc.CreateUserRequest{
 				IsStaff: &ntypes.Bool{Bool: true, Valid: true},
 			},
 			act: actor{
-				user: &userEntity{
-					id: 2,
+				user: &model.UserEntity{
+					ID: 2,
 				},
 				permissions: charon.Permissions{
 					charon.UserCanCreate,

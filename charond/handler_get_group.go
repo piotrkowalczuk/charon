@@ -4,6 +4,8 @@ import (
 	"database/sql"
 
 	"github.com/piotrkowalczuk/charon"
+	"github.com/piotrkowalczuk/charon/charonrpc"
+	"github.com/piotrkowalczuk/charon/internal/model"
 
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
@@ -14,7 +16,7 @@ type getGroupHandler struct {
 	*handler
 }
 
-func (ggh *getGroupHandler) handle(ctx context.Context, req *charon.GetGroupRequest) (*charon.GetGroupResponse, error) {
+func (ggh *getGroupHandler) Get(ctx context.Context, req *charonrpc.GetGroupRequest) (*charonrpc.GetGroupResponse, error) {
 	ggh.loggerWith("group_id", req.Id)
 
 	act, err := ggh.retrieveActor(ctx)
@@ -25,7 +27,7 @@ func (ggh *getGroupHandler) handle(ctx context.Context, req *charon.GetGroupRequ
 		return nil, err
 	}
 
-	ent, err := ggh.repository.group.findOneByID(req.Id)
+	ent, err := ggh.repository.group.FindOneByID(req.Id)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, grpc.Errorf(codes.NotFound, "group does not exists")
@@ -36,8 +38,8 @@ func (ggh *getGroupHandler) handle(ctx context.Context, req *charon.GetGroupRequ
 	return ggh.response(ent)
 }
 
-func (ggh *getGroupHandler) firewall(req *charon.GetGroupRequest, act *actor) error {
-	if act.user.isSuperuser {
+func (ggh *getGroupHandler) firewall(req *charonrpc.GetGroupRequest, act *actor) error {
+	if act.user.IsSuperuser {
 		return nil
 	}
 	if act.permissions.Contains(charon.GroupCanRetrieve) {
@@ -47,12 +49,12 @@ func (ggh *getGroupHandler) firewall(req *charon.GetGroupRequest, act *actor) er
 	return grpc.Errorf(codes.PermissionDenied, "group cannot be retrieved, missing permission")
 }
 
-func (ggh *getGroupHandler) response(ent *groupEntity) (*charon.GetGroupResponse, error) {
-	msg, err := ent.message()
+func (ggh *getGroupHandler) response(ent *model.GroupEntity) (*charonrpc.GetGroupResponse, error) {
+	msg, err := ent.Message()
 	if err != nil {
 		return nil, err
 	}
-	return &charon.GetGroupResponse{
+	return &charonrpc.GetGroupResponse{
 		Group: msg,
 	}, nil
 }

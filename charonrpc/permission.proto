@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+package charonrpc;
+
+import "github.com/piotrkowalczuk/qtypes/qtypes.proto";
+import "github.com/piotrkowalczuk/ntypes/ntypes.proto";
+
+service PermissionManager {
+    rpc Register(RegisterPermissionsRequest) returns (RegisterPermissionsResponse) {};
+    rpc List(ListPermissionsRequest) returns (ListPermissionsResponse) {};
+    rpc Get(GetPermissionRequest) returns (GetPermissionResponse) {};
+}
+
+message RegisterPermissionsRequest {
+    repeated string permissions = 1;
+}
+
+message RegisterPermissionsResponse {
+    int64 created = 1;
+    int64 removed = 2;
+    int64 untouched = 3;
+}
+
+message ListPermissionsRequest {
+    reserved 6 to 99;
+
+    qtypes.String subsystem = 1;
+    qtypes.String module = 2;
+    qtypes.String action = 3;
+    qtypes.Timestamp created_at = 4;
+    qtypes.Int64 created_by = 5;
+
+    ntypes.Int64 offset = 100;
+    ntypes.Int64 limit = 101;
+    map<string, bool> sort = 102;
+}
+
+message ListPermissionsResponse {
+    repeated string permissions = 1;
+}
+
+message GetPermissionRequest {
+    int64 id = 1;
+}
+
+message GetPermissionResponse {
+    string permission = 1;
+}

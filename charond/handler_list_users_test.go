@@ -4,65 +4,68 @@ import (
 	"testing"
 
 	"github.com/piotrkowalczuk/charon"
+	"github.com/piotrkowalczuk/charon/charonrpc"
+	"github.com/piotrkowalczuk/charon/internal/model"
 	"github.com/piotrkowalczuk/ntypes"
 	"github.com/piotrkowalczuk/qtypes"
 )
 
 func TestListUsersHandler_firewall_success(t *testing.T) {
 	data := []struct {
-		req charon.ListUsersRequest
+		req charonrpc.ListUsersRequest
 		act actor
 	}{
 		{
-			req: charon.ListUsersRequest{
+
+			req: charonrpc.ListUsersRequest{
 				CreatedBy: qtypes.EqualInt64(1),
 			},
 			act: actor{
-				user: &userEntity{id: 1},
+				user: &model.UserEntity{ID: 1},
 				permissions: charon.Permissions{
 					charon.UserCanRetrieveAsOwner,
 				},
 			},
 		},
 		{
-			req: charon.ListUsersRequest{
+			req: charonrpc.ListUsersRequest{
 				CreatedBy: qtypes.EqualInt64(3),
 			},
 			act: actor{
-				user: &userEntity{id: 1},
+				user: &model.UserEntity{ID: 1},
 				permissions: charon.Permissions{
 					charon.UserCanRetrieveAsStranger,
 				},
 			},
 		},
 		{
-			req: charon.ListUsersRequest{
+			req: charonrpc.ListUsersRequest{
 				IsSuperuser: &ntypes.Bool{Bool: true, Valid: true},
 			},
 			act: actor{
-				user: &userEntity{
-					id:          1,
-					isSuperuser: true,
+				user: &model.UserEntity{
+					ID:          1,
+					IsSuperuser: true,
 				},
 			},
 		},
 		{
-			req: charon.ListUsersRequest{},
+			req: charonrpc.ListUsersRequest{},
 			act: actor{
-				user: &userEntity{
-					id:          1,
-					isSuperuser: true,
+				user: &model.UserEntity{
+					ID:          1,
+					IsSuperuser: true,
 				},
 			},
 		},
 		{
-			req: charon.ListUsersRequest{
+			req: charonrpc.ListUsersRequest{
 				IsStaff:   &ntypes.Bool{Bool: true, Valid: true},
 				CreatedBy: qtypes.EqualInt64(1),
 			},
 			act: actor{
-				user: &userEntity{
-					id: 1,
+				user: &model.UserEntity{
+					ID: 1,
 				},
 				permissions: charon.Permissions{
 					charon.UserCanRetrieveStaffAsOwner,
@@ -70,13 +73,13 @@ func TestListUsersHandler_firewall_success(t *testing.T) {
 			},
 		},
 		{
-			req: charon.ListUsersRequest{
+			req: charonrpc.ListUsersRequest{
 				IsStaff:   &ntypes.Bool{Bool: true, Valid: true},
 				CreatedBy: qtypes.EqualInt64(3),
 			},
 			act: actor{
-				user: &userEntity{
-					id: 1,
+				user: &model.UserEntity{
+					ID: 1,
 				},
 				permissions: charon.Permissions{
 					charon.UserCanRetrieveStaffAsStranger,
@@ -84,9 +87,9 @@ func TestListUsersHandler_firewall_success(t *testing.T) {
 			},
 		},
 		{
-			req: charon.ListUsersRequest{},
+			req: charonrpc.ListUsersRequest{},
 			act: actor{
-				user: &userEntity{id: 1},
+				user: &model.UserEntity{ID: 1},
 				permissions: charon.Permissions{
 					charon.UserCanRetrieveAsStranger,
 					charon.UserCanRetrieveAsOwner,
@@ -96,11 +99,11 @@ func TestListUsersHandler_firewall_success(t *testing.T) {
 			},
 		},
 		{
-			req: charon.ListUsersRequest{
+			req: charonrpc.ListUsersRequest{
 				IsSuperuser: &ntypes.Bool{Bool: true, Valid: true},
 			},
 			act: actor{
-				user: &userEntity{id: 1, isSuperuser: true},
+				user: &model.UserEntity{ID: 1, IsSuperuser: true},
 				permissions: charon.Permissions{
 					charon.UserCanRetrieveAsStranger,
 					charon.UserCanRetrieveAsOwner,
@@ -121,27 +124,27 @@ func TestListUsersHandler_firewall_success(t *testing.T) {
 
 func TestListUsersHandler_firewall_failure(t *testing.T) {
 	data := []struct {
-		req charon.ListUsersRequest
+		req charonrpc.ListUsersRequest
 		act actor
 	}{
 		{
-			req: charon.ListUsersRequest{},
+			req: charonrpc.ListUsersRequest{},
 			act: actor{
-				user: &userEntity{},
+				user: &model.UserEntity{},
 			},
 		},
 		{
-			req: charon.ListUsersRequest{},
+			req: charonrpc.ListUsersRequest{},
 			act: actor{
-				user: &userEntity{id: 1},
+				user: &model.UserEntity{ID: 1},
 			},
 		},
 		{
-			req: charon.ListUsersRequest{
+			req: charonrpc.ListUsersRequest{
 				IsSuperuser: &ntypes.Bool{Bool: true, Valid: true},
 			},
 			act: actor{
-				user: &userEntity{id: 1},
+				user: &model.UserEntity{ID: 1},
 				permissions: charon.Permissions{
 					charon.UserCanRetrieveAsStranger,
 					charon.UserCanRetrieveAsOwner,

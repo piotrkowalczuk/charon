@@ -3,6 +3,9 @@ package charond
 import (
 	"github.com/pborman/uuid"
 	"github.com/piotrkowalczuk/charon"
+	"github.com/piotrkowalczuk/charon/charonrpc"
+	"github.com/piotrkowalczuk/charon/internal/model"
+	"github.com/piotrkowalczuk/charon/internal/password"
 	"github.com/piotrkowalczuk/pqt"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
@@ -11,10 +14,10 @@ import (
 
 type createUserHandler struct {
 	*handler
-	hasher charon.PasswordHasher
+	hasher password.Hasher
 }
 
-func (cuh *createUserHandler) handle(ctx context.Context, req *charon.CreateUserRequest) (*charon.CreateUserResponse, error) {
+func (cuh *createUserHandler) Create(ctx context.Context, req *charonrpc.CreateUserRequest) (*charonrpc.CreateUserResponse, error) {
 	cuh.loggerWith("username", req.Username, "is_superuser", req.IsSuperuser.BoolOr(false))
 
 	act, err := cuh.retrieveActor(ctx)
@@ -46,7 +49,7 @@ func (cuh *createUserHandler) handle(ctx context.Context, req *charon.CreateUser
 		}
 	} else {
 		// TODO: only one superuser can be defined so this else statement makes no sense in this place.
-		if !act.user.isSuperuser {
+		if !act.user.IsSuperuser {
 			return nil, grpc.Errorf(codes.PermissionDenied, "only superuser can create an user with manualy defined secure password")
 		}
 	}
@@ -64,9 +67,9 @@ func (cuh *createUserHandler) handle(ctx context.Context, req *charon.CreateUser
 	)
 	if err != nil {
 		switch pqt.ErrorConstraint(err) {
-		case tableUserConstraintPrimaryKey:
+		case model.TableUserConstraintPrimaryKey:
 			return nil, grpc.Errorf(codes.AlreadyExists, "user with such id already exists")
-		case tableUserConstraintUsernameUnique:
+		case model.TableUserConstraintUsernameUnique:
 			return nil, grpc.Errorf(codes.AlreadyExists, "user with such username already exists")
 		default:
 			return nil, err
@@ -76,8 +79,8 @@ func (cuh *createUserHandler) handle(ctx context.Context, req *charon.CreateUser
 	return cuh.response(ent)
 }
 
-func (cuh *createUserHandler) firewall(req *charon.CreateUserRequest, act *actor) error {
-	if act.isLocal || act.user.isSuperuser {
+func (cuh *createUserHandler) firewall(req *charonrpc.CreateUserRequest, act *actor) error {
+	if act.isLocal || act.user.IsSuperuser {
 		return nil
 	}
 	if req.IsSuperuser.BoolOr(false) {
@@ -93,12 +96,12 @@ func (cuh *createUserHandler) firewall(req *charon.CreateUserRequest, act *actor
 	return nil
 }
 
-func (cuh *createUserHandler) response(ent *userEntity) (*charon.CreateUserResponse, error) {
-	msg, err := ent.message()
+func (cuh *createUserHandler) response(ent *model.UserEntity) (*charonrpc.CreateUserResponse, error) {
+	msg, err := ent.Message()
 	if err != nil {
 		return nil, err
 	}
-	return &charon.CreateUserResponse{
+	return &charonrpc.CreateUserResponse{
 		User: msg,
 	}, nil
 }

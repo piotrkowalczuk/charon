@@ -6,6 +6,8 @@ import (
 	"testing"
 
 	"github.com/piotrkowalczuk/charon"
+	"github.com/piotrkowalczuk/charon/internal/model"
+	"github.com/piotrkowalczuk/charon/internal/session"
 	"github.com/piotrkowalczuk/mnemosyne"
 	"github.com/piotrkowalczuk/mnemosyne/mnemosynerpc"
 	"github.com/piotrkowalczuk/mnemosyne/mnemosynetest"
@@ -24,8 +26,8 @@ func TestHandler(t *testing.T) {
 	)
 
 	Convey("retrieveActor", t, func() {
-		userRepositoryMock := &mockUserProvider{}
-		permissionRepositoryMock := &mockPermissionProvider{}
+		userRepositoryMock := &model.MockUserProvider{}
+		permissionRepositoryMock := &model.MockPermissionProvider{}
 		sessionMock := &mnemosynetest.SessionManagerClient{}
 		h := &handler{
 			session: sessionMock,
@@ -54,28 +56,28 @@ func TestHandler(t *testing.T) {
 				Return(&mnemosynerpc.ContextResponse{
 					Session: &mnemosynerpc.Session{
 						AccessToken: tkn,
-						SubjectId:   charon.SubjectIDFromInt64(id).String(),
+						SubjectId:   session.ActorIDFromInt64(id).String(),
 					},
 				}, nil).
 				Once()
 
 			Convey("When user exists", func() {
-				userRepositoryMock.On("findOneByID", id).
-					Return(&userEntity{id: id}, nil).
+				userRepositoryMock.On("FindOneByID", id).
+					Return(&model.UserEntity{ID: id}, nil).
 					Once()
 
 				Convey("And it has some permissions", func() {
-					permissionRepositoryMock.On("findByUserID", id).
-						Return([]*permissionEntity{
+					permissionRepositoryMock.On("FindByUserID", id).
+						Return([]*model.PermissionEntity{
 							{
-								subsystem: charon.PermissionCanRetrieve.Subsystem(),
-								module:    charon.PermissionCanRetrieve.Module(),
-								action:    charon.PermissionCanRetrieve.Action(),
+								Subsystem: charon.PermissionCanRetrieve.Subsystem(),
+								Module:    charon.PermissionCanRetrieve.Module(),
+								Action:    charon.PermissionCanRetrieve.Action(),
 							},
 							{
-								subsystem: charon.UserCanRetrieveAsOwner.Subsystem(),
-								module:    charon.UserCanRetrieveAsOwner.Module(),
-								action:    charon.UserCanRetrieveAsOwner.Action(),
+								Subsystem: charon.UserCanRetrieveAsOwner.Subsystem(),
+								Module:    charon.UserCanRetrieveAsOwner.Module(),
+								Action:    charon.UserCanRetrieveAsOwner.Action(),
 							},
 						}, nil).
 						Once()
@@ -85,12 +87,12 @@ func TestHandler(t *testing.T) {
 
 						So(err, ShouldBeNil)
 						So(act, ShouldNotBeNil)
-						So(act.user.id, ShouldEqual, id)
+						So(act.user.ID, ShouldEqual, id)
 						So(act.permissions, ShouldHaveLength, 2)
 					})
 				})
 				Convey("And it has no permissions", func() {
-					permissionRepositoryMock.On("findByUserID", id).
+					permissionRepositoryMock.On("FindByUserID", id).
 						Return(nil, sql.ErrNoRows).
 						Once()
 
@@ -99,7 +101,7 @@ func TestHandler(t *testing.T) {
 
 						So(err, ShouldBeNil)
 						So(act, ShouldNotBeNil)
-						So(act.user.id, ShouldEqual, id)
+						So(act.user.ID, ShouldEqual, id)
 						So(act.permissions, ShouldHaveLength, 0)
 					})
 				})

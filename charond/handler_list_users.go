@@ -2,6 +2,8 @@ package charond
 
 import (
 	"github.com/piotrkowalczuk/charon"
+	"github.com/piotrkowalczuk/charon/charonrpc"
+	"github.com/piotrkowalczuk/charon/internal/model"
 	"github.com/piotrkowalczuk/qtypes"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
@@ -12,7 +14,7 @@ type listUsersHandler struct {
 	*handler
 }
 
-func (luh *listUsersHandler) handle(ctx context.Context, req *charon.ListUsersRequest) (*charon.ListUsersResponse, error) {
+func (luh *listUsersHandler) List(ctx context.Context, req *charonrpc.ListUsersRequest) (*charonrpc.ListUsersResponse, error) {
 	act, err := luh.retrieveActor(ctx)
 	if err != nil {
 		return nil, err
@@ -21,19 +23,19 @@ func (luh *listUsersHandler) handle(ctx context.Context, req *charon.ListUsersRe
 		return nil, err
 	}
 
-	criteria := &userCriteria{
-		sort:        req.Sort,
-		offset:      req.Offset.Int64Or(0),
-		limit:       req.Limit.Int64Or(10),
-		isSuperuser: req.IsSuperuser,
-		isStaff:     req.IsStaff,
-		createdBy:   req.CreatedBy,
+	criteria := &model.UserCriteria{
+		Sort:        req.Sort,
+		Offset:      req.Offset.Int64Or(0),
+		Limit:       req.Limit.Int64Or(10),
+		IsSuperuser: req.IsSuperuser,
+		IsStaff:     req.IsStaff,
+		CreatedBy:   req.CreatedBy,
 	}
 	if act.permissions.Contains(charon.UserCanRetrieveAsOwner, charon.UserCanRetrieveStaffAsOwner) {
-		criteria.createdBy = qtypes.EqualInt64(act.user.id)
+		criteria.CreatedBy = qtypes.EqualInt64(act.user.ID)
 	}
 
-	ents, err := luh.repository.user.find(criteria)
+	ents, err := luh.repository.user.Find(criteria)
 	if err != nil {
 		return nil, err
 	}
@@ -42,8 +44,8 @@ func (luh *listUsersHandler) handle(ctx context.Context, req *charon.ListUsersRe
 	return luh.response(ents)
 }
 
-func (luh *listUsersHandler) firewall(req *charon.ListUsersRequest, act *actor) error {
-	if act.user.isSuperuser {
+func (luh *listUsersHandler) firewall(req *charonrpc.ListUsersRequest, act *actor) error {
+	if act.user.IsSuperuser {
 		return nil
 	}
 	if req.IsSuperuser.BoolOr(false) {
@@ -56,7 +58,7 @@ func (luh *listUsersHandler) firewall(req *charon.ListUsersRequest, act *actor) 
 		return nil
 	}
 	if req.IsStaff.BoolOr(false) {
-		if req.CreatedBy.Value() == act.user.id {
+		if req.CreatedBy.Value() == act.user.ID {
 			if !act.permissions.Contains(charon.UserCanRetrieveStaffAsOwner) {
 				return grpc.Errorf(codes.PermissionDenied, "list of staff users cannot be retrieved as an owner, missing permission")
 			}
@@ -67,7 +69,7 @@ func (luh *listUsersHandler) firewall(req *charon.ListUsersRequest, act *actor) 
 		}
 		return nil
 	}
-	if req.CreatedBy.Value() == act.user.id {
+	if req.CreatedBy.Value() == act.user.ID {
 		if !act.permissions.Contains(charon.UserCanRetrieveAsOwner) {
 			return grpc.Errorf(codes.PermissionDenied, "list of users cannot be retrieved as an owner, missing permission")
 		}
@@ -77,16 +79,16 @@ func (luh *listUsersHandler) firewall(req *charon.ListUsersRequest, act *actor) 
 	return nil
 }
 
-func (luh *listUsersHandler) response(ents []*userEntity) (*charon.ListUsersResponse, error) {
-	resp := &charon.ListUsersResponse{
-		Users: make([]*charon.User, 0, len(ents)),
+func (luh *listUsersHandler) response(ents []*model.UserEntity) (*charonrpc.ListUsersResponse, error) {
+	resp := &charonrpc.ListUsersResponse{
+		Users: make([]*charonrpc.User, 0, len(ents)),
 	}
 	var (
 		err error
-		msg *charon.User
+		msg *charonrpc.User
 	)
 	for _, e := range ents {
-		if msg, err = e.message(); err != nil {
+		if msg, err = e.Message(); err != nil {
 			return nil, err
 		}
 		resp.Users = append(resp.Users, msg)

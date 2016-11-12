@@ -7,6 +7,7 @@ import (
 	"google.golang.org/grpc/codes"
 
 	"github.com/piotrkowalczuk/charon"
+	"github.com/piotrkowalczuk/charon/charonrpc"
 	"github.com/piotrkowalczuk/sklog"
 	"golang.org/x/net/context"
 )
@@ -15,15 +16,15 @@ type listGroupPermissionsHandler struct {
 	*handler
 }
 
-func (luph *listGroupPermissionsHandler) handle(ctx context.Context, req *charon.ListGroupPermissionsRequest) (*charon.ListGroupPermissionsResponse, error) {
+func (luph *listGroupPermissionsHandler) ListPermissions(ctx context.Context, req *charonrpc.ListGroupPermissionsRequest) (*charonrpc.ListGroupPermissionsResponse, error) {
 	luph.loggerWith("group_id", req.Id)
 
-	permissions, err := luph.repository.permission.findByGroupID(req.Id)
+	permissions, err := luph.repository.permission.FindByGroupID(req.Id)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			sklog.Debug(luph.logger, "group permissions retrieved", "group_id", req.Id, "count", len(permissions))
 
-			return &charon.ListGroupPermissionsResponse{}, nil
+			return &charonrpc.ListGroupPermissionsResponse{}, nil
 		}
 		return nil, err
 	}
@@ -35,13 +36,13 @@ func (luph *listGroupPermissionsHandler) handle(ctx context.Context, req *charon
 
 	luph.loggerWith("results", len(permissions))
 
-	return &charon.ListGroupPermissionsResponse{
+	return &charonrpc.ListGroupPermissionsResponse{
 		Permissions: perms,
 	}, nil
 }
 
-func (luph *listGroupPermissionsHandler) firewall(req *charon.ListGroupPermissionsRequest, act *actor) error {
-	if act.user.isSuperuser {
+func (luph *listGroupPermissionsHandler) firewall(req *charonrpc.ListGroupPermissionsRequest, act *actor) error {
+	if act.user.IsSuperuser {
 		return nil
 	}
 	if act.permissions.Contains(charon.GroupPermissionCanRetrieve) {

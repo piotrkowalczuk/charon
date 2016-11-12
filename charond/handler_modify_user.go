@@ -4,6 +4,8 @@ import (
 	"database/sql"
 
 	"github.com/piotrkowalczuk/charon"
+	"github.com/piotrkowalczuk/charon/charonrpc"
+	"github.com/piotrkowalczuk/charon/internal/model"
 	"github.com/piotrkowalczuk/ntypes"
 	"github.com/piotrkowalczuk/pqt"
 	"golang.org/x/net/context"
@@ -15,9 +17,9 @@ type modifyUserHandler struct {
 	*handler
 }
 
-func (muh *modifyUserHandler) handle(ctx context.Context, req *charon.ModifyUserRequest) (*charon.ModifyUserResponse, error) {
+func (muh *modifyUserHandler) Modify(ctx context.Context, req *charonrpc.ModifyUserRequest) (*charonrpc.ModifyUserResponse, error) {
 	if req.Id <= 0 {
-		return nil, grpc.Errorf(codes.InvalidArgument, "user cannot be modified, invalid id: %d", req.Id)
+		return nil, grpc.Errorf(codes.InvalidArgument, "user cannot be modified, invalid ID: %d", req.Id)
 	}
 
 	muh.loggerWith("user_id", req.Id)
@@ -27,7 +29,7 @@ func (muh *modifyUserHandler) handle(ctx context.Context, req *charon.ModifyUser
 		return nil, err
 	}
 
-	ent, err := muh.repository.user.findOneByID(req.Id)
+	ent, err := muh.repository.user.FindOneByID(req.Id)
 	if err != nil {
 		return nil, err
 	}
@@ -36,23 +38,23 @@ func (muh *modifyUserHandler) handle(ctx context.Context, req *charon.ModifyUser
 		return nil, grpc.Errorf(codes.PermissionDenied, hint)
 	}
 
-	ent, err = muh.repository.user.updateOneByID(req.Id, &userPatch{
-		firstName:   req.FirstName,
-		isActive:    req.IsActive,
-		isConfirmed: req.IsConfirmed,
-		isStaff:     req.IsStaff,
-		isSuperuser: req.IsSuperuser,
-		lastName:    req.LastName,
-		password:    req.SecurePassword,
-		updatedBy:   &ntypes.Int64{Int64: act.user.id, Valid: act.user.id != 0},
-		username:    req.Username,
+	ent, err = muh.repository.user.UpdateOneByID(req.Id, &model.UserPatch{
+		FirstName:   req.FirstName,
+		IsActive:    req.IsActive,
+		IsConfirmed: req.IsConfirmed,
+		IsStaff:     req.IsStaff,
+		IsSuperuser: req.IsSuperuser,
+		LastName:    req.LastName,
+		Password:    req.SecurePassword,
+		UpdatedBy:   &ntypes.Int64{Int64: act.user.ID, Valid: act.user.ID != 0},
+		Username:    req.Username,
 	})
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, grpc.Errorf(codes.NotFound, "group does not exists")
 		}
 		switch pqt.ErrorConstraint(err) {
-		case tableUserConstraintUsernameUnique:
+		case model.TableUserConstraintUsernameUnique:
 			return nil, grpc.Errorf(codes.AlreadyExists, "user with such username already exists")
 		default:
 			return nil, err
@@ -62,16 +64,16 @@ func (muh *modifyUserHandler) handle(ctx context.Context, req *charon.ModifyUser
 	return muh.response(ent)
 }
 
-func (muh *modifyUserHandler) firewall(req *charon.ModifyUserRequest, ent *userEntity, actor *actor) (string, bool) {
-	isOwner := actor.user.id == ent.id
+func (muh *modifyUserHandler) firewall(req *charonrpc.ModifyUserRequest, ent *model.UserEntity, actor *actor) (string, bool) {
+	isOwner := actor.user.ID == ent.ID
 
-	if !actor.user.isSuperuser {
+	if !actor.user.IsSuperuser {
 		switch {
-		case ent.isSuperuser:
+		case ent.IsSuperuser:
 			return "only superuser can modify a superuser account", false
-		case ent.isStaff && !isOwner && actor.permissions.Contains(charon.UserCanModifyStaffAsStranger):
+		case ent.IsStaff && !isOwner && actor.permissions.Contains(charon.UserCanModifyStaffAsStranger):
 			return "missing permission to modify an account as a stranger", false
-		case ent.isStaff && isOwner && actor.permissions.Contains(charon.UserCanModifyStaffAsOwner):
+		case ent.IsStaff && isOwner && actor.permissions.Contains(charon.UserCanModifyStaffAsOwner):
 			return "missing permission to modify an account as an owner", false
 		case req.IsSuperuser != nil && req.IsSuperuser.Valid:
 			return "only superuser can change existing account to superuser", false
@@ -83,12 +85,12 @@ func (muh *modifyUserHandler) firewall(req *charon.ModifyUserRequest, ent *userE
 	return "", true
 }
 
-func (muh *modifyUserHandler) response(u *userEntity) (*charon.ModifyUserResponse, error) {
-	msg, err := u.message()
+func (muh *modifyUserHandler) response(u *model.UserEntity) (*charonrpc.ModifyUserResponse, error) {
+	msg, err := u.Message()
 	if err != nil {
 		return nil, err
 	}
-	return &charon.ModifyUserResponse{
+	return &charonrpc.ModifyUserResponse{
 		User: msg,
 	}, nil
 }

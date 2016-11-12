@@ -1,7 +1,9 @@
 package charond
 
 import (
-	"github.com/piotrkowalczuk/charon"
+	"github.com/golang/protobuf/ptypes/wrappers"
+	"github.com/piotrkowalczuk/charon/charonrpc"
+	"github.com/piotrkowalczuk/charon/internal/session"
 	"github.com/piotrkowalczuk/mnemosyne/mnemosynerpc"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
@@ -12,7 +14,7 @@ type isAuthenticatedHandler struct {
 	*handler
 }
 
-func (iah *isAuthenticatedHandler) handle(ctx context.Context, req *charon.IsAuthenticatedRequest) (*charon.IsAuthenticatedResponse, error) {
+func (iah *isAuthenticatedHandler) IsAuthenticated(ctx context.Context, req *charonrpc.IsAuthenticatedRequest) (*wrappers.BoolValue, error) {
 	if req.AccessToken == "" {
 		return nil, grpc.Errorf(codes.InvalidArgument, "authentication status cannot be checked, missing token")
 	}
@@ -23,7 +25,7 @@ func (iah *isAuthenticatedHandler) handle(ctx context.Context, req *charon.IsAut
 	if err != nil {
 		return nil, handleMnemosyneError(err)
 	}
-	uid, err := charon.SubjectID(ses.Session.SubjectId).UserID()
+	uid, err := session.ActorID(ses.Session.SubjectId).UserID()
 	if err != nil {
 		return nil, err
 	}
@@ -33,7 +35,5 @@ func (iah *isAuthenticatedHandler) handle(ctx context.Context, req *charon.IsAut
 		return nil, err
 	}
 
-	return &charon.IsAuthenticatedResponse{
-		Authenticated: exists,
-	}, nil
+	return &wrappers.BoolValue{Value: exists}, nil
 }

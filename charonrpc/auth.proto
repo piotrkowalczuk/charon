@@ -1,0 +1,51 @@
+syntax = "proto3";
+
+package charonrpc;
+
+import "github.com/golang/protobuf/ptypes/empty/empty.proto";
+import "github.com/golang/protobuf/ptypes/wrappers/wrappers.proto";
+
+service Auth {
+    rpc Login (LoginRequest) returns (google.protobuf.StringValue);
+    rpc Logout (LogoutRequest) returns (google.protobuf.Empty);
+    rpc IsAuthenticated (IsAuthenticatedRequest) returns (google.protobuf.BoolValue);
+    rpc Actor (google.protobuf.StringValue) returns (ActorResponse);
+    rpc IsGranted (IsGrantedRequest) returns (google.protobuf.BoolValue);
+    rpc BelongsTo (BelongsToRequest) returns (google.protobuf.BoolValue);
+}
+
+message LoginRequest {
+    string username = 1;
+    string password = 2;
+    string client = 3;
+}
+
+message LogoutRequest {
+    string access_token = 1;
+}
+
+message IsAuthenticatedRequest {
+    string access_token = 1;
+}
+
+message IsGrantedRequest {
+    int64 user_id = 1;
+    string permission = 2;
+}
+
+message BelongsToRequest {
+    int64 user_id = 1;
+    int64 group_id = 2;
+}
+
+message ActorResponse {
+    int64 id = 1;
+    string username = 2;
+    string first_name = 3;
+    string last_name = 4;
+    repeated string permissions = 5;
+    bool is_superuser = 6;
+    bool is_active = 7;
+    bool is_stuff = 8;
+    bool is_confirmed = 9;
+}

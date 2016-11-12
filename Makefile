@@ -24,10 +24,10 @@ install:
 	@go install -ldflags "${LDFLAGS}" ${PACKAGE_CMD_CONTROL}
 
 gen:
-	@go generate ./${SERVICE}d
-	@ls -al ${SERVICE}d | grep pqt
-	@go generate .
-	@ls -al | grep pb.go
+	@go generate ./internal/model
+	@ls -al ./internal/model | grep pqt
+	@go generate ./${SERVICE}rpc
+	@ls -al ${SERVICE}rpc | grep pb.go
 
 test:
 	@scripts/test.sh
@@ -46,3 +46,10 @@ publish:
 		--build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
 		-t piotrkowalczuk/${SERVICE}:${VERSION} .
 	@docker push piotrkowalczuk/${SERVICE}:${VERSION}
+
+publish-test:
+	@docker build \
+		--build-arg VCS_REF=${VCS_REF} \
+		--build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
+		-t piotrkowalczuk/${SERVICE}:test .
+	@docker push piotrkowalczuk/${SERVICE}:test

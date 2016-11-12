@@ -4,26 +4,28 @@ import (
 	"testing"
 
 	"github.com/piotrkowalczuk/charon"
+	"github.com/piotrkowalczuk/charon/charonrpc"
+	"github.com/piotrkowalczuk/charon/internal/model"
 )
 
 func TestDeleteGroupHandler_firewall_success(t *testing.T) {
 	data := []struct {
-		req charon.DeleteGroupRequest
+		req charonrpc.DeleteGroupRequest
 		act actor
 	}{
 		{
-			req: charon.DeleteGroupRequest{},
+			req: charonrpc.DeleteGroupRequest{},
 			act: actor{
-				user: &userEntity{id: 1},
+				user: &model.UserEntity{ID: 1},
 				permissions: charon.Permissions{
 					charon.GroupCanDelete,
 				},
 			},
 		},
 		{
-			req: charon.DeleteGroupRequest{},
+			req: charonrpc.DeleteGroupRequest{},
 			act: actor{
-				user: &userEntity{id: 2, isSuperuser: true},
+				user: &model.UserEntity{ID: 2, IsSuperuser: true},
 			},
 		},
 	}
@@ -38,21 +40,21 @@ func TestDeleteGroupHandler_firewall_success(t *testing.T) {
 
 func TestDeleteGroupHandler_firewall_failure(t *testing.T) {
 	data := []struct {
-		req charon.DeleteGroupRequest
+		req charonrpc.DeleteGroupRequest
 		act actor
 	}{
 		{
-			req: charon.DeleteGroupRequest{},
+			req: charonrpc.DeleteGroupRequest{},
 			act: actor{
-				user: &userEntity{id: 2},
+				user: &model.UserEntity{ID: 2},
 			},
 		},
 		{
-			req: charon.DeleteGroupRequest{},
+			req: charonrpc.DeleteGroupRequest{},
 			act: actor{
-				user: &userEntity{
-					id:      2,
-					isStaff: true,
+				user: &model.UserEntity{
+					ID:      2,
+					IsStaff: true,
 				},
 			},
 		},

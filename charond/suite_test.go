@@ -19,11 +19,6 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-type suite interface {
-	setup(testing.T)
-	teardown(testing.T)
-}
-
 func getStringEnvOr(env, or string) string {
 	if v := os.Getenv(env); v != "" {
 		return v

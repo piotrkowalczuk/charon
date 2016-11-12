@@ -1,6 +1,7 @@
 package charond
 
 import (
+	"crypto/tls"
 	"database/sql"
 	"errors"
 	"fmt"
@@ -9,6 +10,8 @@ import (
 	"github.com/go-kit/kit/log"
 	"github.com/go-ldap/ldap"
 	"github.com/piotrkowalczuk/charon"
+	"github.com/piotrkowalczuk/charon/internal/model"
+	"github.com/piotrkowalczuk/charon/internal/password"
 	"github.com/piotrkowalczuk/mnemosyne/mnemosynerpc"
 	"github.com/piotrkowalczuk/sklog"
 	"github.com/prometheus/client_golang/prometheus"
@@ -52,8 +55,8 @@ func initMnemosyne(address string, logger log.Logger) (mnemosynerpc.SessionManag
 	return mnemosynerpc.NewSessionManagerClient(conn), conn
 }
 
-func initPasswordHasher(cost int, logger log.Logger) charon.PasswordHasher {
-	bh, err := charon.NewBCryptPasswordHasher(cost)
+func initHasher(cost int, logger log.Logger) password.Hasher {
+	bh, err := password.NewBCryptHasher(cost)
 	if err != nil {
 		sklog.Fatal(logger, err)
 	}
@@ -61,9 +64,9 @@ func initPasswordHasher(cost int, logger log.Logger) charon.PasswordHasher {
 	return bh
 }
 
-func initPermissionRegistry(r permissionProvider, permissions charon.Permissions, logger log.Logger) (pr permissionRegistry) {
-	pr = newPermissionRegistry(r)
-	created, untouched, removed, err := pr.register(permissions)
+func initPermissionRegistry(r model.PermissionProvider, permissions charon.Permissions, logger log.Logger) (pr model.PermissionRegistry) {
+	pr = model.NewPermissionRegistry(r)
+	created, untouched, removed, err := pr.Register(permissions)
 	if err != nil {
 		sklog.Fatal(logger, err)
 	}
@@ -72,11 +75,6 @@ func initPermissionRegistry(r permissionProvider, permissions charon.Permissions
 
 	return
 }
-
-const (
-	// MonitoringEnginePrometheus ...
-	MonitoringEnginePrometheus = "prometheus"
-)
 
 func initPrometheus(namespace string, enabled bool, constLabels prometheus.Labels) *monitoring {
 	rpcRequests := prometheus.NewCounterVec(
@@ -155,34 +153,41 @@ func initPrometheus(namespace string, enabled bool, constLabels prometheus.Label
 	}
 }
 
-func initLDAP(address, dn, password string, logger log.Logger) (*ldap.Conn, error) {
+func initLDAP(address, baseDN, password string, logger log.Logger) (*ldap.Conn, string, error) {
 	init := func(addr string) (*ldap.Conn, error) {
 		conn, err := ldap.Dial("tcp", addr)
 		if err != nil {
 			return nil, fmt.Errorf("ldap connection failure: %s", err.Error())
 		}
-		if err = conn.Bind(dn, password); err != nil {
+		err = conn.StartTLS(&tls.Config{InsecureSkipVerify: true})
+		if err != nil {
+			return nil, fmt.Errorf("ldap start tls reconnection failure: %s", err.Error())
+		}
+		if err = conn.Bind(baseDN, password); err != nil {
 			return nil, fmt.Errorf("ldap bind failure: %s", err.Error())
 		}
-		sklog.Info(logger, "ldap connection has been established", "address", address, "dn", dn)
+
+		sklog.Info(logger, "ldap connection has been established", "address", address, "dn", baseDN)
 		return conn, nil
 	}
 	_, addresses, err := net.LookupSRV("ldap", "tcp", address)
 	if err != nil {
-		return nil, fmt.Errorf("ldap srv record lookup failure: %s", err.Error())
+		return nil, "", fmt.Errorf("ldap srv record lookup failure: %s", err.Error())
 	}
 	if len(addresses) == 0 {
-		return init(address)
+		conn, err := init(address)
+		return conn, address, err
 	}
 
 	for _, addr := range addresses {
-		c, err := init(fmt.Sprintf("%s:%d", addr.Target, addr.Port))
+		addressFound := fmt.Sprintf("%s:%d", addr.Target, addr.Port)
+		c, err := init(addressFound)
 		if err != nil {
-			sklog.Error(logger, err, "target", addr.Target, "port", addr.Port)
+			sklog.Error(logger, err, "target", addr.Target, "port", addr.Port, "ldap_base_dn", baseDN)
 			continue
 		}
-		return c, nil
+		return c, addressFound, nil
 	}
 
-	return nil, errors.New("ldap connection failed to a single server")
+	return nil, "", errors.New("ldap connection failed to a single server")
 }

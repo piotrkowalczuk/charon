@@ -2,6 +2,8 @@ package charond
 
 import (
 	"github.com/piotrkowalczuk/charon"
+	"github.com/piotrkowalczuk/charon/charonrpc"
+	"github.com/piotrkowalczuk/charon/internal/model"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -9,12 +11,12 @@ import (
 
 type registerPermissionsHandler struct {
 	*handler
-	registry permissionRegistry
+	registry model.PermissionRegistry
 }
 
-func (rph *registerPermissionsHandler) handle(ctx context.Context, req *charon.RegisterPermissionsRequest) (*charon.RegisterPermissionsResponse, error) {
+func (rph *registerPermissionsHandler) Register(ctx context.Context, req *charonrpc.RegisterPermissionsRequest) (*charonrpc.RegisterPermissionsResponse, error) {
 	permissions := charon.NewPermissions(req.Permissions...)
-	created, untouched, removed, err := rph.registry.register(permissions)
+	created, untouched, removed, err := rph.registry.Register(permissions)
 	if err != nil {
 		return nil, grpc.Errorf(codes.Internal, err.Error())
 	}
@@ -27,7 +29,7 @@ func (rph *registerPermissionsHandler) handle(ctx context.Context, req *charon.R
 		"count", len(req.Permissions),
 	)
 
-	return &charon.RegisterPermissionsResponse{
+	return &charonrpc.RegisterPermissionsResponse{
 		Created:   created,
 		Untouched: untouched,
 		Removed:   removed,

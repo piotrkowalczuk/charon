@@ -3,7 +3,9 @@ package charond
 import (
 	"database/sql"
 
-	"github.com/piotrkowalczuk/charon"
+	"github.com/piotrkowalczuk/charon/charonrpc"
+	"github.com/piotrkowalczuk/charon/internal/model"
+
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -14,7 +16,7 @@ type modifyGroupHandler struct {
 }
 
 // TODO: missing firewall
-func (mgh *modifyGroupHandler) handle(ctx context.Context, req *charon.ModifyGroupRequest) (*charon.ModifyGroupResponse, error) {
+func (mgh *modifyGroupHandler) Modify(ctx context.Context, req *charonrpc.ModifyGroupRequest) (*charonrpc.ModifyGroupResponse, error) {
 	mgh.loggerWith("group_id", req.Id)
 
 	actor, err := mgh.retrieveActor(ctx)
@@ -22,9 +24,9 @@ func (mgh *modifyGroupHandler) handle(ctx context.Context, req *charon.ModifyGro
 		return nil, err
 	}
 
-	mgh.loggerWith("user_id", actor.user.id)
+	mgh.loggerWith("user_id", actor.user.ID)
 
-	group, err := mgh.repository.group.updateOneByID(req.Id, actor.user.id, req.Name, req.Description)
+	group, err := mgh.repository.group.UpdateOneByID(req.Id, actor.user.ID, req.Name, req.Description)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, grpc.Errorf(codes.NotFound, "group does not exists")
@@ -35,12 +37,12 @@ func (mgh *modifyGroupHandler) handle(ctx context.Context, req *charon.ModifyGro
 	return mgh.response(group)
 }
 
-func (mgh *modifyGroupHandler) response(g *groupEntity) (*charon.ModifyGroupResponse, error) {
-	msg, err := g.message()
+func (mgh *modifyGroupHandler) response(g *model.GroupEntity) (*charonrpc.ModifyGroupResponse, error) {
+	msg, err := g.Message()
 	if err != nil {
 		return nil, err
 	}
-	return &charon.ModifyGroupResponse{
+	return &charonrpc.ModifyGroupResponse{
 		Group: msg,
 	}, nil
 }

@@ -4,6 +4,8 @@ import (
 	"database/sql"
 
 	"github.com/piotrkowalczuk/charon"
+	"github.com/piotrkowalczuk/charon/charonrpc"
+	"github.com/piotrkowalczuk/charon/internal/model"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -13,14 +15,14 @@ type getUserHandler struct {
 	*handler
 }
 
-func (guh *getUserHandler) handle(ctx context.Context, req *charon.GetUserRequest) (*charon.GetUserResponse, error) {
+func (guh *getUserHandler) Get(ctx context.Context, req *charonrpc.GetUserRequest) (*charonrpc.GetUserResponse, error) {
 	guh.loggerWith("user_id", req.Id)
 
 	act, err := guh.retrieveActor(ctx)
 	if err != nil {
 		return nil, err
 	}
-	ent, err := guh.repository.user.findOneByID(req.Id)
+	ent, err := guh.repository.user.FindOneByID(req.Id)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, grpc.Errorf(codes.NotFound, "user does not exists")
@@ -34,15 +36,15 @@ func (guh *getUserHandler) handle(ctx context.Context, req *charon.GetUserReques
 	return guh.response(ent)
 }
 
-func (guh *getUserHandler) firewall(req *charon.GetUserRequest, act *actor, ent *userEntity) error {
-	if act.user.isSuperuser {
+func (guh *getUserHandler) firewall(req *charonrpc.GetUserRequest, act *actor, ent *model.UserEntity) error {
+	if act.user.IsSuperuser {
 		return nil
 	}
-	if ent.isSuperuser {
+	if ent.IsSuperuser {
 		return grpc.Errorf(codes.PermissionDenied, "only superuser is permited to retrieve other superuser")
 	}
-	if ent.isStaff {
-		if ent.createdBy.Int64Or(0) == act.user.id {
+	if ent.IsStaff {
+		if ent.CreatedBy.Int64Or(0) == act.user.ID {
 			if !act.permissions.Contains(charon.UserCanRetrieveStaffAsOwner) {
 				return grpc.Errorf(codes.PermissionDenied, "staff user cannot be retrieved as an owner, missing permission")
 			}
@@ -53,7 +55,7 @@ func (guh *getUserHandler) firewall(req *charon.GetUserRequest, act *actor, ent 
 		}
 		return nil
 	}
-	if ent.createdBy.Int64Or(0) == act.user.id {
+	if ent.CreatedBy.Int64Or(0) == act.user.ID {
 		if !act.permissions.Contains(charon.UserCanRetrieveAsOwner) {
 			return grpc.Errorf(codes.PermissionDenied, "user cannot be retrieved as an owner, missing permission")
 		}
@@ -65,12 +67,12 @@ func (guh *getUserHandler) firewall(req *charon.GetUserRequest, act *actor, ent 
 	return nil
 }
 
-func (guh *getUserHandler) response(ent *userEntity) (*charon.GetUserResponse, error) {
-	msg, err := ent.message()
+func (guh *getUserHandler) response(ent *model.UserEntity) (*charonrpc.GetUserResponse, error) {
+	msg, err := ent.Message()
 	if err != nil {
 		return nil, err
 	}
-	return &charon.GetUserResponse{
+	return &charonrpc.GetUserResponse{
 		User: msg,
 	}, nil
 }

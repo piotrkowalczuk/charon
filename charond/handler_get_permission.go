@@ -4,6 +4,7 @@ import (
 	"database/sql"
 
 	"github.com/piotrkowalczuk/charon"
+	"github.com/piotrkowalczuk/charon/charonrpc"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -13,7 +14,7 @@ type getPermissionHandler struct {
 	*handler
 }
 
-func (gph *getPermissionHandler) handle(ctx context.Context, req *charon.GetPermissionRequest) (*charon.GetPermissionResponse, error) {
+func (gph *getPermissionHandler) Get(ctx context.Context, req *charonrpc.GetPermissionRequest) (*charonrpc.GetPermissionResponse, error) {
 	gph.loggerWith("permission_id", req.Id)
 
 	if req.Id < 1 {
@@ -28,7 +29,7 @@ func (gph *getPermissionHandler) handle(ctx context.Context, req *charon.GetPerm
 		return nil, err
 	}
 
-	permission, err := gph.repository.permission.findOneByID(req.Id)
+	permission, err := gph.repository.permission.FindOneByID(req.Id)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, grpc.Errorf(codes.NotFound, "permission does not exists")
@@ -36,13 +37,13 @@ func (gph *getPermissionHandler) handle(ctx context.Context, req *charon.GetPerm
 		return nil, err
 	}
 
-	return &charon.GetPermissionResponse{
+	return &charonrpc.GetPermissionResponse{
 		Permission: permission.Permission().String(),
 	}, nil
 }
 
-func (gph *getPermissionHandler) firewall(req *charon.GetPermissionRequest, act *actor) error {
-	if act.user.isSuperuser {
+func (gph *getPermissionHandler) firewall(req *charonrpc.GetPermissionRequest, act *actor) error {
+	if act.user.IsSuperuser {
 		return nil
 	}
 	if act.permissions.Contains(charon.PermissionCanRetrieve) {

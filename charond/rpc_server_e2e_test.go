@@ -3,7 +3,7 @@ package charond
 import (
 	"testing"
 
-	"github.com/piotrkowalczuk/charon"
+	"github.com/piotrkowalczuk/charon/charonrpc"
 	"github.com/piotrkowalczuk/mnemosyne"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
@@ -15,48 +15,48 @@ func TestRPCServer_minimal(t *testing.T) {
 	suite.setup(t)
 	defer suite.teardown(t)
 
-	ctx := testRPCServer_login(t, suite)
+	ctx := testRPCServerLogin(t, suite)
 	permissions := []string{
 		"winterfell:castle:can enter as a lord",
 		"winterfell:castle:can close as a lord",
 	}
 
-	createUserResponse := testRPCServer_createUser(t, suite, ctx, &charon.CreateUserRequest{
+	createUserResponse := testRPCServerCreateUser(t, suite, ctx, &charonrpc.CreateUserRequest{
 		Username:      "john@snow.com",
 		PlainPassword: "winteriscomming",
 		FirstName:     "John",
 		LastName:      "Snow",
 	})
-	createGroupResponse := testRPCServer_createGroup(t, suite, ctx, &charon.CreateGroupRequest{
+	createGroupResponse := testRPCServerCreateGroup(t, suite, ctx, &charonrpc.CreateGroupRequest{
 		Name: "winterfell",
 	})
-	registerPermissionsResponse := testRPCServer_registerPermissions(t, suite, ctx, &charon.RegisterPermissionsRequest{
+	registerPermissionsResponse := testRPCServerRegisterPermissions(t, suite, ctx, &charonrpc.RegisterPermissionsRequest{
 		Permissions: permissions,
 	})
 	if registerPermissionsResponse.Created != 2 {
 		t.Fatalf("wrong number of registered permissions, expected 2 but got %d", registerPermissionsResponse.Created)
 	}
-	_ = testRPCServer_setUserPermissions(t, suite, ctx, &charon.SetUserPermissionsRequest{
+	_ = testRPCServerSetUserPermissions(t, suite, ctx, &charonrpc.SetUserPermissionsRequest{
 		UserId:      createUserResponse.User.Id,
 		Permissions: permissions,
 	})
-	_ = testRPCServer_setUserGroups(t, suite, ctx, &charon.SetUserGroupsRequest{
+	_ = testRPCServerSetUserGroups(t, suite, ctx, &charonrpc.SetUserGroupsRequest{
 		UserId: createUserResponse.User.Id,
 		Groups: []int64{createGroupResponse.Group.Id},
 	})
 }
 
-func testRPCServer_login(t *testing.T, suite *endToEndSuite) context.Context {
-	res, err := suite.charon.Login(context.TODO(), &charon.LoginRequest{Username: "test", Password: "test"})
+func testRPCServerLogin(t *testing.T, suite *endToEndSuite) context.Context {
+	token, err := suite.charon.auth.Login(context.TODO(), &charonrpc.LoginRequest{Username: "test", Password: "test"})
 	if err != nil {
 		t.Fatalf("unexpected login error: %s: with code %s", grpc.ErrorDesc(err), grpc.Code(err))
 	}
-	meta := metadata.Pairs(mnemosyne.AccessTokenMetadataKey, res.AccessToken)
+	meta := metadata.Pairs(mnemosyne.AccessTokenMetadataKey, token.Value)
 	return metadata.NewContext(context.Background(), meta)
 }
 
-func testRPCServer_createUser(t *testing.T, suite *endToEndSuite, ctx context.Context, req *charon.CreateUserRequest) *charon.CreateUserResponse {
-	res, err := suite.charon.CreateUser(ctx, req)
+func testRPCServerCreateUser(t *testing.T, suite *endToEndSuite, ctx context.Context, req *charonrpc.CreateUserRequest) *charonrpc.CreateUserResponse {
+	res, err := suite.charon.user.Create(ctx, req)
 	if err != nil {
 		t.Fatalf("unexpected create user error: %s", err.Error())
 	}
@@ -69,8 +69,8 @@ func testRPCServer_createUser(t *testing.T, suite *endToEndSuite, ctx context.Co
 	return res
 }
 
-func testRPCServer_createGroup(t *testing.T, suite *endToEndSuite, ctx context.Context, req *charon.CreateGroupRequest) *charon.CreateGroupResponse {
-	res, err := suite.charon.CreateGroup(ctx, req)
+func testRPCServerCreateGroup(t *testing.T, suite *endToEndSuite, ctx context.Context, req *charonrpc.CreateGroupRequest) *charonrpc.CreateGroupResponse {
+	res, err := suite.charon.group.Create(ctx, req)
 	if err != nil {
 		t.Fatalf("unexpected create group error: %s", err.Error())
 	}
@@ -83,8 +83,8 @@ func testRPCServer_createGroup(t *testing.T, suite *endToEndSuite, ctx context.C
 	return res
 }
 
-func testRPCServer_registerPermissions(t *testing.T, suite *endToEndSuite, ctx context.Context, req *charon.RegisterPermissionsRequest) *charon.RegisterPermissionsResponse {
-	res, err := suite.charon.RegisterPermissions(ctx, req)
+func testRPCServerRegisterPermissions(t *testing.T, suite *endToEndSuite, ctx context.Context, req *charonrpc.RegisterPermissionsRequest) *charonrpc.RegisterPermissionsResponse {
+	res, err := suite.charon.permission.Register(ctx, req)
 	if err != nil {
 		t.Fatalf("unexpected permission registration error: %s", err.Error())
 	}
@@ -92,8 +92,8 @@ func testRPCServer_registerPermissions(t *testing.T, suite *endToEndSuite, ctx c
 	return res
 }
 
-func testRPCServer_setUserPermissions(t *testing.T, suite *endToEndSuite, ctx context.Context, req *charon.SetUserPermissionsRequest) *charon.SetUserPermissionsResponse {
-	res, err := suite.charon.SetUserPermissions(ctx, req)
+func testRPCServerSetUserPermissions(t *testing.T, suite *endToEndSuite, ctx context.Context, req *charonrpc.SetUserPermissionsRequest) *charonrpc.SetUserPermissionsResponse {
+	res, err := suite.charon.user.SetPermissions(ctx, req)
 	if err != nil {
 		t.Fatalf("unexpected set user permissions error: %s", err.Error())
 	}
@@ -101,8 +101,8 @@ func testRPCServer_setUserPermissions(t *testing.T, suite *endToEndSuite, ctx co
 	return res
 }
 
-func testRPCServer_setUserGroups(t *testing.T, suite *endToEndSuite, ctx context.Context, req *charon.SetUserGroupsRequest) *charon.SetUserGroupsResponse {
-	res, err := suite.charon.SetUserGroups(ctx, req)
+func testRPCServerSetUserGroups(t *testing.T, suite *endToEndSuite, ctx context.Context, req *charonrpc.SetUserGroupsRequest) *charonrpc.SetUserGroupsResponse {
+	res, err := suite.charon.user.SetGroups(ctx, req)
 	if err != nil {
 		t.Fatalf("unexpected set user groups error: %s", err.Error())
 	}
