@@ -4,32 +4,36 @@ import (
 	"testing"
 
 	"github.com/piotrkowalczuk/charon"
+	"github.com/piotrkowalczuk/charon/charonrpc"
+	"github.com/piotrkowalczuk/charon/internal/model"
 )
 
 func TestBelongsToHandler_firewall_success(t *testing.T) {
 	data := []struct {
-		req charon.BelongsToRequest
+		req charonrpc.BelongsToRequest
 		act actor
 	}{
 		{
-			req: charon.BelongsToRequest{UserId: 1},
+			req: charonrpc.BelongsToRequest{UserId: 1},
 			act: actor{
-				user: &userEntity{id: 2},
+				user: &model.UserEntity{ID: 2},
 				permissions: charon.Permissions{
 					charon.UserGroupCanCheckBelongingAsStranger,
 				},
 			},
 		},
+
 		{
-			req: charon.BelongsToRequest{UserId: 1},
+			req: charonrpc.BelongsToRequest{UserId: 1},
 			act: actor{
-				user: &userEntity{id: 2, isSuperuser: true},
+				user: &model.UserEntity{ID: 2, IsSuperuser: true},
 			},
 		},
+
 		{
-			req: charon.BelongsToRequest{UserId: 1},
+			req: charonrpc.BelongsToRequest{UserId: 1},
 			act: actor{
-				user: &userEntity{id: 1},
+				user: &model.UserEntity{ID: 1},
 			},
 		},
 	}
@@ -44,21 +48,21 @@ func TestBelongsToHandler_firewall_success(t *testing.T) {
 
 func TestBelongsToHandler_firewall_failure(t *testing.T) {
 	data := []struct {
-		req charon.BelongsToRequest
+		req charonrpc.BelongsToRequest
 		act actor
 	}{
 		{
-			req: charon.BelongsToRequest{UserId: 1},
+			req: charonrpc.BelongsToRequest{UserId: 1},
 			act: actor{
-				user: &userEntity{id: 2},
+				user: &model.UserEntity{ID: 2},
 			},
 		},
 		{
-			req: charon.BelongsToRequest{UserId: 1},
+			req: charonrpc.BelongsToRequest{UserId: 1},
 			act: actor{
-				user: &userEntity{
-					id:      2,
-					isStaff: true,
+				user: &model.UserEntity{
+					ID:      2,
+					IsStaff: true,
 				},
 			},
 		},

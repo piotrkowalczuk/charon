@@ -40,20 +40,19 @@ func main() {
 
 	sch := databaseSchema()
 	if err := pqtgo.NewGenerator().
-		AddImport("github.com/piotrkowalczuk/ntypes").
-		AddImport("github.com/piotrkowalczuk/qtypes").
 		SetAcronyms(acronyms).
-		SetPackage("charond").
+		SetVisibility(pqtgo.Public).
+		SetPackage("model").
 		GenerateTo(sch, file); err != nil {
 		log.Fatal(err)
 	}
-	fmt.Fprintf(file, "const schemaSQL = `\n")
+	fmt.Fprint(file, "const SQL = `\n")
 	if err := pqtsql.NewGenerator().GenerateTo(sch, file); err != nil {
 		log.Fatal(err)
 	}
-	fmt.Fprintf(file, "`")
+	fmt.Fprint(file, "`")
 }
 
-func openFile(output string) (file io.WriteCloser, err error) {
+func openFile(output string) (io.WriteCloser, error) {
 	return os.OpenFile(output+".go", os.O_TRUNC|os.O_WRONLY|os.O_CREATE, 0660)
 }

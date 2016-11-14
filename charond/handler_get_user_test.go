@@ -4,117 +4,104 @@ import (
 	"testing"
 
 	"github.com/piotrkowalczuk/charon"
+	"github.com/piotrkowalczuk/charon/charonrpc"
+	"github.com/piotrkowalczuk/charon/internal/model"
 	"github.com/piotrkowalczuk/ntypes"
 )
 
 func TestGetUserHandler_firewall_success(t *testing.T) {
 	data := []struct {
-		req charon.GetUserRequest
+		req charonrpc.GetUserRequest
 		act actor
-		ent userEntity
+		ent model.UserEntity
 	}{
 		{
-			req: charon.GetUserRequest{},
+			req: charonrpc.GetUserRequest{},
 			act: actor{
-				user: &userEntity{id: 1},
+				user: &model.UserEntity{ID: 1},
 				permissions: charon.Permissions{
 					charon.UserCanRetrieveAsOwner,
 				},
 			},
-			ent: userEntity{
-				id:        2,
-				createdBy: &ntypes.Int64{Int64: 1, Valid: true},
+			ent: model.UserEntity{
+				ID:        2,
+				CreatedBy: &ntypes.Int64{Int64: 1, Valid: true},
 			},
 		},
 		{
-			req: charon.GetUserRequest{},
+			req: charonrpc.GetUserRequest{},
 			act: actor{
-				user: &userEntity{id: 1},
+				user: &model.UserEntity{ID: 1},
 				permissions: charon.Permissions{
 					charon.UserCanRetrieveAsStranger,
 				},
 			},
-			ent: userEntity{
-				id:        2,
-				createdBy: &ntypes.Int64{Int64: 3, Valid: true},
+			ent: model.UserEntity{
+				ID:        2,
+				CreatedBy: &ntypes.Int64{Int64: 3, Valid: true},
 			},
 		},
 		{
-			req: charon.GetUserRequest{},
+			req: charonrpc.GetUserRequest{},
 			act: actor{
-				user: &userEntity{
-					id:          1,
-					isSuperuser: true,
+				user: &model.UserEntity{
+					ID:          1,
+					IsSuperuser: true,
 				},
 			},
-			ent: userEntity{
-				id:          2,
-				isSuperuser: true,
+			ent: model.UserEntity{
+				ID:          2,
+				IsSuperuser: true,
 			},
 		},
 		{
-			req: charon.GetUserRequest{},
+			req: charonrpc.GetUserRequest{},
 			act: actor{
-				user: &userEntity{
-					id:          1,
-					isSuperuser: true,
+				user: &model.UserEntity{
+					ID:          1,
+					IsSuperuser: true,
 				},
 			},
-			ent: userEntity{
-				id: 2,
+			ent: model.UserEntity{
+				ID: 2,
 			},
 		},
 		{
-			req: charon.GetUserRequest{},
+			req: charonrpc.GetUserRequest{},
 			act: actor{
-				user: &userEntity{
-					id: 1,
+				user: &model.UserEntity{
+					ID: 1,
 				},
 				permissions: charon.Permissions{
 					charon.UserCanRetrieveStaffAsOwner,
 				},
 			},
-			ent: userEntity{
-				id:        2,
-				isStaff:   true,
-				createdBy: &ntypes.Int64{Int64: 1, Valid: true},
+			ent: model.UserEntity{
+				ID:        2,
+				IsStaff:   true,
+				CreatedBy: &ntypes.Int64{Int64: 1, Valid: true},
 			},
 		},
 		{
-			req: charon.GetUserRequest{},
+			req: charonrpc.GetUserRequest{},
 			act: actor{
-				user: &userEntity{
-					id: 1,
+				user: &model.UserEntity{
+					ID: 1,
 				},
 				permissions: charon.Permissions{
 					charon.UserCanRetrieveStaffAsStranger,
 				},
 			},
-			ent: userEntity{
-				id:        2,
-				isStaff:   true,
-				createdBy: &ntypes.Int64{Int64: 3, Valid: true},
+			ent: model.UserEntity{
+				ID:        2,
+				IsStaff:   true,
+				CreatedBy: &ntypes.Int64{Int64: 3, Valid: true},
 			},
 		},
 		{
-			req: charon.GetUserRequest{},
+			req: charonrpc.GetUserRequest{},
 			act: actor{
-				user: &userEntity{id: 1},
-				permissions: charon.Permissions{
-					charon.UserCanRetrieveAsStranger,
-					charon.UserCanRetrieveAsOwner,
-					charon.UserCanRetrieveStaffAsStranger,
-					charon.UserCanRetrieveStaffAsOwner,
-				},
-			},
-			ent: userEntity{
-				id: 1,
-			},
-		},
-		{
-			req: charon.GetUserRequest{},
-			act: actor{
-				user: &userEntity{id: 1, isSuperuser: true},
+				user: &model.UserEntity{ID: 1},
 				permissions: charon.Permissions{
 					charon.UserCanRetrieveAsStranger,
 					charon.UserCanRetrieveAsOwner,
@@ -122,9 +109,24 @@ func TestGetUserHandler_firewall_success(t *testing.T) {
 					charon.UserCanRetrieveStaffAsOwner,
 				},
 			},
-			ent: userEntity{
-				id:          1,
-				isSuperuser: true,
+			ent: model.UserEntity{
+				ID: 1,
+			},
+		},
+		{
+			req: charonrpc.GetUserRequest{},
+			act: actor{
+				user: &model.UserEntity{ID: 1, IsSuperuser: true},
+				permissions: charon.Permissions{
+					charon.UserCanRetrieveAsStranger,
+					charon.UserCanRetrieveAsOwner,
+					charon.UserCanRetrieveStaffAsStranger,
+					charon.UserCanRetrieveStaffAsOwner,
+				},
+			},
+			ent: model.UserEntity{
+				ID:          1,
+				IsSuperuser: true,
 			},
 		},
 	}
@@ -139,30 +141,30 @@ func TestGetUserHandler_firewall_success(t *testing.T) {
 
 func TestGetUserHandler_firewall_failure(t *testing.T) {
 	data := []struct {
-		req charon.GetUserRequest
+		req charonrpc.GetUserRequest
 		act actor
-		ent userEntity
+		ent model.UserEntity
 	}{
 		{
-			req: charon.GetUserRequest{},
+			req: charonrpc.GetUserRequest{},
 			act: actor{
-				user: &userEntity{},
+				user: &model.UserEntity{},
 			},
-			ent: userEntity{},
+			ent: model.UserEntity{},
 		},
 		{
-			req: charon.GetUserRequest{},
+			req: charonrpc.GetUserRequest{},
 			act: actor{
-				user: &userEntity{id: 1},
+				user: &model.UserEntity{ID: 1},
 			},
-			ent: userEntity{
-				id: 2,
+			ent: model.UserEntity{
+				ID: 2,
 			},
 		},
 		{
-			req: charon.GetUserRequest{},
+			req: charonrpc.GetUserRequest{},
 			act: actor{
-				user: &userEntity{id: 1},
+				user: &model.UserEntity{ID: 1},
 				permissions: charon.Permissions{
 					charon.UserCanRetrieveAsStranger,
 					charon.UserCanRetrieveAsOwner,
@@ -170,9 +172,9 @@ func TestGetUserHandler_firewall_failure(t *testing.T) {
 					charon.UserCanRetrieveStaffAsOwner,
 				},
 			},
-			ent: userEntity{
-				id:          2,
-				isSuperuser: true,
+			ent: model.UserEntity{
+				ID:          2,
+				IsSuperuser: true,
 			},
 		},
 	}

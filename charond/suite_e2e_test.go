@@ -9,7 +9,8 @@ import (
 	"time"
 
 	klog "github.com/go-kit/kit/log"
-	"github.com/piotrkowalczuk/charon"
+	"github.com/piotrkowalczuk/charon/charonrpc"
+	"github.com/piotrkowalczuk/charon/internal/password"
 	"github.com/piotrkowalczuk/mnemosyne/mnemosyned"
 	"github.com/piotrkowalczuk/mnemosyne/mnemosynerpc"
 	"github.com/piotrkowalczuk/sklog"
@@ -20,9 +21,14 @@ import (
 
 type endToEndSuite struct {
 	db     *sql.DB
-	hasher charon.PasswordHasher
+	hasher password.Hasher
 
-	charon       charon.RPCClient
+	charon struct {
+		auth       charonrpc.AuthClient
+		user       charonrpc.UserManagerClient
+		group      charonrpc.GroupManagerClient
+		permission charonrpc.PermissionManagerClient
+	}
 	charonCloser io.Closer
 	charonConn   *grpc.ClientConn
 
@@ -78,11 +84,21 @@ func (etes *endToEndSuite) setup(t *testing.T) {
 	if err := setupDatabase(etes.db); err != nil {
 		t.Fatalf("database setup error: %s", err.Error())
 	}
-	if etes.hasher, err = charon.NewBCryptPasswordHasher(bcrypt.MinCost); err != nil {
+	if etes.hasher, err = password.NewBCryptHasher(bcrypt.MinCost); err != nil {
 		t.Fatalf("password hasher error: %s", err.Error())
 	}
 
-	etes.charon = charon.NewRPCClient(etes.charonConn)
+	etes.charon = struct {
+		auth       charonrpc.AuthClient
+		user       charonrpc.UserManagerClient
+		group      charonrpc.GroupManagerClient
+		permission charonrpc.PermissionManagerClient
+	}{
+		auth:       charonrpc.NewAuthClient(etes.charonConn),
+		user:       charonrpc.NewUserManagerClient(etes.charonConn),
+		group:      charonrpc.NewGroupManagerClient(etes.charonConn),
+		permission: charonrpc.NewPermissionManagerClient(etes.charonConn),
+	}
 	etes.mnemosyne = mnemosynerpc.NewSessionManagerClient(etes.mnemosyneConn)
 }
 

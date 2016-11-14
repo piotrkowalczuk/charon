@@ -1,7 +1,8 @@
 package charond
 
 import (
-	"github.com/piotrkowalczuk/charon"
+	"github.com/golang/protobuf/ptypes/empty"
+	"github.com/piotrkowalczuk/charon/charonrpc"
 	"github.com/piotrkowalczuk/mnemosyne/mnemosynerpc"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
@@ -12,8 +13,8 @@ type logoutHandler struct {
 	*handler
 }
 
-func (lh *logoutHandler) handle(ctx context.Context, r *charon.LogoutRequest) (*charon.LogoutResponse, error) {
-	if len(r.AccessToken) == 0 { // TODO: probably wrong, implement IsEmpty method for ID
+func (lh *logoutHandler) Logout(ctx context.Context, r *charonrpc.LogoutRequest) (*empty.Empty, error) {
+	if len(r.AccessToken) == 0 {
 		return nil, grpc.Errorf(codes.InvalidArgument, "empty session id, logout aborted")
 	}
 
@@ -26,5 +27,5 @@ func (lh *logoutHandler) handle(ctx context.Context, r *charon.LogoutRequest) (*
 
 	lh.loggerWith("token", r.AccessToken)
 
-	return &charon.LogoutResponse{}, nil
+	return &empty.Empty{}, nil
 }

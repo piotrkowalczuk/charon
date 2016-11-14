@@ -1,7 +1,9 @@
 package charond
 
 import (
+	"github.com/golang/protobuf/ptypes/wrappers"
 	"github.com/piotrkowalczuk/charon"
+	"github.com/piotrkowalczuk/charon/charonrpc"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -11,8 +13,8 @@ type belongsToHandler struct {
 	*handler
 }
 
-func (ig *belongsToHandler) handle(ctx context.Context, req *charon.BelongsToRequest) (*charon.BelongsToResponse, error) {
-	ig.loggerWith("user_id", req.UserId, "group_id", req.GroupId)
+func (bth *belongsToHandler) BelongsTo(ctx context.Context, req *charonrpc.BelongsToRequest) (*wrappers.BoolValue, error) {
+	bth.loggerWith("user_id", req.UserId, "group_id", req.GroupId)
 
 	if req.GroupId < 1 {
 		return nil, grpc.Errorf(codes.InvalidArgument, "group id needs to be greater than zero")
@@ -21,29 +23,27 @@ func (ig *belongsToHandler) handle(ctx context.Context, req *charon.BelongsToReq
 		return nil, grpc.Errorf(codes.InvalidArgument, "user id needs to be greater than zero")
 	}
 
-	act, err := ig.retrieveActor(ctx)
+	act, err := bth.retrieveActor(ctx)
 	if err != nil {
 		return nil, err
 	}
-	if err = ig.firewall(req, act); err != nil {
+	if err = bth.firewall(req, act); err != nil {
 		return nil, err
 	}
 
-	belongs, err := ig.repository.userGroups.Exists(req.UserId, req.GroupId)
+	belongs, err := bth.repository.userGroups.Exists(req.UserId, req.GroupId)
 	if err != nil {
 		return nil, err
 	}
 
-	return &charon.BelongsToResponse{
-		Belongs: belongs,
-	}, nil
+	return &wrappers.BoolValue{Value: belongs}, nil
 }
 
-func (ig *belongsToHandler) firewall(req *charon.BelongsToRequest, act *actor) error {
-	if act.user.id == req.UserId {
+func (bth *belongsToHandler) firewall(req *charonrpc.BelongsToRequest, act *actor) error {
+	if act.user.ID == req.UserId {
 		return nil
 	}
-	if act.user.isSuperuser {
+	if act.user.IsSuperuser {
 		return nil
 	}
 	if act.permissions.Contains(charon.UserGroupCanCheckBelongingAsStranger) {

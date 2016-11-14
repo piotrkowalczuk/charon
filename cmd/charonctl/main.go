@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/piotrkowalczuk/charon"
+	"github.com/piotrkowalczuk/charon/charonrpc"
 	"github.com/piotrkowalczuk/mnemosyne"
 	"github.com/piotrkowalczuk/ntypes"
 	"golang.org/x/net/context"
@@ -32,35 +32,9 @@ func main() {
 	}
 }
 
-func client(addr string) (client charon.RPCClient, ctx context.Context) {
-	conn, err := grpc.Dial(addr, grpc.WithInsecure(), grpc.WithUserAgent("charonctl"))
-	if err != nil {
-		fmt.Printf("charond connection failure to %s with error: %s\n", addr, grpc.ErrorDesc(err))
-		os.Exit(1)
-	}
-
-	client = charon.NewRPCClient(conn)
-	ctx = context.Background()
-
-	if config.auth.enabled {
-		resp, err := client.Login(context.Background(), &charon.LoginRequest{
-			Username: config.auth.username,
-			Password: config.auth.password,
-		})
-		if err != nil {
-			fmt.Printf("(initial) login failure: %s\n", grpc.ErrorDesc(err))
-			os.Exit(1)
-		}
-
-		ctx = metadata.NewContext(ctx, metadata.Pairs(mnemosyne.AccessTokenMetadataKey, resp.AccessToken))
-	}
-
-	return
-}
-
 func registerUser(config configuration) {
-	c, ctx := client(config.address)
-	res, err := c.CreateUser(ctx, &charon.CreateUserRequest{
+	c, ctx := initClient(config.address)
+	res, err := c.user.Create(ctx, &charonrpc.CreateUserRequest{
 		Username:      config.register.username,
 		PlainPassword: config.register.password,
 		FirstName:     config.register.firstName,
@@ -87,7 +61,7 @@ func registerUser(config configuration) {
 
 	if len(config.register.permissions) > 0 {
 		if config.register.superuser {
-			resLogin, err := c.Login(ctx, &charon.LoginRequest{
+			token, err := c.auth.Login(ctx, &charonrpc.LoginRequest{
 				Username: config.register.username,
 				Password: config.register.password,
 				Client:   "charonctl",
@@ -96,10 +70,10 @@ func registerUser(config configuration) {
 				fmt.Printf("(superuser) login failure: %s\n", grpc.ErrorDesc(err))
 				os.Exit(1)
 			}
-			ctx = metadata.NewContext(context.Background(), metadata.Pairs(mnemosyne.AccessTokenMetadataKey, resLogin.AccessToken))
+			ctx = metadata.NewContext(context.Background(), metadata.Pairs(mnemosyne.AccessTokenMetadataKey, token.Value))
 		}
 
-		if _, err = c.SetUserPermissions(ctx, &charon.SetUserPermissionsRequest{
+		if _, err = c.user.SetPermissions(ctx, &charonrpc.SetUserPermissionsRequest{
 			UserId:      res.User.Id,
 			Permissions: config.register.permissions.Strings(),
 		}); err != nil {

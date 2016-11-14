@@ -1,7 +1,9 @@
 package charond
 
 import (
+	"github.com/golang/protobuf/ptypes/wrappers"
 	"github.com/piotrkowalczuk/charon"
+	"github.com/piotrkowalczuk/charon/charonrpc"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -11,7 +13,7 @@ type isGrantedHandler struct {
 	*handler
 }
 
-func (ig *isGrantedHandler) handle(ctx context.Context, req *charon.IsGrantedRequest) (*charon.IsGrantedResponse, error) {
+func (ig *isGrantedHandler) IsGranted(ctx context.Context, req *charonrpc.IsGrantedRequest) (*wrappers.BoolValue, error) {
 	ig.loggerWith("user_id", req.UserId, "permission", req.Permission)
 
 	if req.Permission == "" {
@@ -34,16 +36,16 @@ func (ig *isGrantedHandler) handle(ctx context.Context, req *charon.IsGrantedReq
 		return nil, err
 	}
 
-	return &charon.IsGrantedResponse{
-		Granted: granted,
+	return &wrappers.BoolValue{
+		Value: granted,
 	}, nil
 }
 
-func (ig *isGrantedHandler) firewall(req *charon.IsGrantedRequest, act *actor) error {
-	if act.user.id == req.UserId {
+func (ig *isGrantedHandler) firewall(req *charonrpc.IsGrantedRequest, act *actor) error {
+	if act.user.ID == req.UserId {
 		return nil
 	}
-	if act.user.isSuperuser {
+	if act.user.IsSuperuser {
 		return nil
 	}
 	if act.permissions.Contains(charon.UserPermissionCanCheckGrantingAsStranger) {

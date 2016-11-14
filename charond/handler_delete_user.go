@@ -3,7 +3,10 @@ package charond
 import (
 	"database/sql"
 
+	"github.com/golang/protobuf/ptypes/wrappers"
 	"github.com/piotrkowalczuk/charon"
+	"github.com/piotrkowalczuk/charon/charonrpc"
+	"github.com/piotrkowalczuk/charon/internal/model"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -13,18 +16,18 @@ type deleteUserHandler struct {
 	*handler
 }
 
-func (duh *deleteUserHandler) handle(ctx context.Context, req *charon.DeleteUserRequest) (*charon.DeleteUserResponse, error) {
+func (duh *deleteUserHandler) Delete(ctx context.Context, req *charonrpc.DeleteUserRequest) (*wrappers.BoolValue, error) {
 	duh.loggerWith("user_id", req.Id)
 
 	if req.Id <= 0 {
-		return nil, grpc.Errorf(codes.InvalidArgument, "user cannot be deleted, invalid id: %d", req.Id)
+		return nil, grpc.Errorf(codes.InvalidArgument, "user cannot be deleted, invalid ID: %d", req.Id)
 	}
 
 	act, err := duh.retrieveActor(ctx)
 	if err != nil {
 		return nil, err
 	}
-	ent, err := duh.repository.user.findOneByID(req.Id)
+	ent, err := duh.repository.user.FindOneByID(req.Id)
 	if err != nil {
 		return nil, err
 	}
@@ -32,7 +35,7 @@ func (duh *deleteUserHandler) handle(ctx context.Context, req *charon.DeleteUser
 		return nil, err
 	}
 
-	affected, err := duh.repository.user.deleteOneByID(req.Id)
+	affected, err := duh.repository.user.DeleteOneByID(req.Id)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, grpc.Errorf(codes.NotFound, "user does not exists")
@@ -40,24 +43,24 @@ func (duh *deleteUserHandler) handle(ctx context.Context, req *charon.DeleteUser
 		return nil, err
 	}
 
-	return &charon.DeleteUserResponse{
-		Affected: affected,
+	return &wrappers.BoolValue{
+		Value: affected > 0,
 	}, nil
 }
 
-func (duh *deleteUserHandler) firewall(req *charon.DeleteUserRequest, act *actor, ent *userEntity) error {
-	if act.user.id == ent.id {
+func (duh *deleteUserHandler) firewall(req *charonrpc.DeleteUserRequest, act *actor, ent *model.UserEntity) error {
+	if act.user.ID == ent.ID {
 		return grpc.Errorf(codes.PermissionDenied, "user is not permited to remove himself")
 	}
-	if act.user.isSuperuser {
+	if act.user.IsSuperuser {
 		return nil
 	}
-	if ent.isSuperuser {
+	if ent.IsSuperuser {
 		return grpc.Errorf(codes.PermissionDenied, "only superuser can remove other superuser")
 	}
-	if ent.isStaff {
+	if ent.IsStaff {
 		switch {
-		case act.user.id == ent.createdBy.Int64Or(0):
+		case act.user.ID == ent.CreatedBy.Int64Or(0):
 			if !act.permissions.Contains(charon.UserCanDeleteStaffAsOwner) {
 				return grpc.Errorf(codes.PermissionDenied, "staff user cannot be removed by owner, missing permission")
 			}
@@ -68,7 +71,7 @@ func (duh *deleteUserHandler) firewall(req *charon.DeleteUserRequest, act *actor
 		return nil
 	}
 
-	if act.user.id == ent.createdBy.Int64Or(0) {
+	if act.user.ID == ent.CreatedBy.Int64Or(0) {
 		if !act.permissions.Contains(charon.UserCanDeleteAsOwner) {
 			return grpc.Errorf(codes.PermissionDenied, "user cannot be removed by owner, missing permission")
 		}

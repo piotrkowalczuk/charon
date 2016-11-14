@@ -13,6 +13,8 @@ import (
 	"github.com/go-kit/kit/log"
 	"github.com/go-ldap/ldap"
 	"github.com/piotrkowalczuk/charon"
+	"github.com/piotrkowalczuk/charon/charonrpc"
+	"github.com/piotrkowalczuk/charon/internal/password"
 	"github.com/piotrkowalczuk/mnemosyne/mnemosynerpc"
 	"github.com/piotrkowalczuk/sklog"
 	"github.com/prometheus/client_golang/prometheus"
@@ -24,22 +26,23 @@ import (
 
 // DaemonOpts ...
 type DaemonOpts struct {
-	Test                  bool
-	Monitoring            bool
-	TLS                   bool
-	TLSCertFile           string
-	TLSKeyFile            string
-	PostgresAddress       string
-	PostgresDebug         bool
-	PasswordBCryptCost    int
-	MnemosyneAddress      string
-	LDAP                  bool
-	LDAPAddress           string
-	LDAPDistinguishedName string
-	LDAPPassword          string
-	Logger                log.Logger
-	RPCListener           net.Listener
-	DebugListener         net.Listener
+	Test               bool
+	Monitoring         bool
+	TLS                bool
+	TLSCertFile        string
+	TLSKeyFile         string
+	PostgresAddress    string
+	PostgresDebug      bool
+	PasswordBCryptCost int
+	MnemosyneAddress   string
+	LDAP               bool
+	LDAPAddress        string
+	LDAPBaseDN         string
+	LDAPSearchDN       string
+	LDAPBasePassword   string
+	Logger             log.Logger
+	RPCListener        net.Listener
+	DebugListener      net.Listener
 }
 
 // TestDaemonOpts represent set of options that can be passed to the TestDaemon constructor.
@@ -53,6 +56,7 @@ type Daemon struct {
 	opts          DaemonOpts
 	monitor       *monitoring
 	ldap          *ldap.Conn
+	ldapAddress   string
 	logger        log.Logger
 	rpcListener   net.Listener
 	debugListener net.Listener
@@ -113,13 +117,13 @@ func (d *Daemon) Run() (err error) {
 
 	d.mnemosyne, d.mnemosyneConn = initMnemosyne(d.opts.MnemosyneAddress, d.logger)
 
-	var passwordHasher charon.PasswordHasher
+	var passwordHasher password.Hasher
 	if d.opts.LDAP {
-		if d.ldap, err = initLDAP(d.opts.LDAPAddress, d.opts.LDAPDistinguishedName, d.opts.LDAPPassword, d.logger); err != nil {
+		if d.ldap, d.ldapAddress, err = initLDAP(d.opts.LDAPAddress, d.opts.LDAPBaseDN, d.opts.LDAPBasePassword, d.logger); err != nil {
 			return
 		}
 	} else {
-		passwordHasher = initPasswordHasher(d.opts.PasswordBCryptCost, d.logger)
+		passwordHasher = initHasher(d.opts.PasswordBCryptCost, d.logger)
 		if d.opts.Test {
 			if _, err = createDummyTestUser(repos.user, passwordHasher); err != nil {
 				return
@@ -141,7 +145,7 @@ func (d *Daemon) Run() (err error) {
 
 	grpclog.SetLogger(sklog.NewGRPCLogger(d.logger))
 	gRPCServer := grpc.NewServer(opts...)
-	charonServer := &rpcServer{
+	server := &rpcServer{
 		opts:               d.opts,
 		logger:             d.logger,
 		session:            d.mnemosyne,
@@ -149,8 +153,12 @@ func (d *Daemon) Run() (err error) {
 		permissionRegistry: permissionReg,
 		repository:         repos,
 		ldap:               d.ldap,
+		ldapAddress:        d.ldapAddress,
 	}
-	charon.RegisterRPCServer(gRPCServer, charonServer)
+	charonrpc.RegisterAuthServer(gRPCServer, newAuth(server))
+	charonrpc.RegisterUserManagerServer(gRPCServer, newUserManager(server))
+	charonrpc.RegisterGroupManagerServer(gRPCServer, newGroupManager(server))
+	charonrpc.RegisterPermissionManagerServer(gRPCServer, newPermissionManager(server))
 
 	go func() {
 		sklog.Info(d.logger, "rpc server is running", "address", d.rpcListener.Addr().String())

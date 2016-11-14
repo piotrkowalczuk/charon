@@ -4,17 +4,19 @@ import (
 	"testing"
 
 	"github.com/piotrkowalczuk/charon"
+	"github.com/piotrkowalczuk/charon/charonrpc"
+	"github.com/piotrkowalczuk/charon/internal/model"
 )
 
 func TestSetUserPermissionsHandler_firewall_success(t *testing.T) {
 	data := []struct {
-		req charon.SetUserPermissionsRequest
+		req charonrpc.SetUserPermissionsRequest
 		act actor
 	}{
 		{
-			req: charon.SetUserPermissionsRequest{},
+			req: charonrpc.SetUserPermissionsRequest{},
 			act: actor{
-				user: &userEntity{id: 1},
+				user: &model.UserEntity{ID: 1},
 				permissions: charon.Permissions{
 					charon.UserPermissionCanDelete,
 					charon.UserPermissionCanCreate,
@@ -22,9 +24,9 @@ func TestSetUserPermissionsHandler_firewall_success(t *testing.T) {
 			},
 		},
 		{
-			req: charon.SetUserPermissionsRequest{},
+			req: charonrpc.SetUserPermissionsRequest{},
 			act: actor{
-				user: &userEntity{id: 2, isSuperuser: true},
+				user: &model.UserEntity{ID: 2, IsSuperuser: true},
 			},
 		},
 	}
@@ -39,37 +41,37 @@ func TestSetUserPermissionsHandler_firewall_success(t *testing.T) {
 
 func TestSetUserPermissionsHandler_firewall_failure(t *testing.T) {
 	data := []struct {
-		req charon.SetUserPermissionsRequest
+		req charonrpc.SetUserPermissionsRequest
 		act actor
 	}{
 		{
-			req: charon.SetUserPermissionsRequest{},
+			req: charonrpc.SetUserPermissionsRequest{},
 			act: actor{
-				user: &userEntity{id: 1},
+				user: &model.UserEntity{ID: 1},
 			},
 		},
 		{
-			req: charon.SetUserPermissionsRequest{},
+			req: charonrpc.SetUserPermissionsRequest{},
 			act: actor{
-				user: &userEntity{
-					id:      2,
-					isStaff: true,
+				user: &model.UserEntity{
+					ID:      2,
+					IsStaff: true,
 				},
 			},
 		},
 		{
-			req: charon.SetUserPermissionsRequest{},
+			req: charonrpc.SetUserPermissionsRequest{},
 			act: actor{
-				user: &userEntity{id: 1},
+				user: &model.UserEntity{ID: 1},
 				permissions: charon.Permissions{
 					charon.UserPermissionCanDelete,
 				},
 			},
 		},
 		{
-			req: charon.SetUserPermissionsRequest{},
+			req: charonrpc.SetUserPermissionsRequest{},
 			act: actor{
-				user: &userEntity{id: 1},
+				user: &model.UserEntity{ID: 1},
 				permissions: charon.Permissions{
 					charon.UserPermissionCanCreate,
 				},

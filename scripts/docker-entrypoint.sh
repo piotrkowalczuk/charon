@@ -33,8 +33,9 @@ exec charond \
 	-tls.keyfile=$CHAROND_TLS_KEY_FILE \
 	-ldap=$CHAROND_LDAP_ENABLED \
 	-ldap.address=$CHAROND_LDAP_ADDRESS \
-	-ldap.dn=$CHAROND_LDAP_DN \
-	-ldap.password=$CHAROND_LDAP_PASSWORD
+	-ldap.base.dn=$CHAROND_LDAP_BASE_DN \
+	-ldap.base.password=$CHAROND_LDAP_BASE_PASSWORD \
+	-ldap.search=$CHAROND_LDAP_SEARCH
 fi
 
 : ${CHARONCTL_CHAROND_HOST:=charond}

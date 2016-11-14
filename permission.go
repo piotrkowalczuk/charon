@@ -53,8 +53,6 @@ const (
 )
 
 var (
-	// EmptyPermission is a shorthand
-	EmptyPermission = Permission("")
 	// AllPermissions ...
 	AllPermissions = Permissions{
 		UserCanCreate,

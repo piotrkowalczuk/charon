@@ -4,26 +4,29 @@ import (
 	"testing"
 
 	"github.com/piotrkowalczuk/charon"
+	"github.com/piotrkowalczuk/charon/charonrpc"
+	"github.com/piotrkowalczuk/charon/internal/model"
 )
 
 func TestListUserPermissionsHandler_firewall_success(t *testing.T) {
 	data := []struct {
-		req charon.ListUserPermissionsRequest
+		req charonrpc.ListUserPermissionsRequest
 		act actor
 	}{
 		{
-			req: charon.ListUserPermissionsRequest{},
+			req: charonrpc.ListUserPermissionsRequest{},
 			act: actor{
-				user: &userEntity{id: 1},
+				user: &model.UserEntity{ID: 1},
+
 				permissions: charon.Permissions{
 					charon.UserPermissionCanRetrieve,
 				},
 			},
 		},
 		{
-			req: charon.ListUserPermissionsRequest{},
+			req: charonrpc.ListUserPermissionsRequest{},
 			act: actor{
-				user: &userEntity{id: 2, isSuperuser: true},
+				user: &model.UserEntity{ID: 2, IsSuperuser: true},
 			},
 		},
 	}
@@ -38,28 +41,28 @@ func TestListUserPermissionsHandler_firewall_success(t *testing.T) {
 
 func TestListUserPermissionsHandler_firewall_failure(t *testing.T) {
 	data := []struct {
-		req charon.ListUserPermissionsRequest
+		req charonrpc.ListUserPermissionsRequest
 		act actor
 	}{
 		{
-			req: charon.ListUserPermissionsRequest{},
+			req: charonrpc.ListUserPermissionsRequest{},
 			act: actor{
-				user: &userEntity{id: 1},
+				user: &model.UserEntity{ID: 1},
 			},
 		},
 		{
-			req: charon.ListUserPermissionsRequest{},
+			req: charonrpc.ListUserPermissionsRequest{},
 			act: actor{
-				user: &userEntity{
-					id:      2,
-					isStaff: true,
+				user: &model.UserEntity{
+					ID:      2,
+					IsStaff: true,
 				},
 			},
 		},
 		{
-			req: charon.ListUserPermissionsRequest{},
+			req: charonrpc.ListUserPermissionsRequest{},
 			act: actor{
-				user: &userEntity{},
+				user: &model.UserEntity{},
 				permissions: charon.Permissions{
 					charon.PermissionCanRetrieve,
 					charon.GroupPermissionCanRetrieve,

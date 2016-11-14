@@ -1,8 +1,8 @@
 hash: 537282131e2a4f8f7a6f8e889aa7fbe51791e1743284e586f9257038baf42695
-updated: 2016-11-04T13:29:09.076675558+01:00
+updated: 2016-11-14T20:35:31.815773778+01:00
 imports:
 - name: github.com/beorn7/perks
-  version: b965b613227fddccbfffe13eae360ed3fa822f8d
+  version: 4c0e84591b9aa9e6dcfdf3e020114cd81f89d5f9
   subpackages:
   - quantile
 - name: github.com/davecgh/go-spew
@@ -32,16 +32,17 @@ imports:
   - ptypes/duration
   - ptypes/empty
   - ptypes/timestamp
+  - ptypes/wrappers
 - name: github.com/huandu/xstrings
   version: 3959339b333561bf62a38b424fd41517c2c90f40
 - name: github.com/kr/logfmt
   version: b84e30acd515aadc4b783ad4ff83aff3299bdfe0
 - name: github.com/lib/pq
-  version: ae8357db35d721c58dcdc911318b55bef6b1b001
+  version: d8eeeb8bae8896dd8e1b7e514ab0d396c4f12a1b
   subpackages:
   - oid
 - name: github.com/matttproud/golang_protobuf_extensions
-  version: fc2b8d3a73c4867e51861bbdd5ae3c1f0869dd6a
+  version: c12348ce28de40eed0136aa2b644d0ee0650e56c
   subpackages:
   - pbutil
 - name: github.com/pborman/uuid
@@ -59,7 +60,7 @@ imports:
 - name: github.com/piotrkowalczuk/pqcomp
   version: 631b19c36ded8bbe954cf8c15a0044c591033536
 - name: github.com/piotrkowalczuk/pqt
-  version: 2f441d43bf14359cc751fc7997a517dac8a71436
+  version: 9de5350e4bb094360cf7b33a83964db05881f891
   subpackages:
   - pqtgo
   - pqtsql
@@ -80,7 +81,7 @@ imports:
   subpackages:
   - go
 - name: github.com/prometheus/common
-  version: 85637ea67b04b5c3bb25e671dacded2977f8f9f6
+  version: f36a8da2241e626287bf1adfa7bc2f66bbc6770b
   subpackages:
   - expfmt
   - internal/bitbucket.org/ww/goautoneg
@@ -95,7 +96,7 @@ imports:
   - assert
   - mock
 - name: golang.org/x/crypto
-  version: 5f4e837b98443e9e7a65072235205993af565d85
+  version: 9477e0b78b9ac3d0b03822fd95422e2fe07627cd
   subpackages:
   - bcrypt
   - blowfish
@@ -139,13 +140,13 @@ imports:
   version: 4e86f4367175e39f69d9358a5f17b4dda270378d
 testImports:
 - name: github.com/gopherjs/gopherjs
-  version: be543c9733215e9146ce12ee932d0a52ee9b82e5
+  version: e34a5cd6a1bc7c4fde759f2d3039852fc68b5fcc
   subpackages:
   - js
 - name: github.com/jtolds/gls
   version: 8ddce2a84170772b95dd5d576c48d517b22cac63
 - name: github.com/smartystreets/assertions
-  version: 2063fd1cc7c975db70502811a34b06ad034ccdf2
+  version: cc1e98f7d3caee8feedb0468525b80a59556d6e5
   subpackages:
   - internal/go-render/render
   - internal/oglematchers

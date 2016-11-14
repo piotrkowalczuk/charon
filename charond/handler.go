@@ -8,6 +8,8 @@ import (
 	"github.com/go-kit/kit/log"
 	"github.com/go-ldap/ldap"
 	"github.com/piotrkowalczuk/charon"
+	"github.com/piotrkowalczuk/charon/internal/model"
+	"github.com/piotrkowalczuk/charon/internal/session"
 	"github.com/piotrkowalczuk/mnemosyne/mnemosynerpc"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
@@ -16,21 +18,22 @@ import (
 )
 
 type handler struct {
-	opts       DaemonOpts
-	logger     log.Logger
-	monitor    monitoringRPC
-	session    mnemosynerpc.SessionManagerClient
-	repository repositories
-	ldap       *ldap.Conn
+	opts        DaemonOpts
+	logger      log.Logger
+	repository  repositories
+	session     mnemosynerpc.SessionManagerClient
+	monitor     monitoringRPC
+	ldap        *ldap.Conn
+	ldapAddress string
 }
 
-func newHandler(rs *rpcServer, ctx context.Context, endpoint string) *handler {
+func newHandler(rs *rpcServer) *handler {
 	h := &handler{
-		opts:       rs.opts,
-		logger:     rs.loggerBackground(ctx, "endpoint", endpoint),
-		session:    rs.session,
-		repository: rs.repository,
-		ldap:       rs.ldap,
+		opts:        rs.opts,
+		session:     rs.session,
+		repository:  rs.repository,
+		ldap:        rs.ldap,
+		ldapAddress: rs.ldapAddress,
 	}
 
 	return h
@@ -51,7 +54,7 @@ func (h *handler) loggerWith(keyval ...interface{}) {
 func (h *handler) retrieveActor(ctx context.Context) (act *actor, err error) {
 	var (
 		userID   int64
-		entities []*permissionEntity
+		entities []*model.PermissionEntity
 		res      *mnemosynerpc.ContextResponse
 	)
 
@@ -61,7 +64,7 @@ func (h *handler) retrieveActor(ctx context.Context) (act *actor, err error) {
 		if peer, ok := peer.FromContext(ctx); ok {
 			if strings.HasPrefix(peer.Addr.String(), "127.0.0.1") {
 				return &actor{
-					user:    &userEntity{},
+					user:    &model.UserEntity{},
 					isLocal: true,
 				}, nil
 			}
@@ -69,17 +72,17 @@ func (h *handler) retrieveActor(ctx context.Context) (act *actor, err error) {
 		err = handleMnemosyneError(err)
 		return
 	}
-	userID, err = charon.SubjectID(res.Session.SubjectId).UserID()
+	userID, err = session.ActorID(res.Session.SubjectId).UserID()
 	if err != nil {
 		return
 	}
 
 	act = &actor{}
-	act.user, err = h.repository.user.findOneByID(userID)
+	act.user, err = h.repository.user.FindOneByID(userID)
 	if err != nil {
 		return
 	}
-	entities, err = h.repository.permission.findByUserID(userID)
+	entities, err = h.repository.permission.FindByUserID(userID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return act, nil

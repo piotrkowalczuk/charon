@@ -2,41 +2,42 @@ package charontest
 
 import (
 	"github.com/piotrkowalczuk/charon"
+	"github.com/piotrkowalczuk/charon/charonc"
 	"github.com/stretchr/testify/mock"
 	"golang.org/x/net/context"
 )
 
-type Charon struct {
+type Client struct {
 	mock.Mock
 }
 
-func (c *Charon) IsGranted(ctx context.Context, userID int64, perm charon.Permission) (bool, error) {
+func (c *Client) IsGranted(ctx context.Context, userID int64, perm charon.Permission) (bool, error) {
 	a := c.Called(ctx, userID, perm)
 
 	return a.Bool(0), a.Error(1)
 }
 
-// IsAuthenticated implements Charon interface.
-func (c *Charon) IsAuthenticated(ctx context.Context, token string) (bool, error) {
+// IsAuthenticated implements Client interface.
+func (c *Client) IsAuthenticated(ctx context.Context, token string) (bool, error) {
 	a := c.Called(ctx, token)
 
 	return a.Bool(0), a.Error(1)
 }
 
-// Subject implements Charon interface.
-func (c *Charon) Subject(ctx context.Context, token string) (*charon.Subject, error) {
+// Actor implements Client interface.
+func (c *Client) Actor(ctx context.Context, token string) (*charonc.Actor, error) {
 	a := c.Called(ctx, token)
 
-	subj, err := a.Get(0), a.Error(1)
+	act, err := a.Get(0), a.Error(1)
 	if err != nil {
 		return nil, err
 	}
 
-	return subj.(*charon.Subject), nil
+	return act.(*charonc.Actor), nil
 }
 
-// Context implements Charon interface.
-func (c *Charon) FromContext(ctx context.Context) (*charon.Subject, error) {
+// Context implements Client interface.
+func (c *Client) FromContext(ctx context.Context) (*charonc.Actor, error) {
 	a := c.Called(ctx)
 
 	subj, err := a.Get(0), a.Error(1)
@@ -44,11 +45,11 @@ func (c *Charon) FromContext(ctx context.Context) (*charon.Subject, error) {
 		return nil, err
 	}
 
-	return subj.(*charon.Subject), nil
+	return subj.(*charonc.Actor), nil
 }
 
-// Login implements Charon interface.
-func (c *Charon) Login(ctx context.Context, username, password string) (string, error) {
+// Login implements Client interface.
+func (c *Client) Login(ctx context.Context, username, password string) (string, error) {
 	a := c.Called(ctx, username, password)
 
 	ses, err := a.Get(0), a.Error(1)
@@ -59,8 +60,8 @@ func (c *Charon) Login(ctx context.Context, username, password string) (string, 
 	return ses.(string), nil
 }
 
-// Logout implements Charon interface.
-func (c *Charon) Logout(ctx context.Context, token string) error {
+// Logout implements Client interface.
+func (c *Client) Logout(ctx context.Context, token string) error {
 	a := c.Called(ctx, token)
 
 	return a.Error(0)
