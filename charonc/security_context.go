@@ -17,8 +17,8 @@ const (
 type SecurityContext interface {
 	context.Context
 	oauth2.TokenSource
-	// Subject ...
-	Subject() (Actor, bool)
+	// Actor ...
+	Actor() (Actor, bool)
 	// AccessToken ...
 	AccessToken() (string, bool)
 }
@@ -32,8 +32,8 @@ func NewSecurityContext(ctx context.Context) SecurityContext {
 	return &securityContext{Context: ctx}
 }
 
-// Subject implements SecurityContext interface.
-func (sc *securityContext) Subject() (Actor, bool) {
+// Actor implements SecurityContext interface.
+func (sc *securityContext) Actor() (Actor, bool) {
 	return ActorFromContext(sc)
 }
 

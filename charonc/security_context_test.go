@@ -22,7 +22,7 @@ func ExampleSecurityContext() {
 
 	var (
 		t   *oauth2.Token
-		s   Actor
+		act Actor
 		err error
 		ok  bool
 	)
@@ -31,9 +31,9 @@ func ExampleSecurityContext() {
 	} else {
 		fmt.Println(t.AccessToken)
 	}
-	if s, ok = sctx.Subject(); ok {
-		fmt.Println(s.ID)
-		fmt.Println(s.Username)
+	if act, ok = sctx.Actor(); ok {
+		fmt.Println(act.ID)
+		fmt.Println(act.Username)
 	}
 
 	// Output:
@@ -50,25 +50,25 @@ func TestNewSecurityContext(t *testing.T) {
 	}
 }
 
-func TestSecurityContext_Subject(t *testing.T) {
-	expectedSubject := Actor{ID: 1}
-	ctx := NewActorContext(context.Background(), expectedSubject)
+func TestSecurityContext_Actor(t *testing.T) {
+	expectedActor := Actor{ID: 1}
+	ctx := NewActorContext(context.Background(), expectedActor)
 	sctx := NewSecurityContext(ctx)
 
-	subject, ok := sctx.Subject()
+	act, ok := sctx.Actor()
 	if ok {
-		if !reflect.DeepEqual(subject, expectedSubject) {
+		if !reflect.DeepEqual(act, expectedActor) {
 			t.Error("provided and retrieved subject should be the same")
 		}
 	} else {
-		t.Error("subject should be able retrieved")
+		t.Error("actor should be able retrieved")
 	}
 }
 
-func TestSecurityContext_Subject_empty(t *testing.T) {
+func TestSecurityContext_Actor_empty(t *testing.T) {
 	sctx := NewSecurityContext(context.Background())
 
-	_, ok := sctx.Subject()
+	_, ok := sctx.Actor()
 	if ok {
 		t.Error("subject should not be there")
 	}

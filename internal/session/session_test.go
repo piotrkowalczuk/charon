@@ -6,7 +6,7 @@ import (
 	"github.com/piotrkowalczuk/charon/internal/session"
 )
 
-func TestUserIDFromSessionSubjectID(t *testing.T) {
+func TestUserIDFromSessionActorID(t *testing.T) {
 	success := map[string]int64{
 		"charon:user:1":              1,
 		"charon:user:0":              0,
