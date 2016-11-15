@@ -28,6 +28,9 @@ type configuration struct {
 		active      bool
 		permissions charon.Permissions
 	}
+	fixtures struct {
+		path string
+	}
 }
 
 func (c *configuration) init() {
@@ -54,6 +57,9 @@ func (c *configuration) init() {
 	c.cl.BoolVar(&c.register.confirmed, "register.confirmed", false, "is user account confirmed")
 	c.cl.BoolVar(&c.register.staff, "register.staff", false, "is user part of the staff")
 	c.cl.BoolVar(&c.register.active, "register.active", false, "is user account active")
+	// fixtures
+	c.cl.StringVar(&c.fixtures.path, "fixtures.path", "", "path to the fixtures path")
+
 }
 
 func (c *configuration) parse() {

@@ -11,6 +11,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
+	"gopkg.in/square/go-jose.v1/json"
 )
 
 var config configuration
@@ -27,6 +28,11 @@ func main() {
 		config.cl.Usage()
 	case "register":
 		registerUser(config)
+	case "load":
+		if err := load(config); err != nil {
+			fmt.Printf("fixtures import failure: %s\n", grpc.ErrorDesc(err))
+			os.Exit(1)
+		}
 	default:
 		fmt.Printf("unknown command %s\n", config.cmd())
 	}
@@ -83,4 +89,51 @@ func registerUser(config configuration) {
 
 		fmt.Println("users permissions has been set")
 	}
+}
+
+type fixtures struct {
+	Groups []struct {
+		Name        string   `json:"name"`
+		Description string   `json:"description"`
+		Permissions []string `json:"permissions"`
+	} `json:"groups"`
+}
+
+func load(config configuration) error {
+	c, ctx := initClient(config.address)
+
+	file, err := os.Open(config.fixtures.path)
+	if err != nil {
+		return err
+	}
+
+	fix := fixtures{}
+	if err = json.NewDecoder(file).Decode(&fix); err != nil {
+		return err
+	}
+
+	for _, group := range fix.Groups {
+		res, err := c.group.Create(ctx, &charonrpc.CreateGroupRequest{
+			Name:        group.Name,
+			Description: &ntypes.String{String: group.Description, Valid: len(group.Description) > 0},
+		})
+		if err != nil {
+			if grpc.Code(err) == codes.AlreadyExists {
+				fmt.Printf("group (%s) already exists\n", group.Name)
+				continue
+			}
+			return fmt.Errorf("group (%s) creation failure: %s", group.Name, err.Error())
+		}
+		fmt.Printf("group (%s) has been created: %d\n", group.Name, res.Group.Id)
+
+		_, err = c.group.SetPermissions(ctx, &charonrpc.SetGroupPermissionsRequest{
+			GroupId:     res.Group.Id,
+			Permissions: group.Permissions,
+		})
+		if err != nil {
+			return fmt.Errorf("group (%s - %d) permission set failure: %s", group.Name, res.Group.Id, err.Error())
+		}
+		fmt.Println("group permissions has been set")
+	}
+	return nil
 }
