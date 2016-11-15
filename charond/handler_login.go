@@ -2,10 +2,9 @@ package charond
 
 import (
 	"bytes"
+	"database/sql"
 	"fmt"
 	"strings"
-
-	"database/sql"
 
 	"github.com/go-kit/kit/log"
 	"github.com/go-ldap/ldap"
