@@ -218,8 +218,8 @@ func (gr *GroupRepository) IsGranted(id int64, p charon.Permission) (bool, error
 // SetPermissions ...
 func (gr *GroupRepository) SetPermissions(id int64, p ...charon.Permission) (int64, int64, error) {
 	return setPermissions(gr.db, TableGroupPermissions,
-		TableUserPermissionsColumnUserID,
-		TableUserPermissionsColumnPermissionSubsystem,
-		TableUserPermissionsColumnPermissionModule,
-		TableUserPermissionsColumnPermissionAction, id, p)
+		TableGroupPermissionsColumnGroupID,
+		TableGroupPermissionsColumnPermissionSubsystem,
+		TableGroupPermissionsColumnPermissionModule,
+		TableGroupPermissionsColumnPermissionAction, id, p)
 }
