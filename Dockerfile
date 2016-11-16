@@ -15,7 +15,9 @@ LABEL org.label-schema.build-date=$BUILD_DATE \
 
 COPY ./bin /usr/local/bin/
 COPY ./scripts/docker-entrypoint.sh /
+RUN mkdir /data && echo '[]' > /data/ldap.json
 
+VOLUME /data
 EXPOSE 8080
 
 ENTRYPOINT ["/docker-entrypoint.sh"]

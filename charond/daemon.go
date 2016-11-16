@@ -10,10 +10,13 @@ import (
 	"os"
 	"testing"
 
+	"sync"
+
 	"github.com/go-kit/kit/log"
-	"github.com/go-ldap/ldap"
+	libldap "github.com/go-ldap/ldap"
 	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/charon/charonrpc"
+	"github.com/piotrkowalczuk/charon/internal/ldap"
 	"github.com/piotrkowalczuk/charon/internal/password"
 	"github.com/piotrkowalczuk/mnemosyne/mnemosynerpc"
 	"github.com/piotrkowalczuk/sklog"
@@ -40,6 +43,7 @@ type DaemonOpts struct {
 	LDAPBaseDN         string
 	LDAPSearchDN       string
 	LDAPBasePassword   string
+	LDAPMappings       ldap.Mappings
 	Logger             log.Logger
 	RPCListener        net.Listener
 	DebugListener      net.Listener
@@ -55,8 +59,7 @@ type TestDaemonOpts struct {
 type Daemon struct {
 	opts          DaemonOpts
 	monitor       *monitoring
-	ldap          *ldap.Conn
-	ldapAddress   string
+	ldap          *libldap.Conn
 	logger        log.Logger
 	rpcListener   net.Listener
 	debugListener net.Listener
@@ -119,17 +122,19 @@ func (d *Daemon) Run() (err error) {
 
 	var passwordHasher password.Hasher
 	if d.opts.LDAP {
-		if d.ldap, d.ldapAddress, err = initLDAP(d.opts.LDAPAddress, d.opts.LDAPBaseDN, d.opts.LDAPBasePassword, d.logger); err != nil {
+		// open connection to check if it is reachable
+		if d.ldap, err = initLDAP(d.opts.LDAPAddress, d.opts.LDAPBaseDN, d.opts.LDAPBasePassword, d.logger); err != nil {
 			return
 		}
-	} else {
-		passwordHasher = initHasher(d.opts.PasswordBCryptCost, d.logger)
-		if d.opts.Test {
-			if _, err = createDummyTestUser(repos.user, passwordHasher); err != nil {
-				return
-			}
-			sklog.Info(d.logger, "test super user has been created")
+		d.ldap.Close()
+	}
+
+	passwordHasher = initHasher(d.opts.PasswordBCryptCost, d.logger)
+	if d.opts.Test {
+		if _, err = createDummyTestUser(repos.user, passwordHasher); err != nil {
+			return
 		}
+		sklog.Info(d.logger, "test super user has been created")
 	}
 
 	permissionReg := initPermissionRegistry(repos.permission, charon.AllPermissions, d.logger)
@@ -152,8 +157,15 @@ func (d *Daemon) Run() (err error) {
 		passwordHasher:     passwordHasher,
 		permissionRegistry: permissionReg,
 		repository:         repos,
-		ldap:               d.ldap,
-		ldapAddress:        d.ldapAddress,
+		ldap: &sync.Pool{
+			New: func() interface{} {
+				conn, err := initLDAP(d.opts.LDAPAddress, d.opts.LDAPBaseDN, d.opts.LDAPBasePassword, d.logger)
+				if err != nil {
+					return err
+				}
+				return conn
+			},
+		},
 	}
 	charonrpc.RegisterAuthServer(gRPCServer, newAuth(server))
 	charonrpc.RegisterUserManagerServer(gRPCServer, newUserManager(server))

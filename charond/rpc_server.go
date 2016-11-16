@@ -1,8 +1,9 @@
 package charond
 
 import (
+	"sync"
+
 	"github.com/go-kit/kit/log"
-	"github.com/go-ldap/ldap"
 	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/charon/internal/model"
 	"github.com/piotrkowalczuk/charon/internal/password"
@@ -16,8 +17,7 @@ type rpcServer struct {
 	opts               DaemonOpts
 	meta               metadata.MD
 	logger             log.Logger
-	ldap               *ldap.Conn
-	ldapAddress        string
+	ldap               *sync.Pool
 	monitor            monitoring
 	session            mnemosynerpc.SessionManagerClient
 	passwordHasher     password.Hasher

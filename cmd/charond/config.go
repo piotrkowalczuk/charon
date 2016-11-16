@@ -45,6 +45,7 @@ type configuration struct {
 		base    struct {
 			dn, password string
 		}
+		mappings string
 	}
 }
 
@@ -63,16 +64,20 @@ func (c *configuration) init() {
 	flag.StringVar(&c.password.strategy, "password.strategy", "bcrypt", "strategy how password will be stored")
 	flag.IntVar(&c.password.bcrypt.cost, "password.bcryptcost", 10, "bcrypt cost, bigget than safer (and longer to create)")
 	flag.BoolVar(&c.monitoring.enabled, "monitoring", false, "toggle application monitoring")
+	// POSTGRES
 	flag.StringVar(&c.postgres.address, "postgres.address", "postgres://postgres:postgres@postgres/postgres?sslmode=disable", "postgres connection string")
 	flag.BoolVar(&c.postgres.debug, "postgres.debug", false, "if true database queries are logged")
+	// TLS
 	flag.BoolVar(&c.tls.enabled, "tls", false, "tls enable flag")
 	flag.StringVar(&c.tls.certFile, "tls.certfile", "", "path to tls cert file")
 	flag.StringVar(&c.tls.keyFile, "tls.keyfile", "", "path to tls key file")
+	// LDAP
 	flag.BoolVar(&c.ldap.enabled, "ldap", false, "ldap enable flag")
 	flag.StringVar(&c.ldap.address, "ldap.address", "", "ldap server address")
 	flag.StringVar(&c.ldap.base.dn, "ldap.base.dn", "", "ldap base distinguished name")
 	flag.StringVar(&c.ldap.base.password, "ldap.base.password", "", "ldap password")
 	flag.StringVar(&c.ldap.search, "ldap.search", "", "ldap search distinguished name")
+	flag.StringVar(&c.ldap.mappings, "ldap.mappings", "", "path to the ldap mappings")
 }
 
 func (c *configuration) parse() {

@@ -153,7 +153,7 @@ func initPrometheus(namespace string, enabled bool, constLabels prometheus.Label
 	}
 }
 
-func initLDAP(address, baseDN, password string, logger log.Logger) (*ldap.Conn, string, error) {
+func initLDAP(address, baseDN, password string, logger log.Logger) (*ldap.Conn, error) {
 	init := func(addr string) (*ldap.Conn, error) {
 		conn, err := ldap.Dial("tcp", addr)
 		if err != nil {
@@ -172,11 +172,10 @@ func initLDAP(address, baseDN, password string, logger log.Logger) (*ldap.Conn, 
 	}
 	_, addresses, err := net.LookupSRV("ldap", "tcp", address)
 	if err != nil {
-		return nil, "", fmt.Errorf("ldap srv record lookup failure: %s", err.Error())
+		return nil, fmt.Errorf("ldap srv record lookup failure: %s", err.Error())
 	}
 	if len(addresses) == 0 {
-		conn, err := init(address)
-		return conn, address, err
+		return init(address)
 	}
 
 	for _, addr := range addresses {
@@ -186,8 +185,8 @@ func initLDAP(address, baseDN, password string, logger log.Logger) (*ldap.Conn, 
 			sklog.Error(logger, err, "target", addr.Target, "port", addr.Port, "ldap_base_dn", baseDN)
 			continue
 		}
-		return c, addressFound, nil
+		return c, nil
 	}
 
-	return nil, "", errors.New("ldap connection failed to a single server")
+	return nil, errors.New("ldap connection failed to a single server")
 }

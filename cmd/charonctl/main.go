@@ -6,12 +6,9 @@ import (
 	"os"
 
 	"github.com/piotrkowalczuk/charon/charonrpc"
-	"github.com/piotrkowalczuk/mnemosyne"
 	"github.com/piotrkowalczuk/ntypes"
-	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/metadata"
 )
 
 var config configuration
@@ -67,16 +64,8 @@ func registerUser(config configuration) {
 
 	if len(config.register.permissions) > 0 {
 		if config.register.superuser {
-			token, err := c.auth.Login(ctx, &charonrpc.LoginRequest{
-				Username: config.register.username,
-				Password: config.register.password,
-				Client:   "charonctl",
-			})
-			if err != nil {
-				fmt.Printf("(superuser) login failure: %s\n", grpc.ErrorDesc(err))
-				os.Exit(1)
-			}
-			ctx = metadata.NewContext(context.Background(), metadata.Pairs(mnemosyne.AccessTokenMetadataKey, token.Value))
+			// superuser does not need permissions
+			os.Exit(0)
 		}
 
 		if _, err = c.user.SetPermissions(ctx, &charonrpc.SetUserPermissionsRequest{

@@ -5,8 +5,9 @@ import (
 
 	"database/sql"
 
+	"sync"
+
 	"github.com/go-kit/kit/log"
-	"github.com/go-ldap/ldap"
 	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/charon/internal/model"
 	"github.com/piotrkowalczuk/charon/internal/session"
@@ -18,22 +19,20 @@ import (
 )
 
 type handler struct {
-	opts        DaemonOpts
-	logger      log.Logger
-	repository  repositories
-	session     mnemosynerpc.SessionManagerClient
-	monitor     monitoringRPC
-	ldap        *ldap.Conn
-	ldapAddress string
+	opts       DaemonOpts
+	logger     log.Logger
+	repository repositories
+	session    mnemosynerpc.SessionManagerClient
+	monitor    monitoringRPC
+	ldap       *sync.Pool
 }
 
 func newHandler(rs *rpcServer) *handler {
 	h := &handler{
-		opts:        rs.opts,
-		session:     rs.session,
-		repository:  rs.repository,
-		ldap:        rs.ldap,
-		ldapAddress: rs.ldapAddress,
+		opts:       rs.opts,
+		session:    rs.session,
+		repository: rs.repository,
+		ldap:       rs.ldap,
 	}
 
 	return h

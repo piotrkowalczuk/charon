@@ -15,7 +15,7 @@ func newAuth(server *rpcServer) *auth {
 		belongsToHandler:       &belongsToHandler{handler: newHandler(server)},
 		isGrantedHandler:       &isGrantedHandler{handler: newHandler(server)},
 		isAuthenticatedHandler: &isAuthenticatedHandler{handler: newHandler(server)},
-		loginHandler:           &loginHandler{handler: newHandler(server), hasher: server.passwordHasher},
+		loginHandler:           &loginHandler{handler: newHandler(server), hasher: server.passwordHasher, mappings: server.opts.LDAPMappings},
 		logoutHandler:          &logoutHandler{handler: newHandler(server)},
 	}
 }
