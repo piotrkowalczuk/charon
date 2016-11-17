@@ -1,5 +1,5 @@
 hash: 537282131e2a4f8f7a6f8e889aa7fbe51791e1743284e586f9257038baf42695
-updated: 2016-11-14T20:35:31.815773778+01:00
+updated: 2016-11-17T18:06:42.234009533+01:00
 imports:
 - name: github.com/beorn7/perks
   version: 4c0e84591b9aa9e6dcfdf3e020114cd81f89d5f9
@@ -20,7 +20,7 @@ imports:
 - name: github.com/go-ldap/ldap
   version: d0a5ced67b4dc310b9158d63a2c6f9c5ec13f105
 - name: github.com/go-logfmt/logfmt
-  version: d4327190ff838312623b09bfeb50d7c93c8d9c1d
+  version: 390ab7935ee28ec6b286364bba9b4dd6410cb3d5
 - name: github.com/go-stack/stack
   version: 100eb0c0a9c5b306ca2fb4f165df21d80ada4b82
 - name: github.com/golang/protobuf
@@ -60,7 +60,7 @@ imports:
 - name: github.com/piotrkowalczuk/pqcomp
   version: 631b19c36ded8bbe954cf8c15a0044c591033536
 - name: github.com/piotrkowalczuk/pqt
-  version: 9de5350e4bb094360cf7b33a83964db05881f891
+  version: 9946d7c34086e4ce6c117ec8eeb2c5e28ffad7b1
   subpackages:
   - pqtgo
   - pqtsql
@@ -81,7 +81,7 @@ imports:
   subpackages:
   - go
 - name: github.com/prometheus/common
-  version: f36a8da2241e626287bf1adfa7bc2f66bbc6770b
+  version: 85637ea67b04b5c3bb25e671dacded2977f8f9f6
   subpackages:
   - expfmt
   - internal/bitbucket.org/ww/goautoneg
@@ -116,7 +116,7 @@ imports:
   subpackages:
   - internal
 - name: google.golang.org/appengine
-  version: 3f4dbbc0ec153a39878fd524ece9f39732bd4998
+  version: c7b8227c83007befd67b324a64c969ebc1d7475d
   subpackages:
   - internal
   - internal/base
@@ -146,7 +146,7 @@ testImports:
 - name: github.com/jtolds/gls
   version: 8ddce2a84170772b95dd5d576c48d517b22cac63
 - name: github.com/smartystreets/assertions
-  version: cc1e98f7d3caee8feedb0468525b80a59556d6e5
+  version: e60cfa771e3f4d18723a4119f1833898c9c62066
   subpackages:
   - internal/go-render/render
   - internal/oglematchers

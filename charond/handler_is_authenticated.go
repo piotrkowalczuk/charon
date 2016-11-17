@@ -19,8 +19,6 @@ func (iah *isAuthenticatedHandler) IsAuthenticated(ctx context.Context, req *cha
 		return nil, grpc.Errorf(codes.InvalidArgument, "authentication status cannot be checked, missing token")
 	}
 
-	iah.loggerWith("token", req.AccessToken)
-
 	ses, err := iah.session.Get(ctx, &mnemosynerpc.GetRequest{AccessToken: req.AccessToken})
 	if err != nil {
 		return nil, handleMnemosyneError(err)
@@ -29,7 +27,6 @@ func (iah *isAuthenticatedHandler) IsAuthenticated(ctx context.Context, req *cha
 	if err != nil {
 		return nil, err
 	}
-	iah.loggerWith("user_id", uid)
 	exists, err := iah.repository.user.Exists(uid)
 	if err != nil {
 		return nil, err

@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"time"
 
 	"github.com/go-kit/kit/log"
 	"github.com/go-ldap/ldap"
@@ -45,7 +46,9 @@ func initMnemosyne(address string, logger log.Logger) (mnemosynerpc.SessionManag
 		sklog.Fatal(logger, errors.New("missing mnemosyne address"))
 
 	}
-	conn, err := grpc.Dial(address, grpc.WithUserAgent("charon"), grpc.WithInsecure())
+	conn, err := grpc.Dial(address, grpc.WithUserAgent("charond"), grpc.WithInsecure(), grpc.WithDialer(func(addr string, timeout time.Duration) (net.Conn, error) {
+		return net.DialTimeout("tcp", addr, timeout)
+	}))
 	if err != nil {
 		sklog.Fatal(logger, err, "address", address)
 	}
@@ -153,7 +156,7 @@ func initPrometheus(namespace string, enabled bool, constLabels prometheus.Label
 	}
 }
 
-func initLDAP(address, baseDN, password string, logger log.Logger) (*ldap.Conn, string, error) {
+func initLDAP(address, baseDN, password string, logger log.Logger) (*ldap.Conn, error) {
 	init := func(addr string) (*ldap.Conn, error) {
 		conn, err := ldap.Dial("tcp", addr)
 		if err != nil {
@@ -170,13 +173,10 @@ func initLDAP(address, baseDN, password string, logger log.Logger) (*ldap.Conn, 
 		sklog.Info(logger, "ldap connection has been established", "address", address, "dn", baseDN)
 		return conn, nil
 	}
+
 	_, addresses, err := net.LookupSRV("ldap", "tcp", address)
-	if err != nil {
-		return nil, "", fmt.Errorf("ldap srv record lookup failure: %s", err.Error())
-	}
-	if len(addresses) == 0 {
-		conn, err := init(address)
-		return conn, address, err
+	if err != nil || len(addresses) == 0 {
+		return init(address)
 	}
 
 	for _, addr := range addresses {
@@ -186,8 +186,8 @@ func initLDAP(address, baseDN, password string, logger log.Logger) (*ldap.Conn, 
 			sklog.Error(logger, err, "target", addr.Target, "port", addr.Port, "ldap_base_dn", baseDN)
 			continue
 		}
-		return c, addressFound, nil
+		return c, nil
 	}
 
-	return nil, "", errors.New("ldap connection failed to a single server")
+	return nil, errors.New("ldap connection failed to a single server")
 }

@@ -13,8 +13,6 @@ type setUserGroupsHandler struct {
 }
 
 func (sugh *setUserGroupsHandler) SetGroups(ctx context.Context, req *charonrpc.SetUserGroupsRequest) (*charonrpc.SetUserGroupsResponse, error) {
-	sugh.loggerWith("user_id", req.UserId)
-
 	act, err := sugh.retrieveActor(ctx)
 	if err != nil {
 		return nil, err

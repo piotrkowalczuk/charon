@@ -18,8 +18,6 @@ type createUserHandler struct {
 }
 
 func (cuh *createUserHandler) Create(ctx context.Context, req *charonrpc.CreateUserRequest) (*charonrpc.CreateUserResponse, error) {
-	cuh.loggerWith("username", req.Username, "is_superuser", req.IsSuperuser.BoolOr(false))
-
 	act, err := cuh.retrieveActor(ctx)
 	if err != nil {
 		if req.IsSuperuser.BoolOr(false) {

@@ -16,8 +16,6 @@ type deleteGroupHandler struct {
 }
 
 func (dgh *deleteGroupHandler) Delete(ctx context.Context, req *charonrpc.DeleteGroupRequest) (*wrappers.BoolValue, error) {
-	dgh.loggerWith("group_id", req.Id)
-
 	act, err := dgh.retrieveActor(ctx)
 	if err != nil {
 		return nil, err

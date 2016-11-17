@@ -14,8 +14,6 @@ type belongsToHandler struct {
 }
 
 func (bth *belongsToHandler) BelongsTo(ctx context.Context, req *charonrpc.BelongsToRequest) (*wrappers.BoolValue, error) {
-	bth.loggerWith("user_id", req.UserId, "group_id", req.GroupId)
-
 	if req.GroupId < 1 {
 		return nil, grpc.Errorf(codes.InvalidArgument, "group id needs to be greater than zero")
 	}

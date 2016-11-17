@@ -25,7 +25,5 @@ func (lh *logoutHandler) Logout(ctx context.Context, r *charonrpc.LogoutRequest)
 		return nil, err
 	}
 
-	lh.loggerWith("token", r.AccessToken)
-
 	return &empty.Empty{}, nil
 }

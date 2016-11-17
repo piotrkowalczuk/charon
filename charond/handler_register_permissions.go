@@ -21,14 +21,6 @@ func (rph *registerPermissionsHandler) Register(ctx context.Context, req *charon
 		return nil, grpc.Errorf(codes.Internal, err.Error())
 	}
 
-	rph.loggerWith(
-		"registrants", permissions[0].Subsystem(),
-		"created", created,
-		"untouched", untouched,
-		"removed", removed,
-		"count", len(req.Permissions),
-	)
-
 	return &charonrpc.RegisterPermissionsResponse{
 		Created:   created,
 		Untouched: untouched,

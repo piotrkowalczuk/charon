@@ -14,8 +14,6 @@ type isGrantedHandler struct {
 }
 
 func (ig *isGrantedHandler) IsGranted(ctx context.Context, req *charonrpc.IsGrantedRequest) (*wrappers.BoolValue, error) {
-	ig.loggerWith("user_id", req.UserId, "permission", req.Permission)
-
 	if req.Permission == "" {
 		return nil, grpc.Errorf(codes.InvalidArgument, "permission cannot be empty")
 	}

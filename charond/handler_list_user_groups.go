@@ -15,8 +15,6 @@ type listUserGroupsHandler struct {
 
 // TODO: missing firewall
 func (lugh *listUserGroupsHandler) ListGroups(ctx context.Context, req *charonrpc.ListUserGroupsRequest) (*charonrpc.ListUserGroupsResponse, error) {
-	lugh.loggerWith("user_id", req.Id)
-
 	ents, err := lugh.repository.group.FindByUserID(req.Id)
 	if err != nil {
 		return nil, err
