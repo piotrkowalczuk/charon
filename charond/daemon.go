@@ -8,9 +8,8 @@ import (
 	"net/http"
 	"net/http/pprof"
 	"os"
-	"testing"
-
 	"sync"
+	"testing"
 
 	"github.com/go-kit/kit/log"
 	libldap "github.com/go-ldap/ldap"
@@ -19,10 +18,13 @@ import (
 	"github.com/piotrkowalczuk/charon/internal/ldap"
 	"github.com/piotrkowalczuk/charon/internal/password"
 	"github.com/piotrkowalczuk/mnemosyne/mnemosynerpc"
+	"github.com/piotrkowalczuk/promgrpc"
 	"github.com/piotrkowalczuk/sklog"
 	"github.com/prometheus/client_golang/prometheus"
 	"golang.org/x/crypto/bcrypt"
+	"golang.org/x/net/context"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/grpclog"
 )
@@ -107,6 +109,7 @@ func TestDaemon(t *testing.T, opts TestDaemonOpts) (net.Addr, io.Closer) {
 
 // Run ...
 func (d *Daemon) Run() (err error) {
+	interceptor := promgrpc.NewInterceptor(nil)
 	if err = d.initMonitoring(); err != nil {
 		return
 	}
@@ -118,7 +121,7 @@ func (d *Daemon) Run() (err error) {
 	}
 	repos := newRepositories(db)
 
-	d.mnemosyne, d.mnemosyneConn = initMnemosyne(d.opts.MnemosyneAddress, d.logger)
+	d.mnemosyne, d.mnemosyneConn = initMnemosyne(d.opts.MnemosyneAddress, interceptor, d.logger)
 
 	var passwordHasher password.Hasher
 	if d.opts.LDAP {
@@ -145,7 +148,20 @@ func (d *Daemon) Run() (err error) {
 		if err != nil {
 			return err
 		}
-		opts = []grpc.ServerOption{grpc.Creds(creds)}
+		opts = []grpc.ServerOption{
+			grpc.Creds(creds),
+			grpc.UnaryInterceptor(unaryServerInterceptors(
+				func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+					res, err := handler(ctx, req)
+					if err != nil && grpc.Code(err) != codes.OK {
+						sklog.Error(d.logger, err, "handler", info.FullMethod)
+						return nil, handleError(err)
+					}
+					return res, err
+				},
+				interceptor.UnaryServer(),
+			)),
+		}
 	}
 
 	grpclog.SetLogger(sklog.NewGRPCLogger(d.logger))

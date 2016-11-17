@@ -60,3 +60,5 @@ import:
   - imports
 - package: github.com/go-ldap/ldap
   version: ~2.4.0
+- package: github.com/piotrkowalczuk/promgrpc
+  version: ~0.1.0

@@ -1,5 +1,10 @@
 package charond
 
+import (
+	"golang.org/x/net/context"
+	"google.golang.org/grpc"
+)
+
 type auth struct {
 	*subjectHandler
 	*loginHandler
@@ -79,5 +84,20 @@ func newGroupManager(server *rpcServer) *groupManager {
 		setGroupPermissionsHandler:  &setGroupPermissionsHandler{handler: newHandler(server)},
 		createGroupHandler:          &createGroupHandler{handler: newHandler(server)},
 		listGroupPermissionsHandler: &listGroupPermissionsHandler{handler: newHandler(server)},
+	}
+}
+
+func unaryServerInterceptors(interceptors ...grpc.UnaryServerInterceptor) grpc.UnaryServerInterceptor {
+	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+		wrap := func(current grpc.UnaryServerInterceptor, next grpc.UnaryHandler) grpc.UnaryHandler {
+			return func(currentCtx context.Context, currentReq interface{}) (interface{}, error) {
+				return current(currentCtx, currentReq, info, next)
+			}
+		}
+		chain := handler
+		for _, i := range interceptors {
+			chain = wrap(i, chain)
+		}
+		return chain(ctx, req)
 	}
 }
