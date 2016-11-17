@@ -39,8 +39,6 @@ func (luh *listUsersHandler) List(ctx context.Context, req *charonrpc.ListUsersR
 	if err != nil {
 		return nil, err
 	}
-	luh.loggerWith("count", len(ents))
-
 	return luh.response(ents)
 }
 

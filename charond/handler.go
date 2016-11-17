@@ -33,6 +33,7 @@ func newHandler(rs *rpcServer) *handler {
 		session:    rs.session,
 		repository: rs.repository,
 		ldap:       rs.ldap,
+		logger:     rs.logger,
 	}
 
 	return h
@@ -44,10 +45,6 @@ func handleMnemosyneError(err error) error {
 	}
 
 	return err
-}
-
-func (h *handler) loggerWith(keyval ...interface{}) {
-	h.logger = log.NewContext(h.logger).With(keyval...)
 }
 
 func (h *handler) retrieveActor(ctx context.Context) (act *actor, err error) {

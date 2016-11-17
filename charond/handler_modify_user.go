@@ -22,8 +22,6 @@ func (muh *modifyUserHandler) Modify(ctx context.Context, req *charonrpc.ModifyU
 		return nil, grpc.Errorf(codes.InvalidArgument, "user cannot be modified, invalid ID: %d", req.Id)
 	}
 
-	muh.loggerWith("user_id", req.Id)
-
 	act, err := muh.retrieveActor(ctx)
 	if err != nil {
 		return nil, err

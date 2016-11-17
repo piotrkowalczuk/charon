@@ -17,8 +17,6 @@ type getGroupHandler struct {
 }
 
 func (ggh *getGroupHandler) Get(ctx context.Context, req *charonrpc.GetGroupRequest) (*charonrpc.GetGroupResponse, error) {
-	ggh.loggerWith("group_id", req.Id)
-
 	act, err := ggh.retrieveActor(ctx)
 	if err != nil {
 		return nil, err

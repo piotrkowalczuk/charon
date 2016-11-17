@@ -22,13 +22,14 @@ func main() {
 	debugListener := initListener(logger, config.host, config.port+1)
 
 	var (
-		mappings ldap.Mappings
+		mappings *ldap.Mappings
 		err      error
 	)
 	if config.ldap.enabled && config.ldap.mappings != "" {
 		if mappings, err = ldap.NewMappingsFromFile(config.ldap.mappings); err != nil {
 			sklog.Fatal(logger, err)
 		}
+		sklog.Info(logger, "ldap mappings has been loaded")
 	}
 
 	daemon := charond.NewDaemon(charond.DaemonOpts{

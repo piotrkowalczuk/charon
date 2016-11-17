@@ -16,8 +16,6 @@ type getUserHandler struct {
 }
 
 func (guh *getUserHandler) Get(ctx context.Context, req *charonrpc.GetUserRequest) (*charonrpc.GetUserResponse, error) {
-	guh.loggerWith("user_id", req.Id)
-
 	act, err := guh.retrieveActor(ctx)
 	if err != nil {
 		return nil, err

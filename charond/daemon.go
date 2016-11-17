@@ -43,7 +43,7 @@ type DaemonOpts struct {
 	LDAPBaseDN         string
 	LDAPSearchDN       string
 	LDAPBasePassword   string
-	LDAPMappings       ldap.Mappings
+	LDAPMappings       *ldap.Mappings
 	Logger             log.Logger
 	RPCListener        net.Listener
 	DebugListener      net.Listener

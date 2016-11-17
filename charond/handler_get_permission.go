@@ -15,8 +15,6 @@ type getPermissionHandler struct {
 }
 
 func (gph *getPermissionHandler) Get(ctx context.Context, req *charonrpc.GetPermissionRequest) (*charonrpc.GetPermissionResponse, error) {
-	gph.loggerWith("permission_id", req.Id)
-
 	if req.Id < 1 {
 		return nil, grpc.Errorf(codes.InvalidArgument, "permission id needs to be greater than zero")
 	}

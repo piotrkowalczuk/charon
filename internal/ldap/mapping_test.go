@@ -2,6 +2,7 @@ package ldap_test
 
 import (
 	"reflect"
+	"strings"
 	"testing"
 
 	libldap "github.com/go-ldap/ldap"
@@ -9,26 +10,61 @@ import (
 	"github.com/piotrkowalczuk/charon/internal/ldap"
 )
 
+func TestNewMappings(t *testing.T) {
+	m, err := ldap.NewMappings(strings.NewReader(`
+[
+  {
+    "from": {
+      "cn": ["cn_3", "cn_1"]
+    },
+    "to": {
+     "groups": ["Admins"],
+     "permissions": []
+    }
+  },
+  {
+    "from": {
+      "ou": ["ou_2"],
+      "dn": ["dn_1"]
+    },
+    "to": {
+      "groups": ["Members"],
+      "permissions": []
+    }
+  }
+]
+`))
+	if err != nil {
+		t.Fatalf("unexpected error: %s", err.Error())
+	}
+	if !reflect.DeepEqual(m.Attributes, []string{"cn", "dn", "ou"}) {
+		t.Error("attributes are not equal")
+	}
+	t.Logf("got attributes: %v", m.Attributes)
+}
+
 func TestMapping_Map(t *testing.T) {
 	mappings := ldap.Mappings{
-		ldap.Mapping{
-			From: ldap.MappingFrom{
-				CommonNames:         []string{"cn_1"},
-				DomainComponents:    []string{"dc_1"},
-				OrganizationalUnits: []string{"ou_1", "ou_2"},
+		Mappings: []ldap.Mapping{
+			{
+				From: map[string][]string{
+					"cn": {"cn_1"},
+					"dc": {"dc_1"},
+					"ou": {"ou_1", "ou_2"},
+				},
+				To: ldap.MappingTo{
+					Groups:      []string{"admins"},
+					Permissions: []string{charon.UserCanCreate.String()},
+				},
 			},
-			To: ldap.MappingTo{
-				Groups:      []string{"admins"},
-				Permissions: []string{charon.UserCanCreate.String()},
-			},
-		},
-		ldap.Mapping{
-			From: ldap.MappingFrom{
-				CommonNames: []string{"cn_4"},
-			},
-			To: ldap.MappingTo{
-				Groups:      []string{"users"},
-				Permissions: []string{charon.UserCanRetrieveAsStranger.String()},
+			{
+				From: map[string][]string{
+					"cn": {"cn_4"},
+				},
+				To: ldap.MappingTo{
+					Groups:      []string{"users"},
+					Permissions: []string{charon.UserCanRetrieveAsStranger.String()},
+				},
 			},
 		},
 	}
@@ -65,6 +101,16 @@ func TestMapping_Map(t *testing.T) {
 				{Name: "cn", Values: []string{"cn_1", "cn_4"}},
 				{Name: "dc", Values: []string{"dc_1"}},
 				{Name: "ou", Values: []string{"ou_1", "ou_2"}},
+			},
+			ok: true,
+		},
+		"compound": {
+			groups:      []string{"admins"},
+			permissions: []string{charon.UserCanCreate.String()},
+			attributes: []*libldap.EntryAttribute{
+				{Name: "cn", Values: []string{"cn_1"}},
+				{Name: "dc", Values: []string{"dc_1"}},
+				{Name: "ou", Values: []string{"ou_1,ou_2"}},
 			},
 			ok: true,
 		},

@@ -62,8 +62,6 @@ func (sh *subjectHandler) Actor(ctx context.Context, r *wrappers.StringValue) (*
 		permissions = append(permissions, e.Permission().String())
 	}
 
-	sh.loggerWith("subject_id", ses.SubjectId)
-
 	return &charonrpc.ActorResponse{
 		Id:          int64(ent.ID),
 		Username:    ent.Username,

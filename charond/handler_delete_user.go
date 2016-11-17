@@ -17,8 +17,6 @@ type deleteUserHandler struct {
 }
 
 func (duh *deleteUserHandler) Delete(ctx context.Context, req *charonrpc.DeleteUserRequest) (*wrappers.BoolValue, error) {
-	duh.loggerWith("user_id", req.Id)
-
 	if req.Id <= 0 {
 		return nil, grpc.Errorf(codes.InvalidArgument, "user cannot be deleted, invalid ID: %d", req.Id)
 	}

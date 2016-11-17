@@ -3,24 +3,28 @@ package ldap
 import (
 	"encoding/json"
 	"os"
+	"strings"
+
+	"io"
+
+	"sort"
 
 	"github.com/go-ldap/ldap"
 )
 
 // Mappings ...
-type Mappings []Mapping
+type Mappings struct {
+	Mappings []Mapping
+	// Attributes is a list of all unique attributes that appear in mappings
+	// that needs to be retrieved from server to make comparison.
+	Attributes []string
+}
 
 // Mapping ...
 type Mapping struct {
-	From MappingFrom `json:"from"`
-	To   MappingTo   `json:"to"`
-}
-
-// MappingFrom ...
-type MappingFrom struct {
-	CommonNames         []string `json:"cn"`
-	OrganizationalUnits []string `json:"ou"`
-	DomainComponents    []string `json:"dc"`
+	From       map[string][]string `json:"from"`
+	To         MappingTo           `json:"to"`
+	attributes []string
 }
 
 // MappingTo ...
@@ -29,11 +33,29 @@ type MappingTo struct {
 	Permissions []string `json:"permissions"`
 }
 
-// NewMappingsFromFile reads json file and allocates new Mappings based on the output.
-func NewMappingsFromFile(p string) (Mappings, error) {
+// NewMappings ...
+func NewMappings(r io.Reader) (*Mappings, error) {
 	var m Mappings
+	if err := json.NewDecoder(r).Decode(&m.Mappings); err != nil {
+		return nil, err
+	}
+
+	for _, mapping := range m.Mappings {
+		for attr := range mapping.From {
+			m.Attributes = append(m.Attributes, attr)
+		}
+	}
+
+	removeDuplicates(&m.Attributes)
+	sort.Sort(sort.StringSlice(m.Attributes))
+
+	return &m, nil
+}
+
+// NewMappingsFromFile reads json file and allocates new Mappings based on the output.
+func NewMappingsFromFile(p string) (*Mappings, error) {
 	if p == "" {
-		return m, nil
+		return &Mappings{}, nil
 	}
 
 	file, err := os.Open(p)
@@ -41,31 +63,23 @@ func NewMappingsFromFile(p string) (Mappings, error) {
 		return nil, err
 	}
 
-	if err = json.NewDecoder(file).Decode(&m); err != nil {
-		return nil, err
-	}
-
-	return m, nil
+	return NewMappings(file)
 }
 
 // Map search groups and permissions that given LDAP entry match.
-func (m Mappings) Map(attrs []*ldap.EntryAttribute) ([]string, []string, bool) {
+func (m *Mappings) Map(attrs []*ldap.EntryAttribute) ([]string, []string, bool) {
 	var (
 		groups, permissions []string
 		expected, valid     int
 	)
 
 MappingLoop:
-	for _, mapping := range m {
+	for _, mapping := range m.Mappings {
 		expected, valid = 0, 0
-		if len(mapping.From.CommonNames) > 0 {
-			expected++
-		}
-		if len(mapping.From.OrganizationalUnits) > 0 {
-			expected++
-		}
-		if len(mapping.From.DomainComponents) > 0 {
-			expected++
+		for _, values := range mapping.From {
+			if len(values) > 0 {
+				expected++
+			}
 		}
 
 	AttributesLoop:
@@ -73,21 +87,15 @@ MappingLoop:
 			if valid >= expected {
 				break AttributesLoop
 			}
-			switch attr.Name {
-			case "cn":
-				if !m.compare(attr.Values, mapping.From.CommonNames) {
+
+			for attrName, from := range mapping.From {
+				if attr.Name != attrName {
+					continue
+				}
+				if !m.compare(attr.Values, from) {
 					continue MappingLoop
 				}
-				valid++
-			case "ou":
-				if !m.compare(attr.Values, mapping.From.OrganizationalUnits) {
-					continue MappingLoop
-				}
-				valid++
-			case "dc":
-				if !m.compare(attr.Values, mapping.From.DomainComponents) {
-					continue MappingLoop
-				}
+
 				valid++
 			}
 		}
@@ -101,18 +109,33 @@ MappingLoop:
 	return groups, permissions, len(groups) > 0 || len(permissions) > 0
 }
 
-func (lm Mappings) compare(givens, expexteds []string) bool {
+func (lm *Mappings) compare(givens, expexteds []string) bool {
 	if len(expexteds) == 0 {
 		return true
 	}
 	var match int
 	for _, given := range givens {
-		for _, expected := range expexteds {
-			if given == expected {
-				match++
+		for _, givenSplit := range strings.Split(given, ",") {
+			for _, expected := range expexteds {
+				if givenSplit == expected {
+					match++
+				}
 			}
 		}
 	}
 
 	return match == len(expexteds)
+}
+
+func removeDuplicates(xs *[]string) {
+	found := make(map[string]bool)
+	j := 0
+	for i, x := range *xs {
+		if !found[x] {
+			found[x] = true
+			(*xs)[j] = (*xs)[i]
+			j++
+		}
+	}
+	*xs = (*xs)[:j]
 }
