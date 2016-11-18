@@ -21,25 +21,43 @@ import (
 )
 
 func initPostgres(address string, test bool, logger log.Logger) (*sql.DB, error) {
-	postgres, err := sql.Open("postgres", address)
+	db, err := sql.Open("postgres", address)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("connection failure: %s", err.Error())
+	}
+
+	if err = db.Ping(); err != nil {
+		cancel := time.NewTimer(10 * time.Second)
+		attempts := 1
+	PingLoop:
+		for {
+			select {
+			case <-time.After(1 * time.Second):
+				if err := db.Ping(); err != nil {
+					attempts++
+					continue PingLoop
+				}
+				break PingLoop
+			case <-cancel.C:
+				return nil, fmt.Errorf("postgres connection failed after %d attempts", attempts)
+			}
+		}
 	}
 
 	if test {
-		if err = teardownDatabase(postgres); err != nil {
+		if err = teardownDatabase(db); err != nil {
 			return nil, err
 		}
 		sklog.Info(logger, "database has been cleared upfront")
 	}
-	err = setupDatabase(postgres)
+	err = setupDatabase(db)
 	if err != nil {
 		return nil, err
 	}
 
 	sklog.Info(logger, "postgres connection has been established", "address", address)
 
-	return postgres, nil
+	return db, nil
 }
 
 func initMnemosyne(address string, interceptor *promgrpc.Interceptor, logger log.Logger) (mnemosynerpc.SessionManagerClient, *grpc.ClientConn) {
