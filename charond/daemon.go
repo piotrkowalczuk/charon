@@ -142,26 +142,31 @@ func (d *Daemon) Run() (err error) {
 
 	permissionReg := initPermissionRegistry(repos.permission, charon.AllPermissions, d.logger)
 
-	var opts []grpc.ServerOption
+	opts := []grpc.ServerOption{
+		// No stream endpoint available at the moment.
+		grpc.UnaryInterceptor(unaryServerInterceptors(
+			func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+				res, err := handler(ctx, req)
+				if err != nil && grpc.Code(err) != codes.OK {
+					switch grpc.Code(err) {
+					case codes.OK:
+						sklog.Debug(d.logger, "request handled successfully", "handler", info.FullMethod)
+					default:
+						sklog.Error(d.logger, err, "handler", info.FullMethod)
+					}
+					return nil, handleError(err)
+				}
+				return res, err
+			},
+			interceptor.UnaryServer(),
+		)),
+	}
 	if d.opts.TLS {
 		creds, err := credentials.NewServerTLSFromFile(d.opts.TLSCertFile, d.opts.TLSKeyFile)
 		if err != nil {
 			return err
 		}
-		opts = []grpc.ServerOption{
-			grpc.Creds(creds),
-			grpc.UnaryInterceptor(unaryServerInterceptors(
-				func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
-					res, err := handler(ctx, req)
-					if err != nil && grpc.Code(err) != codes.OK {
-						sklog.Error(d.logger, err, "handler", info.FullMethod)
-						return nil, handleError(err)
-					}
-					return res, err
-				},
-				interceptor.UnaryServer(),
-			)),
-		}
+		opts = append(opts, grpc.Creds(creds))
 	}
 
 	grpclog.SetLogger(sklog.NewGRPCLogger(d.logger))
