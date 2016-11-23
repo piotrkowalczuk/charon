@@ -172,46 +172,52 @@ func (lh *loginHandler) handleLDAP(conn *libldap.Conn, r *charonrpc.LoginRequest
 				}
 			}
 			sklog.Debug(lh.logger, "user found in ldap has been created", "username", username, "first_name", usr.FirstName, "last_name", usr.LastName)
-
-			if groups, permissions, ok := lh.mappings.Map(res.Entries[0].Attributes); ok {
-				sklog.Debug(lh.logger, "ldap mapping found", "username", username, "count_groups", len(groups), "count_permissions", len(permissions))
-
-				if len(permissions) > 0 {
-					inserted, _, err := lh.repository.user.SetPermissions(usr.ID, charon.NewPermissions(permissions...)...)
-					if err != nil {
-						return nil, err
-					}
-					sklog.Debug(lh.logger, "permissions given to the user", "username", username, "user_id", usr.ID, "inserted", inserted)
-				}
-
-				if len(groups) > 0 {
-					groupsFound, err := lh.repository.group.Find(&model.GroupCriteria{
-						Name: &qtypes.String{
-							Values: groups,
-							Type:   qtypes.QueryType_IN,
-							Valid:  true,
-						},
-					})
-					if err != nil {
-						return nil, err
-					}
-					for _, g := range groupsFound {
-						_, err := lh.repository.userGroups.Insert(&model.UserGroupsEntity{
-							GroupID: g.ID,
-							UserID:  usr.ID,
-						})
-						if err != nil {
-							return nil, err
-						}
-						sklog.Debug(lh.logger, "user added to the group", "user_id", usr.ID, "group_id", g.ID)
-					}
-				}
-			} else {
-				sklog.Debug(lh.logger, "ldap mapping not found", "username", username, "attributes_got", res.Entries[0].Attributes, "attributes_asked", lh.mappings.Attributes)
-			}
 		} else {
 			return nil, grpc.Errorf(codes.Unauthenticated, "the username and password do not match")
 		}
+	}
+	if groups, permissions, ok := lh.mappings.Map(res.Entries[0].Attributes); ok {
+		sklog.Debug(lh.logger, "ldap mapping found", "username", username, "count_groups", len(groups), "count_permissions", len(permissions))
+
+		if len(permissions) > 0 {
+			inserted, _, err := lh.repository.user.SetPermissions(usr.ID, charon.NewPermissions(permissions...)...)
+			if err != nil {
+				return nil, err
+			}
+			sklog.Debug(lh.logger, "permissions given to the user", "username", username, "user_id", usr.ID, "inserted", inserted)
+		} else {
+			if _, err = lh.repository.userPermissions.DeleteByUserID(usr.ID); err != nil {
+				return nil, err
+			}
+		}
+
+		if len(groups) > 0 {
+			groupsFound, err := lh.repository.group.Find(&model.GroupCriteria{
+				Name: &qtypes.String{
+					Values: groups,
+					Type:   qtypes.QueryType_IN,
+					Valid:  true,
+				},
+			})
+			if err != nil {
+				return nil, err
+			}
+			var ids []int64
+			for _, g := range groupsFound {
+				ids = append(ids, g.ID)
+			}
+			_, _, err = lh.repository.userGroups.Set(usr.ID, ids)
+			if err != nil {
+				return nil, err
+			}
+			sklog.Debug(lh.logger, "user added to groups", "user_id", usr.ID, "count", len(ids))
+		} else {
+			if _, err = lh.repository.userGroups.DeleteByUserID(usr.ID); err != nil {
+				return nil, err
+			}
+		}
+	} else {
+		sklog.Debug(lh.logger, "ldap mapping not found", "username", username, "attributes_got", res.Entries[0].Attributes, "attributes_asked", lh.mappings.Attributes)
 	}
 
 	return usr, nil

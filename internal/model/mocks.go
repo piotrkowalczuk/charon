@@ -894,6 +894,27 @@ func (_m *MockUserGroupsProvider) Set(userID int64, groupIDs []int64) (int64, in
 	return r0, r1, r2
 }
 
+// DeleteByUserID provides a mock function with given fields: id
+func (_m *MockUserGroupsProvider) DeleteByUserID(id int64) (int64, error) {
+	ret := _m.Called(id)
+
+	var r0 int64
+	if rf, ok := ret.Get(0).(func(int64) int64); ok {
+		r0 = rf(id)
+	} else {
+		r0 = ret.Get(0).(int64)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(int64) error); ok {
+		r1 = rf(id)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 type MockUserPermissionsProvider struct {
 	mock.Mock
 }
@@ -914,6 +935,27 @@ func (_m *MockUserPermissionsProvider) Insert(entity *UserPermissionsEntity) (*U
 	var r1 error
 	if rf, ok := ret.Get(1).(func(*UserPermissionsEntity) error); ok {
 		r1 = rf(entity)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// DeleteByUserID provides a mock function with given fields: id
+func (_m *MockUserPermissionsProvider) DeleteByUserID(id int64) (int64, error) {
+	ret := _m.Called(id)
+
+	var r0 int64
+	if rf, ok := ret.Get(0).(func(int64) int64); ok {
+		r0 = rf(id)
+	} else {
+		r0 = ret.Get(0).(int64)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(int64) error); ok {
+		r1 = rf(id)
 	} else {
 		r1 = ret.Error(1)
 	}
