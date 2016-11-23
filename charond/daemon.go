@@ -153,7 +153,7 @@ func (d *Daemon) Run() (err error) {
 					case codes.OK:
 						sklog.Debug(d.logger, "request handled successfully", "handler", info.FullMethod)
 					default:
-						sklog.Error(d.logger, err, "handler", info.FullMethod)
+						sklog.Error(d.logger, errors.New(grpc.ErrorDesc(err)), "handler", info.FullMethod, "code", grpc.Code(err).String())
 					}
 					return nil, handleError(err)
 				}

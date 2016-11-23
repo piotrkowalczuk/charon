@@ -133,7 +133,7 @@ func (lh *loginHandler) handleLDAP(conn *libldap.Conn, r *charonrpc.LoginRequest
 	}
 
 	if len(res.Entries) != 1 {
-		return nil, grpc.Errorf(codes.Unauthenticated, "user does not exist, number of ldap entries found: %d", len(res.Entries))
+		return nil, grpc.Errorf(codes.Unauthenticated, "user '%s' does not exist, number of ldap entries found: %d", r.Username, len(res.Entries))
 	}
 
 	if err = conn.Bind(res.Entries[0].DN, r.Password); err != nil {
