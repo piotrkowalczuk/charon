@@ -4,6 +4,7 @@ import (
 	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/charon/charonrpc"
 	"github.com/piotrkowalczuk/charon/internal/model"
+	"github.com/piotrkowalczuk/ntypes"
 	"github.com/piotrkowalczuk/qtypes"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
@@ -30,6 +31,13 @@ func (luh *listUsersHandler) List(ctx context.Context, req *charonrpc.ListUsersR
 		IsSuperuser: req.IsSuperuser,
 		IsStaff:     req.IsStaff,
 		CreatedBy:   req.CreatedBy,
+	}
+
+	if !act.user.IsSuperuser {
+		criteria.IsSuperuser = ntypes.False()
+	}
+	if !act.permissions.Contains(charon.UserCanRetrieveStaffAsStranger) {
+		criteria.IsStaff = ntypes.False()
 	}
 	if act.permissions.Contains(charon.UserCanRetrieveAsOwner, charon.UserCanRetrieveStaffAsOwner) {
 		criteria.CreatedBy = qtypes.EqualInt64(act.user.ID)
@@ -71,6 +79,9 @@ func (luh *listUsersHandler) firewall(req *charonrpc.ListUsersRequest, act *acto
 		if !act.permissions.Contains(charon.UserCanRetrieveAsOwner) {
 			return grpc.Errorf(codes.PermissionDenied, "list of users cannot be retrieved as an owner, missing permission")
 		}
+		return nil
+	}
+	if !act.permissions.Contains(charon.UserCanRetrieveAsStranger) {
 		return nil
 	}
 

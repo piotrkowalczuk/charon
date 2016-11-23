@@ -109,7 +109,7 @@ func TestDaemon(t *testing.T, opts TestDaemonOpts) (net.Addr, io.Closer) {
 
 // Run ...
 func (d *Daemon) Run() (err error) {
-	interceptor := promgrpc.NewInterceptor(nil)
+	interceptor := promgrpc.NewInterceptor()
 	if err = d.initMonitoring(); err != nil {
 		return
 	}
@@ -147,6 +147,7 @@ func (d *Daemon) Run() (err error) {
 		grpc.UnaryInterceptor(unaryServerInterceptors(
 			func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 				res, err := handler(ctx, req)
+
 				if err != nil && grpc.Code(err) != codes.OK {
 					switch grpc.Code(err) {
 					case codes.OK:

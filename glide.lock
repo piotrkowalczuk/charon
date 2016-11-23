@@ -1,5 +1,5 @@
-hash: 805210b378c5ee1d7c48420c0b937a0cd62748871424bdde12800378152339b0
-updated: 2016-11-17T23:50:38.580032545+01:00
+hash: c9b6e08fd7d7d56e42d64e2741037936bf73bc1d44fab066a8b74f78420eda8e
+updated: 2016-11-23T11:47:34.245621238+01:00
 imports:
 - name: github.com/beorn7/perks
   version: 4c0e84591b9aa9e6dcfdf3e020114cd81f89d5f9
@@ -48,7 +48,7 @@ imports:
 - name: github.com/pborman/uuid
   version: a97ce2ca70fa5a848076093f05e639a89ca34d06
 - name: github.com/piotrkowalczuk/mnemosyne
-  version: 68f0633c426e5a7cd4d21195f80ae8a4da260886
+  version: 6f5942ea6979d4dc6de3ff8c08d7223a0cb0eae1
   subpackages:
   - internal/cluster
   - internal/jump
@@ -65,7 +65,7 @@ imports:
   - pqtgo
   - pqtsql
 - name: github.com/piotrkowalczuk/promgrpc
-  version: f5d7b0a17000f051d8b94ba7026be0b826d1143f
+  version: 6dcaf1a8dc829dcea441330ba639d04472b696af
 - name: github.com/piotrkowalczuk/qtypes
   version: 245111047db59a252a96b37b8d670099f185663e
 - name: github.com/piotrkowalczuk/sklog
@@ -104,7 +104,7 @@ imports:
   - blowfish
   - sha3
 - name: golang.org/x/net
-  version: f4b625ec9b21d620bb5ce57f2dfc3e08ca97fce6
+  version: 0e2717dc3cc05907dc23096ef3a9086ea93f567f
   subpackages:
   - context
   - http2
