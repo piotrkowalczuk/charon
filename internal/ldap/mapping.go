@@ -2,7 +2,6 @@ package ldap
 
 import (
 	"encoding/json"
-	"fmt"
 	"os"
 	"strings"
 
@@ -131,7 +130,6 @@ func (lm *Mappings) compare(given, expected []string) bool {
 		default:
 			for _, part := range parts {
 				for _, exp := range expected {
-					fmt.Println(part, exp)
 					if part == exp {
 						localMatch++
 					}
