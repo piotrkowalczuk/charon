@@ -59,6 +59,17 @@ func TestMapping_Map(t *testing.T) {
 			},
 			{
 				From: map[string][]string{
+					"cn": {"cn_1", "cn_100"},
+					"dc": {"dc_1"},
+					"ou": {"ou_1", "ou_2"},
+				},
+				To: ldap.MappingTo{
+					Groups:      []string{"deleters"},
+					Permissions: []string{charon.UserCanDeleteAsOwner.String()},
+				},
+			},
+			{
+				From: map[string][]string{
 					"cn": {"cn_4"},
 				},
 				To: ldap.MappingTo{
@@ -73,6 +84,14 @@ func TestMapping_Map(t *testing.T) {
 				To: ldap.MappingTo{
 					Groups:      []string{"super group"},
 					Permissions: []string{charon.UserCanCreate.String()},
+				},
+			},
+			{
+				From: map[string][]string{
+					"memberOf": {"cn=project1", "cn=company"},
+				},
+				To: ldap.MappingTo{
+					Groups: []string{"project-manager"},
 				},
 			},
 		},
@@ -103,6 +122,16 @@ func TestMapping_Map(t *testing.T) {
 			},
 			ok: true,
 		},
+		"exact-joined": {
+			groups:      []string{"admins"},
+			permissions: []string{charon.UserCanCreate.String()},
+			attributes: []*libldap.EntryAttribute{
+				{Name: "cn", Values: []string{"cn_1"}},
+				{Name: "dc", Values: []string{"dc_1"}},
+				{Name: "ou", Values: []string{"ou_1,ou_2"}},
+			},
+			ok: true,
+		},
 		"both": {
 			groups:      []string{"admins", "users"},
 			permissions: []string{charon.UserCanCreate.String(), charon.UserCanRetrieveAsStranger.String()},
@@ -128,6 +157,13 @@ func TestMapping_Map(t *testing.T) {
 			permissions: []string{charon.UserCanCreate.String()},
 			attributes: []*libldap.EntryAttribute{
 				{Name: "cn", Values: []string{"sg_1"}},
+			},
+			ok: true,
+		},
+		"complex-joined": {
+			groups: []string{"project-manager"},
+			attributes: []*libldap.EntryAttribute{
+				{Name: "memberOf", Values: []string{"cn=project1,cn=company", "cn=project2,cn=company"}},
 			},
 			ok: true,
 		},

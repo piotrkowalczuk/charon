@@ -2,6 +2,7 @@ package ldap
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"strings"
 
@@ -113,14 +114,33 @@ func (lm *Mappings) compare(given, expected []string) bool {
 	if len(expected) == 0 {
 		return true
 	}
-	var match int
+	var (
+		match, localMatch int
+	)
 	for _, giv := range given {
-		for _, givenSplit := range strings.Split(giv, ",") {
+		parts := strings.Split(giv, ",")
+
+		// if longer than 1 than probably its memberOf type of attribute
+		switch len(parts) {
+		case 1:
 			for _, exp := range expected {
-				if givenSplit == exp {
+				if giv == exp {
 					match++
 				}
 			}
+		default:
+			for _, part := range parts {
+				for _, exp := range expected {
+					fmt.Println(part, exp)
+					if part == exp {
+						localMatch++
+					}
+				}
+			}
+			if localMatch == len(expected) {
+				return true
+			}
+			localMatch = 0
 		}
 	}
 
