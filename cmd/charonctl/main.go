@@ -7,6 +7,7 @@ import (
 
 	"github.com/piotrkowalczuk/charon/charonrpc"
 	"github.com/piotrkowalczuk/ntypes"
+	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 )
@@ -101,7 +102,23 @@ func load(config configuration) error {
 		return err
 	}
 
+	list, err := c.group.List(ctx, &charonrpc.ListGroupsRequest{Limit: &ntypes.Int64{Valid: true}})
+	if err != nil {
+		return err
+	}
+
+FixturesLoop:
 	for _, group := range fix.Groups {
+		for _, existing := range list.Groups {
+			if group.Name == existing.Name {
+				// update permissions of already existing groups
+				if err = setPermissions(ctx, c.group, existing.Id, existing.Name, group.Permissions); err != nil {
+					return err
+				}
+				continue FixturesLoop
+			}
+		}
+
 		res, err := c.group.Create(ctx, &charonrpc.CreateGroupRequest{
 			Name:        group.Name,
 			Description: &ntypes.String{String: group.Description, Valid: len(group.Description) > 0},
@@ -109,21 +126,38 @@ func load(config configuration) error {
 		if err != nil {
 			if grpc.Code(err) == codes.AlreadyExists {
 				fmt.Printf("group (%s) already exists\n", group.Name)
-			} else {
-				return fmt.Errorf("group (%s) creation failure: %s", group.Name, err.Error())
+				continue FixturesLoop
 			}
-		} else {
-			fmt.Printf("group (%s) has been created: %d\n", group.Name, res.Group.Id)
+			return fmt.Errorf("group (%s) creation failure: %s", group.Name, err.Error())
 		}
-
-		_, err = c.group.SetPermissions(ctx, &charonrpc.SetGroupPermissionsRequest{
-			GroupId:     res.Group.Id,
-			Permissions: group.Permissions,
-		})
-		if err != nil {
-			return fmt.Errorf("group (%s - %d) permission set failure: %s", group.Name, res.Group.Id, err.Error())
-		}
-		fmt.Println("group permissions has been set")
+		fmt.Printf("group (%s) has been created: %d\n", group.Name, res.Group.Id)
 	}
+
+	var perms []string
+ExistingLoop:
+	for _, existing := range list.Groups {
+		for _, group := range fix.Groups {
+			perms = group.Permissions
+			if group.Name == existing.Name {
+				continue ExistingLoop
+			}
+		}
+		// set permissions to the groups that ware created
+		if err = setPermissions(ctx, c.group, existing.Id, existing.Name, perms); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func setPermissions(ctx context.Context, c charonrpc.GroupManagerClient, id int64, name string, permissions []string) error {
+	_, err := c.SetPermissions(ctx, &charonrpc.SetGroupPermissionsRequest{
+		GroupId:     id,
+		Permissions: permissions,
+	})
+	if err != nil {
+		return fmt.Errorf("group (%s - %d) permission set failure: %s", name, id, err.Error())
+	}
+	fmt.Printf("group (%s) permissions has been set\n", name)
 	return nil
 }
