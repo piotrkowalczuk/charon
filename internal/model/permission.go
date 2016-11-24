@@ -52,7 +52,7 @@ func NewPermissionRepository(dbPool *sql.DB) *PermissionRepository {
 		UNION
 		SELECT DISTINCT ON (p.ID) ` + columns(TablePermissionColumns, "p") + `
 		FROM ` + TableUserGroups + ` AS ug
-		LEFT JOIN ` + TableGroupPermissions + ` AS gp ON ug.` + TableUserGroupsColumnGroupID + ` = gp.` + TableGroupPermissionsColumnGroupID + `
+		INNER JOIN ` + TableGroupPermissions + ` AS gp ON ug.` + TableUserGroupsColumnGroupID + ` = gp.` + TableGroupPermissionsColumnGroupID + `
 		LEFT JOIN ` + TablePermission + ` as p
 			ON gp.` + TableGroupPermissionsColumnPermissionSubsystem + ` = p.` + TablePermissionColumnSubsystem + `
 			AND gp.` + TableGroupPermissionsColumnPermissionModule + ` = p.` + TablePermissionColumnModule + `
