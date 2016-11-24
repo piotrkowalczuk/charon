@@ -118,7 +118,7 @@ func TestListUsersHandler_firewall_success(t *testing.T) {
 	for hint, c := range cases {
 		t.Run(hint, func(t *testing.T) {
 			if err := h.firewall(&c.req, &c.act); err != nil {
-				t.Errorf("unexpected error for %d: %s", i, err.Error())
+				t.Errorf("unexpected error for %s", err.Error())
 			}
 		})
 	}
