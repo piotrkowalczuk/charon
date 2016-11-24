@@ -66,6 +66,15 @@ func TestMapping_Map(t *testing.T) {
 					Permissions: []string{charon.UserCanRetrieveAsStranger.String()},
 				},
 			},
+			{
+				From: map[string][]string{
+					"cn": {"sg_1"},
+				},
+				To: ldap.MappingTo{
+					Groups:      []string{"super group"},
+					Permissions: []string{charon.UserCanCreate.String()},
+				},
+			},
 		},
 	}
 
@@ -111,6 +120,14 @@ func TestMapping_Map(t *testing.T) {
 				{Name: "cn", Values: []string{"cn_1"}},
 				{Name: "dc", Values: []string{"dc_1"}},
 				{Name: "ou", Values: []string{"ou_1,ou_2"}},
+			},
+			ok: true,
+		},
+		"whitespace": {
+			groups:      []string{"super group"},
+			permissions: []string{charon.UserCanCreate.String()},
+			attributes: []*libldap.EntryAttribute{
+				{Name: "cn", Values: []string{"sg_1"}},
 			},
 			ok: true,
 		},

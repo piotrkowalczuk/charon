@@ -109,22 +109,22 @@ MappingLoop:
 	return groups, permissions, len(groups) > 0 || len(permissions) > 0
 }
 
-func (lm *Mappings) compare(givens, expexteds []string) bool {
-	if len(expexteds) == 0 {
+func (lm *Mappings) compare(given, expected []string) bool {
+	if len(expected) == 0 {
 		return true
 	}
 	var match int
-	for _, given := range givens {
-		for _, givenSplit := range strings.Split(given, ",") {
-			for _, expected := range expexteds {
-				if givenSplit == expected {
+	for _, giv := range given {
+		for _, givenSplit := range strings.Split(giv, ",") {
+			for _, exp := range expected {
+				if givenSplit == exp {
 					match++
 				}
 			}
 		}
 	}
 
-	return match == len(expexteds)
+	return match == len(expected)
 }
 
 func removeDuplicates(xs *[]string) {

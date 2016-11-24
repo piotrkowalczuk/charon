@@ -109,11 +109,12 @@ func load(config configuration) error {
 		if err != nil {
 			if grpc.Code(err) == codes.AlreadyExists {
 				fmt.Printf("group (%s) already exists\n", group.Name)
-				continue
+			} else {
+				return fmt.Errorf("group (%s) creation failure: %s", group.Name, err.Error())
 			}
-			return fmt.Errorf("group (%s) creation failure: %s", group.Name, err.Error())
+		} else {
+			fmt.Printf("group (%s) has been created: %d\n", group.Name, res.Group.Id)
 		}
-		fmt.Printf("group (%s) has been created: %d\n", group.Name, res.Group.Id)
 
 		_, err = c.group.SetPermissions(ctx, &charonrpc.SetGroupPermissionsRequest{
 			GroupId:     res.Group.Id,

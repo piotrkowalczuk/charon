@@ -11,11 +11,11 @@ import (
 )
 
 func TestListUsersHandler_firewall_success(t *testing.T) {
-	data := []struct {
+	cases := map[string]struct {
 		req charonrpc.ListUsersRequest
 		act actor
 	}{
-		{
+		"as-owner": {
 
 			req: charonrpc.ListUsersRequest{
 				CreatedBy: qtypes.EqualInt64(1),
@@ -27,7 +27,7 @@ func TestListUsersHandler_firewall_success(t *testing.T) {
 				},
 			},
 		},
-		{
+		"as-stranger": {
 			req: charonrpc.ListUsersRequest{
 				CreatedBy: qtypes.EqualInt64(3),
 			},
@@ -38,7 +38,7 @@ func TestListUsersHandler_firewall_success(t *testing.T) {
 				},
 			},
 		},
-		{
+		"as-superuser-search-for-superusers": {
 			req: charonrpc.ListUsersRequest{
 				IsSuperuser: &ntypes.Bool{Bool: true, Valid: true},
 			},
@@ -49,7 +49,7 @@ func TestListUsersHandler_firewall_success(t *testing.T) {
 				},
 			},
 		},
-		{
+		"as-superuser": {
 			req: charonrpc.ListUsersRequest{},
 			act: actor{
 				user: &model.UserEntity{
@@ -58,7 +58,7 @@ func TestListUsersHandler_firewall_success(t *testing.T) {
 				},
 			},
 		},
-		{
+		"as-owner-search-for-staff": {
 			req: charonrpc.ListUsersRequest{
 				IsStaff:   &ntypes.Bool{Bool: true, Valid: true},
 				CreatedBy: qtypes.EqualInt64(1),
@@ -72,7 +72,7 @@ func TestListUsersHandler_firewall_success(t *testing.T) {
 				},
 			},
 		},
-		{
+		"as-stranger-search-for-staff": {
 			req: charonrpc.ListUsersRequest{
 				IsStaff:   &ntypes.Bool{Bool: true, Valid: true},
 				CreatedBy: qtypes.EqualInt64(3),
@@ -86,7 +86,7 @@ func TestListUsersHandler_firewall_success(t *testing.T) {
 				},
 			},
 		},
-		{
+		"all-permissions": {
 			req: charonrpc.ListUsersRequest{},
 			act: actor{
 				user: &model.UserEntity{ID: 1},
@@ -98,7 +98,7 @@ func TestListUsersHandler_firewall_success(t *testing.T) {
 				},
 			},
 		},
-		{
+		"as-superuser-with-all-permissions": {
 			req: charonrpc.ListUsersRequest{
 				IsSuperuser: &ntypes.Bool{Bool: true, Valid: true},
 			},
@@ -115,10 +115,12 @@ func TestListUsersHandler_firewall_success(t *testing.T) {
 	}
 
 	h := &listUsersHandler{}
-	for i, d := range data {
-		if err := h.firewall(&d.req, &d.act); err != nil {
-			t.Errorf("unexpected error for %d: %s", i, err.Error())
-		}
+	for hint, c := range cases {
+		t.Run(hint, func(t *testing.T) {
+			if err := h.firewall(&c.req, &c.act); err != nil {
+				t.Errorf("unexpected error for %d: %s", i, err.Error())
+			}
+		})
 	}
 }
 

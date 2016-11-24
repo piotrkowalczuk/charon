@@ -202,6 +202,10 @@ func (lh *loginHandler) handleLDAP(conn *libldap.Conn, r *charonrpc.LoginRequest
 			if err != nil {
 				return nil, err
 			}
+			if len(groupsFound) == 0 {
+				sklog.Debug(lh.logger, "user not added to groups, none found", "user_id", usr.ID, "groups", strings.Join(groups, ","))
+				return usr, nil
+			}
 			var ids []int64
 			for _, g := range groupsFound {
 				ids = append(ids, g.ID)

@@ -1,5 +1,5 @@
 hash: c9b6e08fd7d7d56e42d64e2741037936bf73bc1d44fab066a8b74f78420eda8e
-updated: 2016-11-23T11:47:34.245621238+01:00
+updated: 2016-11-24T13:53:11.307660715+01:00
 imports:
 - name: github.com/beorn7/perks
   version: 4c0e84591b9aa9e6dcfdf3e020114cd81f89d5f9
@@ -67,7 +67,7 @@ imports:
 - name: github.com/piotrkowalczuk/promgrpc
   version: 6dcaf1a8dc829dcea441330ba639d04472b696af
 - name: github.com/piotrkowalczuk/qtypes
-  version: 245111047db59a252a96b37b8d670099f185663e
+  version: 4325c682e95fb74655cedb1e545974ef240c8762
 - name: github.com/piotrkowalczuk/sklog
   version: ec5c8660c571ff906c65341ba96de449706d63fa
 - name: github.com/pmezard/go-difflib
