@@ -30,6 +30,7 @@ type PermissionProvider interface {
 // PermissionRepository extends PermissionRepositoryBase
 type PermissionRepository struct {
 	PermissionRepositoryBase
+	findByUserIDQuery string
 }
 
 // NewPermissionRepository ...
@@ -40,28 +41,32 @@ func NewPermissionRepository(dbPool *sql.DB) *PermissionRepository {
 			table:   TablePermission,
 			columns: TablePermissionColumns,
 		},
+		findByUserIDQuery: `SELECT DISTINCT ON (p.ID)
+			` + columns(TablePermissionColumns, "p") + `
+		FROM ` + TableUserPermissions + ` AS up
+		LEFT JOIN ` + TablePermission + ` AS p
+			ON up.` + TableUserPermissionsColumnPermissionSubsystem + ` = p.` + TablePermissionColumnSubsystem + `
+			AND up.` + TableUserPermissionsColumnPermissionModule + ` = p.` + TablePermissionColumnModule + `
+			AND up.` + TableUserPermissionsColumnPermissionAction + ` = p.` + TablePermissionColumnAction + `
+		WHERE up.` + TableUserPermissionsColumnUserID + ` = $1
+		UNION
+		SELECT DISTINCT ON (p.ID) ` + columns(TablePermissionColumns, "p") + `
+		FROM ` + TableUserGroups + ` AS ug
+		LEFT JOIN ` + TableGroupPermissions + ` AS gp ON ug.` + TableUserGroupsColumnGroupID + ` = gp.` + TableGroupPermissionsColumnGroupID + `
+		LEFT JOIN ` + TablePermission + ` as p
+			ON gp.` + TableGroupPermissionsColumnPermissionSubsystem + ` = p.` + TablePermissionColumnSubsystem + `
+			AND gp.` + TableGroupPermissionsColumnPermissionModule + ` = p.` + TablePermissionColumnModule + `
+			AND gp.` + TableGroupPermissionsColumnPermissionAction + ` = p.` + TablePermissionColumnAction + `
+			AND gp.` + TableGroupPermissionsColumnGroupID + ` = ug.` + TableUserGroupsColumnGroupID + `
+		WHERE ug.` + TableUserGroupsColumnUserID + ` = $1
+	`,
 	}
 }
 
 // FindByUserID implements PermissionProvider interface.
 func (pr *PermissionRepository) FindByUserID(userID int64) ([]*PermissionEntity, error) {
 	// TODO: does it work?
-	return pr.FindBy(`
-		SELECT DISTINCT ON (p.ID)
-			`+columns(TablePermissionColumns, "p")+`
-		FROM `+pr.table+` AS p
-		LEFT JOIN `+TableUserPermissions+` AS up
-			ON up.`+TableUserPermissionsColumnPermissionSubsystem+` = p.`+TablePermissionColumnSubsystem+`
-			AND up.`+TableUserPermissionsColumnPermissionModule+` = p.`+TablePermissionColumnModule+`
-			AND up.`+TableUserPermissionsColumnPermissionAction+` = p.`+TablePermissionColumnAction+`
-		LEFT JOIN `+TableUserGroups+` AS ug ON ug.`+TableUserGroupsColumnUserID+` = $1
-		LEFT JOIN `+TableGroupPermissions+` AS gp
-			ON gp.`+TableGroupPermissionsColumnPermissionSubsystem+` = p.`+TablePermissionColumnSubsystem+`
-			AND gp.`+TableGroupPermissionsColumnPermissionModule+` = p.`+TablePermissionColumnModule+`
-			AND gp.`+TableGroupPermissionsColumnPermissionAction+` = p.`+TablePermissionColumnAction+`
-			AND gp.`+TableGroupPermissionsColumnGroupID+` = ug.`+TableUserGroupsColumnGroupID+`
-		WHERE up.`+TableUserPermissionsColumnUserID+` = $1 OR ug.`+TableUserGroupsColumnUserID+` = $1
-	`, userID)
+	return pr.FindBy(pr.findByUserIDQuery, userID)
 }
 
 // FindByGroupID implements PermissionProvider interface.
