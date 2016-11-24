@@ -29,7 +29,7 @@ type Mapping struct {
 
 // MappingTo ...
 type MappingTo struct {
-	IsStaff     bool
+	IsStaff     bool     `json:"isStaff"`
 	Groups      []string `json:"groups"`
 	Permissions []string `json:"permissions"`
 }
