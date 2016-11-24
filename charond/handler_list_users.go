@@ -76,7 +76,7 @@ func (luh *listUsersHandler) firewall(req *charonrpc.ListUsersRequest, act *acto
 		return nil
 	}
 	if req.CreatedBy.Value() == act.user.ID {
-		if !act.permissions.Contains(charon.UserCanRetrieveAsOwner) {
+		if !act.permissions.Contains(charon.UserCanRetrieveAsStranger, charon.UserCanRetrieveAsOwner) {
 			return grpc.Errorf(codes.PermissionDenied, "list of users cannot be retrieved as an owner, missing permission")
 		}
 		return nil

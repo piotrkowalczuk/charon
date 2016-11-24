@@ -29,6 +29,7 @@ type Mapping struct {
 
 // MappingTo ...
 type MappingTo struct {
+	IsStaff     bool
 	Groups      []string `json:"groups"`
 	Permissions []string `json:"permissions"`
 }
@@ -67,10 +68,11 @@ func NewMappingsFromFile(p string) (*Mappings, error) {
 }
 
 // Map search groups and permissions that given LDAP entry match.
-func (m *Mappings) Map(attrs []*ldap.EntryAttribute) ([]string, []string, bool) {
+func (m *Mappings) Map(attrs []*ldap.EntryAttribute) (*MappingTo, bool) {
 	var (
-		groups, permissions []string
-		expected, valid     int
+		to              MappingTo
+		expected, valid int
+		found           bool
 	)
 
 MappingLoop:
@@ -101,12 +103,16 @@ MappingLoop:
 		}
 
 		if valid >= expected {
-			groups = append(groups, mapping.To.Groups...)
-			permissions = append(permissions, mapping.To.Permissions...)
+			found = true
+			if mapping.To.IsStaff {
+				to.IsStaff = true
+			}
+			to.Groups = append(to.Groups, mapping.To.Groups...)
+			to.Permissions = append(to.Permissions, mapping.To.Permissions...)
 		}
 	}
 
-	return groups, permissions, len(groups) > 0 || len(permissions) > 0
+	return &to, found
 }
 
 func (lm *Mappings) compare(given, expected []string) bool {

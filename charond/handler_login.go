@@ -144,6 +144,8 @@ func (lh *loginHandler) handleLDAP(conn *libldap.Conn, r *charonrpc.LoginRequest
 
 	sklog.Debug(lh.logger, "user found in ldap", "username_given", r.Username, "username_got", username, "attributes_got", res.Entries[0].Attributes, "attributes_asked", lh.mappings.Attributes)
 
+	mapping, found := lh.mappings.Map(res.Entries[0].Attributes)
+
 	var usr *model.UserEntity
 	usr, err = lh.repository.user.FindOneByUsername(username)
 	if err != nil {
@@ -157,7 +159,7 @@ func (lh *loginHandler) handleLDAP(conn *libldap.Conn, r *charonrpc.LoginRequest
 				res.Entries[0].GetAttributeValue("sn"),
 				[]byte(model.UserConfirmationTokenUsed),
 				false,
-				false,
+				mapping.IsStaff,
 				true,
 				true,
 			)
@@ -176,11 +178,11 @@ func (lh *loginHandler) handleLDAP(conn *libldap.Conn, r *charonrpc.LoginRequest
 			return nil, grpc.Errorf(codes.Unauthenticated, "the username and password do not match")
 		}
 	}
-	if groups, permissions, ok := lh.mappings.Map(res.Entries[0].Attributes); ok {
-		sklog.Debug(lh.logger, "ldap mapping found", "username", username, "count_groups", len(groups), "count_permissions", len(permissions))
+	if found {
+		sklog.Debug(lh.logger, "ldap mapping found", "username", username, "count_groups", len(mapping.Groups), "count_permissions", len(mapping.Permissions))
 
-		if len(permissions) > 0 {
-			inserted, _, err := lh.repository.user.SetPermissions(usr.ID, charon.NewPermissions(permissions...)...)
+		if len(mapping.Permissions) > 0 {
+			inserted, _, err := lh.repository.user.SetPermissions(usr.ID, charon.NewPermissions(mapping.Permissions...)...)
 			if err != nil {
 				return nil, err
 			}
@@ -191,10 +193,10 @@ func (lh *loginHandler) handleLDAP(conn *libldap.Conn, r *charonrpc.LoginRequest
 			}
 		}
 
-		if len(groups) > 0 {
+		if len(mapping.Groups) > 0 {
 			groupsFound, err := lh.repository.group.Find(&model.GroupCriteria{
 				Name: &qtypes.String{
-					Values: groups,
+					Values: mapping.Groups,
 					Type:   qtypes.QueryType_IN,
 					Valid:  true,
 				},
@@ -203,7 +205,7 @@ func (lh *loginHandler) handleLDAP(conn *libldap.Conn, r *charonrpc.LoginRequest
 				return nil, err
 			}
 			if len(groupsFound) == 0 {
-				sklog.Debug(lh.logger, "user not added to groups, none found", "user_id", usr.ID, "groups", strings.Join(groups, ","))
+				sklog.Debug(lh.logger, "user not added to groups, none found", "user_id", usr.ID, "groups", strings.Join(mapping.Groups, ","))
 				return usr, nil
 			}
 			var ids []int64

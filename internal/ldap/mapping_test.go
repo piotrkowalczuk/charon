@@ -91,13 +91,15 @@ func TestMapping_Map(t *testing.T) {
 					"memberOf": {"cn=project1", "cn=company"},
 				},
 				To: ldap.MappingTo{
-					Groups: []string{"project-manager"},
+					IsStaff: true,
+					Groups:  []string{"project-manager"},
 				},
 			},
 		},
 	}
 
 	cases := map[string]struct {
+		isStaff             bool
 		groups, permissions []string
 		attributes          []*libldap.EntryAttribute
 		ok                  bool
@@ -160,8 +162,9 @@ func TestMapping_Map(t *testing.T) {
 			},
 			ok: true,
 		},
-		"complex-joined": {
-			groups: []string{"project-manager"},
+		"staff": {
+			isStaff: true,
+			groups:  []string{"project-manager"},
 			attributes: []*libldap.EntryAttribute{
 				{Name: "memberOf", Values: []string{"cn=project1,cn=company", "cn=project2,cn=company"}},
 			},
@@ -171,7 +174,7 @@ func TestMapping_Map(t *testing.T) {
 
 	for hint, c := range cases {
 		t.Run(hint, func(t *testing.T) {
-			groups, permissions, ok := mappings.Map(c.attributes)
+			got, ok := mappings.Map(c.attributes)
 			if c.ok && c.ok != ok {
 				t.Fatal("expected mappings")
 			}
@@ -179,11 +182,14 @@ func TestMapping_Map(t *testing.T) {
 				t.Fatal("unexpected mappings")
 			}
 
-			if !reflect.DeepEqual(c.groups, groups) {
-				t.Errorf("groups do not match, expected %v but got %v", c.groups, groups)
+			if !reflect.DeepEqual(c.groups, got.Groups) {
+				t.Errorf("groups do not match, expected %v but got %v", c.groups, got.Groups)
 			}
-			if !reflect.DeepEqual(c.permissions, permissions) {
-				t.Errorf("permissions do not match, expected %v but got %v", c.permissions, permissions)
+			if !reflect.DeepEqual(c.permissions, got.Permissions) {
+				t.Errorf("permissions do not match, expected %v but got %v", c.permissions, got.Permissions)
+			}
+			if c.isStaff != got.IsStaff {
+				t.Errorf("is staff do nto match, expected %t but got %t", c.isStaff, got.IsStaff)
 			}
 		})
 	}
