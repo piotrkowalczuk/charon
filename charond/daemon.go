@@ -10,6 +10,7 @@ import (
 	"os"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/go-kit/kit/log"
 	libldap "github.com/go-ldap/ldap"
@@ -146,17 +147,14 @@ func (d *Daemon) Run() (err error) {
 		// No stream endpoint available at the moment.
 		grpc.UnaryInterceptor(unaryServerInterceptors(
 			func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+				start := time.Now()
 				res, err := handler(ctx, req)
 
 				if err != nil && grpc.Code(err) != codes.OK {
-					switch grpc.Code(err) {
-					case codes.OK:
-						sklog.Debug(d.logger, "request handled successfully", "handler", info.FullMethod)
-					default:
-						sklog.Error(d.logger, errors.New(grpc.ErrorDesc(err)), "handler", info.FullMethod, "code", grpc.Code(err).String())
-					}
+					sklog.Error(d.logger, errors.New(grpc.ErrorDesc(err)), "handler", info.FullMethod, "code", grpc.Code(err).String(), "elapsed", time.Since(start))
 					return nil, handleError(err)
 				}
+				sklog.Debug(d.logger, "request handled successfully", "handler", info.FullMethod, "elapsed", time.Since(start))
 				return res, err
 			},
 			interceptor.UnaryServer(),
