@@ -144,6 +144,7 @@ func (d *Daemon) Run() (err error) {
 	permissionReg := initPermissionRegistry(repos.permission, charon.AllPermissions, d.logger)
 
 	opts := []grpc.ServerOption{
+		grpc.MaxConcurrentStreams(100),
 		// No stream endpoint available at the moment.
 		grpc.UnaryInterceptor(unaryServerInterceptors(
 			func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
