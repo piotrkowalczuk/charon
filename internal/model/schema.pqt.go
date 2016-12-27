@@ -370,7 +370,10 @@ func (c *UserCriteria) WriteComposition(sel string, com *pqtgo.Composer, opt *pq
 		}
 	}
 
-	if err = pqtgo.WriteCompositionQueryInt64(c.CreatedBy, TableUserColumnCreatedBy, com, pqtgo.And); err != nil {
+	if err = pqtgo.WriteCompositionQueryInt64(c.CreatedBy, TableUserColumnCreatedBy, com, &pqtgo.CompositionOpts{
+		Joint:  " AND ",
+		IsJSON: false,
+	}); err != nil {
 		return
 	}
 
@@ -378,7 +381,10 @@ func (c *UserCriteria) WriteComposition(sel string, com *pqtgo.Composer, opt *pq
 		return
 	}
 
-	if err = pqtgo.WriteCompositionQueryInt64(c.ID, TableUserColumnID, com, pqtgo.And); err != nil {
+	if err = pqtgo.WriteCompositionQueryInt64(c.ID, TableUserColumnID, com, &pqtgo.CompositionOpts{
+		Joint:  " AND ",
+		IsJSON: false,
+	}); err != nil {
 		return
 	}
 	if c.IsActive != nil && c.IsActive.Valid {
@@ -691,7 +697,10 @@ func (c *UserCriteria) WriteComposition(sel string, com *pqtgo.Composer, opt *pq
 		}
 	}
 
-	if err = pqtgo.WriteCompositionQueryInt64(c.UpdatedBy, TableUserColumnUpdatedBy, com, pqtgo.And); err != nil {
+	if err = pqtgo.WriteCompositionQueryInt64(c.UpdatedBy, TableUserColumnUpdatedBy, com, &pqtgo.CompositionOpts{
+		Joint:  " AND ",
+		IsJSON: false,
+	}); err != nil {
 		return
 	}
 
@@ -1574,7 +1583,10 @@ func (c *GroupCriteria) WriteComposition(sel string, com *pqtgo.Composer, opt *p
 		}
 	}
 
-	if err = pqtgo.WriteCompositionQueryInt64(c.CreatedBy, TableGroupColumnCreatedBy, com, pqtgo.And); err != nil {
+	if err = pqtgo.WriteCompositionQueryInt64(c.CreatedBy, TableGroupColumnCreatedBy, com, &pqtgo.CompositionOpts{
+		Joint:  " AND ",
+		IsJSON: false,
+	}); err != nil {
 		return
 	}
 
@@ -1582,7 +1594,10 @@ func (c *GroupCriteria) WriteComposition(sel string, com *pqtgo.Composer, opt *p
 		return
 	}
 
-	if err = pqtgo.WriteCompositionQueryInt64(c.ID, TableGroupColumnID, com, pqtgo.And); err != nil {
+	if err = pqtgo.WriteCompositionQueryInt64(c.ID, TableGroupColumnID, com, &pqtgo.CompositionOpts{
+		Joint:  " AND ",
+		IsJSON: false,
+	}); err != nil {
 		return
 	}
 
@@ -1708,7 +1723,10 @@ func (c *GroupCriteria) WriteComposition(sel string, com *pqtgo.Composer, opt *p
 		}
 	}
 
-	if err = pqtgo.WriteCompositionQueryInt64(c.UpdatedBy, TableGroupColumnUpdatedBy, com, pqtgo.And); err != nil {
+	if err = pqtgo.WriteCompositionQueryInt64(c.UpdatedBy, TableGroupColumnUpdatedBy, com, &pqtgo.CompositionOpts{
+		Joint:  " AND ",
+		IsJSON: false,
+	}); err != nil {
 		return
 	}
 
@@ -2466,7 +2484,10 @@ func (c *PermissionCriteria) WriteComposition(sel string, com *pqtgo.Composer, o
 		}
 	}
 
-	if err = pqtgo.WriteCompositionQueryInt64(c.ID, TablePermissionColumnID, com, pqtgo.And); err != nil {
+	if err = pqtgo.WriteCompositionQueryInt64(c.ID, TablePermissionColumnID, com, &pqtgo.CompositionOpts{
+		Joint:  " AND ",
+		IsJSON: false,
+	}); err != nil {
 		return
 	}
 
@@ -3341,11 +3362,17 @@ func (c *UserGroupsCriteria) WriteComposition(sel string, com *pqtgo.Composer, o
 		}
 	}
 
-	if err = pqtgo.WriteCompositionQueryInt64(c.CreatedBy, TableUserGroupsColumnCreatedBy, com, pqtgo.And); err != nil {
+	if err = pqtgo.WriteCompositionQueryInt64(c.CreatedBy, TableUserGroupsColumnCreatedBy, com, &pqtgo.CompositionOpts{
+		Joint:  " AND ",
+		IsJSON: false,
+	}); err != nil {
 		return
 	}
 
-	if err = pqtgo.WriteCompositionQueryInt64(c.GroupID, TableUserGroupsColumnGroupID, com, pqtgo.And); err != nil {
+	if err = pqtgo.WriteCompositionQueryInt64(c.GroupID, TableUserGroupsColumnGroupID, com, &pqtgo.CompositionOpts{
+		Joint:  " AND ",
+		IsJSON: false,
+	}); err != nil {
 		return
 	}
 
@@ -3467,11 +3494,17 @@ func (c *UserGroupsCriteria) WriteComposition(sel string, com *pqtgo.Composer, o
 		}
 	}
 
-	if err = pqtgo.WriteCompositionQueryInt64(c.UpdatedBy, TableUserGroupsColumnUpdatedBy, com, pqtgo.And); err != nil {
+	if err = pqtgo.WriteCompositionQueryInt64(c.UpdatedBy, TableUserGroupsColumnUpdatedBy, com, &pqtgo.CompositionOpts{
+		Joint:  " AND ",
+		IsJSON: false,
+	}); err != nil {
 		return
 	}
 
-	if err = pqtgo.WriteCompositionQueryInt64(c.UserID, TableUserGroupsColumnUserID, com, pqtgo.And); err != nil {
+	if err = pqtgo.WriteCompositionQueryInt64(c.UserID, TableUserGroupsColumnUserID, com, &pqtgo.CompositionOpts{
+		Joint:  " AND ",
+		IsJSON: false,
+	}); err != nil {
 		return
 	}
 
@@ -4156,11 +4189,17 @@ func (c *GroupPermissionsCriteria) WriteComposition(sel string, com *pqtgo.Compo
 		}
 	}
 
-	if err = pqtgo.WriteCompositionQueryInt64(c.CreatedBy, TableGroupPermissionsColumnCreatedBy, com, pqtgo.And); err != nil {
+	if err = pqtgo.WriteCompositionQueryInt64(c.CreatedBy, TableGroupPermissionsColumnCreatedBy, com, &pqtgo.CompositionOpts{
+		Joint:  " AND ",
+		IsJSON: false,
+	}); err != nil {
 		return
 	}
 
-	if err = pqtgo.WriteCompositionQueryInt64(c.GroupID, TableGroupPermissionsColumnGroupID, com, pqtgo.And); err != nil {
+	if err = pqtgo.WriteCompositionQueryInt64(c.GroupID, TableGroupPermissionsColumnGroupID, com, &pqtgo.CompositionOpts{
+		Joint:  " AND ",
+		IsJSON: false,
+	}); err != nil {
 		return
 	}
 
@@ -4294,7 +4333,10 @@ func (c *GroupPermissionsCriteria) WriteComposition(sel string, com *pqtgo.Compo
 		}
 	}
 
-	if err = pqtgo.WriteCompositionQueryInt64(c.UpdatedBy, TableGroupPermissionsColumnUpdatedBy, com, pqtgo.And); err != nil {
+	if err = pqtgo.WriteCompositionQueryInt64(c.UpdatedBy, TableGroupPermissionsColumnUpdatedBy, com, &pqtgo.CompositionOpts{
+		Joint:  " AND ",
+		IsJSON: false,
+	}); err != nil {
 		return
 	}
 
@@ -5001,7 +5043,10 @@ func (c *UserPermissionsCriteria) WriteComposition(sel string, com *pqtgo.Compos
 		}
 	}
 
-	if err = pqtgo.WriteCompositionQueryInt64(c.CreatedBy, TableUserPermissionsColumnCreatedBy, com, pqtgo.And); err != nil {
+	if err = pqtgo.WriteCompositionQueryInt64(c.CreatedBy, TableUserPermissionsColumnCreatedBy, com, &pqtgo.CompositionOpts{
+		Joint:  " AND ",
+		IsJSON: false,
+	}); err != nil {
 		return
 	}
 
@@ -5135,11 +5180,17 @@ func (c *UserPermissionsCriteria) WriteComposition(sel string, com *pqtgo.Compos
 		}
 	}
 
-	if err = pqtgo.WriteCompositionQueryInt64(c.UpdatedBy, TableUserPermissionsColumnUpdatedBy, com, pqtgo.And); err != nil {
+	if err = pqtgo.WriteCompositionQueryInt64(c.UpdatedBy, TableUserPermissionsColumnUpdatedBy, com, &pqtgo.CompositionOpts{
+		Joint:  " AND ",
+		IsJSON: false,
+	}); err != nil {
 		return
 	}
 
-	if err = pqtgo.WriteCompositionQueryInt64(c.UserID, TableUserPermissionsColumnUserID, com, pqtgo.And); err != nil {
+	if err = pqtgo.WriteCompositionQueryInt64(c.UserID, TableUserPermissionsColumnUserID, com, &pqtgo.CompositionOpts{
+		Joint:  " AND ",
+		IsJSON: false,
+	}); err != nil {
 		return
 	}
 

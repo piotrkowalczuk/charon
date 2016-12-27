@@ -1,5 +1,5 @@
-hash: c9b6e08fd7d7d56e42d64e2741037936bf73bc1d44fab066a8b74f78420eda8e
-updated: 2016-11-24T13:53:11.307660715+01:00
+hash: 20a69eba9ada6a08d69ba325b74a03a63f1f5ef5dc8c8a990b44e9cdf2dbadcd
+updated: 2016-12-27T15:05:15.351936486+01:00
 imports:
 - name: github.com/beorn7/perks
   version: 4c0e84591b9aa9e6dcfdf3e020114cd81f89d5f9
@@ -48,7 +48,7 @@ imports:
 - name: github.com/pborman/uuid
   version: a97ce2ca70fa5a848076093f05e639a89ca34d06
 - name: github.com/piotrkowalczuk/mnemosyne
-  version: 6f5942ea6979d4dc6de3ff8c08d7223a0cb0eae1
+  version: 8982a34a915c8744ef7331528be5e9e7536bacc0
   subpackages:
   - internal/cluster
   - internal/jump
@@ -60,7 +60,7 @@ imports:
 - name: github.com/piotrkowalczuk/pqcomp
   version: 631b19c36ded8bbe954cf8c15a0044c591033536
 - name: github.com/piotrkowalczuk/pqt
-  version: 9946d7c34086e4ce6c117ec8eeb2c5e28ffad7b1
+  version: 8da7fccda49fb5c6b2d68d45e829ae159e29dc4b
   subpackages:
   - pqtgo
   - pqtsql
@@ -128,7 +128,7 @@ imports:
   - internal/urlfetch
   - urlfetch
 - name: google.golang.org/grpc
-  version: 777daa17ff9b5daef1cfdf915088a2ada3332bf0
+  version: 708a7f9f3283aa2d4f6132d287d78683babe55c8
   subpackages:
   - codes
   - credentials
@@ -137,6 +137,8 @@ imports:
   - metadata
   - naming
   - peer
+  - stats
+  - tap
   - transport
 - name: gopkg.in/asn1-ber.v1
   version: 4e86f4367175e39f69d9358a5f17b4dda270378d
