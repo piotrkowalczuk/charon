@@ -7,7 +7,6 @@ import (
 	"github.com/piotrkowalczuk/charon/charonrpc"
 	"github.com/piotrkowalczuk/charon/internal/model"
 	"github.com/piotrkowalczuk/ntypes"
-	"github.com/piotrkowalczuk/pqt"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -27,7 +26,7 @@ func (muh *modifyUserHandler) Modify(ctx context.Context, req *charonrpc.ModifyU
 		return nil, err
 	}
 
-	ent, err := muh.repository.user.FindOneByID(req.Id)
+	ent, err := muh.repository.user.FindOneByID(ctx, req.Id)
 	if err != nil {
 		return nil, err
 	}
@@ -36,22 +35,22 @@ func (muh *modifyUserHandler) Modify(ctx context.Context, req *charonrpc.ModifyU
 		return nil, grpc.Errorf(codes.PermissionDenied, hint)
 	}
 
-	ent, err = muh.repository.user.UpdateOneByID(req.Id, &model.UserPatch{
-		FirstName:   req.FirstName,
-		IsActive:    req.IsActive,
-		IsConfirmed: req.IsConfirmed,
-		IsStaff:     req.IsStaff,
-		IsSuperuser: req.IsSuperuser,
-		LastName:    req.LastName,
+	ent, err = muh.repository.user.UpdateOneByID(ctx, req.Id, &model.UserPatch{
+		FirstName:   *req.FirstName,
+		IsActive:    *req.IsActive,
+		IsConfirmed: *req.IsConfirmed,
+		IsStaff:     *req.IsStaff,
+		IsSuperuser: *req.IsSuperuser,
+		LastName:    *req.LastName,
 		Password:    req.SecurePassword,
-		UpdatedBy:   &ntypes.Int64{Int64: act.user.ID, Valid: act.user.ID != 0},
-		Username:    req.Username,
+		UpdatedBy:   ntypes.Int64{Int64: act.user.ID, Valid: act.user.ID != 0},
+		Username:    *req.Username,
 	})
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, grpc.Errorf(codes.NotFound, "group does not exists")
 		}
-		switch pqt.ErrorConstraint(err) {
+		switch model.ErrorConstraint(err) {
 		case model.TableUserConstraintUsernameUnique:
 			return nil, grpc.Errorf(codes.AlreadyExists, "user with such username already exists")
 		default:

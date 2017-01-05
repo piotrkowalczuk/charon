@@ -22,7 +22,7 @@ func (lph *listPermissionsHandler) List(ctx context.Context, req *charonrpc.List
 		return nil, err
 	}
 
-	entities, err := lph.repository.permission.Find(&model.PermissionCriteria{
+	entities, err := lph.repository.permission.Find(ctx, &model.PermissionCriteria{
 		Offset:    req.Offset.Int64Or(0),
 		Limit:     req.Limit.Int64Or(10),
 		Subsystem: req.Subsystem,

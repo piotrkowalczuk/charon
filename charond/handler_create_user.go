@@ -6,7 +6,6 @@ import (
 	"github.com/piotrkowalczuk/charon/charonrpc"
 	"github.com/piotrkowalczuk/charon/internal/model"
 	"github.com/piotrkowalczuk/charon/internal/password"
-	"github.com/piotrkowalczuk/pqt"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -21,7 +20,7 @@ func (cuh *createUserHandler) Create(ctx context.Context, req *charonrpc.CreateU
 	act, err := cuh.retrieveActor(ctx)
 	if err != nil {
 		if req.IsSuperuser.BoolOr(false) {
-			count, err := cuh.repository.user.Count()
+			count, err := cuh.repository.user.Count(ctx)
 			if err != nil {
 				return nil, err
 			}
@@ -53,6 +52,7 @@ func (cuh *createUserHandler) Create(ctx context.Context, req *charonrpc.CreateU
 	}
 
 	ent, err := cuh.repository.user.Create(
+		ctx,
 		req.Username,
 		req.SecurePassword,
 		req.FirstName,
@@ -64,7 +64,7 @@ func (cuh *createUserHandler) Create(ctx context.Context, req *charonrpc.CreateU
 		req.IsConfirmed.BoolOr(false),
 	)
 	if err != nil {
-		switch pqt.ErrorConstraint(err) {
+		switch model.ErrorConstraint(err) {
 		case model.TableUserConstraintPrimaryKey:
 			return nil, grpc.Errorf(codes.AlreadyExists, "user with such id already exists")
 		case model.TableUserConstraintUsernameUnique:

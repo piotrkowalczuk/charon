@@ -24,26 +24,26 @@ func (luh *listUsersHandler) List(ctx context.Context, req *charonrpc.ListUsersR
 		return nil, err
 	}
 
-	criteria := &model.UserCriteria{
+	cri := &model.UserCriteria{
 		Sort:        req.Sort,
 		Offset:      req.Offset.Int64Or(0),
 		Limit:       req.Limit.Int64Or(10),
-		IsSuperuser: req.IsSuperuser,
-		IsStaff:     req.IsStaff,
+		IsSuperuser: *req.IsSuperuser,
+		IsStaff:     *req.IsStaff,
 		CreatedBy:   req.CreatedBy,
 	}
 
 	if !act.user.IsSuperuser {
-		criteria.IsSuperuser = ntypes.False()
+		cri.IsSuperuser = *ntypes.False()
 	}
 	if !act.permissions.Contains(charon.UserCanRetrieveStaffAsStranger) {
-		criteria.IsStaff = ntypes.False()
+		cri.IsStaff = *ntypes.False()
 	}
 	if act.permissions.Contains(charon.UserCanRetrieveAsOwner, charon.UserCanRetrieveStaffAsOwner) {
-		criteria.CreatedBy = qtypes.EqualInt64(act.user.ID)
+		cri.CreatedBy = qtypes.EqualInt64(act.user.ID)
 	}
 
-	ents, err := luh.repository.user.Find(criteria)
+	ents, err := luh.repository.user.Find(ctx, cri)
 	if err != nil {
 		return nil, err
 	}

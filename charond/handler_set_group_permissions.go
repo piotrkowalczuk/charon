@@ -22,7 +22,7 @@ func (sgph *setGroupPermissionsHandler) SetPermissions(ctx context.Context, req 
 		return nil, err
 	}
 
-	created, removed, err := sgph.repository.group.SetPermissions(req.GroupId, charon.NewPermissions(req.Permissions...)...)
+	created, removed, err := sgph.repository.group.SetPermissions(ctx, req.GroupId, charon.NewPermissions(req.Permissions...)...)
 	if err != nil {
 		return nil, err
 	}

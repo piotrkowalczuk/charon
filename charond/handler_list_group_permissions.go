@@ -17,7 +17,7 @@ type listGroupPermissionsHandler struct {
 }
 
 func (luph *listGroupPermissionsHandler) ListPermissions(ctx context.Context, req *charonrpc.ListGroupPermissionsRequest) (*charonrpc.ListGroupPermissionsResponse, error) {
-	permissions, err := luph.repository.permission.FindByGroupID(req.Id)
+	permissions, err := luph.repository.permission.FindByGroupID(ctx, req.Id)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			sklog.Debug(luph.logger, "group permissions retrieved", "group_id", req.Id, "count", len(permissions))

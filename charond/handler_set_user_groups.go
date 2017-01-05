@@ -22,7 +22,7 @@ func (sugh *setUserGroupsHandler) SetGroups(ctx context.Context, req *charonrpc.
 		return nil, err
 	}
 
-	created, removed, err := sugh.repository.userGroups.Set(req.UserId, req.Groups)
+	created, removed, err := sugh.repository.userGroups.Set(ctx, req.UserId, req.Groups)
 	if err != nil {
 		return nil, err
 	}

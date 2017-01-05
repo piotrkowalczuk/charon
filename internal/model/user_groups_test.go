@@ -1,6 +1,9 @@
 package model
 
-import "testing"
+import (
+	"context"
+	"testing"
+)
 
 var (
 	userGroupsTestFixtures = []*UserEntity{
@@ -45,7 +48,7 @@ func TestUserGroupsRepository_Exists(t *testing.T) {
 				GroupID: gr.got.ID,
 			}}
 			for range loadUserGroupsFixtures(t, suite.repository.userGroups, add) {
-				exists, err := suite.repository.userGroups.Exists(ur.given.ID, gr.given.ID)
+				exists, err := suite.repository.userGroups.Exists(context.TODO(), ur.given.ID, gr.given.ID)
 
 				if err != nil {
 					t.Errorf("user group cannot be found, unexpected error: %s", err.Error())
@@ -74,7 +77,7 @@ func TestUserGroupsRepository_Set(t *testing.T) {
 		}
 	}
 
-	i, d, err := suite.repository.userGroups.Set(userGroupsTestFixtures[0].ID, groups)
+	i, d, err := suite.repository.userGroups.Set(context.TODO(), userGroupsTestFixtures[0].ID, groups)
 	if err != nil {
 		t.Errorf("user groups cannot be set, unexpected error: %s", err.Error())
 	}
@@ -85,7 +88,7 @@ func TestUserGroupsRepository_Set(t *testing.T) {
 		t.Errorf("wrong number of user groups deleted, expected %d but got %d", 0, d)
 	}
 
-	i, d, err = suite.repository.userGroups.Set(userGroupsTestFixtures[0].ID, groups)
+	i, d, err = suite.repository.userGroups.Set(context.TODO(), userGroupsTestFixtures[0].ID, groups)
 	if err != nil {
 		t.Errorf("user groups cannot be set, unexpected error: %s", err.Error())
 	}
@@ -96,7 +99,7 @@ func TestUserGroupsRepository_Set(t *testing.T) {
 		t.Errorf("wrong number of user groups deleted, expected %d but got %d", 0, d)
 	}
 
-	i, d, err = suite.repository.userGroups.Set(userGroupsTestFixtures[0].ID, []int64{})
+	i, d, err = suite.repository.userGroups.Set(context.TODO(), userGroupsTestFixtures[0].ID, []int64{})
 	if err != nil {
 		t.Errorf("user groups cannot be set, unexpected error: %s", err.Error())
 	}
@@ -117,7 +120,7 @@ func loadUserGroupsFixtures(t *testing.T, r UserGroupsProvider, f []*UserGroupsE
 
 	go func() {
 		for _, given := range f {
-			entity, err := r.Insert(given)
+			entity, err := r.Insert(context.TODO(), given)
 			if err != nil {
 				t.Errorf("user group cannot be created, unexpected error: %s", err.Error())
 				continue

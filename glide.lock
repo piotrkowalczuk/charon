@@ -1,5 +1,5 @@
-hash: 20a69eba9ada6a08d69ba325b74a03a63f1f5ef5dc8c8a990b44e9cdf2dbadcd
-updated: 2016-12-27T15:05:15.351936486+01:00
+hash: afc67a5534c9c92bcab3ad509b7d8799cc1ab1bb51c38e5194a82e52590f23f4
+updated: 2017-01-05T18:05:28.831295857+01:00
 imports:
 - name: github.com/beorn7/perks
   version: 4c0e84591b9aa9e6dcfdf3e020114cd81f89d5f9
@@ -9,16 +9,12 @@ imports:
   version: 6d212800a42e8ab5c146b8ace3490ee17e5225f9
   subpackages:
   - spew
-- name: github.com/ernesto-jimenez/gogen
-  version: 957c4ec2f9b517715281e61363e76421d7617f99
-  subpackages:
-  - imports
 - name: github.com/go-kit/kit
-  version: 6fb874ce59bb45b2f60ee3d289829db02142ecc6
+  version: ""
   subpackages:
   - log
 - name: github.com/go-ldap/ldap
-  version: d0a5ced67b4dc310b9158d63a2c6f9c5ec13f105
+  version: 8168ee085ee43257585e50c6441aadf54ecb2c9f
 - name: github.com/go-logfmt/logfmt
   version: 390ab7935ee28ec6b286364bba9b4dd6410cb3d5
 - name: github.com/go-stack/stack
@@ -56,11 +52,13 @@ imports:
   - mnemosynerpc
   - mnemosynetest
 - name: github.com/piotrkowalczuk/ntypes
-  version: baa62c0dd74181a89b70ade60f40a3c48e298b9d
+  version: b8dcd5c5c3ed4ac64ae6c2cb2c139ad2063ef880
+- name: github.com/piotrkowalczuk/ntypespqt
+  version: ea98f9dc6543574123c3cd459b7e508f294d5b53
 - name: github.com/piotrkowalczuk/pqcomp
   version: 631b19c36ded8bbe954cf8c15a0044c591033536
 - name: github.com/piotrkowalczuk/pqt
-  version: 8da7fccda49fb5c6b2d68d45e829ae159e29dc4b
+  version: 428b6e0f9d17308e593837b7368abfa314e10d37
   subpackages:
   - pqtgo
   - pqtsql
@@ -68,6 +66,8 @@ imports:
   version: 6dcaf1a8dc829dcea441330ba639d04472b696af
 - name: github.com/piotrkowalczuk/qtypes
   version: 4325c682e95fb74655cedb1e545974ef240c8762
+- name: github.com/piotrkowalczuk/qtypespqt
+  version: defb11582ed5ae1c5c3fefa28a2e656831f42e73
 - name: github.com/piotrkowalczuk/sklog
   version: ec5c8660c571ff906c65341ba96de449706d63fa
 - name: github.com/pmezard/go-difflib

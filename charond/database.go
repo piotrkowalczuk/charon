@@ -1,6 +1,7 @@
 package charond
 
 import (
+	"context"
 	"database/sql"
 
 	"github.com/piotrkowalczuk/charon/internal/model"
@@ -57,10 +58,10 @@ func teardownDatabase(db *sql.DB) error {
 	)
 }
 
-func createDummyTestUser(repo model.UserProvider, hasher password.Hasher) (*model.UserEntity, error) {
+func createDummyTestUser(ctx context.Context, repo model.UserProvider, hasher password.Hasher) (*model.UserEntity, error) {
 	password, err := hasher.Hash([]byte("test"))
 	if err != nil {
 		return nil, err
 	}
-	return repo.CreateSuperuser("test", password, "Test", "Test")
+	return repo.CreateSuperuser(ctx, "test", password, "Test", "Test")
 }

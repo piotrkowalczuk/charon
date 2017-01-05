@@ -20,7 +20,7 @@ func (guh *getUserHandler) Get(ctx context.Context, req *charonrpc.GetUserReques
 	if err != nil {
 		return nil, err
 	}
-	ent, err := guh.repository.user.FindOneByID(req.Id)
+	ent, err := guh.repository.user.FindOneByID(ctx, req.Id)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, grpc.Errorf(codes.NotFound, "user does not exists")

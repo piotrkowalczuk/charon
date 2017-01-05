@@ -29,7 +29,7 @@ func (bth *belongsToHandler) BelongsTo(ctx context.Context, req *charonrpc.Belon
 		return nil, err
 	}
 
-	belongs, err := bth.repository.userGroups.Exists(req.UserId, req.GroupId)
+	belongs, err := bth.repository.userGroups.Exists(ctx, req.UserId, req.GroupId)
 	if err != nil {
 		return nil, err
 	}

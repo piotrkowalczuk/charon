@@ -74,11 +74,11 @@ func (h *handler) retrieveActor(ctx context.Context) (act *actor, err error) {
 	}
 
 	act = &actor{}
-	act.user, err = h.repository.user.FindOneByID(userID)
+	act.user, err = h.repository.user.FindOneByID(ctx, userID)
 	if err != nil {
 		return
 	}
-	entities, err = h.repository.permission.FindByUserID(userID)
+	entities, err = h.repository.permission.FindByUserID(ctx, userID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return act, nil

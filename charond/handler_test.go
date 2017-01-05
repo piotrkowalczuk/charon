@@ -62,12 +62,12 @@ func TestHandler(t *testing.T) {
 				Once()
 
 			Convey("When user exists", func() {
-				userRepositoryMock.On("FindOneByID", id).
+				userRepositoryMock.On("FindOneByID", mock.Anything, id).
 					Return(&model.UserEntity{ID: id}, nil).
 					Once()
 
 				Convey("And it has some permissions", func() {
-					permissionRepositoryMock.On("FindByUserID", id).
+					permissionRepositoryMock.On("FindByUserID", mock.Anything, id).
 						Return([]*model.PermissionEntity{
 							{
 								Subsystem: charon.PermissionCanRetrieve.Subsystem(),
@@ -92,7 +92,7 @@ func TestHandler(t *testing.T) {
 					})
 				})
 				Convey("And it has no permissions", func() {
-					permissionRepositoryMock.On("FindByUserID", id).
+					permissionRepositoryMock.On("FindByUserID", mock.Anything, id).
 						Return(nil, sql.ErrNoRows).
 						Once()
 

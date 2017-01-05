@@ -22,7 +22,7 @@ func (suph *setUserPermissionsHandler) SetPermissions(ctx context.Context, req *
 		return nil, err
 	}
 
-	created, removed, err := suph.repository.user.SetPermissions(req.UserId, charon.NewPermissions(req.Permissions...)...)
+	created, removed, err := suph.repository.user.SetPermissions(ctx, req.UserId, charon.NewPermissions(req.Permissions...)...)
 	if err != nil {
 		return nil, err
 	}

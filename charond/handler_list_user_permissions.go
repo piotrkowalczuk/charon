@@ -17,7 +17,7 @@ type listUserPermissionsHandler struct {
 }
 
 func (luph *listUserPermissionsHandler) ListPermissions(ctx context.Context, req *charonrpc.ListUserPermissionsRequest) (*charonrpc.ListUserPermissionsResponse, error) {
-	permissions, err := luph.repository.permission.FindByUserID(req.Id)
+	permissions, err := luph.repository.permission.FindByUserID(ctx, req.Id)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			sklog.Debug(luph.logger, "user permissions retrieved", "user_id", req.Id, "count", len(permissions))

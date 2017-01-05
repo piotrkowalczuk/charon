@@ -4,7 +4,6 @@ import (
 	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/charon/charonrpc"
 	"github.com/piotrkowalczuk/charon/internal/model"
-	"github.com/piotrkowalczuk/pqt"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -23,9 +22,9 @@ func (cgh *createGroupHandler) Create(ctx context.Context, req *charonrpc.Create
 		return nil, err
 	}
 
-	ent, err := cgh.repository.group.Create(act.user.ID, req.Name, req.Description)
+	ent, err := cgh.repository.group.Create(ctx, act.user.ID, req.Name, req.Description)
 	if err != nil {
-		switch pqt.ErrorConstraint(err) {
+		switch model.ErrorConstraint(err) {
 		case model.TableGroupConstraintNameUnique:
 			return nil, grpc.Errorf(codes.AlreadyExists, "group with given name already exists")
 		default:

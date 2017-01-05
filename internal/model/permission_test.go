@@ -1,6 +1,7 @@
 package model
 
 import (
+	"context"
 	"reflect"
 	"testing"
 
@@ -30,7 +31,7 @@ func TestPermissionRepository_FindOneByID(t *testing.T) {
 	defer suite.teardown(t)
 
 	for res := range loadPermissionFixtures(t, suite.repository.permission, permissionTestFixtures) {
-		found, err := suite.repository.permission.FindOneByID(res.got.ID)
+		found, err := suite.repository.permission.FindOneByID(context.TODO(), res.got.ID)
 
 		if err != nil {
 			t.Errorf("permission cannot be found, unexpected error: %s", err.Error())
@@ -88,7 +89,7 @@ func TestPermissionRepository_Register(t *testing.T) {
 	}
 
 	for i, d := range data {
-		created, untouched, removed, err := suite.repository.permission.Register(d.permissions)
+		created, untouched, removed, err := suite.repository.permission.Register(context.TODO(), d.permissions)
 		if err != nil {
 			t.Fatalf("unexpected error: %s", err.Error())
 		}
@@ -113,7 +114,7 @@ func loadPermissionFixtures(t *testing.T, r PermissionProvider, f []*PermissionE
 
 	go func() {
 		for _, given := range f {
-			entity, err := r.Insert(given)
+			entity, err := r.Insert(context.TODO(), given)
 			if err != nil {
 				t.Errorf("permission cannot be created, unexpected error: %s", err.Error())
 				continue

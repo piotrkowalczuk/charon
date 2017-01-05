@@ -25,7 +25,7 @@ func (duh *deleteUserHandler) Delete(ctx context.Context, req *charonrpc.DeleteU
 	if err != nil {
 		return nil, err
 	}
-	ent, err := duh.repository.user.FindOneByID(req.Id)
+	ent, err := duh.repository.user.FindOneByID(ctx, req.Id)
 	if err != nil {
 		return nil, err
 	}
@@ -33,7 +33,7 @@ func (duh *deleteUserHandler) Delete(ctx context.Context, req *charonrpc.DeleteU
 		return nil, err
 	}
 
-	affected, err := duh.repository.user.DeleteOneByID(req.Id)
+	affected, err := duh.repository.user.DeleteOneByID(ctx, req.Id)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, grpc.Errorf(codes.NotFound, "user does not exists")

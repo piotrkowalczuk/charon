@@ -25,7 +25,7 @@ func TestGetUserHandler_firewall_success(t *testing.T) {
 			},
 			ent: model.UserEntity{
 				ID:        2,
-				CreatedBy: &ntypes.Int64{Int64: 1, Valid: true},
+				CreatedBy: ntypes.Int64{Int64: 1, Valid: true},
 			},
 		},
 		{
@@ -38,7 +38,7 @@ func TestGetUserHandler_firewall_success(t *testing.T) {
 			},
 			ent: model.UserEntity{
 				ID:        2,
-				CreatedBy: &ntypes.Int64{Int64: 3, Valid: true},
+				CreatedBy: ntypes.Int64{Int64: 3, Valid: true},
 			},
 		},
 		{
@@ -79,7 +79,7 @@ func TestGetUserHandler_firewall_success(t *testing.T) {
 			ent: model.UserEntity{
 				ID:        2,
 				IsStaff:   true,
-				CreatedBy: &ntypes.Int64{Int64: 1, Valid: true},
+				CreatedBy: ntypes.Int64{Int64: 1, Valid: true},
 			},
 		},
 		{
@@ -95,7 +95,7 @@ func TestGetUserHandler_firewall_success(t *testing.T) {
 			ent: model.UserEntity{
 				ID:        2,
 				IsStaff:   true,
-				CreatedBy: &ntypes.Int64{Int64: 3, Valid: true},
+				CreatedBy: ntypes.Int64{Int64: 3, Valid: true},
 			},
 		},
 		{

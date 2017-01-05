@@ -29,7 +29,7 @@ func (ig *isGrantedHandler) IsGranted(ctx context.Context, req *charonrpc.IsGran
 		return nil, err
 	}
 
-	granted, err := ig.repository.user.IsGranted(req.UserId, charon.Permission(req.Permission))
+	granted, err := ig.repository.user.IsGranted(ctx, req.UserId, charon.Permission(req.Permission))
 	if err != nil {
 		return nil, err
 	}

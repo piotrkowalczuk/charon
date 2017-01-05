@@ -1,10 +1,13 @@
 package model
 
-import "database/sql"
+import (
+	"context"
+	"database/sql"
+)
 
 // GroupPermissionsProvider ...
 type GroupPermissionsProvider interface {
-	Insert(entity *GroupPermissionsEntity) (*GroupPermissionsEntity, error)
+	Insert(context.Context, *GroupPermissionsEntity) (*GroupPermissionsEntity, error)
 }
 
 // GroupPermissionsRepository extends GroupPermissionsRepositoryBase
@@ -16,9 +19,9 @@ type GroupPermissionsRepository struct {
 func NewGroupPermissionsRepository(dbPool *sql.DB) GroupPermissionsProvider {
 	return &GroupPermissionsRepository{
 		GroupPermissionsRepositoryBase{
-			db:      dbPool,
-			table:   TableGroupPermissions,
-			columns: TableGroupPermissionsColumns,
+			DB:      dbPool,
+			Table:   TableGroupPermissions,
+			Columns: TableGroupPermissionsColumns,
 		},
 	}
 }

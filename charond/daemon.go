@@ -135,7 +135,7 @@ func (d *Daemon) Run() (err error) {
 
 	passwordHasher = initHasher(d.opts.PasswordBCryptCost, d.logger)
 	if d.opts.Test {
-		if _, err = createDummyTestUser(repos.user, passwordHasher); err != nil {
+		if _, err = createDummyTestUser(context.TODO(), repos.user, passwordHasher); err != nil {
 			return
 		}
 		sklog.Info(d.logger, "test super user has been created")

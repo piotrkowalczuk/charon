@@ -25,7 +25,7 @@ func (ggh *getGroupHandler) Get(ctx context.Context, req *charonrpc.GetGroupRequ
 		return nil, err
 	}
 
-	ent, err := ggh.repository.group.FindOneByID(req.Id)
+	ent, err := ggh.repository.group.FindOneByID(ctx, req.Id)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, grpc.Errorf(codes.NotFound, "group does not exists")

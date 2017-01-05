@@ -1,6 +1,7 @@
 package model
 
 import (
+	"context"
 	"testing"
 
 	"github.com/piotrkowalczuk/ntypes"
@@ -11,7 +12,7 @@ var (
 		{
 			ID:          1,
 			Name:        "group_1",
-			Description: &ntypes.String{String: "first group", Valid: true},
+			Description: ntypes.String{String: "first group", Valid: true},
 			Permissions: []*PermissionEntity{
 				{
 					ID:        1,
@@ -24,7 +25,7 @@ var (
 		{
 			ID:          2,
 			Name:        "group_2",
-			Description: &ntypes.String{String: "second group", Valid: true},
+			Description: ntypes.String{String: "second group", Valid: true},
 			Permissions: []*PermissionEntity{
 				{
 					ID:        2,
@@ -46,7 +47,7 @@ func loadGroupPermissionsFixtures(t *testing.T, r GroupPermissionsProvider, f []
 
 	go func() {
 		for _, given := range f {
-			entity, err := r.Insert(given)
+			entity, err := r.Insert(context.TODO(), given)
 			if err != nil {
 				t.Errorf("group permission cannot be created, unexpected error: %s", err.Error())
 				continue

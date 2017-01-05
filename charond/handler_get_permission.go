@@ -27,7 +27,7 @@ func (gph *getPermissionHandler) Get(ctx context.Context, req *charonrpc.GetPerm
 		return nil, err
 	}
 
-	permission, err := gph.repository.permission.FindOneByID(req.Id)
+	permission, err := gph.repository.permission.FindOneByID(ctx, req.Id)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, grpc.Errorf(codes.NotFound, "permission does not exists")

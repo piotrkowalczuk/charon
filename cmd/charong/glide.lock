@@ -1,0 +1,15 @@
+hash: 77be84bab3b18182060e4133d73620f2ede00a4da600352ab10396fcfe319637
+updated: 2017-01-05T11:04:20.952019438+01:00
+imports:
+- name: github.com/huandu/xstrings
+  version: 3959339b333561bf62a38b424fd41517c2c90f40
+- name: github.com/lib/pq
+  version: d8eeeb8bae8896dd8e1b7e514ab0d396c4f12a1b
+  subpackages:
+  - oid
+- name: github.com/piotrkowalczuk/pqt
+  version: 428b6e0f9d17308e593837b7368abfa314e10d37
+  subpackages:
+  - pqtgo
+  - pqtsql
+testImports: []

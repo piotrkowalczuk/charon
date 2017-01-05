@@ -1,6 +1,7 @@
 package charond
 
 import (
+	"context"
 	"crypto/tls"
 	"database/sql"
 	"errors"
@@ -95,7 +96,7 @@ func initHasher(cost int, logger log.Logger) password.Hasher {
 
 func initPermissionRegistry(r model.PermissionProvider, permissions charon.Permissions, logger log.Logger) (pr model.PermissionRegistry) {
 	pr = model.NewPermissionRegistry(r)
-	created, untouched, removed, err := pr.Register(permissions)
+	created, untouched, removed, err := pr.Register(context.TODO(), permissions)
 	if err != nil {
 		sklog.Fatal(logger, err)
 	}

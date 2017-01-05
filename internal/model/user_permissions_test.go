@@ -1,6 +1,9 @@
 package model
 
-import "testing"
+import (
+	"context"
+	"testing"
+)
 
 var (
 	userPermissionsTestFixtures = []*UserEntity{
@@ -46,7 +49,7 @@ func loadUserPermissionsFixtures(t *testing.T, r UserPermissionsProvider, f []*U
 
 	go func() {
 		for _, given := range f {
-			entity, err := r.Insert(given)
+			entity, err := r.Insert(context.TODO(), given)
 			if err != nil {
 				t.Errorf("user permission cannot be created, unexpected error: %s", err.Error())
 				continue

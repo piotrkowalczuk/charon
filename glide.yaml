@@ -1,43 +1,41 @@
 package: github.com/piotrkowalczuk/charon
-owners:
-- name: Piotr Kowalczuk
-  email: p.kowalczuk.priv@gmail.com
 import:
 - package: github.com/go-kit/kit
   version: ~0.2.0
   subpackages:
   - log
+- package: github.com/go-ldap/ldap
+  version: ~2.5.0
 - package: github.com/golang/protobuf
-  version: 2bc9827a78f95c6665b5fe0abd1fd66b496ae2d8
   subpackages:
   - proto
   - ptypes
   - ptypes/empty
   - ptypes/timestamp
+  - ptypes/wrappers
 - package: github.com/lib/pq
 - package: github.com/pborman/uuid
   version: ~1.0.0
 - package: github.com/piotrkowalczuk/mnemosyne
-  version: ~0.6.0
+  version: ~0.6.3
   subpackages:
   - mnemosynerpc
 - package: github.com/piotrkowalczuk/ntypes
-  version: ~0.1.0
+  version: ~0.2.1
+- package: github.com/piotrkowalczuk/ntypespqt
 - package: github.com/piotrkowalczuk/pqcomp
-- package: github.com/piotrkowalczuk/pqt
-  version: ~0.9.0
-  subpackages:
-  - pqtgo
-  - pqtsql
-- package: github.com/piotrkowalczuk/qtypes
+- package: github.com/piotrkowalczuk/promgrpc
   version: ~0.2.0
+- package: github.com/piotrkowalczuk/qtypes
+  version: ~0.2.3
+- package: github.com/piotrkowalczuk/qtypespqt
 - package: github.com/piotrkowalczuk/sklog
 - package: github.com/prometheus/client_golang
   version: ~0.8.0
   subpackages:
   - prometheus
 - package: github.com/stretchr/testify
-  version: ~1.1.0
+  version: ~1.1.4
   subpackages:
   - mock
 - package: golang.org/x/crypto
@@ -48,17 +46,15 @@ import:
   - context
 - package: golang.org/x/oauth2
 - package: google.golang.org/grpc
-  version: ~1.0.0
+  version: ~1.0.5
   subpackages:
   - codes
   - credentials
   - grpclog
   - metadata
   - peer
-- package: github.com/ernesto-jimenez/gogen
+testImport:
+- package: github.com/smartystreets/goconvey
+  version: ~1.6.2
   subpackages:
-  - imports
-- package: github.com/go-ldap/ldap
-  version: ~2.4.0
-- package: github.com/piotrkowalczuk/promgrpc
-  version: ~0.2.0
+  - convey

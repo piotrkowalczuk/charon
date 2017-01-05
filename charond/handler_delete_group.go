@@ -24,7 +24,7 @@ func (dgh *deleteGroupHandler) Delete(ctx context.Context, req *charonrpc.Delete
 		return nil, err
 	}
 
-	affected, err := dgh.repository.group.DeleteOneByID(req.Id)
+	affected, err := dgh.repository.group.DeleteOneByID(ctx, req.Id)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, grpc.Errorf(codes.NotFound, "group does not exists")

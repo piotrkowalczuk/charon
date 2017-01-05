@@ -1,6 +1,7 @@
 package model
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"fmt"
@@ -24,8 +25,8 @@ func (ge *GroupEntity) Message() (*charonrpc.Group, error) {
 	if createdAt, err = ptypes.TimestampProto(ge.CreatedAt); err != nil {
 		return nil, err
 	}
-	if ge.UpdatedAt != nil {
-		if updatedAt, err = ptypes.TimestampProto(*ge.UpdatedAt); err != nil {
+	if ge.UpdatedAt.Valid {
+		if updatedAt, err = ptypes.TimestampProto(ge.UpdatedAt.Time); err != nil {
 			return nil, err
 		}
 	}
@@ -33,36 +34,36 @@ func (ge *GroupEntity) Message() (*charonrpc.Group, error) {
 	return &charonrpc.Group{
 		Id:          ge.ID,
 		Name:        ge.Name,
-		Description: ge.Description.StringOr(""),
+		Description: ge.Description.String,
 		CreatedAt:   createdAt,
-		CreatedBy:   ge.CreatedBy,
+		CreatedBy:   &ge.CreatedBy,
 		UpdatedAt:   updatedAt,
-		UpdatedBy:   ge.UpdatedBy,
+		UpdatedBy:   &ge.UpdatedBy,
 	}, nil
 }
 
 // GroupProvider ...
 type GroupProvider interface {
-	Insert(entity *GroupEntity) (*GroupEntity, error)
+	Insert(context.Context, *GroupEntity) (*GroupEntity, error)
 	// FindByUserID retrieves all groups for user represented by given id.
-	FindByUserID(int64) ([]*GroupEntity, error)
+	FindByUserID(context.Context, int64) ([]*GroupEntity, error)
 	// FindOneByID retrieves group for given id.
-	FindOneByID(int64) (*GroupEntity, error)
+	FindOneByID(context.Context, int64) (*GroupEntity, error)
 	// find ...
-	Find(c *GroupCriteria) ([]*GroupEntity, error)
+	Find(context.Context, *GroupCriteria) ([]*GroupEntity, error)
 	// Create ...
-	Create(createdBy int64, name string, description *ntypes.String) (*GroupEntity, error)
+	Create(ctx context.Context, createdBy int64, name string, description *ntypes.String) (*GroupEntity, error)
 	// updateOneByID ...
-	UpdateOneByID(id, updatedBy int64, name, description *ntypes.String) (*GroupEntity, error)
+	UpdateOneByID(ctx context.Context, id, updatedBy int64, name, description *ntypes.String) (*GroupEntity, error)
 	// DeleteByID ...
-	DeleteOneByID(id int64) (int64, error)
+	DeleteOneByID(context.Context, int64) (int64, error)
 	// IsGranted ...
-	IsGranted(id int64, permission charon.Permission) (bool, error)
+	IsGranted(context.Context, int64, charon.Permission) (bool, error)
 	// SetPermissions ...
-	SetPermissions(id int64, permissions ...charon.Permission) (int64, int64, error)
+	SetPermissions(context.Context, int64, ...charon.Permission) (int64, int64, error)
 }
 
-// GroupRepository extens GroupRepositoryBase
+// GroupRepository extends GroupRepositoryBase
 type GroupRepository struct {
 	GroupRepositoryBase
 }
@@ -71,16 +72,16 @@ type GroupRepository struct {
 func NewGroupRepository(dbPool *sql.DB) GroupProvider {
 	return &GroupRepository{
 		GroupRepositoryBase: GroupRepositoryBase{
-			db:      dbPool,
-			table:   TableGroup,
-			columns: TableGroupColumns,
+			DB:      dbPool,
+			Table:   TableGroup,
+			Columns: TableGroupColumns,
 		},
 	}
 }
 
-func (gr *GroupRepository) queryRow(query string, args ...interface{}) (*GroupEntity, error) {
+func (gr *GroupRepository) queryRow(ctx context.Context, query string, args ...interface{}) (*GroupEntity, error) {
 	var entity GroupEntity
-	err := gr.db.QueryRow(query, args...).Scan(
+	err := gr.DB.QueryRowContext(ctx, query, args...).Scan(
 		&entity.CreatedAt,
 		&entity.CreatedBy,
 		&entity.Description,
@@ -97,14 +98,14 @@ func (gr *GroupRepository) queryRow(query string, args ...interface{}) (*GroupEn
 }
 
 // FindByUserID implements GroupProvider interface.
-func (gr *GroupRepository) FindByUserID(userID int64) ([]*GroupEntity, error) {
+func (gr *GroupRepository) FindByUserID(ctx context.Context, userID int64) ([]*GroupEntity, error) {
 	query := `
 		SELECT  ` + strings.Join(TableGroupColumns, ",") + `
 		FROM ` + TableGroup + ` AS g
 		JOIN ` + TableUserGroups + ` AS ug ON ug.group_id = g.ID AND ug.user_id = $1
 	`
 
-	rows, err := gr.db.Query(query, userID)
+	rows, err := gr.DB.QueryContext(ctx, query, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -136,21 +137,21 @@ func (gr *GroupRepository) FindByUserID(userID int64) ([]*GroupEntity, error) {
 }
 
 // Create ...
-func (gr *GroupRepository) Create(createdBy int64, name string, description *ntypes.String) (ent *GroupEntity, err error) {
+func (gr *GroupRepository) Create(ctx context.Context, createdBy int64, name string, description *ntypes.String) (ent *GroupEntity, err error) {
 	if description == nil {
 		description = &ntypes.String{}
 	}
 	ent = &GroupEntity{
 		Name:        name,
-		Description: description,
-		CreatedBy:   &ntypes.Int64{Int64: createdBy, Valid: createdBy > 0},
+		Description: *description,
+		CreatedBy:   ntypes.Int64{Int64: createdBy, Valid: createdBy > 0},
 	}
 
-	return gr.Insert(ent)
+	return gr.Insert(ctx, ent)
 }
 
 // UpdateOneByID ...
-func (gr *GroupRepository) UpdateOneByID(id, updatedBy int64, name, description *ntypes.String) (*GroupEntity, error) {
+func (gr *GroupRepository) UpdateOneByID(ctx context.Context, id, updatedBy int64, name, description *ntypes.String) (*GroupEntity, error) {
 	var (
 		err    error
 		query  string
@@ -182,7 +183,7 @@ func (gr *GroupRepository) UpdateOneByID(id, updatedBy int64, name, description 
 		RETURNING ` + strings.Join(TableGroupColumns, ",") + `
 	`
 
-	err = gr.db.QueryRow(query, comp.Args()).Scan(
+	err = gr.DB.QueryRowContext(ctx, query, comp.Args()).Scan(
 		&entity.CreatedAt,
 		&entity.CreatedBy,
 		&entity.Description,
@@ -199,10 +200,10 @@ func (gr *GroupRepository) UpdateOneByID(id, updatedBy int64, name, description 
 }
 
 // IsGranted ...
-func (gr *GroupRepository) IsGranted(id int64, p charon.Permission) (bool, error) {
+func (gr *GroupRepository) IsGranted(ctx context.Context, id int64, p charon.Permission) (bool, error) {
 	var exists bool
 	subsystem, module, action := p.Split()
-	if err := gr.db.QueryRow(isGrantedQuery(
+	if err := gr.DB.QueryRowContext(ctx, isGrantedQuery(
 		TableGroupPermissions,
 		TableGroupPermissionsColumnGroupID,
 		TableGroupPermissionsColumnPermissionSubsystem,
@@ -216,8 +217,8 @@ func (gr *GroupRepository) IsGranted(id int64, p charon.Permission) (bool, error
 }
 
 // SetPermissions ...
-func (gr *GroupRepository) SetPermissions(id int64, p ...charon.Permission) (int64, int64, error) {
-	return setPermissions(gr.db, TableGroupPermissions,
+func (gr *GroupRepository) SetPermissions(ctx context.Context, id int64, p ...charon.Permission) (int64, int64, error) {
+	return setPermissions(gr.DB, ctx, TableGroupPermissions,
 		TableGroupPermissionsColumnGroupID,
 		TableGroupPermissionsColumnPermissionSubsystem,
 		TableGroupPermissionsColumnPermissionModule,
