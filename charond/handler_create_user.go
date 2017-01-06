@@ -6,6 +6,7 @@ import (
 	"github.com/piotrkowalczuk/charon/charonrpc"
 	"github.com/piotrkowalczuk/charon/internal/model"
 	"github.com/piotrkowalczuk/charon/internal/password"
+	"github.com/piotrkowalczuk/charon/internal/session"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -28,8 +29,8 @@ func (cuh *createUserHandler) Create(ctx context.Context, req *charonrpc.CreateU
 				return nil, grpc.Errorf(codes.AlreadyExists, "initial superuser account already exists")
 			}
 
-			// If actor does not exists, even single user does not exists and request contains IsSuperuser equals to true.
-			// Then move forward, its request that is trying to create first user (that needs to be a superuser).
+			// If session.Actor does not exists, even single User does not exists and request contains IsSuperuser equals to true.
+			// Then move forward, its request that is trying to create first User (that needs to be a superuser).
 		} else {
 			return nil, err
 		}
@@ -46,8 +47,8 @@ func (cuh *createUserHandler) Create(ctx context.Context, req *charonrpc.CreateU
 		}
 	} else {
 		// TODO: only one superuser can be defined so this else statement makes no sense in this place.
-		if !act.user.IsSuperuser {
-			return nil, grpc.Errorf(codes.PermissionDenied, "only superuser can create an user with manualy defined secure password")
+		if !act.User.IsSuperuser {
+			return nil, grpc.Errorf(codes.PermissionDenied, "only superuser can create an User with manualy defined secure password")
 		}
 	}
 
@@ -66,9 +67,9 @@ func (cuh *createUserHandler) Create(ctx context.Context, req *charonrpc.CreateU
 	if err != nil {
 		switch model.ErrorConstraint(err) {
 		case model.TableUserConstraintPrimaryKey:
-			return nil, grpc.Errorf(codes.AlreadyExists, "user with such id already exists")
+			return nil, grpc.Errorf(codes.AlreadyExists, "User with such id already exists")
 		case model.TableUserConstraintUsernameUnique:
-			return nil, grpc.Errorf(codes.AlreadyExists, "user with such username already exists")
+			return nil, grpc.Errorf(codes.AlreadyExists, "User with such username already exists")
 		default:
 			return nil, err
 		}
@@ -77,18 +78,18 @@ func (cuh *createUserHandler) Create(ctx context.Context, req *charonrpc.CreateU
 	return cuh.response(ent)
 }
 
-func (cuh *createUserHandler) firewall(req *charonrpc.CreateUserRequest, act *actor) error {
-	if act.isLocal || act.user.IsSuperuser {
+func (cuh *createUserHandler) firewall(req *charonrpc.CreateUserRequest, act *session.Actor) error {
+	if act.IsLocal || act.User.IsSuperuser {
 		return nil
 	}
 	if req.IsSuperuser.BoolOr(false) {
-		return grpc.Errorf(codes.PermissionDenied, "user is not allowed to create superuser")
+		return grpc.Errorf(codes.PermissionDenied, "User is not allowed to create superuser")
 	}
-	if req.IsStaff.BoolOr(false) && !act.permissions.Contains(charon.UserCanCreateStaff) {
-		return grpc.Errorf(codes.PermissionDenied, "user is not allowed to create staff user")
+	if req.IsStaff.BoolOr(false) && !act.Permissions.Contains(charon.UserCanCreateStaff) {
+		return grpc.Errorf(codes.PermissionDenied, "User is not allowed to create staff User")
 	}
-	if !act.permissions.Contains(charon.UserCanCreateStaff, charon.UserCanCreate) {
-		return grpc.Errorf(codes.PermissionDenied, "user is not allowed to create another user")
+	if !act.Permissions.Contains(charon.UserCanCreateStaff, charon.UserCanCreate) {
+		return grpc.Errorf(codes.PermissionDenied, "User is not allowed to create another User")
 	}
 
 	return nil

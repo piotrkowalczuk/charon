@@ -4,6 +4,7 @@ import (
 	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/charon/charonrpc"
 	"github.com/piotrkowalczuk/charon/internal/model"
+	"github.com/piotrkowalczuk/charon/internal/session"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -22,7 +23,7 @@ func (cgh *createGroupHandler) Create(ctx context.Context, req *charonrpc.Create
 		return nil, err
 	}
 
-	ent, err := cgh.repository.group.Create(ctx, act.user.ID, req.Name, req.Description)
+	ent, err := cgh.repository.group.Create(ctx, act.User.ID, req.Name, req.Description)
 	if err != nil {
 		switch model.ErrorConstraint(err) {
 		case model.TableGroupConstraintNameUnique:
@@ -35,11 +36,11 @@ func (cgh *createGroupHandler) Create(ctx context.Context, req *charonrpc.Create
 	return cgh.response(ent)
 }
 
-func (cgh *createGroupHandler) firewall(req *charonrpc.CreateGroupRequest, act *actor) error {
-	if act.user.IsSuperuser {
+func (cgh *createGroupHandler) firewall(req *charonrpc.CreateGroupRequest, act *session.Actor) error {
+	if act.User.IsSuperuser {
 		return nil
 	}
-	if act.permissions.Contains(charon.GroupCanCreate) {
+	if act.Permissions.Contains(charon.GroupCanCreate) {
 		return nil
 	}
 

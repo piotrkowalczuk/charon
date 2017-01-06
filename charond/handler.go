@@ -47,7 +47,7 @@ func handleMnemosyneError(err error) error {
 	return err
 }
 
-func (h *handler) retrieveActor(ctx context.Context) (act *actor, err error) {
+func (h *handler) retrieveActor(ctx context.Context) (act *session.Actor, err error) {
 	var (
 		userID   int64
 		entities []*model.PermissionEntity
@@ -59,9 +59,9 @@ func (h *handler) retrieveActor(ctx context.Context) (act *actor, err error) {
 		// TODO: make it better ;(
 		if peer, ok := peer.FromContext(ctx); ok {
 			if strings.HasPrefix(peer.Addr.String(), "127.0.0.1") {
-				return &actor{
-					user:    &model.UserEntity{},
-					isLocal: true,
+				return &session.Actor{
+					User:    &model.UserEntity{},
+					IsLocal: true,
 				}, nil
 			}
 		}
@@ -73,8 +73,8 @@ func (h *handler) retrieveActor(ctx context.Context) (act *actor, err error) {
 		return
 	}
 
-	act = &actor{}
-	act.user, err = h.repository.user.FindOneByID(ctx, userID)
+	act = &session.Actor{}
+	act.User, err = h.repository.user.FindOneByID(ctx, userID)
 	if err != nil {
 		return
 	}
@@ -86,9 +86,9 @@ func (h *handler) retrieveActor(ctx context.Context) (act *actor, err error) {
 		return
 	}
 
-	act.permissions = make(charon.Permissions, 0, len(entities))
+	act.Permissions = make(charon.Permissions, 0, len(entities))
 	for _, e := range entities {
-		act.permissions = append(act.permissions, e.Permission())
+		act.Permissions = append(act.Permissions, e.Permission())
 	}
 
 	return

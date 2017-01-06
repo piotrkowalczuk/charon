@@ -6,7 +6,7 @@ import (
 )
 
 type auth struct {
-	*subjectHandler
+	*actorHandler
 	*loginHandler
 	*logoutHandler
 	*isGrantedHandler
@@ -16,7 +16,7 @@ type auth struct {
 
 func newAuth(server *rpcServer) *auth {
 	return &auth{
-		subjectHandler:         &subjectHandler{handler: newHandler(server)},
+		actorHandler:           &actorHandler{handler: newHandler(server)},
 		belongsToHandler:       &belongsToHandler{handler: newHandler(server)},
 		isGrantedHandler:       &isGrantedHandler{handler: newHandler(server)},
 		isAuthenticatedHandler: &isAuthenticatedHandler{handler: newHandler(server)},

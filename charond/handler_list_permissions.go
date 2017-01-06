@@ -4,6 +4,7 @@ import (
 	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/charon/charonrpc"
 	"github.com/piotrkowalczuk/charon/internal/model"
+	"github.com/piotrkowalczuk/charon/internal/session"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -42,13 +43,13 @@ func (lph *listPermissionsHandler) List(ctx context.Context, req *charonrpc.List
 	}, nil
 }
 
-func (lph *listPermissionsHandler) firewall(req *charonrpc.ListPermissionsRequest, act *actor) error {
-	if act.user.IsSuperuser {
+func (lph *listPermissionsHandler) firewall(req *charonrpc.ListPermissionsRequest, act *session.Actor) error {
+	if act.User.IsSuperuser {
 		return nil
 	}
-	if act.permissions.Contains(charon.PermissionCanRetrieve) {
+	if act.Permissions.Contains(charon.PermissionCanRetrieve) {
 		return nil
 	}
 
-	return grpc.Errorf(codes.PermissionDenied, "list of permissions cannot be retrieved, missing permission")
+	return grpc.Errorf(codes.PermissionDenied, "list of Permissions cannot be retrieved, missing permission")
 }

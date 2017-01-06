@@ -6,6 +6,7 @@ import (
 	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/charon/charonrpc"
 	"github.com/piotrkowalczuk/charon/internal/model"
+	"github.com/piotrkowalczuk/charon/internal/session"
 	"github.com/piotrkowalczuk/ntypes"
 	"github.com/piotrkowalczuk/qtypes"
 )
@@ -13,16 +14,16 @@ import (
 func TestListUsersHandler_firewall_success(t *testing.T) {
 	cases := map[string]struct {
 		req charonrpc.ListUsersRequest
-		act actor
+		act session.Actor
 	}{
 		"as-owner": {
 
 			req: charonrpc.ListUsersRequest{
 				CreatedBy: qtypes.EqualInt64(1),
 			},
-			act: actor{
-				user: &model.UserEntity{ID: 1},
-				permissions: charon.Permissions{
+			act: session.Actor{
+				User: &model.UserEntity{ID: 1},
+				Permissions: charon.Permissions{
 					charon.UserCanRetrieveAsOwner,
 				},
 			},
@@ -31,9 +32,9 @@ func TestListUsersHandler_firewall_success(t *testing.T) {
 			req: charonrpc.ListUsersRequest{
 				CreatedBy: qtypes.EqualInt64(3),
 			},
-			act: actor{
-				user: &model.UserEntity{ID: 1},
-				permissions: charon.Permissions{
+			act: session.Actor{
+				User: &model.UserEntity{ID: 1},
+				Permissions: charon.Permissions{
 					charon.UserCanRetrieveAsStranger,
 				},
 			},
@@ -42,8 +43,8 @@ func TestListUsersHandler_firewall_success(t *testing.T) {
 			req: charonrpc.ListUsersRequest{
 				IsSuperuser: &ntypes.Bool{Bool: true, Valid: true},
 			},
-			act: actor{
-				user: &model.UserEntity{
+			act: session.Actor{
+				User: &model.UserEntity{
 					ID:          1,
 					IsSuperuser: true,
 				},
@@ -51,8 +52,8 @@ func TestListUsersHandler_firewall_success(t *testing.T) {
 		},
 		"as-superuser": {
 			req: charonrpc.ListUsersRequest{},
-			act: actor{
-				user: &model.UserEntity{
+			act: session.Actor{
+				User: &model.UserEntity{
 					ID:          1,
 					IsSuperuser: true,
 				},
@@ -63,11 +64,11 @@ func TestListUsersHandler_firewall_success(t *testing.T) {
 				IsStaff:   &ntypes.Bool{Bool: true, Valid: true},
 				CreatedBy: qtypes.EqualInt64(1),
 			},
-			act: actor{
-				user: &model.UserEntity{
+			act: session.Actor{
+				User: &model.UserEntity{
 					ID: 1,
 				},
-				permissions: charon.Permissions{
+				Permissions: charon.Permissions{
 					charon.UserCanRetrieveStaffAsOwner,
 				},
 			},
@@ -77,20 +78,20 @@ func TestListUsersHandler_firewall_success(t *testing.T) {
 				IsStaff:   &ntypes.Bool{Bool: true, Valid: true},
 				CreatedBy: qtypes.EqualInt64(3),
 			},
-			act: actor{
-				user: &model.UserEntity{
+			act: session.Actor{
+				User: &model.UserEntity{
 					ID: 1,
 				},
-				permissions: charon.Permissions{
+				Permissions: charon.Permissions{
 					charon.UserCanRetrieveStaffAsStranger,
 				},
 			},
 		},
-		"all-permissions": {
+		"all-Permissions": {
 			req: charonrpc.ListUsersRequest{},
-			act: actor{
-				user: &model.UserEntity{ID: 1},
-				permissions: charon.Permissions{
+			act: session.Actor{
+				User: &model.UserEntity{ID: 1},
+				Permissions: charon.Permissions{
 					charon.UserCanRetrieveAsStranger,
 					charon.UserCanRetrieveAsOwner,
 					charon.UserCanRetrieveStaffAsStranger,
@@ -98,13 +99,13 @@ func TestListUsersHandler_firewall_success(t *testing.T) {
 				},
 			},
 		},
-		"as-superuser-with-all-permissions": {
+		"as-superuser-with-all-Permissions": {
 			req: charonrpc.ListUsersRequest{
 				IsSuperuser: &ntypes.Bool{Bool: true, Valid: true},
 			},
-			act: actor{
-				user: &model.UserEntity{ID: 1, IsSuperuser: true},
-				permissions: charon.Permissions{
+			act: session.Actor{
+				User: &model.UserEntity{ID: 1, IsSuperuser: true},
+				Permissions: charon.Permissions{
 					charon.UserCanRetrieveAsStranger,
 					charon.UserCanRetrieveAsOwner,
 					charon.UserCanRetrieveStaffAsStranger,
@@ -127,27 +128,27 @@ func TestListUsersHandler_firewall_success(t *testing.T) {
 func TestListUsersHandler_firewall_failure(t *testing.T) {
 	data := []struct {
 		req charonrpc.ListUsersRequest
-		act actor
+		act session.Actor
 	}{
 		{
 			req: charonrpc.ListUsersRequest{},
-			act: actor{
-				user: &model.UserEntity{},
+			act: session.Actor{
+				User: &model.UserEntity{},
 			},
 		},
 		{
 			req: charonrpc.ListUsersRequest{},
-			act: actor{
-				user: &model.UserEntity{ID: 1},
+			act: session.Actor{
+				User: &model.UserEntity{ID: 1},
 			},
 		},
 		{
 			req: charonrpc.ListUsersRequest{
 				IsSuperuser: &ntypes.Bool{Bool: true, Valid: true},
 			},
-			act: actor{
-				user: &model.UserEntity{ID: 1},
-				permissions: charon.Permissions{
+			act: session.Actor{
+				User: &model.UserEntity{ID: 1},
+				Permissions: charon.Permissions{
 					charon.UserCanRetrieveAsStranger,
 					charon.UserCanRetrieveAsOwner,
 					charon.UserCanRetrieveStaffAsStranger,

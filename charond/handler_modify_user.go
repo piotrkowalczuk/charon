@@ -6,6 +6,7 @@ import (
 	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/charon/charonrpc"
 	"github.com/piotrkowalczuk/charon/internal/model"
+	"github.com/piotrkowalczuk/charon/internal/session"
 	"github.com/piotrkowalczuk/ntypes"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
@@ -18,7 +19,7 @@ type modifyUserHandler struct {
 
 func (muh *modifyUserHandler) Modify(ctx context.Context, req *charonrpc.ModifyUserRequest) (*charonrpc.ModifyUserResponse, error) {
 	if req.Id <= 0 {
-		return nil, grpc.Errorf(codes.InvalidArgument, "user cannot be modified, invalid ID: %d", req.Id)
+		return nil, grpc.Errorf(codes.InvalidArgument, "User cannot be modified, invalid ID: %d", req.Id)
 	}
 
 	act, err := muh.retrieveActor(ctx)
@@ -43,7 +44,7 @@ func (muh *modifyUserHandler) Modify(ctx context.Context, req *charonrpc.ModifyU
 		IsSuperuser: *req.IsSuperuser,
 		LastName:    *req.LastName,
 		Password:    req.SecurePassword,
-		UpdatedBy:   ntypes.Int64{Int64: act.user.ID, Valid: act.user.ID != 0},
+		UpdatedBy:   ntypes.Int64{Int64: act.User.ID, Valid: act.User.ID != 0},
 		Username:    *req.Username,
 	})
 	if err != nil {
@@ -52,7 +53,7 @@ func (muh *modifyUserHandler) Modify(ctx context.Context, req *charonrpc.ModifyU
 		}
 		switch model.ErrorConstraint(err) {
 		case model.TableUserConstraintUsernameUnique:
-			return nil, grpc.Errorf(codes.AlreadyExists, "user with such username already exists")
+			return nil, grpc.Errorf(codes.AlreadyExists, "User with such username already exists")
 		default:
 			return nil, err
 		}
@@ -61,21 +62,21 @@ func (muh *modifyUserHandler) Modify(ctx context.Context, req *charonrpc.ModifyU
 	return muh.response(ent)
 }
 
-func (muh *modifyUserHandler) firewall(req *charonrpc.ModifyUserRequest, ent *model.UserEntity, actor *actor) (string, bool) {
-	isOwner := actor.user.ID == ent.ID
+func (muh *modifyUserHandler) firewall(req *charonrpc.ModifyUserRequest, ent *model.UserEntity, actor *session.Actor) (string, bool) {
+	isOwner := actor.User.ID == ent.ID
 
-	if !actor.user.IsSuperuser {
+	if !actor.User.IsSuperuser {
 		switch {
 		case ent.IsSuperuser:
 			return "only superuser can modify a superuser account", false
-		case ent.IsStaff && !isOwner && actor.permissions.Contains(charon.UserCanModifyStaffAsStranger):
+		case ent.IsStaff && !isOwner && actor.Permissions.Contains(charon.UserCanModifyStaffAsStranger):
 			return "missing permission to modify an account as a stranger", false
-		case ent.IsStaff && isOwner && actor.permissions.Contains(charon.UserCanModifyStaffAsOwner):
+		case ent.IsStaff && isOwner && actor.Permissions.Contains(charon.UserCanModifyStaffAsOwner):
 			return "missing permission to modify an account as an owner", false
 		case req.IsSuperuser != nil && req.IsSuperuser.Valid:
 			return "only superuser can change existing account to superuser", false
-		case req.IsStaff != nil && req.IsStaff.Valid && !actor.permissions.Contains(charon.UserCanCreateStaff):
-			return "user is not allowed to create user with is_staff property that has custom value", false
+		case req.IsStaff != nil && req.IsStaff.Valid && !actor.Permissions.Contains(charon.UserCanCreateStaff):
+			return "User is not allowed to create User with is_staff property that has custom value", false
 		}
 	}
 

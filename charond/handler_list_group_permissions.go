@@ -8,6 +8,7 @@ import (
 
 	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/charon/charonrpc"
+	"github.com/piotrkowalczuk/charon/internal/session"
 	"github.com/piotrkowalczuk/sklog"
 	"golang.org/x/net/context"
 )
@@ -20,7 +21,7 @@ func (luph *listGroupPermissionsHandler) ListPermissions(ctx context.Context, re
 	permissions, err := luph.repository.permission.FindByGroupID(ctx, req.Id)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			sklog.Debug(luph.logger, "group permissions retrieved", "group_id", req.Id, "count", len(permissions))
+			sklog.Debug(luph.logger, "group Permissions retrieved", "group_id", req.Id, "count", len(permissions))
 
 			return &charonrpc.ListGroupPermissionsResponse{}, nil
 		}
@@ -37,13 +38,13 @@ func (luph *listGroupPermissionsHandler) ListPermissions(ctx context.Context, re
 	}, nil
 }
 
-func (luph *listGroupPermissionsHandler) firewall(req *charonrpc.ListGroupPermissionsRequest, act *actor) error {
-	if act.user.IsSuperuser {
+func (luph *listGroupPermissionsHandler) firewall(req *charonrpc.ListGroupPermissionsRequest, act *session.Actor) error {
+	if act.User.IsSuperuser {
 		return nil
 	}
-	if act.permissions.Contains(charon.GroupPermissionCanRetrieve) {
+	if act.Permissions.Contains(charon.GroupPermissionCanRetrieve) {
 		return nil
 	}
 
-	return grpc.Errorf(codes.PermissionDenied, "list of group permissions cannot be retrieved, missing permission")
+	return grpc.Errorf(codes.PermissionDenied, "list of group Permissions cannot be retrieved, missing permission")
 }

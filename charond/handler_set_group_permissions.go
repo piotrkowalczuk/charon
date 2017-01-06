@@ -3,6 +3,7 @@ package charond
 import (
 	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/charon/charonrpc"
+	"github.com/piotrkowalczuk/charon/internal/session"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -34,13 +35,13 @@ func (sgph *setGroupPermissionsHandler) SetPermissions(ctx context.Context, req 
 	}, nil
 }
 
-func (sgph *setGroupPermissionsHandler) firewall(req *charonrpc.SetGroupPermissionsRequest, act *actor) error {
-	if act.user.IsSuperuser {
+func (sgph *setGroupPermissionsHandler) firewall(req *charonrpc.SetGroupPermissionsRequest, act *session.Actor) error {
+	if act.User.IsSuperuser {
 		return nil
 	}
-	if act.permissions.Contains(charon.GroupPermissionCanCreate) && act.permissions.Contains(charon.GroupPermissionCanDelete) {
+	if act.Permissions.Contains(charon.GroupPermissionCanCreate) && act.Permissions.Contains(charon.GroupPermissionCanDelete) {
 		return nil
 	}
 
-	return grpc.Errorf(codes.PermissionDenied, "group permissions cannot be set, missing permission")
+	return grpc.Errorf(codes.PermissionDenied, "group Permissions cannot be set, missing permission")
 }

@@ -21,7 +21,7 @@ func TestHandler(t *testing.T) {
 		id  int64
 		ctx context.Context
 		err error
-		act *actor
+		act *session.Actor
 		tkn string
 	)
 
@@ -35,7 +35,7 @@ func TestHandler(t *testing.T) {
 		h.repository.user = userRepositoryMock
 		h.repository.permission = permissionRepositoryMock
 
-		Convey("As unauthenticated user", func() {
+		Convey("As unauthenticated User", func() {
 			ctx = context.Background()
 			sessionMock.On("Context", mock.Anything, none(), mock.Anything).
 				Return(nil, errors.New("mnemosyned: test error")).
@@ -48,7 +48,7 @@ func TestHandler(t *testing.T) {
 				So(act, ShouldBeNil)
 			})
 		})
-		Convey("As authenticated user", func() {
+		Convey("As authenticated User", func() {
 			id = 7856282
 			tkn = "0000000001hash"
 			ctx = mnemosyne.NewAccessTokenContext(context.Background(), tkn)
@@ -61,12 +61,12 @@ func TestHandler(t *testing.T) {
 				}, nil).
 				Once()
 
-			Convey("When user exists", func() {
+			Convey("When User exists", func() {
 				userRepositoryMock.On("FindOneByID", mock.Anything, id).
 					Return(&model.UserEntity{ID: id}, nil).
 					Once()
 
-				Convey("And it has some permissions", func() {
+				Convey("And it has some Permissions", func() {
 					permissionRepositoryMock.On("FindByUserID", mock.Anything, id).
 						Return([]*model.PermissionEntity{
 							{
@@ -87,11 +87,11 @@ func TestHandler(t *testing.T) {
 
 						So(err, ShouldBeNil)
 						So(act, ShouldNotBeNil)
-						So(act.user.ID, ShouldEqual, id)
-						So(act.permissions, ShouldHaveLength, 2)
+						So(act.User.ID, ShouldEqual, id)
+						So(act.Permissions, ShouldHaveLength, 2)
 					})
 				})
-				Convey("And it has no permissions", func() {
+				Convey("And it has no Permissions", func() {
 					permissionRepositoryMock.On("FindByUserID", mock.Anything, id).
 						Return(nil, sql.ErrNoRows).
 						Once()
@@ -101,8 +101,8 @@ func TestHandler(t *testing.T) {
 
 						So(err, ShouldBeNil)
 						So(act, ShouldNotBeNil)
-						So(act.user.ID, ShouldEqual, id)
-						So(act.permissions, ShouldHaveLength, 0)
+						So(act.User.ID, ShouldEqual, id)
+						So(act.Permissions, ShouldHaveLength, 0)
 					})
 				})
 			})

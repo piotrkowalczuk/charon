@@ -6,6 +6,7 @@ import (
 	"github.com/golang/protobuf/ptypes/wrappers"
 	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/charon/charonrpc"
+	"github.com/piotrkowalczuk/charon/internal/session"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -37,11 +38,11 @@ func (dgh *deleteGroupHandler) Delete(ctx context.Context, req *charonrpc.Delete
 	}, nil
 }
 
-func (dgh *deleteGroupHandler) firewall(req *charonrpc.DeleteGroupRequest, act *actor) error {
-	if act.user.IsSuperuser {
+func (dgh *deleteGroupHandler) firewall(req *charonrpc.DeleteGroupRequest, act *session.Actor) error {
+	if act.User.IsSuperuser {
 		return nil
 	}
-	if act.permissions.Contains(charon.GroupCanDelete) {
+	if act.Permissions.Contains(charon.GroupCanDelete) {
 		return nil
 	}
 

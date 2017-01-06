@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/go-kit/kit/log"
-	"github.com/piotrkowalczuk/sklog"
 	"github.com/lib/pq"
+	"github.com/piotrkowalczuk/sklog"
 )
 
 type postgresSuite struct {

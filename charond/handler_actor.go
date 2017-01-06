@@ -13,11 +13,11 @@ import (
 	"google.golang.org/grpc/codes"
 )
 
-type subjectHandler struct {
+type actorHandler struct {
 	*handler
 }
 
-func (sh *subjectHandler) Actor(ctx context.Context, r *wrappers.StringValue) (*charonrpc.ActorResponse, error) {
+func (sh *actorHandler) Actor(ctx context.Context, r *wrappers.StringValue) (*charonrpc.ActorResponse, error) {
 	var (
 		ses *mnemosynerpc.Session
 		err error
@@ -40,7 +40,7 @@ func (sh *subjectHandler) Actor(ctx context.Context, r *wrappers.StringValue) (*
 
 	id, err := session.ActorID(ses.SubjectId).UserID()
 	if err != nil {
-		return nil, fmt.Errorf("invalid session subject id: %s", ses.SubjectId)
+		return nil, fmt.Errorf("invalid Session subject id: %s", ses.SubjectId)
 	}
 
 	ent, err := sh.repository.user.FindOneByID(ctx, id)
@@ -54,7 +54,7 @@ func (sh *subjectHandler) Actor(ctx context.Context, r *wrappers.StringValue) (*
 
 	permissionEntities, err := sh.repository.permission.FindByUserID(ctx, id)
 	if err != nil && err != sql.ErrNoRows {
-		return nil, grpc.Errorf(codes.Internal, "subject list of permissions failure: %s", err.Error())
+		return nil, grpc.Errorf(codes.Internal, "subject list of Permissions failure: %s", err.Error())
 	}
 
 	permissions := make([]string, 0, len(permissionEntities))

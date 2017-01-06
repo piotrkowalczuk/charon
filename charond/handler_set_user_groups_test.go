@@ -6,18 +6,19 @@ import (
 	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/charon/charonrpc"
 	"github.com/piotrkowalczuk/charon/internal/model"
+	"github.com/piotrkowalczuk/charon/internal/session"
 )
 
 func TestSetUserGroupsHandler_firewall_success(t *testing.T) {
 	data := []struct {
 		req charonrpc.SetUserGroupsRequest
-		act actor
+		act session.Actor
 	}{
 		{
 			req: charonrpc.SetUserGroupsRequest{},
-			act: actor{
-				user: &model.UserEntity{ID: 1},
-				permissions: charon.Permissions{
+			act: session.Actor{
+				User: &model.UserEntity{ID: 1},
+				Permissions: charon.Permissions{
 					charon.UserGroupCanCreate,
 					charon.UserGroupCanDelete,
 				},
@@ -26,8 +27,8 @@ func TestSetUserGroupsHandler_firewall_success(t *testing.T) {
 		{
 			req: charonrpc.SetUserGroupsRequest{},
 
-			act: actor{
-				user: &model.UserEntity{ID: 2, IsSuperuser: true},
+			act: session.Actor{
+				User: &model.UserEntity{ID: 2, IsSuperuser: true},
 			},
 		},
 	}
@@ -43,18 +44,18 @@ func TestSetUserGroupsHandler_firewall_success(t *testing.T) {
 func TestSetUserGroupsHandler_firewall_failure(t *testing.T) {
 	data := []struct {
 		req charonrpc.SetUserGroupsRequest
-		act actor
+		act session.Actor
 	}{
 		{
 			req: charonrpc.SetUserGroupsRequest{},
-			act: actor{
-				user: &model.UserEntity{ID: 1},
+			act: session.Actor{
+				User: &model.UserEntity{ID: 1},
 			},
 		},
 		{
 			req: charonrpc.SetUserGroupsRequest{},
-			act: actor{
-				user: &model.UserEntity{
+			act: session.Actor{
+				User: &model.UserEntity{
 					ID:      2,
 					IsStaff: true,
 				},
@@ -62,18 +63,18 @@ func TestSetUserGroupsHandler_firewall_failure(t *testing.T) {
 		},
 		{
 			req: charonrpc.SetUserGroupsRequest{},
-			act: actor{
-				user: &model.UserEntity{ID: 1},
-				permissions: charon.Permissions{
+			act: session.Actor{
+				User: &model.UserEntity{ID: 1},
+				Permissions: charon.Permissions{
 					charon.UserGroupCanDelete,
 				},
 			},
 		},
 		{
 			req: charonrpc.SetUserGroupsRequest{},
-			act: actor{
-				user: &model.UserEntity{ID: 1},
-				permissions: charon.Permissions{
+			act: session.Actor{
+				User: &model.UserEntity{ID: 1},
+				Permissions: charon.Permissions{
 					charon.UserGroupCanCreate,
 				},
 			},
