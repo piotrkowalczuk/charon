@@ -148,7 +148,7 @@ func (pr *PermissionRepository) Register(ctx context.Context, permissions charon
 		}
 	}
 
-	tx, err = pr.DB.BeginContext(ctx)
+	tx, err = pr.DB.BeginTx(ctx, nil)
 	if err != nil {
 		return
 	}

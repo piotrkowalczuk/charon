@@ -1,5 +1,5 @@
-hash: 77be84bab3b18182060e4133d73620f2ede00a4da600352ab10396fcfe319637
-updated: 2017-01-05T11:04:20.952019438+01:00
+hash: d1040fd1a91e78527012242d36778bb1a5b1c982781573adcb4e6ab67f88b0b0
+updated: 2017-01-06T10:32:04.053007911+01:00
 imports:
 - name: github.com/huandu/xstrings
   version: 3959339b333561bf62a38b424fd41517c2c90f40
@@ -7,9 +7,13 @@ imports:
   version: d8eeeb8bae8896dd8e1b7e514ab0d396c4f12a1b
   subpackages:
   - oid
+- name: github.com/piotrkowalczuk/ntypespqt
+  version: ea98f9dc6543574123c3cd459b7e508f294d5b53
 - name: github.com/piotrkowalczuk/pqt
   version: 428b6e0f9d17308e593837b7368abfa314e10d37
   subpackages:
   - pqtgo
   - pqtsql
+- name: github.com/piotrkowalczuk/qtypespqt
+  version: defb11582ed5ae1c5c3fefa28a2e656831f42e73
 testImports: []

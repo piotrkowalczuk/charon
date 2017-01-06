@@ -39,6 +39,7 @@ cover: test
 get:
 	@go get github.com/Masterminds/glide
 	@glide install
+	@cd ./cmd/charong && glide install
 
 publish:
 	@docker build \

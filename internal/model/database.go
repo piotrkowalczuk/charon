@@ -108,7 +108,7 @@ func setManyToMany(db *sql.DB, ctx context.Context, table, column1, column2 stri
 		granted                bool
 	)
 
-	tx, err = db.BeginContext(ctx)
+	tx, err = db.BeginTx(ctx, nil)
 	if err != nil {
 		return 0, 0, err
 	}
@@ -203,7 +203,7 @@ func setPermissions(db *sql.DB, ctx context.Context, table, columnID, columnSubs
 		granted                bool
 	)
 
-	tx, err = db.BeginContext(ctx)
+	tx, err = db.BeginTx(ctx, nil)
 	if err != nil {
 		return 0, 0, err
 	}

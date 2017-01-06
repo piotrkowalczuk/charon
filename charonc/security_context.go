@@ -2,9 +2,7 @@ package charonc
 
 import (
 	"errors"
-
 	"github.com/piotrkowalczuk/mnemosyne"
-
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
 )

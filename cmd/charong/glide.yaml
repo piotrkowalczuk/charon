@@ -5,3 +5,5 @@ import:
   subpackages:
   - pqtgo
   - pqtsql
+- package: github.com/piotrkowalczuk/qtypespqt
+- package: github.com/piotrkowalczuk/ntypespqt
