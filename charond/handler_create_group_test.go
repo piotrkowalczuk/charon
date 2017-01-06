@@ -3,14 +3,13 @@ package charond
 import (
 	"testing"
 
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
-
 	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/charon/charonrpc"
 	"github.com/piotrkowalczuk/charon/internal/model"
 	"github.com/piotrkowalczuk/charon/internal/session"
 	"github.com/piotrkowalczuk/ntypes"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 )
 
 func TestCreateGroupHandler_Create(t *testing.T) {
