@@ -28,9 +28,9 @@ func TestBelongsToHandler_BelongsTo(t *testing.T) {
 	var groups []int64
 	for i := 0; i < 10; i++ {
 		resGroup, err := suite.charon.group.Create(ctx, &charonrpc.CreateGroupRequest{
-			Name:        fmt.Sprintf("name-%d", i),
+			Name: fmt.Sprintf("name-%d", i),
 			Description: &ntypes.String{
-				Valid: true,
+				Valid:  true,
 				String: fmt.Sprintf("description-%d", i),
 			},
 		})
@@ -96,7 +96,7 @@ func TestBelongsToHandler_BelongsTo(t *testing.T) {
 
 		"without-group-id": func(t *testing.T) {
 			_, err := suite.charon.auth.BelongsTo(ctx, &charonrpc.BelongsToRequest{
-				UserId: resAct.Id	,
+				UserId: resAct.Id,
 			})
 			if grpc.Code(err) != codes.InvalidArgument {
 				t.Fatalf("wrong status code, expected %s but got %s", codes.InvalidArgument.String(), grpc.Code(err).String())

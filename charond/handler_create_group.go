@@ -15,6 +15,9 @@ type createGroupHandler struct {
 }
 
 func (cgh *createGroupHandler) Create(ctx context.Context, req *charonrpc.CreateGroupRequest) (*charonrpc.CreateGroupResponse, error) {
+	if len(req.Name) < 3 {
+		return nil, grpc.Errorf(codes.InvalidArgument, "group name is required and needs to be at least 3 characters long")
+	}
 	act, err := cgh.retrieveActor(ctx)
 	if err != nil {
 		return nil, err
