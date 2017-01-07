@@ -5,9 +5,9 @@ import (
 	"testing"
 
 	"github.com/piotrkowalczuk/charon/charonrpc"
+	"github.com/piotrkowalczuk/ntypes"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
-	"github.com/piotrkowalczuk/ntypes"
 )
 
 func TestLoginHandler_Login(t *testing.T) {
@@ -57,7 +57,7 @@ func TestLoginHandler_Login(t *testing.T) {
 				FirstName:     "first-name-not-confirmed",
 				LastName:      "last-name-not-confirmed",
 				PlainPassword: "plain-password-not-confirmed",
-				IsActive: ntypes.True(),
+				IsActive:      ntypes.True(),
 			}
 			_, err := suite.charon.user.Create(ctx, req)
 			if err != nil {
@@ -74,7 +74,7 @@ func TestLoginHandler_Login(t *testing.T) {
 				FirstName:     "first-name-not-active",
 				LastName:      "last-name-not-active",
 				PlainPassword: "plain-password-not-active",
-				IsConfirmed: ntypes.True(),
+				IsConfirmed:   ntypes.True(),
 			}
 			_, err := suite.charon.user.Create(ctx, req)
 			if err != nil {
