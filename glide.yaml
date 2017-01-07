@@ -21,7 +21,7 @@ import:
   subpackages:
   - mnemosynerpc
 - package: github.com/piotrkowalczuk/ntypes
-  version: ~0.2.1
+  version: feature/arrays
 - package: github.com/piotrkowalczuk/ntypespqt
 - package: github.com/piotrkowalczuk/pqcomp
 - package: github.com/piotrkowalczuk/promgrpc
