@@ -7,3 +7,4 @@ import:
   - pqtsql
 - package: github.com/piotrkowalczuk/qtypespqt
 - package: github.com/piotrkowalczuk/ntypespqt
+- package: github.com/huandu/xstrings

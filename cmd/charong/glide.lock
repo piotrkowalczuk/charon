@@ -1,6 +1,8 @@
-hash: d1040fd1a91e78527012242d36778bb1a5b1c982781573adcb4e6ab67f88b0b0
-updated: 2017-01-09T13:14:42.370449674+01:00
+hash: 93b3b7b014ace02c15a1d0f04fd81f53f962242c47f4ebfa2cb9b63b208360b8
+updated: 2017-01-09T13:32:58.792219345+01:00
 imports:
+- name: github.com/huandu/xstrings
+  version: 3959339b333561bf62a38b424fd41517c2c90f40
 - name: github.com/lib/pq
   version: 8df6253d1317616f36b0c3740eb30c239a7372cb
   subpackages:
