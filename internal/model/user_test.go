@@ -77,14 +77,14 @@ func TestUserRepository_updateByID(t *testing.T) {
 	for res := range loadUserFixtures(t, suite.repository.user, userTestFixtures) {
 		user := res.got
 		modified, err := suite.repository.user.UpdateOneByID(context.TODO(), user.ID, &UserPatch{
-			FirstName:   ntypes.String{String: user.FirstName + suffix, Valid: true},
+			FirstName:   ntypes.String{Chars: user.FirstName + suffix, Valid: true},
 			IsActive:    ntypes.Bool{Bool: true, Valid: true},
 			IsConfirmed: ntypes.Bool{Bool: true, Valid: true},
 			IsStaff:     ntypes.Bool{Bool: true, Valid: true},
 			IsSuperuser: ntypes.Bool{Bool: true, Valid: true},
-			LastName:    ntypes.String{String: user.LastName + suffix, Valid: true},
+			LastName:    ntypes.String{Chars: user.LastName + suffix, Valid: true},
 			Password:    user.Password,
-			Username:    ntypes.String{String: user.Username + suffix, Valid: true},
+			Username:    ntypes.String{Chars: user.Username + suffix, Valid: true},
 		})
 
 		if err != nil {

@@ -7,10 +7,10 @@ import (
 	"log"
 	"os"
 
+	"github.com/piotrkowalczuk/ntypespqt"
 	"github.com/piotrkowalczuk/pqt/pqtgo"
 	"github.com/piotrkowalczuk/pqt/pqtsql"
 	"github.com/piotrkowalczuk/qtypespqt"
-	"github.com/piotrkowalczuk/ntypespqt"
 )
 
 var (
@@ -44,9 +44,10 @@ func main() {
 		Visibility: pqtgo.Public,
 	}
 	sch := databaseSchema()
-	gen := pqtgo.Gen{
+	gen := pqtgo.Generator{
 		Formatter: form,
 		Pkg:       "model",
+		Version:   9.5,
 		Plugins: []pqtgo.Plugin{
 			&qtypespqt.Plugin{
 				Formatter:  form,

@@ -30,8 +30,8 @@ func TestBelongsToHandler_BelongsTo(t *testing.T) {
 		resGroup, err := suite.charon.group.Create(ctx, &charonrpc.CreateGroupRequest{
 			Name: fmt.Sprintf("name-%d", i),
 			Description: &ntypes.String{
-				Valid:  true,
-				String: fmt.Sprintf("description-%d", i),
+				Valid: true,
+				Chars: fmt.Sprintf("description-%d", i),
 			},
 		})
 		if err != nil {

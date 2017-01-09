@@ -24,8 +24,8 @@ func TestCreateGroupHandler_Create(t *testing.T) {
 			req := &charonrpc.CreateGroupRequest{
 				Name: "name-full",
 				Description: &ntypes.String{
-					Valid:  true,
-					String: "description",
+					Valid: true,
+					Chars: "description",
 				},
 			}
 			res, err := suite.charon.group.Create(ctx, req)
@@ -70,8 +70,8 @@ func TestCreateGroupHandler_Create(t *testing.T) {
 		"only-description": func(t *testing.T) {
 			req := &charonrpc.CreateGroupRequest{
 				Description: &ntypes.String{
-					Valid:  true,
-					String: "description",
+					Valid: true,
+					Chars: "description",
 				},
 			}
 			_, err := suite.charon.group.Create(ctx, req)

@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/go-kit/kit/log"
+	"github.com/golang/protobuf/ptypes"
 	"github.com/lib/pq"
 	"github.com/piotrkowalczuk/ntypes"
 	"github.com/piotrkowalczuk/qtypes"
@@ -35,9 +36,12 @@ const (
 	TableUserColumnUpdatedBy               = "updated_by"
 	TableUserColumnUsername                = "username"
 	TableUserConstraintCreatedByForeignKey = "charon.user_created_by_fkey"
-	TableUserConstraintPrimaryKey          = "charon.user_id_pkey"
+
+	TableUserConstraintPrimaryKey = "charon.user_id_pkey"
+
 	TableUserConstraintUpdatedByForeignKey = "charon.user_updated_by_fkey"
-	TableUserConstraintUsernameUnique      = "charon.user_username_key"
+
+	TableUserConstraintUsernameUnique = "charon.user_username_key"
 )
 
 var (
@@ -138,6 +142,7 @@ func (e *UserEntity) Prop(cn string) (interface{}, bool) {
 		return nil, false
 	}
 }
+
 func (e *UserEntity) Props(cns ...string) ([]interface{}, error) {
 	res := make([]interface{}, 0, len(cns))
 	for _, cn := range cns {
@@ -206,7 +211,7 @@ type UserCriteria struct {
 	Offset, Limit     int64
 	Sort              map[string]bool
 	ConfirmationToken []byte
-	CreatedAt         pq.NullTime
+	CreatedAt         *qtypes.Timestamp
 	CreatedBy         *qtypes.Int64
 	FirstName         *qtypes.String
 	ID                *qtypes.Int64
@@ -214,13 +219,14 @@ type UserCriteria struct {
 	IsConfirmed       ntypes.Bool
 	IsStaff           ntypes.Bool
 	IsSuperuser       ntypes.Bool
-	LastLoginAt       pq.NullTime
+	LastLoginAt       *qtypes.Timestamp
 	LastName          *qtypes.String
 	Password          []byte
-	UpdatedAt         pq.NullTime
+	UpdatedAt         *qtypes.Timestamp
 	UpdatedBy         *qtypes.Int64
 	Username          *qtypes.String
 }
+
 type UserPatch struct {
 	ConfirmationToken []byte
 	CreatedAt         pq.NullTime
@@ -241,8 +247,7 @@ type UserPatch struct {
 func ScanUserRows(rows *sql.Rows) (entities []*UserEntity, err error) {
 	for rows.Next() {
 		var ent UserEntity
-		err = rows.Scan(
-			&ent.ConfirmationToken,
+		err = rows.Scan(&ent.ConfirmationToken,
 			&ent.CreatedAt,
 			&ent.CreatedBy,
 			&ent.FirstName,
@@ -280,289 +285,300 @@ type UserRepositoryBase struct {
 }
 
 func (r *UserRepositoryBase) InsertQuery(e *UserEntity) (string, []interface{}, error) {
-	ins := NewComposer(15)
-	buf := bytes.NewBufferString("INSERT INTO " + r.Table)
-	col := bytes.NewBuffer(nil)
+	insert := NewComposer(15)
+	columns := bytes.NewBuffer(nil)
+	buf := bytes.NewBufferString("INSERT INTO ")
+	buf.WriteString(r.Table)
+
 	if e.ConfirmationToken != nil {
-		if col.Len() > 0 {
-			if _, err := col.WriteString(", "); err != nil {
+		if columns.Len() > 0 {
+			if _, err := columns.WriteString(", "); err != nil {
 				return "", nil, err
 			}
 		}
-		if _, err := col.WriteString(TableUserColumnConfirmationToken); err != nil {
+		if _, err := columns.WriteString(TableUserColumnConfirmationToken); err != nil {
 			return "", nil, err
 		}
-		if ins.Dirty {
-			if _, err := ins.WriteString(", "); err != nil {
+		if insert.Dirty {
+			if _, err := insert.WriteString(", "); err != nil {
 				return "", nil, err
 			}
 		}
-		if err := ins.WritePlaceholder(); err != nil {
+		if err := insert.WritePlaceholder(); err != nil {
 			return "", nil, err
 		}
-		ins.Add(e.ConfirmationToken)
-		ins.Dirty = true
+		insert.Add(e.ConfirmationToken)
+		insert.Dirty = true
 	}
 
 	if !e.CreatedAt.IsZero() {
-		if col.Len() > 0 {
-			if _, err := col.WriteString(", "); err != nil {
+		if columns.Len() > 0 {
+			if _, err := columns.WriteString(", "); err != nil {
 				return "", nil, err
 			}
 		}
-		if _, err := col.WriteString(TableUserColumnCreatedAt); err != nil {
+		if _, err := columns.WriteString(TableUserColumnCreatedAt); err != nil {
 			return "", nil, err
 		}
-		if ins.Dirty {
-			if _, err := ins.WriteString(", "); err != nil {
+		if insert.Dirty {
+			if _, err := insert.WriteString(", "); err != nil {
 				return "", nil, err
 			}
 		}
-		if err := ins.WritePlaceholder(); err != nil {
+		if err := insert.WritePlaceholder(); err != nil {
 			return "", nil, err
 		}
-		ins.Add(e.CreatedAt)
-		ins.Dirty = true
+		insert.Add(e.CreatedAt)
+		insert.Dirty = true
 	}
 
-	if col.Len() > 0 {
-		if _, err := col.WriteString(", "); err != nil {
+	if columns.Len() > 0 {
+		if _, err := columns.WriteString(", "); err != nil {
 			return "", nil, err
 		}
 	}
-	if _, err := col.WriteString(TableUserColumnCreatedBy); err != nil {
+	if _, err := columns.WriteString(TableUserColumnCreatedBy); err != nil {
 		return "", nil, err
 	}
-	if ins.Dirty {
-		if _, err := ins.WriteString(", "); err != nil {
+	if insert.Dirty {
+		if _, err := insert.WriteString(", "); err != nil {
 			return "", nil, err
 		}
 	}
-	if err := ins.WritePlaceholder(); err != nil {
+	if err := insert.WritePlaceholder(); err != nil {
 		return "", nil, err
 	}
-	ins.Add(e.CreatedBy)
-	ins.Dirty = true
-	if col.Len() > 0 {
-		if _, err := col.WriteString(", "); err != nil {
+	insert.Add(e.CreatedBy)
+	insert.Dirty = true
+
+	if columns.Len() > 0 {
+		if _, err := columns.WriteString(", "); err != nil {
 			return "", nil, err
 		}
 	}
-	if _, err := col.WriteString(TableUserColumnFirstName); err != nil {
+	if _, err := columns.WriteString(TableUserColumnFirstName); err != nil {
 		return "", nil, err
 	}
-	if ins.Dirty {
-		if _, err := ins.WriteString(", "); err != nil {
+	if insert.Dirty {
+		if _, err := insert.WriteString(", "); err != nil {
 			return "", nil, err
 		}
 	}
-	if err := ins.WritePlaceholder(); err != nil {
+	if err := insert.WritePlaceholder(); err != nil {
 		return "", nil, err
 	}
-	ins.Add(e.FirstName)
-	ins.Dirty = true
-	if col.Len() > 0 {
-		if _, err := col.WriteString(", "); err != nil {
+	insert.Add(e.FirstName)
+	insert.Dirty = true
+
+	if columns.Len() > 0 {
+		if _, err := columns.WriteString(", "); err != nil {
 			return "", nil, err
 		}
 	}
-	if _, err := col.WriteString(TableUserColumnIsActive); err != nil {
+	if _, err := columns.WriteString(TableUserColumnIsActive); err != nil {
 		return "", nil, err
 	}
-	if ins.Dirty {
-		if _, err := ins.WriteString(", "); err != nil {
+	if insert.Dirty {
+		if _, err := insert.WriteString(", "); err != nil {
 			return "", nil, err
 		}
 	}
-	if err := ins.WritePlaceholder(); err != nil {
+	if err := insert.WritePlaceholder(); err != nil {
 		return "", nil, err
 	}
-	ins.Add(e.IsActive)
-	ins.Dirty = true
-	if col.Len() > 0 {
-		if _, err := col.WriteString(", "); err != nil {
+	insert.Add(e.IsActive)
+	insert.Dirty = true
+
+	if columns.Len() > 0 {
+		if _, err := columns.WriteString(", "); err != nil {
 			return "", nil, err
 		}
 	}
-	if _, err := col.WriteString(TableUserColumnIsConfirmed); err != nil {
+	if _, err := columns.WriteString(TableUserColumnIsConfirmed); err != nil {
 		return "", nil, err
 	}
-	if ins.Dirty {
-		if _, err := ins.WriteString(", "); err != nil {
+	if insert.Dirty {
+		if _, err := insert.WriteString(", "); err != nil {
 			return "", nil, err
 		}
 	}
-	if err := ins.WritePlaceholder(); err != nil {
+	if err := insert.WritePlaceholder(); err != nil {
 		return "", nil, err
 	}
-	ins.Add(e.IsConfirmed)
-	ins.Dirty = true
-	if col.Len() > 0 {
-		if _, err := col.WriteString(", "); err != nil {
+	insert.Add(e.IsConfirmed)
+	insert.Dirty = true
+
+	if columns.Len() > 0 {
+		if _, err := columns.WriteString(", "); err != nil {
 			return "", nil, err
 		}
 	}
-	if _, err := col.WriteString(TableUserColumnIsStaff); err != nil {
+	if _, err := columns.WriteString(TableUserColumnIsStaff); err != nil {
 		return "", nil, err
 	}
-	if ins.Dirty {
-		if _, err := ins.WriteString(", "); err != nil {
+	if insert.Dirty {
+		if _, err := insert.WriteString(", "); err != nil {
 			return "", nil, err
 		}
 	}
-	if err := ins.WritePlaceholder(); err != nil {
+	if err := insert.WritePlaceholder(); err != nil {
 		return "", nil, err
 	}
-	ins.Add(e.IsStaff)
-	ins.Dirty = true
-	if col.Len() > 0 {
-		if _, err := col.WriteString(", "); err != nil {
+	insert.Add(e.IsStaff)
+	insert.Dirty = true
+
+	if columns.Len() > 0 {
+		if _, err := columns.WriteString(", "); err != nil {
 			return "", nil, err
 		}
 	}
-	if _, err := col.WriteString(TableUserColumnIsSuperuser); err != nil {
+	if _, err := columns.WriteString(TableUserColumnIsSuperuser); err != nil {
 		return "", nil, err
 	}
-	if ins.Dirty {
-		if _, err := ins.WriteString(", "); err != nil {
+	if insert.Dirty {
+		if _, err := insert.WriteString(", "); err != nil {
 			return "", nil, err
 		}
 	}
-	if err := ins.WritePlaceholder(); err != nil {
+	if err := insert.WritePlaceholder(); err != nil {
 		return "", nil, err
 	}
-	ins.Add(e.IsSuperuser)
-	ins.Dirty = true
+	insert.Add(e.IsSuperuser)
+	insert.Dirty = true
+
 	if e.LastLoginAt.Valid {
-		if col.Len() > 0 {
-			if _, err := col.WriteString(", "); err != nil {
+		if columns.Len() > 0 {
+			if _, err := columns.WriteString(", "); err != nil {
 				return "", nil, err
 			}
 		}
-		if _, err := col.WriteString(TableUserColumnLastLoginAt); err != nil {
+		if _, err := columns.WriteString(TableUserColumnLastLoginAt); err != nil {
 			return "", nil, err
 		}
-		if ins.Dirty {
-			if _, err := ins.WriteString(", "); err != nil {
+		if insert.Dirty {
+			if _, err := insert.WriteString(", "); err != nil {
 				return "", nil, err
 			}
 		}
-		if err := ins.WritePlaceholder(); err != nil {
+		if err := insert.WritePlaceholder(); err != nil {
 			return "", nil, err
 		}
-		ins.Add(e.LastLoginAt)
-		ins.Dirty = true
+		insert.Add(e.LastLoginAt)
+		insert.Dirty = true
 	}
 
-	if col.Len() > 0 {
-		if _, err := col.WriteString(", "); err != nil {
+	if columns.Len() > 0 {
+		if _, err := columns.WriteString(", "); err != nil {
 			return "", nil, err
 		}
 	}
-	if _, err := col.WriteString(TableUserColumnLastName); err != nil {
+	if _, err := columns.WriteString(TableUserColumnLastName); err != nil {
 		return "", nil, err
 	}
-	if ins.Dirty {
-		if _, err := ins.WriteString(", "); err != nil {
+	if insert.Dirty {
+		if _, err := insert.WriteString(", "); err != nil {
 			return "", nil, err
 		}
 	}
-	if err := ins.WritePlaceholder(); err != nil {
+	if err := insert.WritePlaceholder(); err != nil {
 		return "", nil, err
 	}
-	ins.Add(e.LastName)
-	ins.Dirty = true
+	insert.Add(e.LastName)
+	insert.Dirty = true
+
 	if e.Password != nil {
-		if col.Len() > 0 {
-			if _, err := col.WriteString(", "); err != nil {
+		if columns.Len() > 0 {
+			if _, err := columns.WriteString(", "); err != nil {
 				return "", nil, err
 			}
 		}
-		if _, err := col.WriteString(TableUserColumnPassword); err != nil {
+		if _, err := columns.WriteString(TableUserColumnPassword); err != nil {
 			return "", nil, err
 		}
-		if ins.Dirty {
-			if _, err := ins.WriteString(", "); err != nil {
+		if insert.Dirty {
+			if _, err := insert.WriteString(", "); err != nil {
 				return "", nil, err
 			}
 		}
-		if err := ins.WritePlaceholder(); err != nil {
+		if err := insert.WritePlaceholder(); err != nil {
 			return "", nil, err
 		}
-		ins.Add(e.Password)
-		ins.Dirty = true
+		insert.Add(e.Password)
+		insert.Dirty = true
 	}
 
 	if e.UpdatedAt.Valid {
-		if col.Len() > 0 {
-			if _, err := col.WriteString(", "); err != nil {
+		if columns.Len() > 0 {
+			if _, err := columns.WriteString(", "); err != nil {
 				return "", nil, err
 			}
 		}
-		if _, err := col.WriteString(TableUserColumnUpdatedAt); err != nil {
+		if _, err := columns.WriteString(TableUserColumnUpdatedAt); err != nil {
 			return "", nil, err
 		}
-		if ins.Dirty {
-			if _, err := ins.WriteString(", "); err != nil {
+		if insert.Dirty {
+			if _, err := insert.WriteString(", "); err != nil {
 				return "", nil, err
 			}
 		}
-		if err := ins.WritePlaceholder(); err != nil {
+		if err := insert.WritePlaceholder(); err != nil {
 			return "", nil, err
 		}
-		ins.Add(e.UpdatedAt)
-		ins.Dirty = true
+		insert.Add(e.UpdatedAt)
+		insert.Dirty = true
 	}
 
-	if col.Len() > 0 {
-		if _, err := col.WriteString(", "); err != nil {
+	if columns.Len() > 0 {
+		if _, err := columns.WriteString(", "); err != nil {
 			return "", nil, err
 		}
 	}
-	if _, err := col.WriteString(TableUserColumnUpdatedBy); err != nil {
+	if _, err := columns.WriteString(TableUserColumnUpdatedBy); err != nil {
 		return "", nil, err
 	}
-	if ins.Dirty {
-		if _, err := ins.WriteString(", "); err != nil {
+	if insert.Dirty {
+		if _, err := insert.WriteString(", "); err != nil {
 			return "", nil, err
 		}
 	}
-	if err := ins.WritePlaceholder(); err != nil {
+	if err := insert.WritePlaceholder(); err != nil {
 		return "", nil, err
 	}
-	ins.Add(e.UpdatedBy)
-	ins.Dirty = true
-	if col.Len() > 0 {
-		if _, err := col.WriteString(", "); err != nil {
+	insert.Add(e.UpdatedBy)
+	insert.Dirty = true
+
+	if columns.Len() > 0 {
+		if _, err := columns.WriteString(", "); err != nil {
 			return "", nil, err
 		}
 	}
-	if _, err := col.WriteString(TableUserColumnUsername); err != nil {
+	if _, err := columns.WriteString(TableUserColumnUsername); err != nil {
 		return "", nil, err
 	}
-	if ins.Dirty {
-		if _, err := ins.WriteString(", "); err != nil {
+	if insert.Dirty {
+		if _, err := insert.WriteString(", "); err != nil {
 			return "", nil, err
 		}
 	}
-	if err := ins.WritePlaceholder(); err != nil {
+	if err := insert.WritePlaceholder(); err != nil {
 		return "", nil, err
 	}
-	ins.Add(e.Username)
-	ins.Dirty = true
-	if col.Len() > 0 {
+	insert.Add(e.Username)
+	insert.Dirty = true
+	if columns.Len() > 0 {
 		buf.WriteString(" (")
-		buf.ReadFrom(col)
+		buf.ReadFrom(columns)
 		buf.WriteString(") VALUES (")
-		buf.ReadFrom(ins)
+		buf.ReadFrom(insert)
 		buf.WriteString(") ")
 		if len(r.Columns) > 0 {
 			buf.WriteString("RETURNING ")
 			buf.WriteString(strings.Join(r.Columns, ", "))
 		}
 	}
-	return buf.String(), ins.Args(), nil
+	return buf.String(), insert.Args(), nil
 }
+
 func (r *UserRepositoryBase) Insert(ctx context.Context, e *UserEntity) (*UserEntity, error) {
 	query, args, err := r.InsertQuery(e)
 	if err != nil {
@@ -594,6 +610,7 @@ func (r *UserRepositoryBase) Insert(ctx context.Context, e *UserEntity) (*UserEn
 	}
 	return e, nil
 }
+
 func (r *UserRepositoryBase) FindQuery(s []string, c *UserCriteria) (string, []interface{}, error) {
 	where := NewComposer(15)
 	buf := bytes.NewBufferString("SELECT ")
@@ -618,26 +635,14 @@ func (r *UserRepositoryBase) FindQuery(s []string, c *UserCriteria) (string, []i
 		where.Dirty = true
 	}
 
-	if c.CreatedAt.Valid {
-		if where.Dirty {
-			where.WriteString(" AND ")
-		}
-		if _, err := where.WriteString(TableUserColumnCreatedAt); err != nil {
-			return "", nil, err
-		}
-		if _, err := where.WriteString("="); err != nil {
-			return "", nil, err
-		}
-		if err := where.WritePlaceholder(); err != nil {
-			return "", nil, err
-		}
-		where.Add(c.CreatedAt)
-		where.Dirty = true
-	}
+	QueryTimestampWhereClause(c.CreatedAt, TableUserColumnCreatedAt, where, And)
 
 	QueryInt64WhereClause(c.CreatedBy, TableUserColumnCreatedBy, where, And)
+
 	QueryStringWhereClause(c.FirstName, TableUserColumnFirstName, where, And)
+
 	QueryInt64WhereClause(c.ID, TableUserColumnID, where, And)
+
 	if c.IsActive.Valid {
 		if where.Dirty {
 			if _, err := where.WriteString(", "); err != nil {
@@ -656,6 +661,7 @@ func (r *UserRepositoryBase) FindQuery(s []string, c *UserCriteria) (string, []i
 		where.Add(c.IsActive)
 		where.Dirty = true
 	}
+
 	if c.IsConfirmed.Valid {
 		if where.Dirty {
 			if _, err := where.WriteString(", "); err != nil {
@@ -674,6 +680,7 @@ func (r *UserRepositoryBase) FindQuery(s []string, c *UserCriteria) (string, []i
 		where.Add(c.IsConfirmed)
 		where.Dirty = true
 	}
+
 	if c.IsStaff.Valid {
 		if where.Dirty {
 			if _, err := where.WriteString(", "); err != nil {
@@ -692,6 +699,7 @@ func (r *UserRepositoryBase) FindQuery(s []string, c *UserCriteria) (string, []i
 		where.Add(c.IsStaff)
 		where.Dirty = true
 	}
+
 	if c.IsSuperuser.Valid {
 		if where.Dirty {
 			if _, err := where.WriteString(", "); err != nil {
@@ -710,24 +718,11 @@ func (r *UserRepositoryBase) FindQuery(s []string, c *UserCriteria) (string, []i
 		where.Add(c.IsSuperuser)
 		where.Dirty = true
 	}
-	if c.LastLoginAt.Valid {
-		if where.Dirty {
-			where.WriteString(" AND ")
-		}
-		if _, err := where.WriteString(TableUserColumnLastLoginAt); err != nil {
-			return "", nil, err
-		}
-		if _, err := where.WriteString("="); err != nil {
-			return "", nil, err
-		}
-		if err := where.WritePlaceholder(); err != nil {
-			return "", nil, err
-		}
-		where.Add(c.LastLoginAt)
-		where.Dirty = true
-	}
+
+	QueryTimestampWhereClause(c.LastLoginAt, TableUserColumnLastLoginAt, where, And)
 
 	QueryStringWhereClause(c.LastName, TableUserColumnLastName, where, And)
+
 	if c.Password != nil {
 		if where.Dirty {
 			where.WriteString(" AND ")
@@ -745,24 +740,10 @@ func (r *UserRepositoryBase) FindQuery(s []string, c *UserCriteria) (string, []i
 		where.Dirty = true
 	}
 
-	if c.UpdatedAt.Valid {
-		if where.Dirty {
-			where.WriteString(" AND ")
-		}
-		if _, err := where.WriteString(TableUserColumnUpdatedAt); err != nil {
-			return "", nil, err
-		}
-		if _, err := where.WriteString("="); err != nil {
-			return "", nil, err
-		}
-		if err := where.WritePlaceholder(); err != nil {
-			return "", nil, err
-		}
-		where.Add(c.UpdatedAt)
-		where.Dirty = true
-	}
+	QueryTimestampWhereClause(c.UpdatedAt, TableUserColumnUpdatedAt, where, And)
 
 	QueryInt64WhereClause(c.UpdatedBy, TableUserColumnUpdatedBy, where, And)
+
 	QueryStringWhereClause(c.Username, TableUserColumnUsername, where, And)
 	if where.Dirty {
 		if _, err := buf.WriteString("WHERE "); err != nil {
@@ -826,6 +807,7 @@ func (r *UserRepositoryBase) FindQuery(s []string, c *UserCriteria) (string, []i
 
 	return buf.String(), where.Args(), nil
 }
+
 func (r *UserRepositoryBase) Find(ctx context.Context, c *UserCriteria) ([]*UserEntity, error) {
 	query, args, err := r.FindQuery(r.Columns, c)
 	if err != nil {
@@ -834,18 +816,19 @@ func (r *UserRepositoryBase) Find(ctx context.Context, c *UserCriteria) ([]*User
 	rows, err := r.DB.QueryContext(ctx, query, args...)
 	if err != nil {
 		if r.Debug {
-			r.Log.Log("level", "error", "timestamp", time.Now().Format(time.RFC3339), "msg", "insert query failure", "query", query, "table", r.Table, "error", err.Error())
+			r.Log.Log("level", "error", "timestamp", time.Now().Format(time.RFC3339), "msg", "find query failure", "query", query, "table", r.Table, "error", err.Error())
 		}
 		return nil, err
 	}
 	defer rows.Close()
 
 	if r.Debug {
-		r.Log.Log("level", "debug", "timestamp", time.Now().Format(time.RFC3339), "msg", "insert query success", "query", query, "table", r.Table)
+		r.Log.Log("level", "debug", "timestamp", time.Now().Format(time.RFC3339), "msg", "find query success", "query", query, "table", r.Table)
 	}
 
 	return ScanUserRows(rows)
 }
+
 func (r *UserRepositoryBase) FindIter(ctx context.Context, c *UserCriteria) (*UserIterator, error) {
 	query, args, err := r.FindQuery(r.Columns, c)
 	if err != nil {
@@ -871,7 +854,6 @@ func (r *UserRepositoryBase) FindOneByID(ctx context.Context, pk int64) (*UserEn
 	var (
 		ent UserEntity
 	)
-
 	props, err := ent.Props(r.Columns...)
 	if err != nil {
 		return nil, err
@@ -932,6 +914,7 @@ func (r *UserRepositoryBase) UpdateOneByIDQuery(pk int64, p *UserPatch) (string,
 		update.Dirty = true
 
 	}
+
 	if p.CreatedAt.Valid {
 		if update.Dirty {
 			if _, err := update.WriteString(", "); err != nil {
@@ -951,6 +934,7 @@ func (r *UserRepositoryBase) UpdateOneByIDQuery(pk int64, p *UserPatch) (string,
 		update.Dirty = true
 
 	}
+
 	if p.CreatedBy.Valid {
 		if update.Dirty {
 			if _, err := update.WriteString(", "); err != nil {
@@ -969,6 +953,7 @@ func (r *UserRepositoryBase) UpdateOneByIDQuery(pk int64, p *UserPatch) (string,
 		update.Add(p.CreatedBy)
 		update.Dirty = true
 	}
+
 	if p.FirstName.Valid {
 		if update.Dirty {
 			if _, err := update.WriteString(", "); err != nil {
@@ -987,6 +972,7 @@ func (r *UserRepositoryBase) UpdateOneByIDQuery(pk int64, p *UserPatch) (string,
 		update.Add(p.FirstName)
 		update.Dirty = true
 	}
+
 	if p.IsActive.Valid {
 		if update.Dirty {
 			if _, err := update.WriteString(", "); err != nil {
@@ -1005,6 +991,7 @@ func (r *UserRepositoryBase) UpdateOneByIDQuery(pk int64, p *UserPatch) (string,
 		update.Add(p.IsActive)
 		update.Dirty = true
 	}
+
 	if p.IsConfirmed.Valid {
 		if update.Dirty {
 			if _, err := update.WriteString(", "); err != nil {
@@ -1023,6 +1010,7 @@ func (r *UserRepositoryBase) UpdateOneByIDQuery(pk int64, p *UserPatch) (string,
 		update.Add(p.IsConfirmed)
 		update.Dirty = true
 	}
+
 	if p.IsStaff.Valid {
 		if update.Dirty {
 			if _, err := update.WriteString(", "); err != nil {
@@ -1041,6 +1029,7 @@ func (r *UserRepositoryBase) UpdateOneByIDQuery(pk int64, p *UserPatch) (string,
 		update.Add(p.IsStaff)
 		update.Dirty = true
 	}
+
 	if p.IsSuperuser.Valid {
 		if update.Dirty {
 			if _, err := update.WriteString(", "); err != nil {
@@ -1059,6 +1048,7 @@ func (r *UserRepositoryBase) UpdateOneByIDQuery(pk int64, p *UserPatch) (string,
 		update.Add(p.IsSuperuser)
 		update.Dirty = true
 	}
+
 	if p.LastLoginAt.Valid {
 		if update.Dirty {
 			if _, err := update.WriteString(", "); err != nil {
@@ -1078,6 +1068,7 @@ func (r *UserRepositoryBase) UpdateOneByIDQuery(pk int64, p *UserPatch) (string,
 		update.Dirty = true
 
 	}
+
 	if p.LastName.Valid {
 		if update.Dirty {
 			if _, err := update.WriteString(", "); err != nil {
@@ -1096,6 +1087,7 @@ func (r *UserRepositoryBase) UpdateOneByIDQuery(pk int64, p *UserPatch) (string,
 		update.Add(p.LastName)
 		update.Dirty = true
 	}
+
 	if p.Password != nil {
 		if update.Dirty {
 			if _, err := update.WriteString(", "); err != nil {
@@ -1115,6 +1107,7 @@ func (r *UserRepositoryBase) UpdateOneByIDQuery(pk int64, p *UserPatch) (string,
 		update.Dirty = true
 
 	}
+
 	if p.UpdatedAt.Valid {
 		if update.Dirty {
 			if _, err := update.WriteString(", "); err != nil {
@@ -1145,8 +1138,8 @@ func (r *UserRepositoryBase) UpdateOneByIDQuery(pk int64, p *UserPatch) (string,
 		if _, err := update.WriteString("=NOW()"); err != nil {
 			return "", nil, err
 		}
-
 	}
+
 	if p.UpdatedBy.Valid {
 		if update.Dirty {
 			if _, err := update.WriteString(", "); err != nil {
@@ -1165,6 +1158,7 @@ func (r *UserRepositoryBase) UpdateOneByIDQuery(pk int64, p *UserPatch) (string,
 		update.Add(p.UpdatedBy)
 		update.Dirty = true
 	}
+
 	if p.Username.Valid {
 		if update.Dirty {
 			if _, err := update.WriteString(", "); err != nil {
@@ -1207,7 +1201,6 @@ func (r *UserRepositoryBase) UpdateOneByID(ctx context.Context, pk int64, p *Use
 	if err != nil {
 		return nil, err
 	}
-
 	var ent UserEntity
 	props, err := ent.Props(r.Columns...)
 	if err != nil {
@@ -1220,6 +1213,963 @@ func (r *UserRepositoryBase) UpdateOneByID(ctx context.Context, pk int64, p *Use
 
 	return &ent, nil
 }
+func (r *UserRepositoryBase) UpdateOneByUsernameQuery(userUsername string, p *UserPatch) (string, []interface{}, error) {
+	buf := bytes.NewBufferString("UPDATE ")
+	buf.WriteString(r.Table)
+	update := NewComposer(1)
+	if p.ConfirmationToken != nil {
+		if update.Dirty {
+			if _, err := update.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := update.WriteString(TableUserColumnConfirmationToken); err != nil {
+			return "", nil, err
+		}
+		if _, err := update.WriteString("="); err != nil {
+			return "", nil, err
+		}
+		if err := update.WritePlaceholder(); err != nil {
+			return "", nil, err
+		}
+		update.Add(p.ConfirmationToken)
+		update.Dirty = true
+
+	}
+
+	if p.CreatedAt.Valid {
+		if update.Dirty {
+			if _, err := update.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := update.WriteString(TableUserColumnCreatedAt); err != nil {
+			return "", nil, err
+		}
+		if _, err := update.WriteString("="); err != nil {
+			return "", nil, err
+		}
+		if err := update.WritePlaceholder(); err != nil {
+			return "", nil, err
+		}
+		update.Add(p.CreatedAt)
+		update.Dirty = true
+
+	}
+
+	if p.CreatedBy.Valid {
+		if update.Dirty {
+			if _, err := update.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := update.WriteString(TableUserColumnCreatedBy); err != nil {
+			return "", nil, err
+		}
+		if _, err := update.WriteString("="); err != nil {
+			return "", nil, err
+		}
+		if err := update.WritePlaceholder(); err != nil {
+			return "", nil, err
+		}
+		update.Add(p.CreatedBy)
+		update.Dirty = true
+	}
+
+	if p.FirstName.Valid {
+		if update.Dirty {
+			if _, err := update.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := update.WriteString(TableUserColumnFirstName); err != nil {
+			return "", nil, err
+		}
+		if _, err := update.WriteString("="); err != nil {
+			return "", nil, err
+		}
+		if err := update.WritePlaceholder(); err != nil {
+			return "", nil, err
+		}
+		update.Add(p.FirstName)
+		update.Dirty = true
+	}
+
+	if p.IsActive.Valid {
+		if update.Dirty {
+			if _, err := update.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := update.WriteString(TableUserColumnIsActive); err != nil {
+			return "", nil, err
+		}
+		if _, err := update.WriteString("="); err != nil {
+			return "", nil, err
+		}
+		if err := update.WritePlaceholder(); err != nil {
+			return "", nil, err
+		}
+		update.Add(p.IsActive)
+		update.Dirty = true
+	}
+
+	if p.IsConfirmed.Valid {
+		if update.Dirty {
+			if _, err := update.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := update.WriteString(TableUserColumnIsConfirmed); err != nil {
+			return "", nil, err
+		}
+		if _, err := update.WriteString("="); err != nil {
+			return "", nil, err
+		}
+		if err := update.WritePlaceholder(); err != nil {
+			return "", nil, err
+		}
+		update.Add(p.IsConfirmed)
+		update.Dirty = true
+	}
+
+	if p.IsStaff.Valid {
+		if update.Dirty {
+			if _, err := update.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := update.WriteString(TableUserColumnIsStaff); err != nil {
+			return "", nil, err
+		}
+		if _, err := update.WriteString("="); err != nil {
+			return "", nil, err
+		}
+		if err := update.WritePlaceholder(); err != nil {
+			return "", nil, err
+		}
+		update.Add(p.IsStaff)
+		update.Dirty = true
+	}
+
+	if p.IsSuperuser.Valid {
+		if update.Dirty {
+			if _, err := update.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := update.WriteString(TableUserColumnIsSuperuser); err != nil {
+			return "", nil, err
+		}
+		if _, err := update.WriteString("="); err != nil {
+			return "", nil, err
+		}
+		if err := update.WritePlaceholder(); err != nil {
+			return "", nil, err
+		}
+		update.Add(p.IsSuperuser)
+		update.Dirty = true
+	}
+
+	if p.LastLoginAt.Valid {
+		if update.Dirty {
+			if _, err := update.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := update.WriteString(TableUserColumnLastLoginAt); err != nil {
+			return "", nil, err
+		}
+		if _, err := update.WriteString("="); err != nil {
+			return "", nil, err
+		}
+		if err := update.WritePlaceholder(); err != nil {
+			return "", nil, err
+		}
+		update.Add(p.LastLoginAt)
+		update.Dirty = true
+
+	}
+
+	if p.LastName.Valid {
+		if update.Dirty {
+			if _, err := update.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := update.WriteString(TableUserColumnLastName); err != nil {
+			return "", nil, err
+		}
+		if _, err := update.WriteString("="); err != nil {
+			return "", nil, err
+		}
+		if err := update.WritePlaceholder(); err != nil {
+			return "", nil, err
+		}
+		update.Add(p.LastName)
+		update.Dirty = true
+	}
+
+	if p.Password != nil {
+		if update.Dirty {
+			if _, err := update.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := update.WriteString(TableUserColumnPassword); err != nil {
+			return "", nil, err
+		}
+		if _, err := update.WriteString("="); err != nil {
+			return "", nil, err
+		}
+		if err := update.WritePlaceholder(); err != nil {
+			return "", nil, err
+		}
+		update.Add(p.Password)
+		update.Dirty = true
+
+	}
+
+	if p.UpdatedAt.Valid {
+		if update.Dirty {
+			if _, err := update.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := update.WriteString(TableUserColumnUpdatedAt); err != nil {
+			return "", nil, err
+		}
+		if _, err := update.WriteString("="); err != nil {
+			return "", nil, err
+		}
+		if err := update.WritePlaceholder(); err != nil {
+			return "", nil, err
+		}
+		update.Add(p.UpdatedAt)
+		update.Dirty = true
+
+	} else {
+		if update.Dirty {
+			if _, err := update.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := update.WriteString(TableUserColumnUpdatedAt); err != nil {
+			return "", nil, err
+		}
+		if _, err := update.WriteString("=NOW()"); err != nil {
+			return "", nil, err
+		}
+	}
+
+	if p.UpdatedBy.Valid {
+		if update.Dirty {
+			if _, err := update.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := update.WriteString(TableUserColumnUpdatedBy); err != nil {
+			return "", nil, err
+		}
+		if _, err := update.WriteString("="); err != nil {
+			return "", nil, err
+		}
+		if err := update.WritePlaceholder(); err != nil {
+			return "", nil, err
+		}
+		update.Add(p.UpdatedBy)
+		update.Dirty = true
+	}
+
+	if p.Username.Valid {
+		if update.Dirty {
+			if _, err := update.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := update.WriteString(TableUserColumnUsername); err != nil {
+			return "", nil, err
+		}
+		if _, err := update.WriteString("="); err != nil {
+			return "", nil, err
+		}
+		if err := update.WritePlaceholder(); err != nil {
+			return "", nil, err
+		}
+		update.Add(p.Username)
+		update.Dirty = true
+	}
+
+	if !update.Dirty {
+		return "", nil, errors.New("User update failure, nothing to update")
+	}
+	buf.WriteString(" SET ")
+	buf.ReadFrom(update)
+	buf.WriteString(" WHERE ")
+	update.WriteString(TableUserColumnUsername)
+	update.WriteString("=")
+	update.WritePlaceholder()
+	update.Add(userUsername)
+	buf.ReadFrom(update)
+	buf.WriteString(" RETURNING ")
+	buf.WriteString(strings.Join(r.Columns, ", "))
+	return buf.String(), update.Args(), nil
+}
+func (r *UserRepositoryBase) UpdateOneByUsername(ctx context.Context, userUsername string, p *UserPatch) (*UserEntity, error) {
+	query, args, err := r.UpdateOneByUsernameQuery(userUsername, p)
+	if err != nil {
+		return nil, err
+	}
+	var ent UserEntity
+	props, err := ent.Props(r.Columns...)
+	if err != nil {
+		return nil, err
+	}
+	err = r.DB.QueryRowContext(ctx, query, args...).Scan(props...)
+	if err != nil {
+		if r.Debug {
+			r.Log.Log("level", "error", "timestamp", time.Now().Format(time.RFC3339), "msg", "insert query failure", "query", query, "table", r.Table, "error", err.Error())
+		}
+		return nil, err
+	}
+
+	if r.Debug {
+		r.Log.Log("level", "debug", "timestamp", time.Now().Format(time.RFC3339), "msg", "insert query success", "query", query, "table", r.Table)
+	}
+
+	return &ent, nil
+}
+func (r *UserRepositoryBase) UpsertQuery(e *UserEntity, p *UserPatch, inf ...string) (string, []interface{}, error) {
+	upsert := NewComposer(30)
+	columns := bytes.NewBuffer(nil)
+	buf := bytes.NewBufferString("INSERT INTO ")
+	buf.WriteString(r.Table)
+
+	if e.ConfirmationToken != nil {
+		if columns.Len() > 0 {
+			if _, err := columns.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := columns.WriteString(TableUserColumnConfirmationToken); err != nil {
+			return "", nil, err
+		}
+		if upsert.Dirty {
+			if _, err := upsert.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if err := upsert.WritePlaceholder(); err != nil {
+			return "", nil, err
+		}
+		upsert.Add(e.ConfirmationToken)
+		upsert.Dirty = true
+	}
+
+	if !e.CreatedAt.IsZero() {
+		if columns.Len() > 0 {
+			if _, err := columns.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := columns.WriteString(TableUserColumnCreatedAt); err != nil {
+			return "", nil, err
+		}
+		if upsert.Dirty {
+			if _, err := upsert.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if err := upsert.WritePlaceholder(); err != nil {
+			return "", nil, err
+		}
+		upsert.Add(e.CreatedAt)
+		upsert.Dirty = true
+	}
+
+	if columns.Len() > 0 {
+		if _, err := columns.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if _, err := columns.WriteString(TableUserColumnCreatedBy); err != nil {
+		return "", nil, err
+	}
+	if upsert.Dirty {
+		if _, err := upsert.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if err := upsert.WritePlaceholder(); err != nil {
+		return "", nil, err
+	}
+	upsert.Add(e.CreatedBy)
+	upsert.Dirty = true
+
+	if columns.Len() > 0 {
+		if _, err := columns.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if _, err := columns.WriteString(TableUserColumnFirstName); err != nil {
+		return "", nil, err
+	}
+	if upsert.Dirty {
+		if _, err := upsert.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if err := upsert.WritePlaceholder(); err != nil {
+		return "", nil, err
+	}
+	upsert.Add(e.FirstName)
+	upsert.Dirty = true
+
+	if columns.Len() > 0 {
+		if _, err := columns.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if _, err := columns.WriteString(TableUserColumnIsActive); err != nil {
+		return "", nil, err
+	}
+	if upsert.Dirty {
+		if _, err := upsert.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if err := upsert.WritePlaceholder(); err != nil {
+		return "", nil, err
+	}
+	upsert.Add(e.IsActive)
+	upsert.Dirty = true
+
+	if columns.Len() > 0 {
+		if _, err := columns.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if _, err := columns.WriteString(TableUserColumnIsConfirmed); err != nil {
+		return "", nil, err
+	}
+	if upsert.Dirty {
+		if _, err := upsert.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if err := upsert.WritePlaceholder(); err != nil {
+		return "", nil, err
+	}
+	upsert.Add(e.IsConfirmed)
+	upsert.Dirty = true
+
+	if columns.Len() > 0 {
+		if _, err := columns.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if _, err := columns.WriteString(TableUserColumnIsStaff); err != nil {
+		return "", nil, err
+	}
+	if upsert.Dirty {
+		if _, err := upsert.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if err := upsert.WritePlaceholder(); err != nil {
+		return "", nil, err
+	}
+	upsert.Add(e.IsStaff)
+	upsert.Dirty = true
+
+	if columns.Len() > 0 {
+		if _, err := columns.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if _, err := columns.WriteString(TableUserColumnIsSuperuser); err != nil {
+		return "", nil, err
+	}
+	if upsert.Dirty {
+		if _, err := upsert.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if err := upsert.WritePlaceholder(); err != nil {
+		return "", nil, err
+	}
+	upsert.Add(e.IsSuperuser)
+	upsert.Dirty = true
+
+	if e.LastLoginAt.Valid {
+		if columns.Len() > 0 {
+			if _, err := columns.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := columns.WriteString(TableUserColumnLastLoginAt); err != nil {
+			return "", nil, err
+		}
+		if upsert.Dirty {
+			if _, err := upsert.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if err := upsert.WritePlaceholder(); err != nil {
+			return "", nil, err
+		}
+		upsert.Add(e.LastLoginAt)
+		upsert.Dirty = true
+	}
+
+	if columns.Len() > 0 {
+		if _, err := columns.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if _, err := columns.WriteString(TableUserColumnLastName); err != nil {
+		return "", nil, err
+	}
+	if upsert.Dirty {
+		if _, err := upsert.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if err := upsert.WritePlaceholder(); err != nil {
+		return "", nil, err
+	}
+	upsert.Add(e.LastName)
+	upsert.Dirty = true
+
+	if e.Password != nil {
+		if columns.Len() > 0 {
+			if _, err := columns.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := columns.WriteString(TableUserColumnPassword); err != nil {
+			return "", nil, err
+		}
+		if upsert.Dirty {
+			if _, err := upsert.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if err := upsert.WritePlaceholder(); err != nil {
+			return "", nil, err
+		}
+		upsert.Add(e.Password)
+		upsert.Dirty = true
+	}
+
+	if e.UpdatedAt.Valid {
+		if columns.Len() > 0 {
+			if _, err := columns.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := columns.WriteString(TableUserColumnUpdatedAt); err != nil {
+			return "", nil, err
+		}
+		if upsert.Dirty {
+			if _, err := upsert.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if err := upsert.WritePlaceholder(); err != nil {
+			return "", nil, err
+		}
+		upsert.Add(e.UpdatedAt)
+		upsert.Dirty = true
+	}
+
+	if columns.Len() > 0 {
+		if _, err := columns.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if _, err := columns.WriteString(TableUserColumnUpdatedBy); err != nil {
+		return "", nil, err
+	}
+	if upsert.Dirty {
+		if _, err := upsert.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if err := upsert.WritePlaceholder(); err != nil {
+		return "", nil, err
+	}
+	upsert.Add(e.UpdatedBy)
+	upsert.Dirty = true
+
+	if columns.Len() > 0 {
+		if _, err := columns.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if _, err := columns.WriteString(TableUserColumnUsername); err != nil {
+		return "", nil, err
+	}
+	if upsert.Dirty {
+		if _, err := upsert.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if err := upsert.WritePlaceholder(); err != nil {
+		return "", nil, err
+	}
+	upsert.Add(e.Username)
+	upsert.Dirty = true
+
+	if upsert.Dirty {
+		buf.WriteString(" (")
+		buf.ReadFrom(columns)
+		buf.WriteString(") VALUES (")
+		buf.ReadFrom(upsert)
+		buf.WriteString(")")
+	}
+	buf.WriteString(" ON CONFLICT ")
+	if len(inf) > 0 {
+		upsert.Dirty = false
+		if p.ConfirmationToken != nil {
+			if upsert.Dirty {
+				if _, err := upsert.WriteString(", "); err != nil {
+					return "", nil, err
+				}
+			}
+			if _, err := upsert.WriteString(TableUserColumnConfirmationToken); err != nil {
+				return "", nil, err
+			}
+			if _, err := upsert.WriteString("="); err != nil {
+				return "", nil, err
+			}
+			if err := upsert.WritePlaceholder(); err != nil {
+				return "", nil, err
+			}
+			upsert.Add(p.ConfirmationToken)
+			upsert.Dirty = true
+
+		}
+
+		if p.CreatedAt.Valid {
+			if upsert.Dirty {
+				if _, err := upsert.WriteString(", "); err != nil {
+					return "", nil, err
+				}
+			}
+			if _, err := upsert.WriteString(TableUserColumnCreatedAt); err != nil {
+				return "", nil, err
+			}
+			if _, err := upsert.WriteString("="); err != nil {
+				return "", nil, err
+			}
+			if err := upsert.WritePlaceholder(); err != nil {
+				return "", nil, err
+			}
+			upsert.Add(p.CreatedAt)
+			upsert.Dirty = true
+
+		}
+
+		if p.CreatedBy.Valid {
+			if upsert.Dirty {
+				if _, err := upsert.WriteString(", "); err != nil {
+					return "", nil, err
+				}
+			}
+			if _, err := upsert.WriteString(TableUserColumnCreatedBy); err != nil {
+				return "", nil, err
+			}
+			if _, err := upsert.WriteString("="); err != nil {
+				return "", nil, err
+			}
+			if err := upsert.WritePlaceholder(); err != nil {
+				return "", nil, err
+			}
+			upsert.Add(p.CreatedBy)
+			upsert.Dirty = true
+		}
+
+		if p.FirstName.Valid {
+			if upsert.Dirty {
+				if _, err := upsert.WriteString(", "); err != nil {
+					return "", nil, err
+				}
+			}
+			if _, err := upsert.WriteString(TableUserColumnFirstName); err != nil {
+				return "", nil, err
+			}
+			if _, err := upsert.WriteString("="); err != nil {
+				return "", nil, err
+			}
+			if err := upsert.WritePlaceholder(); err != nil {
+				return "", nil, err
+			}
+			upsert.Add(p.FirstName)
+			upsert.Dirty = true
+		}
+
+		if p.IsActive.Valid {
+			if upsert.Dirty {
+				if _, err := upsert.WriteString(", "); err != nil {
+					return "", nil, err
+				}
+			}
+			if _, err := upsert.WriteString(TableUserColumnIsActive); err != nil {
+				return "", nil, err
+			}
+			if _, err := upsert.WriteString("="); err != nil {
+				return "", nil, err
+			}
+			if err := upsert.WritePlaceholder(); err != nil {
+				return "", nil, err
+			}
+			upsert.Add(p.IsActive)
+			upsert.Dirty = true
+		}
+
+		if p.IsConfirmed.Valid {
+			if upsert.Dirty {
+				if _, err := upsert.WriteString(", "); err != nil {
+					return "", nil, err
+				}
+			}
+			if _, err := upsert.WriteString(TableUserColumnIsConfirmed); err != nil {
+				return "", nil, err
+			}
+			if _, err := upsert.WriteString("="); err != nil {
+				return "", nil, err
+			}
+			if err := upsert.WritePlaceholder(); err != nil {
+				return "", nil, err
+			}
+			upsert.Add(p.IsConfirmed)
+			upsert.Dirty = true
+		}
+
+		if p.IsStaff.Valid {
+			if upsert.Dirty {
+				if _, err := upsert.WriteString(", "); err != nil {
+					return "", nil, err
+				}
+			}
+			if _, err := upsert.WriteString(TableUserColumnIsStaff); err != nil {
+				return "", nil, err
+			}
+			if _, err := upsert.WriteString("="); err != nil {
+				return "", nil, err
+			}
+			if err := upsert.WritePlaceholder(); err != nil {
+				return "", nil, err
+			}
+			upsert.Add(p.IsStaff)
+			upsert.Dirty = true
+		}
+
+		if p.IsSuperuser.Valid {
+			if upsert.Dirty {
+				if _, err := upsert.WriteString(", "); err != nil {
+					return "", nil, err
+				}
+			}
+			if _, err := upsert.WriteString(TableUserColumnIsSuperuser); err != nil {
+				return "", nil, err
+			}
+			if _, err := upsert.WriteString("="); err != nil {
+				return "", nil, err
+			}
+			if err := upsert.WritePlaceholder(); err != nil {
+				return "", nil, err
+			}
+			upsert.Add(p.IsSuperuser)
+			upsert.Dirty = true
+		}
+
+		if p.LastLoginAt.Valid {
+			if upsert.Dirty {
+				if _, err := upsert.WriteString(", "); err != nil {
+					return "", nil, err
+				}
+			}
+			if _, err := upsert.WriteString(TableUserColumnLastLoginAt); err != nil {
+				return "", nil, err
+			}
+			if _, err := upsert.WriteString("="); err != nil {
+				return "", nil, err
+			}
+			if err := upsert.WritePlaceholder(); err != nil {
+				return "", nil, err
+			}
+			upsert.Add(p.LastLoginAt)
+			upsert.Dirty = true
+
+		}
+
+		if p.LastName.Valid {
+			if upsert.Dirty {
+				if _, err := upsert.WriteString(", "); err != nil {
+					return "", nil, err
+				}
+			}
+			if _, err := upsert.WriteString(TableUserColumnLastName); err != nil {
+				return "", nil, err
+			}
+			if _, err := upsert.WriteString("="); err != nil {
+				return "", nil, err
+			}
+			if err := upsert.WritePlaceholder(); err != nil {
+				return "", nil, err
+			}
+			upsert.Add(p.LastName)
+			upsert.Dirty = true
+		}
+
+		if p.Password != nil {
+			if upsert.Dirty {
+				if _, err := upsert.WriteString(", "); err != nil {
+					return "", nil, err
+				}
+			}
+			if _, err := upsert.WriteString(TableUserColumnPassword); err != nil {
+				return "", nil, err
+			}
+			if _, err := upsert.WriteString("="); err != nil {
+				return "", nil, err
+			}
+			if err := upsert.WritePlaceholder(); err != nil {
+				return "", nil, err
+			}
+			upsert.Add(p.Password)
+			upsert.Dirty = true
+
+		}
+
+		if p.UpdatedAt.Valid {
+			if upsert.Dirty {
+				if _, err := upsert.WriteString(", "); err != nil {
+					return "", nil, err
+				}
+			}
+			if _, err := upsert.WriteString(TableUserColumnUpdatedAt); err != nil {
+				return "", nil, err
+			}
+			if _, err := upsert.WriteString("="); err != nil {
+				return "", nil, err
+			}
+			if err := upsert.WritePlaceholder(); err != nil {
+				return "", nil, err
+			}
+			upsert.Add(p.UpdatedAt)
+			upsert.Dirty = true
+
+		} else {
+			if upsert.Dirty {
+				if _, err := upsert.WriteString(", "); err != nil {
+					return "", nil, err
+				}
+			}
+			if _, err := upsert.WriteString(TableUserColumnUpdatedAt); err != nil {
+				return "", nil, err
+			}
+			if _, err := upsert.WriteString("=NOW()"); err != nil {
+				return "", nil, err
+			}
+		}
+
+		if p.UpdatedBy.Valid {
+			if upsert.Dirty {
+				if _, err := upsert.WriteString(", "); err != nil {
+					return "", nil, err
+				}
+			}
+			if _, err := upsert.WriteString(TableUserColumnUpdatedBy); err != nil {
+				return "", nil, err
+			}
+			if _, err := upsert.WriteString("="); err != nil {
+				return "", nil, err
+			}
+			if err := upsert.WritePlaceholder(); err != nil {
+				return "", nil, err
+			}
+			upsert.Add(p.UpdatedBy)
+			upsert.Dirty = true
+		}
+
+		if p.Username.Valid {
+			if upsert.Dirty {
+				if _, err := upsert.WriteString(", "); err != nil {
+					return "", nil, err
+				}
+			}
+			if _, err := upsert.WriteString(TableUserColumnUsername); err != nil {
+				return "", nil, err
+			}
+			if _, err := upsert.WriteString("="); err != nil {
+				return "", nil, err
+			}
+			if err := upsert.WritePlaceholder(); err != nil {
+				return "", nil, err
+			}
+			upsert.Add(p.Username)
+			upsert.Dirty = true
+		}
+
+	}
+
+	if len(inf) > 0 && upsert.Dirty {
+		buf.WriteString("(")
+		for j, i := range inf {
+			if j != 0 {
+				buf.WriteString(", ")
+			}
+			buf.WriteString(i)
+		}
+		buf.WriteString(")")
+		buf.WriteString(" DO UPDATE SET ")
+		buf.ReadFrom(upsert)
+	} else {
+		buf.WriteString(" DO NOTHING ")
+	}
+	if upsert.Dirty {
+		if len(r.Columns) > 0 {
+			buf.WriteString(" RETURNING ")
+			buf.WriteString(strings.Join(r.Columns, ", "))
+		}
+	}
+	return buf.String(), upsert.Args(), nil
+}
+func (r *UserRepositoryBase) Upsert(ctx context.Context, e *UserEntity, p *UserPatch, inf ...string) (*UserEntity, error) {
+	query, args, err := r.UpsertQuery(e, p, inf...)
+	if err != nil {
+		return nil, err
+	}
+	if err := r.DB.QueryRowContext(ctx, query, args...).Scan(&e.ConfirmationToken,
+		&e.CreatedAt,
+		&e.CreatedBy,
+		&e.FirstName,
+		&e.ID,
+		&e.IsActive,
+		&e.IsConfirmed,
+		&e.IsStaff,
+		&e.IsSuperuser,
+		&e.LastLoginAt,
+		&e.LastName,
+		&e.Password,
+		&e.UpdatedAt,
+		&e.UpdatedBy,
+		&e.Username,
+	); err != nil {
+		if r.Debug {
+			r.Log.Log("level", "error", "timestamp", time.Now().Format(time.RFC3339), "msg", "upsert query failure", "query", query, "table", r.Table, "error", err.Error())
+		}
+		return nil, err
+	}
+	if r.Debug {
+		r.Log.Log("level", "debug", "timestamp", time.Now().Format(time.RFC3339), "msg", "upsert query success", "query", query, "table", r.Table)
+	}
+	return e, nil
+}
+
 func (r *UserRepositoryBase) Count(ctx context.Context, c *UserCriteria) (int64, error) {
 	query, args, err := r.FindQuery([]string{"COUNT(*)"}, c)
 	if err != nil {
@@ -1228,13 +2178,13 @@ func (r *UserRepositoryBase) Count(ctx context.Context, c *UserCriteria) (int64,
 	var count int64
 	if err := r.DB.QueryRowContext(ctx, query, args...).Scan(&count); err != nil {
 		if r.Debug {
-			r.Log.Log("level", "error", "timestamp", time.Now().Format(time.RFC3339), "msg", "insert query failure", "query", query, "table", r.Table, "error", err.Error())
+			r.Log.Log("level", "error", "timestamp", time.Now().Format(time.RFC3339), "msg", "count query failure", "query", query, "table", r.Table, "error", err.Error())
 		}
 		return 0, err
 	}
 
 	if r.Debug {
-		r.Log.Log("level", "debug", "timestamp", time.Now().Format(time.RFC3339), "msg", "insert query success", "query", query, "table", r.Table)
+		r.Log.Log("level", "debug", "timestamp", time.Now().Format(time.RFC3339), "msg", "count query success", "query", query, "table", r.Table)
 	}
 
 	return count, nil
@@ -1248,7 +2198,6 @@ func (r *UserRepositoryBase) DeleteOneByID(ctx context.Context, pk int64) (int64
 	find.WriteString("=")
 	find.WritePlaceholder()
 	find.Add(pk)
-
 	res, err := r.DB.ExecContext(ctx, find.String(), find.Args()...)
 	if err != nil {
 		return 0, err
@@ -1267,8 +2216,11 @@ const (
 	TableGroupColumnUpdatedAt               = "updated_at"
 	TableGroupColumnUpdatedBy               = "updated_by"
 	TableGroupConstraintCreatedByForeignKey = "charon.group_created_by_fkey"
-	TableGroupConstraintPrimaryKey          = "charon.group_id_pkey"
-	TableGroupConstraintNameUnique          = "charon.group_name_key"
+
+	TableGroupConstraintPrimaryKey = "charon.group_id_pkey"
+
+	TableGroupConstraintNameUnique = "charon.group_name_key"
+
 	TableGroupConstraintUpdatedByForeignKey = "charon.group_updated_by_fkey"
 )
 
@@ -1330,6 +2282,7 @@ func (e *GroupEntity) Prop(cn string) (interface{}, bool) {
 		return nil, false
 	}
 }
+
 func (e *GroupEntity) Props(cns ...string) ([]interface{}, error) {
 	res := make([]interface{}, 0, len(cns))
 	for _, cn := range cns {
@@ -1397,14 +2350,15 @@ func (i *GroupIterator) Group() (*GroupEntity, error) {
 type GroupCriteria struct {
 	Offset, Limit int64
 	Sort          map[string]bool
-	CreatedAt     pq.NullTime
+	CreatedAt     *qtypes.Timestamp
 	CreatedBy     *qtypes.Int64
 	Description   *qtypes.String
 	ID            *qtypes.Int64
 	Name          *qtypes.String
-	UpdatedAt     pq.NullTime
+	UpdatedAt     *qtypes.Timestamp
 	UpdatedBy     *qtypes.Int64
 }
+
 type GroupPatch struct {
 	CreatedAt   pq.NullTime
 	CreatedBy   ntypes.Int64
@@ -1417,8 +2371,7 @@ type GroupPatch struct {
 func ScanGroupRows(rows *sql.Rows) (entities []*GroupEntity, err error) {
 	for rows.Next() {
 		var ent GroupEntity
-		err = rows.Scan(
-			&ent.CreatedAt,
+		err = rows.Scan(&ent.CreatedAt,
 			&ent.CreatedBy,
 			&ent.Description,
 			&ent.ID,
@@ -1448,136 +2401,142 @@ type GroupRepositoryBase struct {
 }
 
 func (r *GroupRepositoryBase) InsertQuery(e *GroupEntity) (string, []interface{}, error) {
-	ins := NewComposer(7)
-	buf := bytes.NewBufferString("INSERT INTO " + r.Table)
-	col := bytes.NewBuffer(nil)
+	insert := NewComposer(7)
+	columns := bytes.NewBuffer(nil)
+	buf := bytes.NewBufferString("INSERT INTO ")
+	buf.WriteString(r.Table)
+
 	if !e.CreatedAt.IsZero() {
-		if col.Len() > 0 {
-			if _, err := col.WriteString(", "); err != nil {
+		if columns.Len() > 0 {
+			if _, err := columns.WriteString(", "); err != nil {
 				return "", nil, err
 			}
 		}
-		if _, err := col.WriteString(TableGroupColumnCreatedAt); err != nil {
+		if _, err := columns.WriteString(TableGroupColumnCreatedAt); err != nil {
 			return "", nil, err
 		}
-		if ins.Dirty {
-			if _, err := ins.WriteString(", "); err != nil {
+		if insert.Dirty {
+			if _, err := insert.WriteString(", "); err != nil {
 				return "", nil, err
 			}
 		}
-		if err := ins.WritePlaceholder(); err != nil {
+		if err := insert.WritePlaceholder(); err != nil {
 			return "", nil, err
 		}
-		ins.Add(e.CreatedAt)
-		ins.Dirty = true
+		insert.Add(e.CreatedAt)
+		insert.Dirty = true
 	}
 
-	if col.Len() > 0 {
-		if _, err := col.WriteString(", "); err != nil {
+	if columns.Len() > 0 {
+		if _, err := columns.WriteString(", "); err != nil {
 			return "", nil, err
 		}
 	}
-	if _, err := col.WriteString(TableGroupColumnCreatedBy); err != nil {
+	if _, err := columns.WriteString(TableGroupColumnCreatedBy); err != nil {
 		return "", nil, err
 	}
-	if ins.Dirty {
-		if _, err := ins.WriteString(", "); err != nil {
+	if insert.Dirty {
+		if _, err := insert.WriteString(", "); err != nil {
 			return "", nil, err
 		}
 	}
-	if err := ins.WritePlaceholder(); err != nil {
+	if err := insert.WritePlaceholder(); err != nil {
 		return "", nil, err
 	}
-	ins.Add(e.CreatedBy)
-	ins.Dirty = true
-	if col.Len() > 0 {
-		if _, err := col.WriteString(", "); err != nil {
+	insert.Add(e.CreatedBy)
+	insert.Dirty = true
+
+	if columns.Len() > 0 {
+		if _, err := columns.WriteString(", "); err != nil {
 			return "", nil, err
 		}
 	}
-	if _, err := col.WriteString(TableGroupColumnDescription); err != nil {
+	if _, err := columns.WriteString(TableGroupColumnDescription); err != nil {
 		return "", nil, err
 	}
-	if ins.Dirty {
-		if _, err := ins.WriteString(", "); err != nil {
+	if insert.Dirty {
+		if _, err := insert.WriteString(", "); err != nil {
 			return "", nil, err
 		}
 	}
-	if err := ins.WritePlaceholder(); err != nil {
+	if err := insert.WritePlaceholder(); err != nil {
 		return "", nil, err
 	}
-	ins.Add(e.Description)
-	ins.Dirty = true
-	if col.Len() > 0 {
-		if _, err := col.WriteString(", "); err != nil {
+	insert.Add(e.Description)
+	insert.Dirty = true
+
+	if columns.Len() > 0 {
+		if _, err := columns.WriteString(", "); err != nil {
 			return "", nil, err
 		}
 	}
-	if _, err := col.WriteString(TableGroupColumnName); err != nil {
+	if _, err := columns.WriteString(TableGroupColumnName); err != nil {
 		return "", nil, err
 	}
-	if ins.Dirty {
-		if _, err := ins.WriteString(", "); err != nil {
+	if insert.Dirty {
+		if _, err := insert.WriteString(", "); err != nil {
 			return "", nil, err
 		}
 	}
-	if err := ins.WritePlaceholder(); err != nil {
+	if err := insert.WritePlaceholder(); err != nil {
 		return "", nil, err
 	}
-	ins.Add(e.Name)
-	ins.Dirty = true
+	insert.Add(e.Name)
+	insert.Dirty = true
+
 	if e.UpdatedAt.Valid {
-		if col.Len() > 0 {
-			if _, err := col.WriteString(", "); err != nil {
+		if columns.Len() > 0 {
+			if _, err := columns.WriteString(", "); err != nil {
 				return "", nil, err
 			}
 		}
-		if _, err := col.WriteString(TableGroupColumnUpdatedAt); err != nil {
+		if _, err := columns.WriteString(TableGroupColumnUpdatedAt); err != nil {
 			return "", nil, err
 		}
-		if ins.Dirty {
-			if _, err := ins.WriteString(", "); err != nil {
+		if insert.Dirty {
+			if _, err := insert.WriteString(", "); err != nil {
 				return "", nil, err
 			}
 		}
-		if err := ins.WritePlaceholder(); err != nil {
+		if err := insert.WritePlaceholder(); err != nil {
 			return "", nil, err
 		}
-		ins.Add(e.UpdatedAt)
-		ins.Dirty = true
+		insert.Add(e.UpdatedAt)
+		insert.Dirty = true
 	}
 
-	if col.Len() > 0 {
-		if _, err := col.WriteString(", "); err != nil {
+	if columns.Len() > 0 {
+		if _, err := columns.WriteString(", "); err != nil {
 			return "", nil, err
 		}
 	}
-	if _, err := col.WriteString(TableGroupColumnUpdatedBy); err != nil {
+	if _, err := columns.WriteString(TableGroupColumnUpdatedBy); err != nil {
 		return "", nil, err
 	}
-	if ins.Dirty {
-		if _, err := ins.WriteString(", "); err != nil {
+	if insert.Dirty {
+		if _, err := insert.WriteString(", "); err != nil {
 			return "", nil, err
 		}
 	}
-	if err := ins.WritePlaceholder(); err != nil {
+	if err := insert.WritePlaceholder(); err != nil {
 		return "", nil, err
 	}
-	ins.Add(e.UpdatedBy)
-	ins.Dirty = true
-	if col.Len() > 0 {
+	insert.Add(e.UpdatedBy)
+	insert.Dirty = true
+	if columns.Len() > 0 {
 		buf.WriteString(" (")
-		buf.ReadFrom(col)
+		buf.ReadFrom(columns)
 		buf.WriteString(") VALUES (")
-		buf.ReadFrom(ins)
+		buf.ReadFrom(insert)
 		buf.WriteString(") ")
 		if len(r.Columns) > 0 {
 			buf.WriteString("RETURNING ")
 			buf.WriteString(strings.Join(r.Columns, ", "))
 		}
 	}
-	return buf.String(), ins.Args(), nil
+	return buf.String(), insert.Args(), nil
 }
+
 func (r *GroupRepositoryBase) Insert(ctx context.Context, e *GroupEntity) (*GroupEntity, error) {
 	query, args, err := r.InsertQuery(e)
 	if err != nil {
@@ -1601,6 +2560,7 @@ func (r *GroupRepositoryBase) Insert(ctx context.Context, e *GroupEntity) (*Grou
 	}
 	return e, nil
 }
+
 func (r *GroupRepositoryBase) FindQuery(s []string, c *GroupCriteria) (string, []interface{}, error) {
 	where := NewComposer(7)
 	buf := bytes.NewBufferString("SELECT ")
@@ -1608,43 +2568,17 @@ func (r *GroupRepositoryBase) FindQuery(s []string, c *GroupCriteria) (string, [
 	buf.WriteString(" FROM ")
 	buf.WriteString(r.Table)
 	buf.WriteString(" ")
-	if c.CreatedAt.Valid {
-		if where.Dirty {
-			where.WriteString(" AND ")
-		}
-		if _, err := where.WriteString(TableGroupColumnCreatedAt); err != nil {
-			return "", nil, err
-		}
-		if _, err := where.WriteString("="); err != nil {
-			return "", nil, err
-		}
-		if err := where.WritePlaceholder(); err != nil {
-			return "", nil, err
-		}
-		where.Add(c.CreatedAt)
-		where.Dirty = true
-	}
+	QueryTimestampWhereClause(c.CreatedAt, TableGroupColumnCreatedAt, where, And)
 
 	QueryInt64WhereClause(c.CreatedBy, TableGroupColumnCreatedBy, where, And)
+
 	QueryStringWhereClause(c.Description, TableGroupColumnDescription, where, And)
+
 	QueryInt64WhereClause(c.ID, TableGroupColumnID, where, And)
+
 	QueryStringWhereClause(c.Name, TableGroupColumnName, where, And)
-	if c.UpdatedAt.Valid {
-		if where.Dirty {
-			where.WriteString(" AND ")
-		}
-		if _, err := where.WriteString(TableGroupColumnUpdatedAt); err != nil {
-			return "", nil, err
-		}
-		if _, err := where.WriteString("="); err != nil {
-			return "", nil, err
-		}
-		if err := where.WritePlaceholder(); err != nil {
-			return "", nil, err
-		}
-		where.Add(c.UpdatedAt)
-		where.Dirty = true
-	}
+
+	QueryTimestampWhereClause(c.UpdatedAt, TableGroupColumnUpdatedAt, where, And)
 
 	QueryInt64WhereClause(c.UpdatedBy, TableGroupColumnUpdatedBy, where, And)
 	if where.Dirty {
@@ -1709,6 +2643,7 @@ func (r *GroupRepositoryBase) FindQuery(s []string, c *GroupCriteria) (string, [
 
 	return buf.String(), where.Args(), nil
 }
+
 func (r *GroupRepositoryBase) Find(ctx context.Context, c *GroupCriteria) ([]*GroupEntity, error) {
 	query, args, err := r.FindQuery(r.Columns, c)
 	if err != nil {
@@ -1717,18 +2652,19 @@ func (r *GroupRepositoryBase) Find(ctx context.Context, c *GroupCriteria) ([]*Gr
 	rows, err := r.DB.QueryContext(ctx, query, args...)
 	if err != nil {
 		if r.Debug {
-			r.Log.Log("level", "error", "timestamp", time.Now().Format(time.RFC3339), "msg", "insert query failure", "query", query, "table", r.Table, "error", err.Error())
+			r.Log.Log("level", "error", "timestamp", time.Now().Format(time.RFC3339), "msg", "find query failure", "query", query, "table", r.Table, "error", err.Error())
 		}
 		return nil, err
 	}
 	defer rows.Close()
 
 	if r.Debug {
-		r.Log.Log("level", "debug", "timestamp", time.Now().Format(time.RFC3339), "msg", "insert query success", "query", query, "table", r.Table)
+		r.Log.Log("level", "debug", "timestamp", time.Now().Format(time.RFC3339), "msg", "find query success", "query", query, "table", r.Table)
 	}
 
 	return ScanGroupRows(rows)
 }
+
 func (r *GroupRepositoryBase) FindIter(ctx context.Context, c *GroupCriteria) (*GroupIterator, error) {
 	query, args, err := r.FindQuery(r.Columns, c)
 	if err != nil {
@@ -1754,7 +2690,6 @@ func (r *GroupRepositoryBase) FindOneByID(ctx context.Context, pk int64) (*Group
 	var (
 		ent GroupEntity
 	)
-
 	props, err := ent.Props(r.Columns...)
 	if err != nil {
 		return nil, err
@@ -1815,6 +2750,7 @@ func (r *GroupRepositoryBase) UpdateOneByIDQuery(pk int64, p *GroupPatch) (strin
 		update.Dirty = true
 
 	}
+
 	if p.CreatedBy.Valid {
 		if update.Dirty {
 			if _, err := update.WriteString(", "); err != nil {
@@ -1833,6 +2769,7 @@ func (r *GroupRepositoryBase) UpdateOneByIDQuery(pk int64, p *GroupPatch) (strin
 		update.Add(p.CreatedBy)
 		update.Dirty = true
 	}
+
 	if p.Description.Valid {
 		if update.Dirty {
 			if _, err := update.WriteString(", "); err != nil {
@@ -1851,6 +2788,7 @@ func (r *GroupRepositoryBase) UpdateOneByIDQuery(pk int64, p *GroupPatch) (strin
 		update.Add(p.Description)
 		update.Dirty = true
 	}
+
 	if p.Name.Valid {
 		if update.Dirty {
 			if _, err := update.WriteString(", "); err != nil {
@@ -1869,6 +2807,7 @@ func (r *GroupRepositoryBase) UpdateOneByIDQuery(pk int64, p *GroupPatch) (strin
 		update.Add(p.Name)
 		update.Dirty = true
 	}
+
 	if p.UpdatedAt.Valid {
 		if update.Dirty {
 			if _, err := update.WriteString(", "); err != nil {
@@ -1899,8 +2838,8 @@ func (r *GroupRepositoryBase) UpdateOneByIDQuery(pk int64, p *GroupPatch) (strin
 		if _, err := update.WriteString("=NOW()"); err != nil {
 			return "", nil, err
 		}
-
 	}
+
 	if p.UpdatedBy.Valid {
 		if update.Dirty {
 			if _, err := update.WriteString(", "); err != nil {
@@ -1943,7 +2882,6 @@ func (r *GroupRepositoryBase) UpdateOneByID(ctx context.Context, pk int64, p *Gr
 	if err != nil {
 		return nil, err
 	}
-
 	var ent GroupEntity
 	props, err := ent.Props(r.Columns...)
 	if err != nil {
@@ -1956,6 +2894,487 @@ func (r *GroupRepositoryBase) UpdateOneByID(ctx context.Context, pk int64, p *Gr
 
 	return &ent, nil
 }
+func (r *GroupRepositoryBase) UpdateOneByNameQuery(groupName string, p *GroupPatch) (string, []interface{}, error) {
+	buf := bytes.NewBufferString("UPDATE ")
+	buf.WriteString(r.Table)
+	update := NewComposer(1)
+	if p.CreatedAt.Valid {
+		if update.Dirty {
+			if _, err := update.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := update.WriteString(TableGroupColumnCreatedAt); err != nil {
+			return "", nil, err
+		}
+		if _, err := update.WriteString("="); err != nil {
+			return "", nil, err
+		}
+		if err := update.WritePlaceholder(); err != nil {
+			return "", nil, err
+		}
+		update.Add(p.CreatedAt)
+		update.Dirty = true
+
+	}
+
+	if p.CreatedBy.Valid {
+		if update.Dirty {
+			if _, err := update.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := update.WriteString(TableGroupColumnCreatedBy); err != nil {
+			return "", nil, err
+		}
+		if _, err := update.WriteString("="); err != nil {
+			return "", nil, err
+		}
+		if err := update.WritePlaceholder(); err != nil {
+			return "", nil, err
+		}
+		update.Add(p.CreatedBy)
+		update.Dirty = true
+	}
+
+	if p.Description.Valid {
+		if update.Dirty {
+			if _, err := update.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := update.WriteString(TableGroupColumnDescription); err != nil {
+			return "", nil, err
+		}
+		if _, err := update.WriteString("="); err != nil {
+			return "", nil, err
+		}
+		if err := update.WritePlaceholder(); err != nil {
+			return "", nil, err
+		}
+		update.Add(p.Description)
+		update.Dirty = true
+	}
+
+	if p.Name.Valid {
+		if update.Dirty {
+			if _, err := update.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := update.WriteString(TableGroupColumnName); err != nil {
+			return "", nil, err
+		}
+		if _, err := update.WriteString("="); err != nil {
+			return "", nil, err
+		}
+		if err := update.WritePlaceholder(); err != nil {
+			return "", nil, err
+		}
+		update.Add(p.Name)
+		update.Dirty = true
+	}
+
+	if p.UpdatedAt.Valid {
+		if update.Dirty {
+			if _, err := update.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := update.WriteString(TableGroupColumnUpdatedAt); err != nil {
+			return "", nil, err
+		}
+		if _, err := update.WriteString("="); err != nil {
+			return "", nil, err
+		}
+		if err := update.WritePlaceholder(); err != nil {
+			return "", nil, err
+		}
+		update.Add(p.UpdatedAt)
+		update.Dirty = true
+
+	} else {
+		if update.Dirty {
+			if _, err := update.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := update.WriteString(TableGroupColumnUpdatedAt); err != nil {
+			return "", nil, err
+		}
+		if _, err := update.WriteString("=NOW()"); err != nil {
+			return "", nil, err
+		}
+	}
+
+	if p.UpdatedBy.Valid {
+		if update.Dirty {
+			if _, err := update.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := update.WriteString(TableGroupColumnUpdatedBy); err != nil {
+			return "", nil, err
+		}
+		if _, err := update.WriteString("="); err != nil {
+			return "", nil, err
+		}
+		if err := update.WritePlaceholder(); err != nil {
+			return "", nil, err
+		}
+		update.Add(p.UpdatedBy)
+		update.Dirty = true
+	}
+
+	if !update.Dirty {
+		return "", nil, errors.New("Group update failure, nothing to update")
+	}
+	buf.WriteString(" SET ")
+	buf.ReadFrom(update)
+	buf.WriteString(" WHERE ")
+	update.WriteString(TableGroupColumnName)
+	update.WriteString("=")
+	update.WritePlaceholder()
+	update.Add(groupName)
+	buf.ReadFrom(update)
+	buf.WriteString(" RETURNING ")
+	buf.WriteString(strings.Join(r.Columns, ", "))
+	return buf.String(), update.Args(), nil
+}
+func (r *GroupRepositoryBase) UpdateOneByName(ctx context.Context, groupName string, p *GroupPatch) (*GroupEntity, error) {
+	query, args, err := r.UpdateOneByNameQuery(groupName, p)
+	if err != nil {
+		return nil, err
+	}
+	var ent GroupEntity
+	props, err := ent.Props(r.Columns...)
+	if err != nil {
+		return nil, err
+	}
+	err = r.DB.QueryRowContext(ctx, query, args...).Scan(props...)
+	if err != nil {
+		if r.Debug {
+			r.Log.Log("level", "error", "timestamp", time.Now().Format(time.RFC3339), "msg", "insert query failure", "query", query, "table", r.Table, "error", err.Error())
+		}
+		return nil, err
+	}
+
+	if r.Debug {
+		r.Log.Log("level", "debug", "timestamp", time.Now().Format(time.RFC3339), "msg", "insert query success", "query", query, "table", r.Table)
+	}
+
+	return &ent, nil
+}
+func (r *GroupRepositoryBase) UpsertQuery(e *GroupEntity, p *GroupPatch, inf ...string) (string, []interface{}, error) {
+	upsert := NewComposer(14)
+	columns := bytes.NewBuffer(nil)
+	buf := bytes.NewBufferString("INSERT INTO ")
+	buf.WriteString(r.Table)
+
+	if !e.CreatedAt.IsZero() {
+		if columns.Len() > 0 {
+			if _, err := columns.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := columns.WriteString(TableGroupColumnCreatedAt); err != nil {
+			return "", nil, err
+		}
+		if upsert.Dirty {
+			if _, err := upsert.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if err := upsert.WritePlaceholder(); err != nil {
+			return "", nil, err
+		}
+		upsert.Add(e.CreatedAt)
+		upsert.Dirty = true
+	}
+
+	if columns.Len() > 0 {
+		if _, err := columns.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if _, err := columns.WriteString(TableGroupColumnCreatedBy); err != nil {
+		return "", nil, err
+	}
+	if upsert.Dirty {
+		if _, err := upsert.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if err := upsert.WritePlaceholder(); err != nil {
+		return "", nil, err
+	}
+	upsert.Add(e.CreatedBy)
+	upsert.Dirty = true
+
+	if columns.Len() > 0 {
+		if _, err := columns.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if _, err := columns.WriteString(TableGroupColumnDescription); err != nil {
+		return "", nil, err
+	}
+	if upsert.Dirty {
+		if _, err := upsert.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if err := upsert.WritePlaceholder(); err != nil {
+		return "", nil, err
+	}
+	upsert.Add(e.Description)
+	upsert.Dirty = true
+
+	if columns.Len() > 0 {
+		if _, err := columns.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if _, err := columns.WriteString(TableGroupColumnName); err != nil {
+		return "", nil, err
+	}
+	if upsert.Dirty {
+		if _, err := upsert.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if err := upsert.WritePlaceholder(); err != nil {
+		return "", nil, err
+	}
+	upsert.Add(e.Name)
+	upsert.Dirty = true
+
+	if e.UpdatedAt.Valid {
+		if columns.Len() > 0 {
+			if _, err := columns.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := columns.WriteString(TableGroupColumnUpdatedAt); err != nil {
+			return "", nil, err
+		}
+		if upsert.Dirty {
+			if _, err := upsert.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if err := upsert.WritePlaceholder(); err != nil {
+			return "", nil, err
+		}
+		upsert.Add(e.UpdatedAt)
+		upsert.Dirty = true
+	}
+
+	if columns.Len() > 0 {
+		if _, err := columns.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if _, err := columns.WriteString(TableGroupColumnUpdatedBy); err != nil {
+		return "", nil, err
+	}
+	if upsert.Dirty {
+		if _, err := upsert.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if err := upsert.WritePlaceholder(); err != nil {
+		return "", nil, err
+	}
+	upsert.Add(e.UpdatedBy)
+	upsert.Dirty = true
+
+	if upsert.Dirty {
+		buf.WriteString(" (")
+		buf.ReadFrom(columns)
+		buf.WriteString(") VALUES (")
+		buf.ReadFrom(upsert)
+		buf.WriteString(")")
+	}
+	buf.WriteString(" ON CONFLICT ")
+	if len(inf) > 0 {
+		upsert.Dirty = false
+		if p.CreatedAt.Valid {
+			if upsert.Dirty {
+				if _, err := upsert.WriteString(", "); err != nil {
+					return "", nil, err
+				}
+			}
+			if _, err := upsert.WriteString(TableGroupColumnCreatedAt); err != nil {
+				return "", nil, err
+			}
+			if _, err := upsert.WriteString("="); err != nil {
+				return "", nil, err
+			}
+			if err := upsert.WritePlaceholder(); err != nil {
+				return "", nil, err
+			}
+			upsert.Add(p.CreatedAt)
+			upsert.Dirty = true
+
+		}
+
+		if p.CreatedBy.Valid {
+			if upsert.Dirty {
+				if _, err := upsert.WriteString(", "); err != nil {
+					return "", nil, err
+				}
+			}
+			if _, err := upsert.WriteString(TableGroupColumnCreatedBy); err != nil {
+				return "", nil, err
+			}
+			if _, err := upsert.WriteString("="); err != nil {
+				return "", nil, err
+			}
+			if err := upsert.WritePlaceholder(); err != nil {
+				return "", nil, err
+			}
+			upsert.Add(p.CreatedBy)
+			upsert.Dirty = true
+		}
+
+		if p.Description.Valid {
+			if upsert.Dirty {
+				if _, err := upsert.WriteString(", "); err != nil {
+					return "", nil, err
+				}
+			}
+			if _, err := upsert.WriteString(TableGroupColumnDescription); err != nil {
+				return "", nil, err
+			}
+			if _, err := upsert.WriteString("="); err != nil {
+				return "", nil, err
+			}
+			if err := upsert.WritePlaceholder(); err != nil {
+				return "", nil, err
+			}
+			upsert.Add(p.Description)
+			upsert.Dirty = true
+		}
+
+		if p.Name.Valid {
+			if upsert.Dirty {
+				if _, err := upsert.WriteString(", "); err != nil {
+					return "", nil, err
+				}
+			}
+			if _, err := upsert.WriteString(TableGroupColumnName); err != nil {
+				return "", nil, err
+			}
+			if _, err := upsert.WriteString("="); err != nil {
+				return "", nil, err
+			}
+			if err := upsert.WritePlaceholder(); err != nil {
+				return "", nil, err
+			}
+			upsert.Add(p.Name)
+			upsert.Dirty = true
+		}
+
+		if p.UpdatedAt.Valid {
+			if upsert.Dirty {
+				if _, err := upsert.WriteString(", "); err != nil {
+					return "", nil, err
+				}
+			}
+			if _, err := upsert.WriteString(TableGroupColumnUpdatedAt); err != nil {
+				return "", nil, err
+			}
+			if _, err := upsert.WriteString("="); err != nil {
+				return "", nil, err
+			}
+			if err := upsert.WritePlaceholder(); err != nil {
+				return "", nil, err
+			}
+			upsert.Add(p.UpdatedAt)
+			upsert.Dirty = true
+
+		} else {
+			if upsert.Dirty {
+				if _, err := upsert.WriteString(", "); err != nil {
+					return "", nil, err
+				}
+			}
+			if _, err := upsert.WriteString(TableGroupColumnUpdatedAt); err != nil {
+				return "", nil, err
+			}
+			if _, err := upsert.WriteString("=NOW()"); err != nil {
+				return "", nil, err
+			}
+		}
+
+		if p.UpdatedBy.Valid {
+			if upsert.Dirty {
+				if _, err := upsert.WriteString(", "); err != nil {
+					return "", nil, err
+				}
+			}
+			if _, err := upsert.WriteString(TableGroupColumnUpdatedBy); err != nil {
+				return "", nil, err
+			}
+			if _, err := upsert.WriteString("="); err != nil {
+				return "", nil, err
+			}
+			if err := upsert.WritePlaceholder(); err != nil {
+				return "", nil, err
+			}
+			upsert.Add(p.UpdatedBy)
+			upsert.Dirty = true
+		}
+
+	}
+
+	if len(inf) > 0 && upsert.Dirty {
+		buf.WriteString("(")
+		for j, i := range inf {
+			if j != 0 {
+				buf.WriteString(", ")
+			}
+			buf.WriteString(i)
+		}
+		buf.WriteString(")")
+		buf.WriteString(" DO UPDATE SET ")
+		buf.ReadFrom(upsert)
+	} else {
+		buf.WriteString(" DO NOTHING ")
+	}
+	if upsert.Dirty {
+		if len(r.Columns) > 0 {
+			buf.WriteString(" RETURNING ")
+			buf.WriteString(strings.Join(r.Columns, ", "))
+		}
+	}
+	return buf.String(), upsert.Args(), nil
+}
+func (r *GroupRepositoryBase) Upsert(ctx context.Context, e *GroupEntity, p *GroupPatch, inf ...string) (*GroupEntity, error) {
+	query, args, err := r.UpsertQuery(e, p, inf...)
+	if err != nil {
+		return nil, err
+	}
+	if err := r.DB.QueryRowContext(ctx, query, args...).Scan(&e.CreatedAt,
+		&e.CreatedBy,
+		&e.Description,
+		&e.ID,
+		&e.Name,
+		&e.UpdatedAt,
+		&e.UpdatedBy,
+	); err != nil {
+		if r.Debug {
+			r.Log.Log("level", "error", "timestamp", time.Now().Format(time.RFC3339), "msg", "upsert query failure", "query", query, "table", r.Table, "error", err.Error())
+		}
+		return nil, err
+	}
+	if r.Debug {
+		r.Log.Log("level", "debug", "timestamp", time.Now().Format(time.RFC3339), "msg", "upsert query success", "query", query, "table", r.Table)
+	}
+	return e, nil
+}
+
 func (r *GroupRepositoryBase) Count(ctx context.Context, c *GroupCriteria) (int64, error) {
 	query, args, err := r.FindQuery([]string{"COUNT(*)"}, c)
 	if err != nil {
@@ -1964,13 +3383,13 @@ func (r *GroupRepositoryBase) Count(ctx context.Context, c *GroupCriteria) (int6
 	var count int64
 	if err := r.DB.QueryRowContext(ctx, query, args...).Scan(&count); err != nil {
 		if r.Debug {
-			r.Log.Log("level", "error", "timestamp", time.Now().Format(time.RFC3339), "msg", "insert query failure", "query", query, "table", r.Table, "error", err.Error())
+			r.Log.Log("level", "error", "timestamp", time.Now().Format(time.RFC3339), "msg", "count query failure", "query", query, "table", r.Table, "error", err.Error())
 		}
 		return 0, err
 	}
 
 	if r.Debug {
-		r.Log.Log("level", "debug", "timestamp", time.Now().Format(time.RFC3339), "msg", "insert query success", "query", query, "table", r.Table)
+		r.Log.Log("level", "debug", "timestamp", time.Now().Format(time.RFC3339), "msg", "count query success", "query", query, "table", r.Table)
 	}
 
 	return count, nil
@@ -1984,7 +3403,6 @@ func (r *GroupRepositoryBase) DeleteOneByID(ctx context.Context, pk int64) (int6
 	find.WriteString("=")
 	find.WritePlaceholder()
 	find.Add(pk)
-
 	res, err := r.DB.ExecContext(ctx, find.String(), find.Args()...)
 	if err != nil {
 		return 0, err
@@ -1994,14 +3412,15 @@ func (r *GroupRepositoryBase) DeleteOneByID(ctx context.Context, pk int64) (int6
 }
 
 const (
-	TablePermission                                      = "charon.permission"
-	TablePermissionColumnAction                          = "action"
-	TablePermissionColumnCreatedAt                       = "created_at"
-	TablePermissionColumnID                              = "id"
-	TablePermissionColumnModule                          = "module"
-	TablePermissionColumnSubsystem                       = "subsystem"
-	TablePermissionColumnUpdatedAt                       = "updated_at"
-	TablePermissionConstraintPrimaryKey                  = "charon.permission_id_pkey"
+	TablePermission                     = "charon.permission"
+	TablePermissionColumnAction         = "action"
+	TablePermissionColumnCreatedAt      = "created_at"
+	TablePermissionColumnID             = "id"
+	TablePermissionColumnModule         = "module"
+	TablePermissionColumnSubsystem      = "subsystem"
+	TablePermissionColumnUpdatedAt      = "updated_at"
+	TablePermissionConstraintPrimaryKey = "charon.permission_id_pkey"
+
 	TablePermissionConstraintSubsystemModuleActionUnique = "charon.permission_subsystem_module_action_key"
 )
 
@@ -2054,6 +3473,7 @@ func (e *PermissionEntity) Prop(cn string) (interface{}, bool) {
 		return nil, false
 	}
 }
+
 func (e *PermissionEntity) Props(cns ...string) ([]interface{}, error) {
 	res := make([]interface{}, 0, len(cns))
 	for _, cn := range cns {
@@ -2122,12 +3542,13 @@ type PermissionCriteria struct {
 	Offset, Limit int64
 	Sort          map[string]bool
 	Action        *qtypes.String
-	CreatedAt     pq.NullTime
+	CreatedAt     *qtypes.Timestamp
 	ID            *qtypes.Int64
 	Module        *qtypes.String
 	Subsystem     *qtypes.String
-	UpdatedAt     pq.NullTime
+	UpdatedAt     *qtypes.Timestamp
 }
+
 type PermissionPatch struct {
 	Action    ntypes.String
 	CreatedAt pq.NullTime
@@ -2139,8 +3560,7 @@ type PermissionPatch struct {
 func ScanPermissionRows(rows *sql.Rows) (entities []*PermissionEntity, err error) {
 	for rows.Next() {
 		var ent PermissionEntity
-		err = rows.Scan(
-			&ent.Action,
+		err = rows.Scan(&ent.Action,
 			&ent.CreatedAt,
 			&ent.ID,
 			&ent.Module,
@@ -2169,118 +3589,124 @@ type PermissionRepositoryBase struct {
 }
 
 func (r *PermissionRepositoryBase) InsertQuery(e *PermissionEntity) (string, []interface{}, error) {
-	ins := NewComposer(6)
-	buf := bytes.NewBufferString("INSERT INTO " + r.Table)
-	col := bytes.NewBuffer(nil)
-	if col.Len() > 0 {
-		if _, err := col.WriteString(", "); err != nil {
+	insert := NewComposer(6)
+	columns := bytes.NewBuffer(nil)
+	buf := bytes.NewBufferString("INSERT INTO ")
+	buf.WriteString(r.Table)
+
+	if columns.Len() > 0 {
+		if _, err := columns.WriteString(", "); err != nil {
 			return "", nil, err
 		}
 	}
-	if _, err := col.WriteString(TablePermissionColumnAction); err != nil {
+	if _, err := columns.WriteString(TablePermissionColumnAction); err != nil {
 		return "", nil, err
 	}
-	if ins.Dirty {
-		if _, err := ins.WriteString(", "); err != nil {
+	if insert.Dirty {
+		if _, err := insert.WriteString(", "); err != nil {
 			return "", nil, err
 		}
 	}
-	if err := ins.WritePlaceholder(); err != nil {
+	if err := insert.WritePlaceholder(); err != nil {
 		return "", nil, err
 	}
-	ins.Add(e.Action)
-	ins.Dirty = true
+	insert.Add(e.Action)
+	insert.Dirty = true
+
 	if !e.CreatedAt.IsZero() {
-		if col.Len() > 0 {
-			if _, err := col.WriteString(", "); err != nil {
+		if columns.Len() > 0 {
+			if _, err := columns.WriteString(", "); err != nil {
 				return "", nil, err
 			}
 		}
-		if _, err := col.WriteString(TablePermissionColumnCreatedAt); err != nil {
+		if _, err := columns.WriteString(TablePermissionColumnCreatedAt); err != nil {
 			return "", nil, err
 		}
-		if ins.Dirty {
-			if _, err := ins.WriteString(", "); err != nil {
+		if insert.Dirty {
+			if _, err := insert.WriteString(", "); err != nil {
 				return "", nil, err
 			}
 		}
-		if err := ins.WritePlaceholder(); err != nil {
+		if err := insert.WritePlaceholder(); err != nil {
 			return "", nil, err
 		}
-		ins.Add(e.CreatedAt)
-		ins.Dirty = true
+		insert.Add(e.CreatedAt)
+		insert.Dirty = true
 	}
 
-	if col.Len() > 0 {
-		if _, err := col.WriteString(", "); err != nil {
+	if columns.Len() > 0 {
+		if _, err := columns.WriteString(", "); err != nil {
 			return "", nil, err
 		}
 	}
-	if _, err := col.WriteString(TablePermissionColumnModule); err != nil {
+	if _, err := columns.WriteString(TablePermissionColumnModule); err != nil {
 		return "", nil, err
 	}
-	if ins.Dirty {
-		if _, err := ins.WriteString(", "); err != nil {
+	if insert.Dirty {
+		if _, err := insert.WriteString(", "); err != nil {
 			return "", nil, err
 		}
 	}
-	if err := ins.WritePlaceholder(); err != nil {
+	if err := insert.WritePlaceholder(); err != nil {
 		return "", nil, err
 	}
-	ins.Add(e.Module)
-	ins.Dirty = true
-	if col.Len() > 0 {
-		if _, err := col.WriteString(", "); err != nil {
+	insert.Add(e.Module)
+	insert.Dirty = true
+
+	if columns.Len() > 0 {
+		if _, err := columns.WriteString(", "); err != nil {
 			return "", nil, err
 		}
 	}
-	if _, err := col.WriteString(TablePermissionColumnSubsystem); err != nil {
+	if _, err := columns.WriteString(TablePermissionColumnSubsystem); err != nil {
 		return "", nil, err
 	}
-	if ins.Dirty {
-		if _, err := ins.WriteString(", "); err != nil {
+	if insert.Dirty {
+		if _, err := insert.WriteString(", "); err != nil {
 			return "", nil, err
 		}
 	}
-	if err := ins.WritePlaceholder(); err != nil {
+	if err := insert.WritePlaceholder(); err != nil {
 		return "", nil, err
 	}
-	ins.Add(e.Subsystem)
-	ins.Dirty = true
+	insert.Add(e.Subsystem)
+	insert.Dirty = true
+
 	if e.UpdatedAt.Valid {
-		if col.Len() > 0 {
-			if _, err := col.WriteString(", "); err != nil {
+		if columns.Len() > 0 {
+			if _, err := columns.WriteString(", "); err != nil {
 				return "", nil, err
 			}
 		}
-		if _, err := col.WriteString(TablePermissionColumnUpdatedAt); err != nil {
+		if _, err := columns.WriteString(TablePermissionColumnUpdatedAt); err != nil {
 			return "", nil, err
 		}
-		if ins.Dirty {
-			if _, err := ins.WriteString(", "); err != nil {
+		if insert.Dirty {
+			if _, err := insert.WriteString(", "); err != nil {
 				return "", nil, err
 			}
 		}
-		if err := ins.WritePlaceholder(); err != nil {
+		if err := insert.WritePlaceholder(); err != nil {
 			return "", nil, err
 		}
-		ins.Add(e.UpdatedAt)
-		ins.Dirty = true
+		insert.Add(e.UpdatedAt)
+		insert.Dirty = true
 	}
 
-	if col.Len() > 0 {
+	if columns.Len() > 0 {
 		buf.WriteString(" (")
-		buf.ReadFrom(col)
+		buf.ReadFrom(columns)
 		buf.WriteString(") VALUES (")
-		buf.ReadFrom(ins)
+		buf.ReadFrom(insert)
 		buf.WriteString(") ")
 		if len(r.Columns) > 0 {
 			buf.WriteString("RETURNING ")
 			buf.WriteString(strings.Join(r.Columns, ", "))
 		}
 	}
-	return buf.String(), ins.Args(), nil
+	return buf.String(), insert.Args(), nil
 }
+
 func (r *PermissionRepositoryBase) Insert(ctx context.Context, e *PermissionEntity) (*PermissionEntity, error) {
 	query, args, err := r.InsertQuery(e)
 	if err != nil {
@@ -2303,6 +3729,7 @@ func (r *PermissionRepositoryBase) Insert(ctx context.Context, e *PermissionEnti
 	}
 	return e, nil
 }
+
 func (r *PermissionRepositoryBase) FindQuery(s []string, c *PermissionCriteria) (string, []interface{}, error) {
 	where := NewComposer(6)
 	buf := bytes.NewBufferString("SELECT ")
@@ -2311,43 +3738,16 @@ func (r *PermissionRepositoryBase) FindQuery(s []string, c *PermissionCriteria) 
 	buf.WriteString(r.Table)
 	buf.WriteString(" ")
 	QueryStringWhereClause(c.Action, TablePermissionColumnAction, where, And)
-	if c.CreatedAt.Valid {
-		if where.Dirty {
-			where.WriteString(" AND ")
-		}
-		if _, err := where.WriteString(TablePermissionColumnCreatedAt); err != nil {
-			return "", nil, err
-		}
-		if _, err := where.WriteString("="); err != nil {
-			return "", nil, err
-		}
-		if err := where.WritePlaceholder(); err != nil {
-			return "", nil, err
-		}
-		where.Add(c.CreatedAt)
-		where.Dirty = true
-	}
+
+	QueryTimestampWhereClause(c.CreatedAt, TablePermissionColumnCreatedAt, where, And)
 
 	QueryInt64WhereClause(c.ID, TablePermissionColumnID, where, And)
-	QueryStringWhereClause(c.Module, TablePermissionColumnModule, where, And)
-	QueryStringWhereClause(c.Subsystem, TablePermissionColumnSubsystem, where, And)
-	if c.UpdatedAt.Valid {
-		if where.Dirty {
-			where.WriteString(" AND ")
-		}
-		if _, err := where.WriteString(TablePermissionColumnUpdatedAt); err != nil {
-			return "", nil, err
-		}
-		if _, err := where.WriteString("="); err != nil {
-			return "", nil, err
-		}
-		if err := where.WritePlaceholder(); err != nil {
-			return "", nil, err
-		}
-		where.Add(c.UpdatedAt)
-		where.Dirty = true
-	}
 
+	QueryStringWhereClause(c.Module, TablePermissionColumnModule, where, And)
+
+	QueryStringWhereClause(c.Subsystem, TablePermissionColumnSubsystem, where, And)
+
+	QueryTimestampWhereClause(c.UpdatedAt, TablePermissionColumnUpdatedAt, where, And)
 	if where.Dirty {
 		if _, err := buf.WriteString("WHERE "); err != nil {
 			return "", nil, err
@@ -2410,6 +3810,7 @@ func (r *PermissionRepositoryBase) FindQuery(s []string, c *PermissionCriteria) 
 
 	return buf.String(), where.Args(), nil
 }
+
 func (r *PermissionRepositoryBase) Find(ctx context.Context, c *PermissionCriteria) ([]*PermissionEntity, error) {
 	query, args, err := r.FindQuery(r.Columns, c)
 	if err != nil {
@@ -2418,18 +3819,19 @@ func (r *PermissionRepositoryBase) Find(ctx context.Context, c *PermissionCriter
 	rows, err := r.DB.QueryContext(ctx, query, args...)
 	if err != nil {
 		if r.Debug {
-			r.Log.Log("level", "error", "timestamp", time.Now().Format(time.RFC3339), "msg", "insert query failure", "query", query, "table", r.Table, "error", err.Error())
+			r.Log.Log("level", "error", "timestamp", time.Now().Format(time.RFC3339), "msg", "find query failure", "query", query, "table", r.Table, "error", err.Error())
 		}
 		return nil, err
 	}
 	defer rows.Close()
 
 	if r.Debug {
-		r.Log.Log("level", "debug", "timestamp", time.Now().Format(time.RFC3339), "msg", "insert query success", "query", query, "table", r.Table)
+		r.Log.Log("level", "debug", "timestamp", time.Now().Format(time.RFC3339), "msg", "find query success", "query", query, "table", r.Table)
 	}
 
 	return ScanPermissionRows(rows)
 }
+
 func (r *PermissionRepositoryBase) FindIter(ctx context.Context, c *PermissionCriteria) (*PermissionIterator, error) {
 	query, args, err := r.FindQuery(r.Columns, c)
 	if err != nil {
@@ -2455,7 +3857,6 @@ func (r *PermissionRepositoryBase) FindOneByID(ctx context.Context, pk int64) (*
 	var (
 		ent PermissionEntity
 	)
-
 	props, err := ent.Props(r.Columns...)
 	if err != nil {
 		return nil, err
@@ -2525,6 +3926,7 @@ func (r *PermissionRepositoryBase) UpdateOneByIDQuery(pk int64, p *PermissionPat
 		update.Add(p.Action)
 		update.Dirty = true
 	}
+
 	if p.CreatedAt.Valid {
 		if update.Dirty {
 			if _, err := update.WriteString(", "); err != nil {
@@ -2544,6 +3946,7 @@ func (r *PermissionRepositoryBase) UpdateOneByIDQuery(pk int64, p *PermissionPat
 		update.Dirty = true
 
 	}
+
 	if p.Module.Valid {
 		if update.Dirty {
 			if _, err := update.WriteString(", "); err != nil {
@@ -2562,6 +3965,7 @@ func (r *PermissionRepositoryBase) UpdateOneByIDQuery(pk int64, p *PermissionPat
 		update.Add(p.Module)
 		update.Dirty = true
 	}
+
 	if p.Subsystem.Valid {
 		if update.Dirty {
 			if _, err := update.WriteString(", "); err != nil {
@@ -2580,6 +3984,7 @@ func (r *PermissionRepositoryBase) UpdateOneByIDQuery(pk int64, p *PermissionPat
 		update.Add(p.Subsystem)
 		update.Dirty = true
 	}
+
 	if p.UpdatedAt.Valid {
 		if update.Dirty {
 			if _, err := update.WriteString(", "); err != nil {
@@ -2610,7 +4015,6 @@ func (r *PermissionRepositoryBase) UpdateOneByIDQuery(pk int64, p *PermissionPat
 		if _, err := update.WriteString("=NOW()"); err != nil {
 			return "", nil, err
 		}
-
 	}
 
 	if !update.Dirty {
@@ -2636,7 +4040,6 @@ func (r *PermissionRepositoryBase) UpdateOneByID(ctx context.Context, pk int64, 
 	if err != nil {
 		return nil, err
 	}
-
 	var ent PermissionEntity
 	props, err := ent.Props(r.Columns...)
 	if err != nil {
@@ -2649,6 +4052,439 @@ func (r *PermissionRepositoryBase) UpdateOneByID(ctx context.Context, pk int64, 
 
 	return &ent, nil
 }
+func (r *PermissionRepositoryBase) UpdateOneBySubsystemAndModuleAndActionQuery(permissionSubsystem string, permissionModule string, permissionAction string, p *PermissionPatch) (string, []interface{}, error) {
+	buf := bytes.NewBufferString("UPDATE ")
+	buf.WriteString(r.Table)
+	update := NewComposer(3)
+	if p.Action.Valid {
+		if update.Dirty {
+			if _, err := update.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := update.WriteString(TablePermissionColumnAction); err != nil {
+			return "", nil, err
+		}
+		if _, err := update.WriteString("="); err != nil {
+			return "", nil, err
+		}
+		if err := update.WritePlaceholder(); err != nil {
+			return "", nil, err
+		}
+		update.Add(p.Action)
+		update.Dirty = true
+	}
+
+	if p.CreatedAt.Valid {
+		if update.Dirty {
+			if _, err := update.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := update.WriteString(TablePermissionColumnCreatedAt); err != nil {
+			return "", nil, err
+		}
+		if _, err := update.WriteString("="); err != nil {
+			return "", nil, err
+		}
+		if err := update.WritePlaceholder(); err != nil {
+			return "", nil, err
+		}
+		update.Add(p.CreatedAt)
+		update.Dirty = true
+
+	}
+
+	if p.Module.Valid {
+		if update.Dirty {
+			if _, err := update.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := update.WriteString(TablePermissionColumnModule); err != nil {
+			return "", nil, err
+		}
+		if _, err := update.WriteString("="); err != nil {
+			return "", nil, err
+		}
+		if err := update.WritePlaceholder(); err != nil {
+			return "", nil, err
+		}
+		update.Add(p.Module)
+		update.Dirty = true
+	}
+
+	if p.Subsystem.Valid {
+		if update.Dirty {
+			if _, err := update.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := update.WriteString(TablePermissionColumnSubsystem); err != nil {
+			return "", nil, err
+		}
+		if _, err := update.WriteString("="); err != nil {
+			return "", nil, err
+		}
+		if err := update.WritePlaceholder(); err != nil {
+			return "", nil, err
+		}
+		update.Add(p.Subsystem)
+		update.Dirty = true
+	}
+
+	if p.UpdatedAt.Valid {
+		if update.Dirty {
+			if _, err := update.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := update.WriteString(TablePermissionColumnUpdatedAt); err != nil {
+			return "", nil, err
+		}
+		if _, err := update.WriteString("="); err != nil {
+			return "", nil, err
+		}
+		if err := update.WritePlaceholder(); err != nil {
+			return "", nil, err
+		}
+		update.Add(p.UpdatedAt)
+		update.Dirty = true
+
+	} else {
+		if update.Dirty {
+			if _, err := update.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := update.WriteString(TablePermissionColumnUpdatedAt); err != nil {
+			return "", nil, err
+		}
+		if _, err := update.WriteString("=NOW()"); err != nil {
+			return "", nil, err
+		}
+	}
+
+	if !update.Dirty {
+		return "", nil, errors.New("Permission update failure, nothing to update")
+	}
+	buf.WriteString(" SET ")
+	buf.ReadFrom(update)
+	buf.WriteString(" WHERE ")
+	update.WriteString(TablePermissionColumnSubsystem)
+	update.WriteString("=")
+	update.WritePlaceholder()
+	update.Add(permissionSubsystem)
+	update.WriteString(" AND ")
+	update.WriteString(TablePermissionColumnModule)
+	update.WriteString("=")
+	update.WritePlaceholder()
+	update.Add(permissionModule)
+	update.WriteString(" AND ")
+	update.WriteString(TablePermissionColumnAction)
+	update.WriteString("=")
+	update.WritePlaceholder()
+	update.Add(permissionAction)
+	buf.ReadFrom(update)
+	buf.WriteString(" RETURNING ")
+	buf.WriteString(strings.Join(r.Columns, ", "))
+	return buf.String(), update.Args(), nil
+}
+func (r *PermissionRepositoryBase) UpdateOneBySubsystemAndModuleAndAction(ctx context.Context, permissionSubsystem string, permissionModule string, permissionAction string, p *PermissionPatch) (*PermissionEntity, error) {
+	query, args, err := r.UpdateOneBySubsystemAndModuleAndActionQuery(permissionSubsystem, permissionModule, permissionAction, p)
+	if err != nil {
+		return nil, err
+	}
+	var ent PermissionEntity
+	props, err := ent.Props(r.Columns...)
+	if err != nil {
+		return nil, err
+	}
+	err = r.DB.QueryRowContext(ctx, query, args...).Scan(props...)
+	if err != nil {
+		if r.Debug {
+			r.Log.Log("level", "error", "timestamp", time.Now().Format(time.RFC3339), "msg", "insert query failure", "query", query, "table", r.Table, "error", err.Error())
+		}
+		return nil, err
+	}
+
+	if r.Debug {
+		r.Log.Log("level", "debug", "timestamp", time.Now().Format(time.RFC3339), "msg", "insert query success", "query", query, "table", r.Table)
+	}
+
+	return &ent, nil
+}
+func (r *PermissionRepositoryBase) UpsertQuery(e *PermissionEntity, p *PermissionPatch, inf ...string) (string, []interface{}, error) {
+	upsert := NewComposer(12)
+	columns := bytes.NewBuffer(nil)
+	buf := bytes.NewBufferString("INSERT INTO ")
+	buf.WriteString(r.Table)
+
+	if columns.Len() > 0 {
+		if _, err := columns.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if _, err := columns.WriteString(TablePermissionColumnAction); err != nil {
+		return "", nil, err
+	}
+	if upsert.Dirty {
+		if _, err := upsert.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if err := upsert.WritePlaceholder(); err != nil {
+		return "", nil, err
+	}
+	upsert.Add(e.Action)
+	upsert.Dirty = true
+
+	if !e.CreatedAt.IsZero() {
+		if columns.Len() > 0 {
+			if _, err := columns.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := columns.WriteString(TablePermissionColumnCreatedAt); err != nil {
+			return "", nil, err
+		}
+		if upsert.Dirty {
+			if _, err := upsert.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if err := upsert.WritePlaceholder(); err != nil {
+			return "", nil, err
+		}
+		upsert.Add(e.CreatedAt)
+		upsert.Dirty = true
+	}
+
+	if columns.Len() > 0 {
+		if _, err := columns.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if _, err := columns.WriteString(TablePermissionColumnModule); err != nil {
+		return "", nil, err
+	}
+	if upsert.Dirty {
+		if _, err := upsert.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if err := upsert.WritePlaceholder(); err != nil {
+		return "", nil, err
+	}
+	upsert.Add(e.Module)
+	upsert.Dirty = true
+
+	if columns.Len() > 0 {
+		if _, err := columns.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if _, err := columns.WriteString(TablePermissionColumnSubsystem); err != nil {
+		return "", nil, err
+	}
+	if upsert.Dirty {
+		if _, err := upsert.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if err := upsert.WritePlaceholder(); err != nil {
+		return "", nil, err
+	}
+	upsert.Add(e.Subsystem)
+	upsert.Dirty = true
+
+	if e.UpdatedAt.Valid {
+		if columns.Len() > 0 {
+			if _, err := columns.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := columns.WriteString(TablePermissionColumnUpdatedAt); err != nil {
+			return "", nil, err
+		}
+		if upsert.Dirty {
+			if _, err := upsert.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if err := upsert.WritePlaceholder(); err != nil {
+			return "", nil, err
+		}
+		upsert.Add(e.UpdatedAt)
+		upsert.Dirty = true
+	}
+
+	if upsert.Dirty {
+		buf.WriteString(" (")
+		buf.ReadFrom(columns)
+		buf.WriteString(") VALUES (")
+		buf.ReadFrom(upsert)
+		buf.WriteString(")")
+	}
+	buf.WriteString(" ON CONFLICT ")
+	if len(inf) > 0 {
+		upsert.Dirty = false
+		if p.Action.Valid {
+			if upsert.Dirty {
+				if _, err := upsert.WriteString(", "); err != nil {
+					return "", nil, err
+				}
+			}
+			if _, err := upsert.WriteString(TablePermissionColumnAction); err != nil {
+				return "", nil, err
+			}
+			if _, err := upsert.WriteString("="); err != nil {
+				return "", nil, err
+			}
+			if err := upsert.WritePlaceholder(); err != nil {
+				return "", nil, err
+			}
+			upsert.Add(p.Action)
+			upsert.Dirty = true
+		}
+
+		if p.CreatedAt.Valid {
+			if upsert.Dirty {
+				if _, err := upsert.WriteString(", "); err != nil {
+					return "", nil, err
+				}
+			}
+			if _, err := upsert.WriteString(TablePermissionColumnCreatedAt); err != nil {
+				return "", nil, err
+			}
+			if _, err := upsert.WriteString("="); err != nil {
+				return "", nil, err
+			}
+			if err := upsert.WritePlaceholder(); err != nil {
+				return "", nil, err
+			}
+			upsert.Add(p.CreatedAt)
+			upsert.Dirty = true
+
+		}
+
+		if p.Module.Valid {
+			if upsert.Dirty {
+				if _, err := upsert.WriteString(", "); err != nil {
+					return "", nil, err
+				}
+			}
+			if _, err := upsert.WriteString(TablePermissionColumnModule); err != nil {
+				return "", nil, err
+			}
+			if _, err := upsert.WriteString("="); err != nil {
+				return "", nil, err
+			}
+			if err := upsert.WritePlaceholder(); err != nil {
+				return "", nil, err
+			}
+			upsert.Add(p.Module)
+			upsert.Dirty = true
+		}
+
+		if p.Subsystem.Valid {
+			if upsert.Dirty {
+				if _, err := upsert.WriteString(", "); err != nil {
+					return "", nil, err
+				}
+			}
+			if _, err := upsert.WriteString(TablePermissionColumnSubsystem); err != nil {
+				return "", nil, err
+			}
+			if _, err := upsert.WriteString("="); err != nil {
+				return "", nil, err
+			}
+			if err := upsert.WritePlaceholder(); err != nil {
+				return "", nil, err
+			}
+			upsert.Add(p.Subsystem)
+			upsert.Dirty = true
+		}
+
+		if p.UpdatedAt.Valid {
+			if upsert.Dirty {
+				if _, err := upsert.WriteString(", "); err != nil {
+					return "", nil, err
+				}
+			}
+			if _, err := upsert.WriteString(TablePermissionColumnUpdatedAt); err != nil {
+				return "", nil, err
+			}
+			if _, err := upsert.WriteString("="); err != nil {
+				return "", nil, err
+			}
+			if err := upsert.WritePlaceholder(); err != nil {
+				return "", nil, err
+			}
+			upsert.Add(p.UpdatedAt)
+			upsert.Dirty = true
+
+		} else {
+			if upsert.Dirty {
+				if _, err := upsert.WriteString(", "); err != nil {
+					return "", nil, err
+				}
+			}
+			if _, err := upsert.WriteString(TablePermissionColumnUpdatedAt); err != nil {
+				return "", nil, err
+			}
+			if _, err := upsert.WriteString("=NOW()"); err != nil {
+				return "", nil, err
+			}
+		}
+
+	}
+
+	if len(inf) > 0 && upsert.Dirty {
+		buf.WriteString("(")
+		for j, i := range inf {
+			if j != 0 {
+				buf.WriteString(", ")
+			}
+			buf.WriteString(i)
+		}
+		buf.WriteString(")")
+		buf.WriteString(" DO UPDATE SET ")
+		buf.ReadFrom(upsert)
+	} else {
+		buf.WriteString(" DO NOTHING ")
+	}
+	if upsert.Dirty {
+		if len(r.Columns) > 0 {
+			buf.WriteString(" RETURNING ")
+			buf.WriteString(strings.Join(r.Columns, ", "))
+		}
+	}
+	return buf.String(), upsert.Args(), nil
+}
+func (r *PermissionRepositoryBase) Upsert(ctx context.Context, e *PermissionEntity, p *PermissionPatch, inf ...string) (*PermissionEntity, error) {
+	query, args, err := r.UpsertQuery(e, p, inf...)
+	if err != nil {
+		return nil, err
+	}
+	if err := r.DB.QueryRowContext(ctx, query, args...).Scan(&e.Action,
+		&e.CreatedAt,
+		&e.ID,
+		&e.Module,
+		&e.Subsystem,
+		&e.UpdatedAt,
+	); err != nil {
+		if r.Debug {
+			r.Log.Log("level", "error", "timestamp", time.Now().Format(time.RFC3339), "msg", "upsert query failure", "query", query, "table", r.Table, "error", err.Error())
+		}
+		return nil, err
+	}
+	if r.Debug {
+		r.Log.Log("level", "debug", "timestamp", time.Now().Format(time.RFC3339), "msg", "upsert query success", "query", query, "table", r.Table)
+	}
+	return e, nil
+}
+
 func (r *PermissionRepositoryBase) Count(ctx context.Context, c *PermissionCriteria) (int64, error) {
 	query, args, err := r.FindQuery([]string{"COUNT(*)"}, c)
 	if err != nil {
@@ -2657,13 +4493,13 @@ func (r *PermissionRepositoryBase) Count(ctx context.Context, c *PermissionCrite
 	var count int64
 	if err := r.DB.QueryRowContext(ctx, query, args...).Scan(&count); err != nil {
 		if r.Debug {
-			r.Log.Log("level", "error", "timestamp", time.Now().Format(time.RFC3339), "msg", "insert query failure", "query", query, "table", r.Table, "error", err.Error())
+			r.Log.Log("level", "error", "timestamp", time.Now().Format(time.RFC3339), "msg", "count query failure", "query", query, "table", r.Table, "error", err.Error())
 		}
 		return 0, err
 	}
 
 	if r.Debug {
-		r.Log.Log("level", "debug", "timestamp", time.Now().Format(time.RFC3339), "msg", "insert query success", "query", query, "table", r.Table)
+		r.Log.Log("level", "debug", "timestamp", time.Now().Format(time.RFC3339), "msg", "count query success", "query", query, "table", r.Table)
 	}
 
 	return count, nil
@@ -2677,7 +4513,6 @@ func (r *PermissionRepositoryBase) DeleteOneByID(ctx context.Context, pk int64) 
 	find.WriteString("=")
 	find.WritePlaceholder()
 	find.Add(pk)
-
 	res, err := r.DB.ExecContext(ctx, find.String(), find.Args()...)
 	if err != nil {
 		return 0, err
@@ -2695,9 +4530,13 @@ const (
 	TableUserGroupsColumnUpdatedBy               = "updated_by"
 	TableUserGroupsColumnUserID                  = "user_id"
 	TableUserGroupsConstraintCreatedByForeignKey = "charon.user_groups_created_by_fkey"
+
 	TableUserGroupsConstraintUpdatedByForeignKey = "charon.user_groups_updated_by_fkey"
-	TableUserGroupsConstraintUserIDForeignKey    = "charon.user_groups_user_id_fkey"
-	TableUserGroupsConstraintGroupIDForeignKey   = "charon.user_groups_group_id_fkey"
+
+	TableUserGroupsConstraintUserIDForeignKey = "charon.user_groups_user_id_fkey"
+
+	TableUserGroupsConstraintGroupIDForeignKey = "charon.user_groups_group_id_fkey"
+
 	TableUserGroupsConstraintUserIDGroupIDUnique = "charon.user_groups_user_id_group_id_key"
 )
 
@@ -2754,6 +4593,7 @@ func (e *UserGroupsEntity) Prop(cn string) (interface{}, bool) {
 		return nil, false
 	}
 }
+
 func (e *UserGroupsEntity) Props(cns ...string) ([]interface{}, error) {
 	res := make([]interface{}, 0, len(cns))
 	for _, cn := range cns {
@@ -2821,13 +4661,14 @@ func (i *UserGroupsIterator) UserGroups() (*UserGroupsEntity, error) {
 type UserGroupsCriteria struct {
 	Offset, Limit int64
 	Sort          map[string]bool
-	CreatedAt     pq.NullTime
+	CreatedAt     *qtypes.Timestamp
 	CreatedBy     *qtypes.Int64
 	GroupID       *qtypes.Int64
-	UpdatedAt     pq.NullTime
+	UpdatedAt     *qtypes.Timestamp
 	UpdatedBy     *qtypes.Int64
 	UserID        *qtypes.Int64
 }
+
 type UserGroupsPatch struct {
 	CreatedAt pq.NullTime
 	CreatedBy ntypes.Int64
@@ -2840,8 +4681,7 @@ type UserGroupsPatch struct {
 func ScanUserGroupsRows(rows *sql.Rows) (entities []*UserGroupsEntity, err error) {
 	for rows.Next() {
 		var ent UserGroupsEntity
-		err = rows.Scan(
-			&ent.CreatedAt,
+		err = rows.Scan(&ent.CreatedAt,
 			&ent.CreatedBy,
 			&ent.GroupID,
 			&ent.UpdatedAt,
@@ -2870,136 +4710,142 @@ type UserGroupsRepositoryBase struct {
 }
 
 func (r *UserGroupsRepositoryBase) InsertQuery(e *UserGroupsEntity) (string, []interface{}, error) {
-	ins := NewComposer(6)
-	buf := bytes.NewBufferString("INSERT INTO " + r.Table)
-	col := bytes.NewBuffer(nil)
+	insert := NewComposer(6)
+	columns := bytes.NewBuffer(nil)
+	buf := bytes.NewBufferString("INSERT INTO ")
+	buf.WriteString(r.Table)
+
 	if !e.CreatedAt.IsZero() {
-		if col.Len() > 0 {
-			if _, err := col.WriteString(", "); err != nil {
+		if columns.Len() > 0 {
+			if _, err := columns.WriteString(", "); err != nil {
 				return "", nil, err
 			}
 		}
-		if _, err := col.WriteString(TableUserGroupsColumnCreatedAt); err != nil {
+		if _, err := columns.WriteString(TableUserGroupsColumnCreatedAt); err != nil {
 			return "", nil, err
 		}
-		if ins.Dirty {
-			if _, err := ins.WriteString(", "); err != nil {
+		if insert.Dirty {
+			if _, err := insert.WriteString(", "); err != nil {
 				return "", nil, err
 			}
 		}
-		if err := ins.WritePlaceholder(); err != nil {
+		if err := insert.WritePlaceholder(); err != nil {
 			return "", nil, err
 		}
-		ins.Add(e.CreatedAt)
-		ins.Dirty = true
+		insert.Add(e.CreatedAt)
+		insert.Dirty = true
 	}
 
-	if col.Len() > 0 {
-		if _, err := col.WriteString(", "); err != nil {
+	if columns.Len() > 0 {
+		if _, err := columns.WriteString(", "); err != nil {
 			return "", nil, err
 		}
 	}
-	if _, err := col.WriteString(TableUserGroupsColumnCreatedBy); err != nil {
+	if _, err := columns.WriteString(TableUserGroupsColumnCreatedBy); err != nil {
 		return "", nil, err
 	}
-	if ins.Dirty {
-		if _, err := ins.WriteString(", "); err != nil {
+	if insert.Dirty {
+		if _, err := insert.WriteString(", "); err != nil {
 			return "", nil, err
 		}
 	}
-	if err := ins.WritePlaceholder(); err != nil {
+	if err := insert.WritePlaceholder(); err != nil {
 		return "", nil, err
 	}
-	ins.Add(e.CreatedBy)
-	ins.Dirty = true
-	if col.Len() > 0 {
-		if _, err := col.WriteString(", "); err != nil {
+	insert.Add(e.CreatedBy)
+	insert.Dirty = true
+
+	if columns.Len() > 0 {
+		if _, err := columns.WriteString(", "); err != nil {
 			return "", nil, err
 		}
 	}
-	if _, err := col.WriteString(TableUserGroupsColumnGroupID); err != nil {
+	if _, err := columns.WriteString(TableUserGroupsColumnGroupID); err != nil {
 		return "", nil, err
 	}
-	if ins.Dirty {
-		if _, err := ins.WriteString(", "); err != nil {
+	if insert.Dirty {
+		if _, err := insert.WriteString(", "); err != nil {
 			return "", nil, err
 		}
 	}
-	if err := ins.WritePlaceholder(); err != nil {
+	if err := insert.WritePlaceholder(); err != nil {
 		return "", nil, err
 	}
-	ins.Add(e.GroupID)
-	ins.Dirty = true
+	insert.Add(e.GroupID)
+	insert.Dirty = true
+
 	if e.UpdatedAt.Valid {
-		if col.Len() > 0 {
-			if _, err := col.WriteString(", "); err != nil {
+		if columns.Len() > 0 {
+			if _, err := columns.WriteString(", "); err != nil {
 				return "", nil, err
 			}
 		}
-		if _, err := col.WriteString(TableUserGroupsColumnUpdatedAt); err != nil {
+		if _, err := columns.WriteString(TableUserGroupsColumnUpdatedAt); err != nil {
 			return "", nil, err
 		}
-		if ins.Dirty {
-			if _, err := ins.WriteString(", "); err != nil {
+		if insert.Dirty {
+			if _, err := insert.WriteString(", "); err != nil {
 				return "", nil, err
 			}
 		}
-		if err := ins.WritePlaceholder(); err != nil {
+		if err := insert.WritePlaceholder(); err != nil {
 			return "", nil, err
 		}
-		ins.Add(e.UpdatedAt)
-		ins.Dirty = true
+		insert.Add(e.UpdatedAt)
+		insert.Dirty = true
 	}
 
-	if col.Len() > 0 {
-		if _, err := col.WriteString(", "); err != nil {
+	if columns.Len() > 0 {
+		if _, err := columns.WriteString(", "); err != nil {
 			return "", nil, err
 		}
 	}
-	if _, err := col.WriteString(TableUserGroupsColumnUpdatedBy); err != nil {
+	if _, err := columns.WriteString(TableUserGroupsColumnUpdatedBy); err != nil {
 		return "", nil, err
 	}
-	if ins.Dirty {
-		if _, err := ins.WriteString(", "); err != nil {
+	if insert.Dirty {
+		if _, err := insert.WriteString(", "); err != nil {
 			return "", nil, err
 		}
 	}
-	if err := ins.WritePlaceholder(); err != nil {
+	if err := insert.WritePlaceholder(); err != nil {
 		return "", nil, err
 	}
-	ins.Add(e.UpdatedBy)
-	ins.Dirty = true
-	if col.Len() > 0 {
-		if _, err := col.WriteString(", "); err != nil {
+	insert.Add(e.UpdatedBy)
+	insert.Dirty = true
+
+	if columns.Len() > 0 {
+		if _, err := columns.WriteString(", "); err != nil {
 			return "", nil, err
 		}
 	}
-	if _, err := col.WriteString(TableUserGroupsColumnUserID); err != nil {
+	if _, err := columns.WriteString(TableUserGroupsColumnUserID); err != nil {
 		return "", nil, err
 	}
-	if ins.Dirty {
-		if _, err := ins.WriteString(", "); err != nil {
+	if insert.Dirty {
+		if _, err := insert.WriteString(", "); err != nil {
 			return "", nil, err
 		}
 	}
-	if err := ins.WritePlaceholder(); err != nil {
+	if err := insert.WritePlaceholder(); err != nil {
 		return "", nil, err
 	}
-	ins.Add(e.UserID)
-	ins.Dirty = true
-	if col.Len() > 0 {
+	insert.Add(e.UserID)
+	insert.Dirty = true
+	if columns.Len() > 0 {
 		buf.WriteString(" (")
-		buf.ReadFrom(col)
+		buf.ReadFrom(columns)
 		buf.WriteString(") VALUES (")
-		buf.ReadFrom(ins)
+		buf.ReadFrom(insert)
 		buf.WriteString(") ")
 		if len(r.Columns) > 0 {
 			buf.WriteString("RETURNING ")
 			buf.WriteString(strings.Join(r.Columns, ", "))
 		}
 	}
-	return buf.String(), ins.Args(), nil
+	return buf.String(), insert.Args(), nil
 }
+
 func (r *UserGroupsRepositoryBase) Insert(ctx context.Context, e *UserGroupsEntity) (*UserGroupsEntity, error) {
 	query, args, err := r.InsertQuery(e)
 	if err != nil {
@@ -3022,6 +4868,7 @@ func (r *UserGroupsRepositoryBase) Insert(ctx context.Context, e *UserGroupsEnti
 	}
 	return e, nil
 }
+
 func (r *UserGroupsRepositoryBase) FindQuery(s []string, c *UserGroupsCriteria) (string, []interface{}, error) {
 	where := NewComposer(6)
 	buf := bytes.NewBufferString("SELECT ")
@@ -3029,43 +4876,16 @@ func (r *UserGroupsRepositoryBase) FindQuery(s []string, c *UserGroupsCriteria) 
 	buf.WriteString(" FROM ")
 	buf.WriteString(r.Table)
 	buf.WriteString(" ")
-	if c.CreatedAt.Valid {
-		if where.Dirty {
-			where.WriteString(" AND ")
-		}
-		if _, err := where.WriteString(TableUserGroupsColumnCreatedAt); err != nil {
-			return "", nil, err
-		}
-		if _, err := where.WriteString("="); err != nil {
-			return "", nil, err
-		}
-		if err := where.WritePlaceholder(); err != nil {
-			return "", nil, err
-		}
-		where.Add(c.CreatedAt)
-		where.Dirty = true
-	}
+	QueryTimestampWhereClause(c.CreatedAt, TableUserGroupsColumnCreatedAt, where, And)
 
 	QueryInt64WhereClause(c.CreatedBy, TableUserGroupsColumnCreatedBy, where, And)
+
 	QueryInt64WhereClause(c.GroupID, TableUserGroupsColumnGroupID, where, And)
-	if c.UpdatedAt.Valid {
-		if where.Dirty {
-			where.WriteString(" AND ")
-		}
-		if _, err := where.WriteString(TableUserGroupsColumnUpdatedAt); err != nil {
-			return "", nil, err
-		}
-		if _, err := where.WriteString("="); err != nil {
-			return "", nil, err
-		}
-		if err := where.WritePlaceholder(); err != nil {
-			return "", nil, err
-		}
-		where.Add(c.UpdatedAt)
-		where.Dirty = true
-	}
+
+	QueryTimestampWhereClause(c.UpdatedAt, TableUserGroupsColumnUpdatedAt, where, And)
 
 	QueryInt64WhereClause(c.UpdatedBy, TableUserGroupsColumnUpdatedBy, where, And)
+
 	QueryInt64WhereClause(c.UserID, TableUserGroupsColumnUserID, where, And)
 	if where.Dirty {
 		if _, err := buf.WriteString("WHERE "); err != nil {
@@ -3129,6 +4949,7 @@ func (r *UserGroupsRepositoryBase) FindQuery(s []string, c *UserGroupsCriteria) 
 
 	return buf.String(), where.Args(), nil
 }
+
 func (r *UserGroupsRepositoryBase) Find(ctx context.Context, c *UserGroupsCriteria) ([]*UserGroupsEntity, error) {
 	query, args, err := r.FindQuery(r.Columns, c)
 	if err != nil {
@@ -3137,18 +4958,19 @@ func (r *UserGroupsRepositoryBase) Find(ctx context.Context, c *UserGroupsCriter
 	rows, err := r.DB.QueryContext(ctx, query, args...)
 	if err != nil {
 		if r.Debug {
-			r.Log.Log("level", "error", "timestamp", time.Now().Format(time.RFC3339), "msg", "insert query failure", "query", query, "table", r.Table, "error", err.Error())
+			r.Log.Log("level", "error", "timestamp", time.Now().Format(time.RFC3339), "msg", "find query failure", "query", query, "table", r.Table, "error", err.Error())
 		}
 		return nil, err
 	}
 	defer rows.Close()
 
 	if r.Debug {
-		r.Log.Log("level", "debug", "timestamp", time.Now().Format(time.RFC3339), "msg", "insert query success", "query", query, "table", r.Table)
+		r.Log.Log("level", "debug", "timestamp", time.Now().Format(time.RFC3339), "msg", "find query success", "query", query, "table", r.Table)
 	}
 
 	return ScanUserGroupsRows(rows)
 }
+
 func (r *UserGroupsRepositoryBase) FindIter(ctx context.Context, c *UserGroupsCriteria) (*UserGroupsIterator, error) {
 	query, args, err := r.FindQuery(r.Columns, c)
 	if err != nil {
@@ -3191,6 +5013,491 @@ func (r *UserGroupsRepositoryBase) FindOneByUserIDAndGroupID(ctx context.Context
 
 	return &ent, nil
 }
+func (r *UserGroupsRepositoryBase) UpdateOneByUserIDAndGroupIDQuery(userGroupsUserID int64, userGroupsGroupID int64, p *UserGroupsPatch) (string, []interface{}, error) {
+	buf := bytes.NewBufferString("UPDATE ")
+	buf.WriteString(r.Table)
+	update := NewComposer(2)
+	if p.CreatedAt.Valid {
+		if update.Dirty {
+			if _, err := update.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := update.WriteString(TableUserGroupsColumnCreatedAt); err != nil {
+			return "", nil, err
+		}
+		if _, err := update.WriteString("="); err != nil {
+			return "", nil, err
+		}
+		if err := update.WritePlaceholder(); err != nil {
+			return "", nil, err
+		}
+		update.Add(p.CreatedAt)
+		update.Dirty = true
+
+	}
+
+	if p.CreatedBy.Valid {
+		if update.Dirty {
+			if _, err := update.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := update.WriteString(TableUserGroupsColumnCreatedBy); err != nil {
+			return "", nil, err
+		}
+		if _, err := update.WriteString("="); err != nil {
+			return "", nil, err
+		}
+		if err := update.WritePlaceholder(); err != nil {
+			return "", nil, err
+		}
+		update.Add(p.CreatedBy)
+		update.Dirty = true
+	}
+
+	if p.GroupID.Valid {
+		if update.Dirty {
+			if _, err := update.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := update.WriteString(TableUserGroupsColumnGroupID); err != nil {
+			return "", nil, err
+		}
+		if _, err := update.WriteString("="); err != nil {
+			return "", nil, err
+		}
+		if err := update.WritePlaceholder(); err != nil {
+			return "", nil, err
+		}
+		update.Add(p.GroupID)
+		update.Dirty = true
+	}
+
+	if p.UpdatedAt.Valid {
+		if update.Dirty {
+			if _, err := update.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := update.WriteString(TableUserGroupsColumnUpdatedAt); err != nil {
+			return "", nil, err
+		}
+		if _, err := update.WriteString("="); err != nil {
+			return "", nil, err
+		}
+		if err := update.WritePlaceholder(); err != nil {
+			return "", nil, err
+		}
+		update.Add(p.UpdatedAt)
+		update.Dirty = true
+
+	} else {
+		if update.Dirty {
+			if _, err := update.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := update.WriteString(TableUserGroupsColumnUpdatedAt); err != nil {
+			return "", nil, err
+		}
+		if _, err := update.WriteString("=NOW()"); err != nil {
+			return "", nil, err
+		}
+	}
+
+	if p.UpdatedBy.Valid {
+		if update.Dirty {
+			if _, err := update.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := update.WriteString(TableUserGroupsColumnUpdatedBy); err != nil {
+			return "", nil, err
+		}
+		if _, err := update.WriteString("="); err != nil {
+			return "", nil, err
+		}
+		if err := update.WritePlaceholder(); err != nil {
+			return "", nil, err
+		}
+		update.Add(p.UpdatedBy)
+		update.Dirty = true
+	}
+
+	if p.UserID.Valid {
+		if update.Dirty {
+			if _, err := update.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := update.WriteString(TableUserGroupsColumnUserID); err != nil {
+			return "", nil, err
+		}
+		if _, err := update.WriteString("="); err != nil {
+			return "", nil, err
+		}
+		if err := update.WritePlaceholder(); err != nil {
+			return "", nil, err
+		}
+		update.Add(p.UserID)
+		update.Dirty = true
+	}
+
+	if !update.Dirty {
+		return "", nil, errors.New("UserGroups update failure, nothing to update")
+	}
+	buf.WriteString(" SET ")
+	buf.ReadFrom(update)
+	buf.WriteString(" WHERE ")
+	update.WriteString(TableUserGroupsColumnUserID)
+	update.WriteString("=")
+	update.WritePlaceholder()
+	update.Add(userGroupsUserID)
+	update.WriteString(" AND ")
+	update.WriteString(TableUserGroupsColumnGroupID)
+	update.WriteString("=")
+	update.WritePlaceholder()
+	update.Add(userGroupsGroupID)
+	buf.ReadFrom(update)
+	buf.WriteString(" RETURNING ")
+	buf.WriteString(strings.Join(r.Columns, ", "))
+	return buf.String(), update.Args(), nil
+}
+func (r *UserGroupsRepositoryBase) UpdateOneByUserIDAndGroupID(ctx context.Context, userGroupsUserID int64, userGroupsGroupID int64, p *UserGroupsPatch) (*UserGroupsEntity, error) {
+	query, args, err := r.UpdateOneByUserIDAndGroupIDQuery(userGroupsUserID, userGroupsGroupID, p)
+	if err != nil {
+		return nil, err
+	}
+	var ent UserGroupsEntity
+	props, err := ent.Props(r.Columns...)
+	if err != nil {
+		return nil, err
+	}
+	err = r.DB.QueryRowContext(ctx, query, args...).Scan(props...)
+	if err != nil {
+		if r.Debug {
+			r.Log.Log("level", "error", "timestamp", time.Now().Format(time.RFC3339), "msg", "insert query failure", "query", query, "table", r.Table, "error", err.Error())
+		}
+		return nil, err
+	}
+
+	if r.Debug {
+		r.Log.Log("level", "debug", "timestamp", time.Now().Format(time.RFC3339), "msg", "insert query success", "query", query, "table", r.Table)
+	}
+
+	return &ent, nil
+}
+func (r *UserGroupsRepositoryBase) UpsertQuery(e *UserGroupsEntity, p *UserGroupsPatch, inf ...string) (string, []interface{}, error) {
+	upsert := NewComposer(12)
+	columns := bytes.NewBuffer(nil)
+	buf := bytes.NewBufferString("INSERT INTO ")
+	buf.WriteString(r.Table)
+
+	if !e.CreatedAt.IsZero() {
+		if columns.Len() > 0 {
+			if _, err := columns.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := columns.WriteString(TableUserGroupsColumnCreatedAt); err != nil {
+			return "", nil, err
+		}
+		if upsert.Dirty {
+			if _, err := upsert.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if err := upsert.WritePlaceholder(); err != nil {
+			return "", nil, err
+		}
+		upsert.Add(e.CreatedAt)
+		upsert.Dirty = true
+	}
+
+	if columns.Len() > 0 {
+		if _, err := columns.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if _, err := columns.WriteString(TableUserGroupsColumnCreatedBy); err != nil {
+		return "", nil, err
+	}
+	if upsert.Dirty {
+		if _, err := upsert.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if err := upsert.WritePlaceholder(); err != nil {
+		return "", nil, err
+	}
+	upsert.Add(e.CreatedBy)
+	upsert.Dirty = true
+
+	if columns.Len() > 0 {
+		if _, err := columns.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if _, err := columns.WriteString(TableUserGroupsColumnGroupID); err != nil {
+		return "", nil, err
+	}
+	if upsert.Dirty {
+		if _, err := upsert.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if err := upsert.WritePlaceholder(); err != nil {
+		return "", nil, err
+	}
+	upsert.Add(e.GroupID)
+	upsert.Dirty = true
+
+	if e.UpdatedAt.Valid {
+		if columns.Len() > 0 {
+			if _, err := columns.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := columns.WriteString(TableUserGroupsColumnUpdatedAt); err != nil {
+			return "", nil, err
+		}
+		if upsert.Dirty {
+			if _, err := upsert.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if err := upsert.WritePlaceholder(); err != nil {
+			return "", nil, err
+		}
+		upsert.Add(e.UpdatedAt)
+		upsert.Dirty = true
+	}
+
+	if columns.Len() > 0 {
+		if _, err := columns.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if _, err := columns.WriteString(TableUserGroupsColumnUpdatedBy); err != nil {
+		return "", nil, err
+	}
+	if upsert.Dirty {
+		if _, err := upsert.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if err := upsert.WritePlaceholder(); err != nil {
+		return "", nil, err
+	}
+	upsert.Add(e.UpdatedBy)
+	upsert.Dirty = true
+
+	if columns.Len() > 0 {
+		if _, err := columns.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if _, err := columns.WriteString(TableUserGroupsColumnUserID); err != nil {
+		return "", nil, err
+	}
+	if upsert.Dirty {
+		if _, err := upsert.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if err := upsert.WritePlaceholder(); err != nil {
+		return "", nil, err
+	}
+	upsert.Add(e.UserID)
+	upsert.Dirty = true
+
+	if upsert.Dirty {
+		buf.WriteString(" (")
+		buf.ReadFrom(columns)
+		buf.WriteString(") VALUES (")
+		buf.ReadFrom(upsert)
+		buf.WriteString(")")
+	}
+	buf.WriteString(" ON CONFLICT ")
+	if len(inf) > 0 {
+		upsert.Dirty = false
+		if p.CreatedAt.Valid {
+			if upsert.Dirty {
+				if _, err := upsert.WriteString(", "); err != nil {
+					return "", nil, err
+				}
+			}
+			if _, err := upsert.WriteString(TableUserGroupsColumnCreatedAt); err != nil {
+				return "", nil, err
+			}
+			if _, err := upsert.WriteString("="); err != nil {
+				return "", nil, err
+			}
+			if err := upsert.WritePlaceholder(); err != nil {
+				return "", nil, err
+			}
+			upsert.Add(p.CreatedAt)
+			upsert.Dirty = true
+
+		}
+
+		if p.CreatedBy.Valid {
+			if upsert.Dirty {
+				if _, err := upsert.WriteString(", "); err != nil {
+					return "", nil, err
+				}
+			}
+			if _, err := upsert.WriteString(TableUserGroupsColumnCreatedBy); err != nil {
+				return "", nil, err
+			}
+			if _, err := upsert.WriteString("="); err != nil {
+				return "", nil, err
+			}
+			if err := upsert.WritePlaceholder(); err != nil {
+				return "", nil, err
+			}
+			upsert.Add(p.CreatedBy)
+			upsert.Dirty = true
+		}
+
+		if p.GroupID.Valid {
+			if upsert.Dirty {
+				if _, err := upsert.WriteString(", "); err != nil {
+					return "", nil, err
+				}
+			}
+			if _, err := upsert.WriteString(TableUserGroupsColumnGroupID); err != nil {
+				return "", nil, err
+			}
+			if _, err := upsert.WriteString("="); err != nil {
+				return "", nil, err
+			}
+			if err := upsert.WritePlaceholder(); err != nil {
+				return "", nil, err
+			}
+			upsert.Add(p.GroupID)
+			upsert.Dirty = true
+		}
+
+		if p.UpdatedAt.Valid {
+			if upsert.Dirty {
+				if _, err := upsert.WriteString(", "); err != nil {
+					return "", nil, err
+				}
+			}
+			if _, err := upsert.WriteString(TableUserGroupsColumnUpdatedAt); err != nil {
+				return "", nil, err
+			}
+			if _, err := upsert.WriteString("="); err != nil {
+				return "", nil, err
+			}
+			if err := upsert.WritePlaceholder(); err != nil {
+				return "", nil, err
+			}
+			upsert.Add(p.UpdatedAt)
+			upsert.Dirty = true
+
+		} else {
+			if upsert.Dirty {
+				if _, err := upsert.WriteString(", "); err != nil {
+					return "", nil, err
+				}
+			}
+			if _, err := upsert.WriteString(TableUserGroupsColumnUpdatedAt); err != nil {
+				return "", nil, err
+			}
+			if _, err := upsert.WriteString("=NOW()"); err != nil {
+				return "", nil, err
+			}
+		}
+
+		if p.UpdatedBy.Valid {
+			if upsert.Dirty {
+				if _, err := upsert.WriteString(", "); err != nil {
+					return "", nil, err
+				}
+			}
+			if _, err := upsert.WriteString(TableUserGroupsColumnUpdatedBy); err != nil {
+				return "", nil, err
+			}
+			if _, err := upsert.WriteString("="); err != nil {
+				return "", nil, err
+			}
+			if err := upsert.WritePlaceholder(); err != nil {
+				return "", nil, err
+			}
+			upsert.Add(p.UpdatedBy)
+			upsert.Dirty = true
+		}
+
+		if p.UserID.Valid {
+			if upsert.Dirty {
+				if _, err := upsert.WriteString(", "); err != nil {
+					return "", nil, err
+				}
+			}
+			if _, err := upsert.WriteString(TableUserGroupsColumnUserID); err != nil {
+				return "", nil, err
+			}
+			if _, err := upsert.WriteString("="); err != nil {
+				return "", nil, err
+			}
+			if err := upsert.WritePlaceholder(); err != nil {
+				return "", nil, err
+			}
+			upsert.Add(p.UserID)
+			upsert.Dirty = true
+		}
+
+	}
+
+	if len(inf) > 0 && upsert.Dirty {
+		buf.WriteString("(")
+		for j, i := range inf {
+			if j != 0 {
+				buf.WriteString(", ")
+			}
+			buf.WriteString(i)
+		}
+		buf.WriteString(")")
+		buf.WriteString(" DO UPDATE SET ")
+		buf.ReadFrom(upsert)
+	} else {
+		buf.WriteString(" DO NOTHING ")
+	}
+	if upsert.Dirty {
+		if len(r.Columns) > 0 {
+			buf.WriteString(" RETURNING ")
+			buf.WriteString(strings.Join(r.Columns, ", "))
+		}
+	}
+	return buf.String(), upsert.Args(), nil
+}
+func (r *UserGroupsRepositoryBase) Upsert(ctx context.Context, e *UserGroupsEntity, p *UserGroupsPatch, inf ...string) (*UserGroupsEntity, error) {
+	query, args, err := r.UpsertQuery(e, p, inf...)
+	if err != nil {
+		return nil, err
+	}
+	if err := r.DB.QueryRowContext(ctx, query, args...).Scan(&e.CreatedAt,
+		&e.CreatedBy,
+		&e.GroupID,
+		&e.UpdatedAt,
+		&e.UpdatedBy,
+		&e.UserID,
+	); err != nil {
+		if r.Debug {
+			r.Log.Log("level", "error", "timestamp", time.Now().Format(time.RFC3339), "msg", "upsert query failure", "query", query, "table", r.Table, "error", err.Error())
+		}
+		return nil, err
+	}
+	if r.Debug {
+		r.Log.Log("level", "debug", "timestamp", time.Now().Format(time.RFC3339), "msg", "upsert query success", "query", query, "table", r.Table)
+	}
+	return e, nil
+}
+
 func (r *UserGroupsRepositoryBase) Count(ctx context.Context, c *UserGroupsCriteria) (int64, error) {
 	query, args, err := r.FindQuery([]string{"COUNT(*)"}, c)
 	if err != nil {
@@ -3199,32 +5506,36 @@ func (r *UserGroupsRepositoryBase) Count(ctx context.Context, c *UserGroupsCrite
 	var count int64
 	if err := r.DB.QueryRowContext(ctx, query, args...).Scan(&count); err != nil {
 		if r.Debug {
-			r.Log.Log("level", "error", "timestamp", time.Now().Format(time.RFC3339), "msg", "insert query failure", "query", query, "table", r.Table, "error", err.Error())
+			r.Log.Log("level", "error", "timestamp", time.Now().Format(time.RFC3339), "msg", "count query failure", "query", query, "table", r.Table, "error", err.Error())
 		}
 		return 0, err
 	}
 
 	if r.Debug {
-		r.Log.Log("level", "debug", "timestamp", time.Now().Format(time.RFC3339), "msg", "insert query success", "query", query, "table", r.Table)
+		r.Log.Log("level", "debug", "timestamp", time.Now().Format(time.RFC3339), "msg", "count query success", "query", query, "table", r.Table)
 	}
 
 	return count, nil
 }
 
 const (
-	TableGroupPermissions                                                                           = "charon.group_permissions"
-	TableGroupPermissionsColumnCreatedAt                                                            = "created_at"
-	TableGroupPermissionsColumnCreatedBy                                                            = "created_by"
-	TableGroupPermissionsColumnGroupID                                                              = "group_id"
-	TableGroupPermissionsColumnPermissionAction                                                     = "permission_action"
-	TableGroupPermissionsColumnPermissionModule                                                     = "permission_module"
-	TableGroupPermissionsColumnPermissionSubsystem                                                  = "permission_subsystem"
-	TableGroupPermissionsColumnUpdatedAt                                                            = "updated_at"
-	TableGroupPermissionsColumnUpdatedBy                                                            = "updated_by"
-	TableGroupPermissionsConstraintCreatedByForeignKey                                              = "charon.group_permissions_created_by_fkey"
-	TableGroupPermissionsConstraintUpdatedByForeignKey                                              = "charon.group_permissions_updated_by_fkey"
-	TableGroupPermissionsConstraintGroupIDForeignKey                                                = "charon.group_permissions_group_id_fkey"
-	TableGroupPermissionsConstraintPermissionSubsystemPermissionModulePermissionActionForeignKey    = "charon.group_permissions_subsystem_module_action_fkey"
+	TableGroupPermissions                              = "charon.group_permissions"
+	TableGroupPermissionsColumnCreatedAt               = "created_at"
+	TableGroupPermissionsColumnCreatedBy               = "created_by"
+	TableGroupPermissionsColumnGroupID                 = "group_id"
+	TableGroupPermissionsColumnPermissionAction        = "permission_action"
+	TableGroupPermissionsColumnPermissionModule        = "permission_module"
+	TableGroupPermissionsColumnPermissionSubsystem     = "permission_subsystem"
+	TableGroupPermissionsColumnUpdatedAt               = "updated_at"
+	TableGroupPermissionsColumnUpdatedBy               = "updated_by"
+	TableGroupPermissionsConstraintCreatedByForeignKey = "charon.group_permissions_created_by_fkey"
+
+	TableGroupPermissionsConstraintUpdatedByForeignKey = "charon.group_permissions_updated_by_fkey"
+
+	TableGroupPermissionsConstraintGroupIDForeignKey = "charon.group_permissions_group_id_fkey"
+
+	TableGroupPermissionsConstraintPermissionSubsystemPermissionModulePermissionActionForeignKey = "charon.group_permissions_subsystem_module_action_fkey"
+
 	TableGroupPermissionsConstraintGroupIDPermissionSubsystemPermissionModulePermissionActionUnique = "charon.group_permissions_group_id_subsystem_module_action_key"
 )
 
@@ -3289,6 +5600,7 @@ func (e *GroupPermissionsEntity) Prop(cn string) (interface{}, bool) {
 		return nil, false
 	}
 }
+
 func (e *GroupPermissionsEntity) Props(cns ...string) ([]interface{}, error) {
 	res := make([]interface{}, 0, len(cns))
 	for _, cn := range cns {
@@ -3356,15 +5668,16 @@ func (i *GroupPermissionsIterator) GroupPermissions() (*GroupPermissionsEntity, 
 type GroupPermissionsCriteria struct {
 	Offset, Limit       int64
 	Sort                map[string]bool
-	CreatedAt           pq.NullTime
+	CreatedAt           *qtypes.Timestamp
 	CreatedBy           *qtypes.Int64
 	GroupID             *qtypes.Int64
 	PermissionAction    *qtypes.String
 	PermissionModule    *qtypes.String
 	PermissionSubsystem *qtypes.String
-	UpdatedAt           pq.NullTime
+	UpdatedAt           *qtypes.Timestamp
 	UpdatedBy           *qtypes.Int64
 }
+
 type GroupPermissionsPatch struct {
 	CreatedAt           pq.NullTime
 	CreatedBy           ntypes.Int64
@@ -3379,8 +5692,7 @@ type GroupPermissionsPatch struct {
 func ScanGroupPermissionsRows(rows *sql.Rows) (entities []*GroupPermissionsEntity, err error) {
 	for rows.Next() {
 		var ent GroupPermissionsEntity
-		err = rows.Scan(
-			&ent.CreatedAt,
+		err = rows.Scan(&ent.CreatedAt,
 			&ent.CreatedBy,
 			&ent.GroupID,
 			&ent.PermissionAction,
@@ -3411,172 +5723,180 @@ type GroupPermissionsRepositoryBase struct {
 }
 
 func (r *GroupPermissionsRepositoryBase) InsertQuery(e *GroupPermissionsEntity) (string, []interface{}, error) {
-	ins := NewComposer(8)
-	buf := bytes.NewBufferString("INSERT INTO " + r.Table)
-	col := bytes.NewBuffer(nil)
+	insert := NewComposer(8)
+	columns := bytes.NewBuffer(nil)
+	buf := bytes.NewBufferString("INSERT INTO ")
+	buf.WriteString(r.Table)
+
 	if !e.CreatedAt.IsZero() {
-		if col.Len() > 0 {
-			if _, err := col.WriteString(", "); err != nil {
+		if columns.Len() > 0 {
+			if _, err := columns.WriteString(", "); err != nil {
 				return "", nil, err
 			}
 		}
-		if _, err := col.WriteString(TableGroupPermissionsColumnCreatedAt); err != nil {
+		if _, err := columns.WriteString(TableGroupPermissionsColumnCreatedAt); err != nil {
 			return "", nil, err
 		}
-		if ins.Dirty {
-			if _, err := ins.WriteString(", "); err != nil {
+		if insert.Dirty {
+			if _, err := insert.WriteString(", "); err != nil {
 				return "", nil, err
 			}
 		}
-		if err := ins.WritePlaceholder(); err != nil {
+		if err := insert.WritePlaceholder(); err != nil {
 			return "", nil, err
 		}
-		ins.Add(e.CreatedAt)
-		ins.Dirty = true
+		insert.Add(e.CreatedAt)
+		insert.Dirty = true
 	}
 
-	if col.Len() > 0 {
-		if _, err := col.WriteString(", "); err != nil {
+	if columns.Len() > 0 {
+		if _, err := columns.WriteString(", "); err != nil {
 			return "", nil, err
 		}
 	}
-	if _, err := col.WriteString(TableGroupPermissionsColumnCreatedBy); err != nil {
+	if _, err := columns.WriteString(TableGroupPermissionsColumnCreatedBy); err != nil {
 		return "", nil, err
 	}
-	if ins.Dirty {
-		if _, err := ins.WriteString(", "); err != nil {
+	if insert.Dirty {
+		if _, err := insert.WriteString(", "); err != nil {
 			return "", nil, err
 		}
 	}
-	if err := ins.WritePlaceholder(); err != nil {
+	if err := insert.WritePlaceholder(); err != nil {
 		return "", nil, err
 	}
-	ins.Add(e.CreatedBy)
-	ins.Dirty = true
-	if col.Len() > 0 {
-		if _, err := col.WriteString(", "); err != nil {
+	insert.Add(e.CreatedBy)
+	insert.Dirty = true
+
+	if columns.Len() > 0 {
+		if _, err := columns.WriteString(", "); err != nil {
 			return "", nil, err
 		}
 	}
-	if _, err := col.WriteString(TableGroupPermissionsColumnGroupID); err != nil {
+	if _, err := columns.WriteString(TableGroupPermissionsColumnGroupID); err != nil {
 		return "", nil, err
 	}
-	if ins.Dirty {
-		if _, err := ins.WriteString(", "); err != nil {
+	if insert.Dirty {
+		if _, err := insert.WriteString(", "); err != nil {
 			return "", nil, err
 		}
 	}
-	if err := ins.WritePlaceholder(); err != nil {
+	if err := insert.WritePlaceholder(); err != nil {
 		return "", nil, err
 	}
-	ins.Add(e.GroupID)
-	ins.Dirty = true
-	if col.Len() > 0 {
-		if _, err := col.WriteString(", "); err != nil {
+	insert.Add(e.GroupID)
+	insert.Dirty = true
+
+	if columns.Len() > 0 {
+		if _, err := columns.WriteString(", "); err != nil {
 			return "", nil, err
 		}
 	}
-	if _, err := col.WriteString(TableGroupPermissionsColumnPermissionAction); err != nil {
+	if _, err := columns.WriteString(TableGroupPermissionsColumnPermissionAction); err != nil {
 		return "", nil, err
 	}
-	if ins.Dirty {
-		if _, err := ins.WriteString(", "); err != nil {
+	if insert.Dirty {
+		if _, err := insert.WriteString(", "); err != nil {
 			return "", nil, err
 		}
 	}
-	if err := ins.WritePlaceholder(); err != nil {
+	if err := insert.WritePlaceholder(); err != nil {
 		return "", nil, err
 	}
-	ins.Add(e.PermissionAction)
-	ins.Dirty = true
-	if col.Len() > 0 {
-		if _, err := col.WriteString(", "); err != nil {
+	insert.Add(e.PermissionAction)
+	insert.Dirty = true
+
+	if columns.Len() > 0 {
+		if _, err := columns.WriteString(", "); err != nil {
 			return "", nil, err
 		}
 	}
-	if _, err := col.WriteString(TableGroupPermissionsColumnPermissionModule); err != nil {
+	if _, err := columns.WriteString(TableGroupPermissionsColumnPermissionModule); err != nil {
 		return "", nil, err
 	}
-	if ins.Dirty {
-		if _, err := ins.WriteString(", "); err != nil {
+	if insert.Dirty {
+		if _, err := insert.WriteString(", "); err != nil {
 			return "", nil, err
 		}
 	}
-	if err := ins.WritePlaceholder(); err != nil {
+	if err := insert.WritePlaceholder(); err != nil {
 		return "", nil, err
 	}
-	ins.Add(e.PermissionModule)
-	ins.Dirty = true
-	if col.Len() > 0 {
-		if _, err := col.WriteString(", "); err != nil {
+	insert.Add(e.PermissionModule)
+	insert.Dirty = true
+
+	if columns.Len() > 0 {
+		if _, err := columns.WriteString(", "); err != nil {
 			return "", nil, err
 		}
 	}
-	if _, err := col.WriteString(TableGroupPermissionsColumnPermissionSubsystem); err != nil {
+	if _, err := columns.WriteString(TableGroupPermissionsColumnPermissionSubsystem); err != nil {
 		return "", nil, err
 	}
-	if ins.Dirty {
-		if _, err := ins.WriteString(", "); err != nil {
+	if insert.Dirty {
+		if _, err := insert.WriteString(", "); err != nil {
 			return "", nil, err
 		}
 	}
-	if err := ins.WritePlaceholder(); err != nil {
+	if err := insert.WritePlaceholder(); err != nil {
 		return "", nil, err
 	}
-	ins.Add(e.PermissionSubsystem)
-	ins.Dirty = true
+	insert.Add(e.PermissionSubsystem)
+	insert.Dirty = true
+
 	if e.UpdatedAt.Valid {
-		if col.Len() > 0 {
-			if _, err := col.WriteString(", "); err != nil {
+		if columns.Len() > 0 {
+			if _, err := columns.WriteString(", "); err != nil {
 				return "", nil, err
 			}
 		}
-		if _, err := col.WriteString(TableGroupPermissionsColumnUpdatedAt); err != nil {
+		if _, err := columns.WriteString(TableGroupPermissionsColumnUpdatedAt); err != nil {
 			return "", nil, err
 		}
-		if ins.Dirty {
-			if _, err := ins.WriteString(", "); err != nil {
+		if insert.Dirty {
+			if _, err := insert.WriteString(", "); err != nil {
 				return "", nil, err
 			}
 		}
-		if err := ins.WritePlaceholder(); err != nil {
+		if err := insert.WritePlaceholder(); err != nil {
 			return "", nil, err
 		}
-		ins.Add(e.UpdatedAt)
-		ins.Dirty = true
+		insert.Add(e.UpdatedAt)
+		insert.Dirty = true
 	}
 
-	if col.Len() > 0 {
-		if _, err := col.WriteString(", "); err != nil {
+	if columns.Len() > 0 {
+		if _, err := columns.WriteString(", "); err != nil {
 			return "", nil, err
 		}
 	}
-	if _, err := col.WriteString(TableGroupPermissionsColumnUpdatedBy); err != nil {
+	if _, err := columns.WriteString(TableGroupPermissionsColumnUpdatedBy); err != nil {
 		return "", nil, err
 	}
-	if ins.Dirty {
-		if _, err := ins.WriteString(", "); err != nil {
+	if insert.Dirty {
+		if _, err := insert.WriteString(", "); err != nil {
 			return "", nil, err
 		}
 	}
-	if err := ins.WritePlaceholder(); err != nil {
+	if err := insert.WritePlaceholder(); err != nil {
 		return "", nil, err
 	}
-	ins.Add(e.UpdatedBy)
-	ins.Dirty = true
-	if col.Len() > 0 {
+	insert.Add(e.UpdatedBy)
+	insert.Dirty = true
+	if columns.Len() > 0 {
 		buf.WriteString(" (")
-		buf.ReadFrom(col)
+		buf.ReadFrom(columns)
 		buf.WriteString(") VALUES (")
-		buf.ReadFrom(ins)
+		buf.ReadFrom(insert)
 		buf.WriteString(") ")
 		if len(r.Columns) > 0 {
 			buf.WriteString("RETURNING ")
 			buf.WriteString(strings.Join(r.Columns, ", "))
 		}
 	}
-	return buf.String(), ins.Args(), nil
+	return buf.String(), insert.Args(), nil
 }
+
 func (r *GroupPermissionsRepositoryBase) Insert(ctx context.Context, e *GroupPermissionsEntity) (*GroupPermissionsEntity, error) {
 	query, args, err := r.InsertQuery(e)
 	if err != nil {
@@ -3601,6 +5921,7 @@ func (r *GroupPermissionsRepositoryBase) Insert(ctx context.Context, e *GroupPer
 	}
 	return e, nil
 }
+
 func (r *GroupPermissionsRepositoryBase) FindQuery(s []string, c *GroupPermissionsCriteria) (string, []interface{}, error) {
 	where := NewComposer(8)
 	buf := bytes.NewBufferString("SELECT ")
@@ -3608,44 +5929,19 @@ func (r *GroupPermissionsRepositoryBase) FindQuery(s []string, c *GroupPermissio
 	buf.WriteString(" FROM ")
 	buf.WriteString(r.Table)
 	buf.WriteString(" ")
-	if c.CreatedAt.Valid {
-		if where.Dirty {
-			where.WriteString(" AND ")
-		}
-		if _, err := where.WriteString(TableGroupPermissionsColumnCreatedAt); err != nil {
-			return "", nil, err
-		}
-		if _, err := where.WriteString("="); err != nil {
-			return "", nil, err
-		}
-		if err := where.WritePlaceholder(); err != nil {
-			return "", nil, err
-		}
-		where.Add(c.CreatedAt)
-		where.Dirty = true
-	}
+	QueryTimestampWhereClause(c.CreatedAt, TableGroupPermissionsColumnCreatedAt, where, And)
 
 	QueryInt64WhereClause(c.CreatedBy, TableGroupPermissionsColumnCreatedBy, where, And)
+
 	QueryInt64WhereClause(c.GroupID, TableGroupPermissionsColumnGroupID, where, And)
+
 	QueryStringWhereClause(c.PermissionAction, TableGroupPermissionsColumnPermissionAction, where, And)
+
 	QueryStringWhereClause(c.PermissionModule, TableGroupPermissionsColumnPermissionModule, where, And)
+
 	QueryStringWhereClause(c.PermissionSubsystem, TableGroupPermissionsColumnPermissionSubsystem, where, And)
-	if c.UpdatedAt.Valid {
-		if where.Dirty {
-			where.WriteString(" AND ")
-		}
-		if _, err := where.WriteString(TableGroupPermissionsColumnUpdatedAt); err != nil {
-			return "", nil, err
-		}
-		if _, err := where.WriteString("="); err != nil {
-			return "", nil, err
-		}
-		if err := where.WritePlaceholder(); err != nil {
-			return "", nil, err
-		}
-		where.Add(c.UpdatedAt)
-		where.Dirty = true
-	}
+
+	QueryTimestampWhereClause(c.UpdatedAt, TableGroupPermissionsColumnUpdatedAt, where, And)
 
 	QueryInt64WhereClause(c.UpdatedBy, TableGroupPermissionsColumnUpdatedBy, where, And)
 	if where.Dirty {
@@ -3710,6 +6006,7 @@ func (r *GroupPermissionsRepositoryBase) FindQuery(s []string, c *GroupPermissio
 
 	return buf.String(), where.Args(), nil
 }
+
 func (r *GroupPermissionsRepositoryBase) Find(ctx context.Context, c *GroupPermissionsCriteria) ([]*GroupPermissionsEntity, error) {
 	query, args, err := r.FindQuery(r.Columns, c)
 	if err != nil {
@@ -3718,18 +6015,19 @@ func (r *GroupPermissionsRepositoryBase) Find(ctx context.Context, c *GroupPermi
 	rows, err := r.DB.QueryContext(ctx, query, args...)
 	if err != nil {
 		if r.Debug {
-			r.Log.Log("level", "error", "timestamp", time.Now().Format(time.RFC3339), "msg", "insert query failure", "query", query, "table", r.Table, "error", err.Error())
+			r.Log.Log("level", "error", "timestamp", time.Now().Format(time.RFC3339), "msg", "find query failure", "query", query, "table", r.Table, "error", err.Error())
 		}
 		return nil, err
 	}
 	defer rows.Close()
 
 	if r.Debug {
-		r.Log.Log("level", "debug", "timestamp", time.Now().Format(time.RFC3339), "msg", "insert query success", "query", query, "table", r.Table)
+		r.Log.Log("level", "debug", "timestamp", time.Now().Format(time.RFC3339), "msg", "find query success", "query", query, "table", r.Table)
 	}
 
 	return ScanGroupPermissionsRows(rows)
 }
+
 func (r *GroupPermissionsRepositoryBase) FindIter(ctx context.Context, c *GroupPermissionsCriteria) (*GroupPermissionsIterator, error) {
 	query, args, err := r.FindQuery(r.Columns, c)
 	if err != nil {
@@ -3782,6 +6080,617 @@ func (r *GroupPermissionsRepositoryBase) FindOneByGroupIDAndPermissionSubsystemA
 
 	return &ent, nil
 }
+func (r *GroupPermissionsRepositoryBase) UpdateOneByGroupIDAndPermissionSubsystemAndPermissionModuleAndPermissionActionQuery(groupPermissionsGroupID int64, groupPermissionsPermissionSubsystem string, groupPermissionsPermissionModule string, groupPermissionsPermissionAction string, p *GroupPermissionsPatch) (string, []interface{}, error) {
+	buf := bytes.NewBufferString("UPDATE ")
+	buf.WriteString(r.Table)
+	update := NewComposer(4)
+	if p.CreatedAt.Valid {
+		if update.Dirty {
+			if _, err := update.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := update.WriteString(TableGroupPermissionsColumnCreatedAt); err != nil {
+			return "", nil, err
+		}
+		if _, err := update.WriteString("="); err != nil {
+			return "", nil, err
+		}
+		if err := update.WritePlaceholder(); err != nil {
+			return "", nil, err
+		}
+		update.Add(p.CreatedAt)
+		update.Dirty = true
+
+	}
+
+	if p.CreatedBy.Valid {
+		if update.Dirty {
+			if _, err := update.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := update.WriteString(TableGroupPermissionsColumnCreatedBy); err != nil {
+			return "", nil, err
+		}
+		if _, err := update.WriteString("="); err != nil {
+			return "", nil, err
+		}
+		if err := update.WritePlaceholder(); err != nil {
+			return "", nil, err
+		}
+		update.Add(p.CreatedBy)
+		update.Dirty = true
+	}
+
+	if p.GroupID.Valid {
+		if update.Dirty {
+			if _, err := update.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := update.WriteString(TableGroupPermissionsColumnGroupID); err != nil {
+			return "", nil, err
+		}
+		if _, err := update.WriteString("="); err != nil {
+			return "", nil, err
+		}
+		if err := update.WritePlaceholder(); err != nil {
+			return "", nil, err
+		}
+		update.Add(p.GroupID)
+		update.Dirty = true
+	}
+
+	if p.PermissionAction.Valid {
+		if update.Dirty {
+			if _, err := update.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := update.WriteString(TableGroupPermissionsColumnPermissionAction); err != nil {
+			return "", nil, err
+		}
+		if _, err := update.WriteString("="); err != nil {
+			return "", nil, err
+		}
+		if err := update.WritePlaceholder(); err != nil {
+			return "", nil, err
+		}
+		update.Add(p.PermissionAction)
+		update.Dirty = true
+	}
+
+	if p.PermissionModule.Valid {
+		if update.Dirty {
+			if _, err := update.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := update.WriteString(TableGroupPermissionsColumnPermissionModule); err != nil {
+			return "", nil, err
+		}
+		if _, err := update.WriteString("="); err != nil {
+			return "", nil, err
+		}
+		if err := update.WritePlaceholder(); err != nil {
+			return "", nil, err
+		}
+		update.Add(p.PermissionModule)
+		update.Dirty = true
+	}
+
+	if p.PermissionSubsystem.Valid {
+		if update.Dirty {
+			if _, err := update.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := update.WriteString(TableGroupPermissionsColumnPermissionSubsystem); err != nil {
+			return "", nil, err
+		}
+		if _, err := update.WriteString("="); err != nil {
+			return "", nil, err
+		}
+		if err := update.WritePlaceholder(); err != nil {
+			return "", nil, err
+		}
+		update.Add(p.PermissionSubsystem)
+		update.Dirty = true
+	}
+
+	if p.UpdatedAt.Valid {
+		if update.Dirty {
+			if _, err := update.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := update.WriteString(TableGroupPermissionsColumnUpdatedAt); err != nil {
+			return "", nil, err
+		}
+		if _, err := update.WriteString("="); err != nil {
+			return "", nil, err
+		}
+		if err := update.WritePlaceholder(); err != nil {
+			return "", nil, err
+		}
+		update.Add(p.UpdatedAt)
+		update.Dirty = true
+
+	} else {
+		if update.Dirty {
+			if _, err := update.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := update.WriteString(TableGroupPermissionsColumnUpdatedAt); err != nil {
+			return "", nil, err
+		}
+		if _, err := update.WriteString("=NOW()"); err != nil {
+			return "", nil, err
+		}
+	}
+
+	if p.UpdatedBy.Valid {
+		if update.Dirty {
+			if _, err := update.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := update.WriteString(TableGroupPermissionsColumnUpdatedBy); err != nil {
+			return "", nil, err
+		}
+		if _, err := update.WriteString("="); err != nil {
+			return "", nil, err
+		}
+		if err := update.WritePlaceholder(); err != nil {
+			return "", nil, err
+		}
+		update.Add(p.UpdatedBy)
+		update.Dirty = true
+	}
+
+	if !update.Dirty {
+		return "", nil, errors.New("GroupPermissions update failure, nothing to update")
+	}
+	buf.WriteString(" SET ")
+	buf.ReadFrom(update)
+	buf.WriteString(" WHERE ")
+	update.WriteString(TableGroupPermissionsColumnGroupID)
+	update.WriteString("=")
+	update.WritePlaceholder()
+	update.Add(groupPermissionsGroupID)
+	update.WriteString(" AND ")
+	update.WriteString(TableGroupPermissionsColumnPermissionSubsystem)
+	update.WriteString("=")
+	update.WritePlaceholder()
+	update.Add(groupPermissionsPermissionSubsystem)
+	update.WriteString(" AND ")
+	update.WriteString(TableGroupPermissionsColumnPermissionModule)
+	update.WriteString("=")
+	update.WritePlaceholder()
+	update.Add(groupPermissionsPermissionModule)
+	update.WriteString(" AND ")
+	update.WriteString(TableGroupPermissionsColumnPermissionAction)
+	update.WriteString("=")
+	update.WritePlaceholder()
+	update.Add(groupPermissionsPermissionAction)
+	buf.ReadFrom(update)
+	buf.WriteString(" RETURNING ")
+	buf.WriteString(strings.Join(r.Columns, ", "))
+	return buf.String(), update.Args(), nil
+}
+func (r *GroupPermissionsRepositoryBase) UpdateOneByGroupIDAndPermissionSubsystemAndPermissionModuleAndPermissionAction(ctx context.Context, groupPermissionsGroupID int64, groupPermissionsPermissionSubsystem string, groupPermissionsPermissionModule string, groupPermissionsPermissionAction string, p *GroupPermissionsPatch) (*GroupPermissionsEntity, error) {
+	query, args, err := r.UpdateOneByGroupIDAndPermissionSubsystemAndPermissionModuleAndPermissionActionQuery(groupPermissionsGroupID, groupPermissionsPermissionSubsystem, groupPermissionsPermissionModule, groupPermissionsPermissionAction, p)
+	if err != nil {
+		return nil, err
+	}
+	var ent GroupPermissionsEntity
+	props, err := ent.Props(r.Columns...)
+	if err != nil {
+		return nil, err
+	}
+	err = r.DB.QueryRowContext(ctx, query, args...).Scan(props...)
+	if err != nil {
+		if r.Debug {
+			r.Log.Log("level", "error", "timestamp", time.Now().Format(time.RFC3339), "msg", "insert query failure", "query", query, "table", r.Table, "error", err.Error())
+		}
+		return nil, err
+	}
+
+	if r.Debug {
+		r.Log.Log("level", "debug", "timestamp", time.Now().Format(time.RFC3339), "msg", "insert query success", "query", query, "table", r.Table)
+	}
+
+	return &ent, nil
+}
+func (r *GroupPermissionsRepositoryBase) UpsertQuery(e *GroupPermissionsEntity, p *GroupPermissionsPatch, inf ...string) (string, []interface{}, error) {
+	upsert := NewComposer(16)
+	columns := bytes.NewBuffer(nil)
+	buf := bytes.NewBufferString("INSERT INTO ")
+	buf.WriteString(r.Table)
+
+	if !e.CreatedAt.IsZero() {
+		if columns.Len() > 0 {
+			if _, err := columns.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := columns.WriteString(TableGroupPermissionsColumnCreatedAt); err != nil {
+			return "", nil, err
+		}
+		if upsert.Dirty {
+			if _, err := upsert.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if err := upsert.WritePlaceholder(); err != nil {
+			return "", nil, err
+		}
+		upsert.Add(e.CreatedAt)
+		upsert.Dirty = true
+	}
+
+	if columns.Len() > 0 {
+		if _, err := columns.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if _, err := columns.WriteString(TableGroupPermissionsColumnCreatedBy); err != nil {
+		return "", nil, err
+	}
+	if upsert.Dirty {
+		if _, err := upsert.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if err := upsert.WritePlaceholder(); err != nil {
+		return "", nil, err
+	}
+	upsert.Add(e.CreatedBy)
+	upsert.Dirty = true
+
+	if columns.Len() > 0 {
+		if _, err := columns.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if _, err := columns.WriteString(TableGroupPermissionsColumnGroupID); err != nil {
+		return "", nil, err
+	}
+	if upsert.Dirty {
+		if _, err := upsert.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if err := upsert.WritePlaceholder(); err != nil {
+		return "", nil, err
+	}
+	upsert.Add(e.GroupID)
+	upsert.Dirty = true
+
+	if columns.Len() > 0 {
+		if _, err := columns.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if _, err := columns.WriteString(TableGroupPermissionsColumnPermissionAction); err != nil {
+		return "", nil, err
+	}
+	if upsert.Dirty {
+		if _, err := upsert.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if err := upsert.WritePlaceholder(); err != nil {
+		return "", nil, err
+	}
+	upsert.Add(e.PermissionAction)
+	upsert.Dirty = true
+
+	if columns.Len() > 0 {
+		if _, err := columns.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if _, err := columns.WriteString(TableGroupPermissionsColumnPermissionModule); err != nil {
+		return "", nil, err
+	}
+	if upsert.Dirty {
+		if _, err := upsert.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if err := upsert.WritePlaceholder(); err != nil {
+		return "", nil, err
+	}
+	upsert.Add(e.PermissionModule)
+	upsert.Dirty = true
+
+	if columns.Len() > 0 {
+		if _, err := columns.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if _, err := columns.WriteString(TableGroupPermissionsColumnPermissionSubsystem); err != nil {
+		return "", nil, err
+	}
+	if upsert.Dirty {
+		if _, err := upsert.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if err := upsert.WritePlaceholder(); err != nil {
+		return "", nil, err
+	}
+	upsert.Add(e.PermissionSubsystem)
+	upsert.Dirty = true
+
+	if e.UpdatedAt.Valid {
+		if columns.Len() > 0 {
+			if _, err := columns.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := columns.WriteString(TableGroupPermissionsColumnUpdatedAt); err != nil {
+			return "", nil, err
+		}
+		if upsert.Dirty {
+			if _, err := upsert.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if err := upsert.WritePlaceholder(); err != nil {
+			return "", nil, err
+		}
+		upsert.Add(e.UpdatedAt)
+		upsert.Dirty = true
+	}
+
+	if columns.Len() > 0 {
+		if _, err := columns.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if _, err := columns.WriteString(TableGroupPermissionsColumnUpdatedBy); err != nil {
+		return "", nil, err
+	}
+	if upsert.Dirty {
+		if _, err := upsert.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if err := upsert.WritePlaceholder(); err != nil {
+		return "", nil, err
+	}
+	upsert.Add(e.UpdatedBy)
+	upsert.Dirty = true
+
+	if upsert.Dirty {
+		buf.WriteString(" (")
+		buf.ReadFrom(columns)
+		buf.WriteString(") VALUES (")
+		buf.ReadFrom(upsert)
+		buf.WriteString(")")
+	}
+	buf.WriteString(" ON CONFLICT ")
+	if len(inf) > 0 {
+		upsert.Dirty = false
+		if p.CreatedAt.Valid {
+			if upsert.Dirty {
+				if _, err := upsert.WriteString(", "); err != nil {
+					return "", nil, err
+				}
+			}
+			if _, err := upsert.WriteString(TableGroupPermissionsColumnCreatedAt); err != nil {
+				return "", nil, err
+			}
+			if _, err := upsert.WriteString("="); err != nil {
+				return "", nil, err
+			}
+			if err := upsert.WritePlaceholder(); err != nil {
+				return "", nil, err
+			}
+			upsert.Add(p.CreatedAt)
+			upsert.Dirty = true
+
+		}
+
+		if p.CreatedBy.Valid {
+			if upsert.Dirty {
+				if _, err := upsert.WriteString(", "); err != nil {
+					return "", nil, err
+				}
+			}
+			if _, err := upsert.WriteString(TableGroupPermissionsColumnCreatedBy); err != nil {
+				return "", nil, err
+			}
+			if _, err := upsert.WriteString("="); err != nil {
+				return "", nil, err
+			}
+			if err := upsert.WritePlaceholder(); err != nil {
+				return "", nil, err
+			}
+			upsert.Add(p.CreatedBy)
+			upsert.Dirty = true
+		}
+
+		if p.GroupID.Valid {
+			if upsert.Dirty {
+				if _, err := upsert.WriteString(", "); err != nil {
+					return "", nil, err
+				}
+			}
+			if _, err := upsert.WriteString(TableGroupPermissionsColumnGroupID); err != nil {
+				return "", nil, err
+			}
+			if _, err := upsert.WriteString("="); err != nil {
+				return "", nil, err
+			}
+			if err := upsert.WritePlaceholder(); err != nil {
+				return "", nil, err
+			}
+			upsert.Add(p.GroupID)
+			upsert.Dirty = true
+		}
+
+		if p.PermissionAction.Valid {
+			if upsert.Dirty {
+				if _, err := upsert.WriteString(", "); err != nil {
+					return "", nil, err
+				}
+			}
+			if _, err := upsert.WriteString(TableGroupPermissionsColumnPermissionAction); err != nil {
+				return "", nil, err
+			}
+			if _, err := upsert.WriteString("="); err != nil {
+				return "", nil, err
+			}
+			if err := upsert.WritePlaceholder(); err != nil {
+				return "", nil, err
+			}
+			upsert.Add(p.PermissionAction)
+			upsert.Dirty = true
+		}
+
+		if p.PermissionModule.Valid {
+			if upsert.Dirty {
+				if _, err := upsert.WriteString(", "); err != nil {
+					return "", nil, err
+				}
+			}
+			if _, err := upsert.WriteString(TableGroupPermissionsColumnPermissionModule); err != nil {
+				return "", nil, err
+			}
+			if _, err := upsert.WriteString("="); err != nil {
+				return "", nil, err
+			}
+			if err := upsert.WritePlaceholder(); err != nil {
+				return "", nil, err
+			}
+			upsert.Add(p.PermissionModule)
+			upsert.Dirty = true
+		}
+
+		if p.PermissionSubsystem.Valid {
+			if upsert.Dirty {
+				if _, err := upsert.WriteString(", "); err != nil {
+					return "", nil, err
+				}
+			}
+			if _, err := upsert.WriteString(TableGroupPermissionsColumnPermissionSubsystem); err != nil {
+				return "", nil, err
+			}
+			if _, err := upsert.WriteString("="); err != nil {
+				return "", nil, err
+			}
+			if err := upsert.WritePlaceholder(); err != nil {
+				return "", nil, err
+			}
+			upsert.Add(p.PermissionSubsystem)
+			upsert.Dirty = true
+		}
+
+		if p.UpdatedAt.Valid {
+			if upsert.Dirty {
+				if _, err := upsert.WriteString(", "); err != nil {
+					return "", nil, err
+				}
+			}
+			if _, err := upsert.WriteString(TableGroupPermissionsColumnUpdatedAt); err != nil {
+				return "", nil, err
+			}
+			if _, err := upsert.WriteString("="); err != nil {
+				return "", nil, err
+			}
+			if err := upsert.WritePlaceholder(); err != nil {
+				return "", nil, err
+			}
+			upsert.Add(p.UpdatedAt)
+			upsert.Dirty = true
+
+		} else {
+			if upsert.Dirty {
+				if _, err := upsert.WriteString(", "); err != nil {
+					return "", nil, err
+				}
+			}
+			if _, err := upsert.WriteString(TableGroupPermissionsColumnUpdatedAt); err != nil {
+				return "", nil, err
+			}
+			if _, err := upsert.WriteString("=NOW()"); err != nil {
+				return "", nil, err
+			}
+		}
+
+		if p.UpdatedBy.Valid {
+			if upsert.Dirty {
+				if _, err := upsert.WriteString(", "); err != nil {
+					return "", nil, err
+				}
+			}
+			if _, err := upsert.WriteString(TableGroupPermissionsColumnUpdatedBy); err != nil {
+				return "", nil, err
+			}
+			if _, err := upsert.WriteString("="); err != nil {
+				return "", nil, err
+			}
+			if err := upsert.WritePlaceholder(); err != nil {
+				return "", nil, err
+			}
+			upsert.Add(p.UpdatedBy)
+			upsert.Dirty = true
+		}
+
+	}
+
+	if len(inf) > 0 && upsert.Dirty {
+		buf.WriteString("(")
+		for j, i := range inf {
+			if j != 0 {
+				buf.WriteString(", ")
+			}
+			buf.WriteString(i)
+		}
+		buf.WriteString(")")
+		buf.WriteString(" DO UPDATE SET ")
+		buf.ReadFrom(upsert)
+	} else {
+		buf.WriteString(" DO NOTHING ")
+	}
+	if upsert.Dirty {
+		if len(r.Columns) > 0 {
+			buf.WriteString(" RETURNING ")
+			buf.WriteString(strings.Join(r.Columns, ", "))
+		}
+	}
+	return buf.String(), upsert.Args(), nil
+}
+func (r *GroupPermissionsRepositoryBase) Upsert(ctx context.Context, e *GroupPermissionsEntity, p *GroupPermissionsPatch, inf ...string) (*GroupPermissionsEntity, error) {
+	query, args, err := r.UpsertQuery(e, p, inf...)
+	if err != nil {
+		return nil, err
+	}
+	if err := r.DB.QueryRowContext(ctx, query, args...).Scan(&e.CreatedAt,
+		&e.CreatedBy,
+		&e.GroupID,
+		&e.PermissionAction,
+		&e.PermissionModule,
+		&e.PermissionSubsystem,
+		&e.UpdatedAt,
+		&e.UpdatedBy,
+	); err != nil {
+		if r.Debug {
+			r.Log.Log("level", "error", "timestamp", time.Now().Format(time.RFC3339), "msg", "upsert query failure", "query", query, "table", r.Table, "error", err.Error())
+		}
+		return nil, err
+	}
+	if r.Debug {
+		r.Log.Log("level", "debug", "timestamp", time.Now().Format(time.RFC3339), "msg", "upsert query success", "query", query, "table", r.Table)
+	}
+	return e, nil
+}
+
 func (r *GroupPermissionsRepositoryBase) Count(ctx context.Context, c *GroupPermissionsCriteria) (int64, error) {
 	query, args, err := r.FindQuery([]string{"COUNT(*)"}, c)
 	if err != nil {
@@ -3790,32 +6699,36 @@ func (r *GroupPermissionsRepositoryBase) Count(ctx context.Context, c *GroupPerm
 	var count int64
 	if err := r.DB.QueryRowContext(ctx, query, args...).Scan(&count); err != nil {
 		if r.Debug {
-			r.Log.Log("level", "error", "timestamp", time.Now().Format(time.RFC3339), "msg", "insert query failure", "query", query, "table", r.Table, "error", err.Error())
+			r.Log.Log("level", "error", "timestamp", time.Now().Format(time.RFC3339), "msg", "count query failure", "query", query, "table", r.Table, "error", err.Error())
 		}
 		return 0, err
 	}
 
 	if r.Debug {
-		r.Log.Log("level", "debug", "timestamp", time.Now().Format(time.RFC3339), "msg", "insert query success", "query", query, "table", r.Table)
+		r.Log.Log("level", "debug", "timestamp", time.Now().Format(time.RFC3339), "msg", "count query success", "query", query, "table", r.Table)
 	}
 
 	return count, nil
 }
 
 const (
-	TableUserPermissions                                                                          = "charon.user_permissions"
-	TableUserPermissionsColumnCreatedAt                                                           = "created_at"
-	TableUserPermissionsColumnCreatedBy                                                           = "created_by"
-	TableUserPermissionsColumnPermissionAction                                                    = "permission_action"
-	TableUserPermissionsColumnPermissionModule                                                    = "permission_module"
-	TableUserPermissionsColumnPermissionSubsystem                                                 = "permission_subsystem"
-	TableUserPermissionsColumnUpdatedAt                                                           = "updated_at"
-	TableUserPermissionsColumnUpdatedBy                                                           = "updated_by"
-	TableUserPermissionsColumnUserID                                                              = "user_id"
-	TableUserPermissionsConstraintCreatedByForeignKey                                             = "charon.user_permissions_created_by_fkey"
-	TableUserPermissionsConstraintUpdatedByForeignKey                                             = "charon.user_permissions_updated_by_fkey"
-	TableUserPermissionsConstraintUserIDForeignKey                                                = "charon.user_permissions_user_id_fkey"
-	TableUserPermissionsConstraintPermissionSubsystemPermissionModulePermissionActionForeignKey   = "charon.user_permissions_subsystem_module_action_fkey"
+	TableUserPermissions                              = "charon.user_permissions"
+	TableUserPermissionsColumnCreatedAt               = "created_at"
+	TableUserPermissionsColumnCreatedBy               = "created_by"
+	TableUserPermissionsColumnPermissionAction        = "permission_action"
+	TableUserPermissionsColumnPermissionModule        = "permission_module"
+	TableUserPermissionsColumnPermissionSubsystem     = "permission_subsystem"
+	TableUserPermissionsColumnUpdatedAt               = "updated_at"
+	TableUserPermissionsColumnUpdatedBy               = "updated_by"
+	TableUserPermissionsColumnUserID                  = "user_id"
+	TableUserPermissionsConstraintCreatedByForeignKey = "charon.user_permissions_created_by_fkey"
+
+	TableUserPermissionsConstraintUpdatedByForeignKey = "charon.user_permissions_updated_by_fkey"
+
+	TableUserPermissionsConstraintUserIDForeignKey = "charon.user_permissions_user_id_fkey"
+
+	TableUserPermissionsConstraintPermissionSubsystemPermissionModulePermissionActionForeignKey = "charon.user_permissions_subsystem_module_action_fkey"
+
 	TableUserPermissionsConstraintUserIDPermissionSubsystemPermissionModulePermissionActionUnique = "charon.user_permissions_user_id_subsystem_module_action_key"
 )
 
@@ -3880,6 +6793,7 @@ func (e *UserPermissionsEntity) Prop(cn string) (interface{}, bool) {
 		return nil, false
 	}
 }
+
 func (e *UserPermissionsEntity) Props(cns ...string) ([]interface{}, error) {
 	res := make([]interface{}, 0, len(cns))
 	for _, cn := range cns {
@@ -3947,15 +6861,16 @@ func (i *UserPermissionsIterator) UserPermissions() (*UserPermissionsEntity, err
 type UserPermissionsCriteria struct {
 	Offset, Limit       int64
 	Sort                map[string]bool
-	CreatedAt           pq.NullTime
+	CreatedAt           *qtypes.Timestamp
 	CreatedBy           *qtypes.Int64
 	PermissionAction    *qtypes.String
 	PermissionModule    *qtypes.String
 	PermissionSubsystem *qtypes.String
-	UpdatedAt           pq.NullTime
+	UpdatedAt           *qtypes.Timestamp
 	UpdatedBy           *qtypes.Int64
 	UserID              *qtypes.Int64
 }
+
 type UserPermissionsPatch struct {
 	CreatedAt           pq.NullTime
 	CreatedBy           ntypes.Int64
@@ -3970,8 +6885,7 @@ type UserPermissionsPatch struct {
 func ScanUserPermissionsRows(rows *sql.Rows) (entities []*UserPermissionsEntity, err error) {
 	for rows.Next() {
 		var ent UserPermissionsEntity
-		err = rows.Scan(
-			&ent.CreatedAt,
+		err = rows.Scan(&ent.CreatedAt,
 			&ent.CreatedBy,
 			&ent.PermissionAction,
 			&ent.PermissionModule,
@@ -4002,172 +6916,180 @@ type UserPermissionsRepositoryBase struct {
 }
 
 func (r *UserPermissionsRepositoryBase) InsertQuery(e *UserPermissionsEntity) (string, []interface{}, error) {
-	ins := NewComposer(8)
-	buf := bytes.NewBufferString("INSERT INTO " + r.Table)
-	col := bytes.NewBuffer(nil)
+	insert := NewComposer(8)
+	columns := bytes.NewBuffer(nil)
+	buf := bytes.NewBufferString("INSERT INTO ")
+	buf.WriteString(r.Table)
+
 	if !e.CreatedAt.IsZero() {
-		if col.Len() > 0 {
-			if _, err := col.WriteString(", "); err != nil {
+		if columns.Len() > 0 {
+			if _, err := columns.WriteString(", "); err != nil {
 				return "", nil, err
 			}
 		}
-		if _, err := col.WriteString(TableUserPermissionsColumnCreatedAt); err != nil {
+		if _, err := columns.WriteString(TableUserPermissionsColumnCreatedAt); err != nil {
 			return "", nil, err
 		}
-		if ins.Dirty {
-			if _, err := ins.WriteString(", "); err != nil {
+		if insert.Dirty {
+			if _, err := insert.WriteString(", "); err != nil {
 				return "", nil, err
 			}
 		}
-		if err := ins.WritePlaceholder(); err != nil {
+		if err := insert.WritePlaceholder(); err != nil {
 			return "", nil, err
 		}
-		ins.Add(e.CreatedAt)
-		ins.Dirty = true
+		insert.Add(e.CreatedAt)
+		insert.Dirty = true
 	}
 
-	if col.Len() > 0 {
-		if _, err := col.WriteString(", "); err != nil {
+	if columns.Len() > 0 {
+		if _, err := columns.WriteString(", "); err != nil {
 			return "", nil, err
 		}
 	}
-	if _, err := col.WriteString(TableUserPermissionsColumnCreatedBy); err != nil {
+	if _, err := columns.WriteString(TableUserPermissionsColumnCreatedBy); err != nil {
 		return "", nil, err
 	}
-	if ins.Dirty {
-		if _, err := ins.WriteString(", "); err != nil {
+	if insert.Dirty {
+		if _, err := insert.WriteString(", "); err != nil {
 			return "", nil, err
 		}
 	}
-	if err := ins.WritePlaceholder(); err != nil {
+	if err := insert.WritePlaceholder(); err != nil {
 		return "", nil, err
 	}
-	ins.Add(e.CreatedBy)
-	ins.Dirty = true
-	if col.Len() > 0 {
-		if _, err := col.WriteString(", "); err != nil {
+	insert.Add(e.CreatedBy)
+	insert.Dirty = true
+
+	if columns.Len() > 0 {
+		if _, err := columns.WriteString(", "); err != nil {
 			return "", nil, err
 		}
 	}
-	if _, err := col.WriteString(TableUserPermissionsColumnPermissionAction); err != nil {
+	if _, err := columns.WriteString(TableUserPermissionsColumnPermissionAction); err != nil {
 		return "", nil, err
 	}
-	if ins.Dirty {
-		if _, err := ins.WriteString(", "); err != nil {
+	if insert.Dirty {
+		if _, err := insert.WriteString(", "); err != nil {
 			return "", nil, err
 		}
 	}
-	if err := ins.WritePlaceholder(); err != nil {
+	if err := insert.WritePlaceholder(); err != nil {
 		return "", nil, err
 	}
-	ins.Add(e.PermissionAction)
-	ins.Dirty = true
-	if col.Len() > 0 {
-		if _, err := col.WriteString(", "); err != nil {
+	insert.Add(e.PermissionAction)
+	insert.Dirty = true
+
+	if columns.Len() > 0 {
+		if _, err := columns.WriteString(", "); err != nil {
 			return "", nil, err
 		}
 	}
-	if _, err := col.WriteString(TableUserPermissionsColumnPermissionModule); err != nil {
+	if _, err := columns.WriteString(TableUserPermissionsColumnPermissionModule); err != nil {
 		return "", nil, err
 	}
-	if ins.Dirty {
-		if _, err := ins.WriteString(", "); err != nil {
+	if insert.Dirty {
+		if _, err := insert.WriteString(", "); err != nil {
 			return "", nil, err
 		}
 	}
-	if err := ins.WritePlaceholder(); err != nil {
+	if err := insert.WritePlaceholder(); err != nil {
 		return "", nil, err
 	}
-	ins.Add(e.PermissionModule)
-	ins.Dirty = true
-	if col.Len() > 0 {
-		if _, err := col.WriteString(", "); err != nil {
+	insert.Add(e.PermissionModule)
+	insert.Dirty = true
+
+	if columns.Len() > 0 {
+		if _, err := columns.WriteString(", "); err != nil {
 			return "", nil, err
 		}
 	}
-	if _, err := col.WriteString(TableUserPermissionsColumnPermissionSubsystem); err != nil {
+	if _, err := columns.WriteString(TableUserPermissionsColumnPermissionSubsystem); err != nil {
 		return "", nil, err
 	}
-	if ins.Dirty {
-		if _, err := ins.WriteString(", "); err != nil {
+	if insert.Dirty {
+		if _, err := insert.WriteString(", "); err != nil {
 			return "", nil, err
 		}
 	}
-	if err := ins.WritePlaceholder(); err != nil {
+	if err := insert.WritePlaceholder(); err != nil {
 		return "", nil, err
 	}
-	ins.Add(e.PermissionSubsystem)
-	ins.Dirty = true
+	insert.Add(e.PermissionSubsystem)
+	insert.Dirty = true
+
 	if e.UpdatedAt.Valid {
-		if col.Len() > 0 {
-			if _, err := col.WriteString(", "); err != nil {
+		if columns.Len() > 0 {
+			if _, err := columns.WriteString(", "); err != nil {
 				return "", nil, err
 			}
 		}
-		if _, err := col.WriteString(TableUserPermissionsColumnUpdatedAt); err != nil {
+		if _, err := columns.WriteString(TableUserPermissionsColumnUpdatedAt); err != nil {
 			return "", nil, err
 		}
-		if ins.Dirty {
-			if _, err := ins.WriteString(", "); err != nil {
+		if insert.Dirty {
+			if _, err := insert.WriteString(", "); err != nil {
 				return "", nil, err
 			}
 		}
-		if err := ins.WritePlaceholder(); err != nil {
+		if err := insert.WritePlaceholder(); err != nil {
 			return "", nil, err
 		}
-		ins.Add(e.UpdatedAt)
-		ins.Dirty = true
+		insert.Add(e.UpdatedAt)
+		insert.Dirty = true
 	}
 
-	if col.Len() > 0 {
-		if _, err := col.WriteString(", "); err != nil {
+	if columns.Len() > 0 {
+		if _, err := columns.WriteString(", "); err != nil {
 			return "", nil, err
 		}
 	}
-	if _, err := col.WriteString(TableUserPermissionsColumnUpdatedBy); err != nil {
+	if _, err := columns.WriteString(TableUserPermissionsColumnUpdatedBy); err != nil {
 		return "", nil, err
 	}
-	if ins.Dirty {
-		if _, err := ins.WriteString(", "); err != nil {
+	if insert.Dirty {
+		if _, err := insert.WriteString(", "); err != nil {
 			return "", nil, err
 		}
 	}
-	if err := ins.WritePlaceholder(); err != nil {
+	if err := insert.WritePlaceholder(); err != nil {
 		return "", nil, err
 	}
-	ins.Add(e.UpdatedBy)
-	ins.Dirty = true
-	if col.Len() > 0 {
-		if _, err := col.WriteString(", "); err != nil {
+	insert.Add(e.UpdatedBy)
+	insert.Dirty = true
+
+	if columns.Len() > 0 {
+		if _, err := columns.WriteString(", "); err != nil {
 			return "", nil, err
 		}
 	}
-	if _, err := col.WriteString(TableUserPermissionsColumnUserID); err != nil {
+	if _, err := columns.WriteString(TableUserPermissionsColumnUserID); err != nil {
 		return "", nil, err
 	}
-	if ins.Dirty {
-		if _, err := ins.WriteString(", "); err != nil {
+	if insert.Dirty {
+		if _, err := insert.WriteString(", "); err != nil {
 			return "", nil, err
 		}
 	}
-	if err := ins.WritePlaceholder(); err != nil {
+	if err := insert.WritePlaceholder(); err != nil {
 		return "", nil, err
 	}
-	ins.Add(e.UserID)
-	ins.Dirty = true
-	if col.Len() > 0 {
+	insert.Add(e.UserID)
+	insert.Dirty = true
+	if columns.Len() > 0 {
 		buf.WriteString(" (")
-		buf.ReadFrom(col)
+		buf.ReadFrom(columns)
 		buf.WriteString(") VALUES (")
-		buf.ReadFrom(ins)
+		buf.ReadFrom(insert)
 		buf.WriteString(") ")
 		if len(r.Columns) > 0 {
 			buf.WriteString("RETURNING ")
 			buf.WriteString(strings.Join(r.Columns, ", "))
 		}
 	}
-	return buf.String(), ins.Args(), nil
+	return buf.String(), insert.Args(), nil
 }
+
 func (r *UserPermissionsRepositoryBase) Insert(ctx context.Context, e *UserPermissionsEntity) (*UserPermissionsEntity, error) {
 	query, args, err := r.InsertQuery(e)
 	if err != nil {
@@ -4192,6 +7114,7 @@ func (r *UserPermissionsRepositoryBase) Insert(ctx context.Context, e *UserPermi
 	}
 	return e, nil
 }
+
 func (r *UserPermissionsRepositoryBase) FindQuery(s []string, c *UserPermissionsCriteria) (string, []interface{}, error) {
 	where := NewComposer(8)
 	buf := bytes.NewBufferString("SELECT ")
@@ -4199,45 +7122,20 @@ func (r *UserPermissionsRepositoryBase) FindQuery(s []string, c *UserPermissions
 	buf.WriteString(" FROM ")
 	buf.WriteString(r.Table)
 	buf.WriteString(" ")
-	if c.CreatedAt.Valid {
-		if where.Dirty {
-			where.WriteString(" AND ")
-		}
-		if _, err := where.WriteString(TableUserPermissionsColumnCreatedAt); err != nil {
-			return "", nil, err
-		}
-		if _, err := where.WriteString("="); err != nil {
-			return "", nil, err
-		}
-		if err := where.WritePlaceholder(); err != nil {
-			return "", nil, err
-		}
-		where.Add(c.CreatedAt)
-		where.Dirty = true
-	}
+	QueryTimestampWhereClause(c.CreatedAt, TableUserPermissionsColumnCreatedAt, where, And)
 
 	QueryInt64WhereClause(c.CreatedBy, TableUserPermissionsColumnCreatedBy, where, And)
+
 	QueryStringWhereClause(c.PermissionAction, TableUserPermissionsColumnPermissionAction, where, And)
+
 	QueryStringWhereClause(c.PermissionModule, TableUserPermissionsColumnPermissionModule, where, And)
+
 	QueryStringWhereClause(c.PermissionSubsystem, TableUserPermissionsColumnPermissionSubsystem, where, And)
-	if c.UpdatedAt.Valid {
-		if where.Dirty {
-			where.WriteString(" AND ")
-		}
-		if _, err := where.WriteString(TableUserPermissionsColumnUpdatedAt); err != nil {
-			return "", nil, err
-		}
-		if _, err := where.WriteString("="); err != nil {
-			return "", nil, err
-		}
-		if err := where.WritePlaceholder(); err != nil {
-			return "", nil, err
-		}
-		where.Add(c.UpdatedAt)
-		where.Dirty = true
-	}
+
+	QueryTimestampWhereClause(c.UpdatedAt, TableUserPermissionsColumnUpdatedAt, where, And)
 
 	QueryInt64WhereClause(c.UpdatedBy, TableUserPermissionsColumnUpdatedBy, where, And)
+
 	QueryInt64WhereClause(c.UserID, TableUserPermissionsColumnUserID, where, And)
 	if where.Dirty {
 		if _, err := buf.WriteString("WHERE "); err != nil {
@@ -4301,6 +7199,7 @@ func (r *UserPermissionsRepositoryBase) FindQuery(s []string, c *UserPermissions
 
 	return buf.String(), where.Args(), nil
 }
+
 func (r *UserPermissionsRepositoryBase) Find(ctx context.Context, c *UserPermissionsCriteria) ([]*UserPermissionsEntity, error) {
 	query, args, err := r.FindQuery(r.Columns, c)
 	if err != nil {
@@ -4309,18 +7208,19 @@ func (r *UserPermissionsRepositoryBase) Find(ctx context.Context, c *UserPermiss
 	rows, err := r.DB.QueryContext(ctx, query, args...)
 	if err != nil {
 		if r.Debug {
-			r.Log.Log("level", "error", "timestamp", time.Now().Format(time.RFC3339), "msg", "insert query failure", "query", query, "table", r.Table, "error", err.Error())
+			r.Log.Log("level", "error", "timestamp", time.Now().Format(time.RFC3339), "msg", "find query failure", "query", query, "table", r.Table, "error", err.Error())
 		}
 		return nil, err
 	}
 	defer rows.Close()
 
 	if r.Debug {
-		r.Log.Log("level", "debug", "timestamp", time.Now().Format(time.RFC3339), "msg", "insert query success", "query", query, "table", r.Table)
+		r.Log.Log("level", "debug", "timestamp", time.Now().Format(time.RFC3339), "msg", "find query success", "query", query, "table", r.Table)
 	}
 
 	return ScanUserPermissionsRows(rows)
 }
+
 func (r *UserPermissionsRepositoryBase) FindIter(ctx context.Context, c *UserPermissionsCriteria) (*UserPermissionsIterator, error) {
 	query, args, err := r.FindQuery(r.Columns, c)
 	if err != nil {
@@ -4373,6 +7273,617 @@ func (r *UserPermissionsRepositoryBase) FindOneByUserIDAndPermissionSubsystemAnd
 
 	return &ent, nil
 }
+func (r *UserPermissionsRepositoryBase) UpdateOneByUserIDAndPermissionSubsystemAndPermissionModuleAndPermissionActionQuery(userPermissionsUserID int64, userPermissionsPermissionSubsystem string, userPermissionsPermissionModule string, userPermissionsPermissionAction string, p *UserPermissionsPatch) (string, []interface{}, error) {
+	buf := bytes.NewBufferString("UPDATE ")
+	buf.WriteString(r.Table)
+	update := NewComposer(4)
+	if p.CreatedAt.Valid {
+		if update.Dirty {
+			if _, err := update.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := update.WriteString(TableUserPermissionsColumnCreatedAt); err != nil {
+			return "", nil, err
+		}
+		if _, err := update.WriteString("="); err != nil {
+			return "", nil, err
+		}
+		if err := update.WritePlaceholder(); err != nil {
+			return "", nil, err
+		}
+		update.Add(p.CreatedAt)
+		update.Dirty = true
+
+	}
+
+	if p.CreatedBy.Valid {
+		if update.Dirty {
+			if _, err := update.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := update.WriteString(TableUserPermissionsColumnCreatedBy); err != nil {
+			return "", nil, err
+		}
+		if _, err := update.WriteString("="); err != nil {
+			return "", nil, err
+		}
+		if err := update.WritePlaceholder(); err != nil {
+			return "", nil, err
+		}
+		update.Add(p.CreatedBy)
+		update.Dirty = true
+	}
+
+	if p.PermissionAction.Valid {
+		if update.Dirty {
+			if _, err := update.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := update.WriteString(TableUserPermissionsColumnPermissionAction); err != nil {
+			return "", nil, err
+		}
+		if _, err := update.WriteString("="); err != nil {
+			return "", nil, err
+		}
+		if err := update.WritePlaceholder(); err != nil {
+			return "", nil, err
+		}
+		update.Add(p.PermissionAction)
+		update.Dirty = true
+	}
+
+	if p.PermissionModule.Valid {
+		if update.Dirty {
+			if _, err := update.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := update.WriteString(TableUserPermissionsColumnPermissionModule); err != nil {
+			return "", nil, err
+		}
+		if _, err := update.WriteString("="); err != nil {
+			return "", nil, err
+		}
+		if err := update.WritePlaceholder(); err != nil {
+			return "", nil, err
+		}
+		update.Add(p.PermissionModule)
+		update.Dirty = true
+	}
+
+	if p.PermissionSubsystem.Valid {
+		if update.Dirty {
+			if _, err := update.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := update.WriteString(TableUserPermissionsColumnPermissionSubsystem); err != nil {
+			return "", nil, err
+		}
+		if _, err := update.WriteString("="); err != nil {
+			return "", nil, err
+		}
+		if err := update.WritePlaceholder(); err != nil {
+			return "", nil, err
+		}
+		update.Add(p.PermissionSubsystem)
+		update.Dirty = true
+	}
+
+	if p.UpdatedAt.Valid {
+		if update.Dirty {
+			if _, err := update.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := update.WriteString(TableUserPermissionsColumnUpdatedAt); err != nil {
+			return "", nil, err
+		}
+		if _, err := update.WriteString("="); err != nil {
+			return "", nil, err
+		}
+		if err := update.WritePlaceholder(); err != nil {
+			return "", nil, err
+		}
+		update.Add(p.UpdatedAt)
+		update.Dirty = true
+
+	} else {
+		if update.Dirty {
+			if _, err := update.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := update.WriteString(TableUserPermissionsColumnUpdatedAt); err != nil {
+			return "", nil, err
+		}
+		if _, err := update.WriteString("=NOW()"); err != nil {
+			return "", nil, err
+		}
+	}
+
+	if p.UpdatedBy.Valid {
+		if update.Dirty {
+			if _, err := update.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := update.WriteString(TableUserPermissionsColumnUpdatedBy); err != nil {
+			return "", nil, err
+		}
+		if _, err := update.WriteString("="); err != nil {
+			return "", nil, err
+		}
+		if err := update.WritePlaceholder(); err != nil {
+			return "", nil, err
+		}
+		update.Add(p.UpdatedBy)
+		update.Dirty = true
+	}
+
+	if p.UserID.Valid {
+		if update.Dirty {
+			if _, err := update.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := update.WriteString(TableUserPermissionsColumnUserID); err != nil {
+			return "", nil, err
+		}
+		if _, err := update.WriteString("="); err != nil {
+			return "", nil, err
+		}
+		if err := update.WritePlaceholder(); err != nil {
+			return "", nil, err
+		}
+		update.Add(p.UserID)
+		update.Dirty = true
+	}
+
+	if !update.Dirty {
+		return "", nil, errors.New("UserPermissions update failure, nothing to update")
+	}
+	buf.WriteString(" SET ")
+	buf.ReadFrom(update)
+	buf.WriteString(" WHERE ")
+	update.WriteString(TableUserPermissionsColumnUserID)
+	update.WriteString("=")
+	update.WritePlaceholder()
+	update.Add(userPermissionsUserID)
+	update.WriteString(" AND ")
+	update.WriteString(TableUserPermissionsColumnPermissionSubsystem)
+	update.WriteString("=")
+	update.WritePlaceholder()
+	update.Add(userPermissionsPermissionSubsystem)
+	update.WriteString(" AND ")
+	update.WriteString(TableUserPermissionsColumnPermissionModule)
+	update.WriteString("=")
+	update.WritePlaceholder()
+	update.Add(userPermissionsPermissionModule)
+	update.WriteString(" AND ")
+	update.WriteString(TableUserPermissionsColumnPermissionAction)
+	update.WriteString("=")
+	update.WritePlaceholder()
+	update.Add(userPermissionsPermissionAction)
+	buf.ReadFrom(update)
+	buf.WriteString(" RETURNING ")
+	buf.WriteString(strings.Join(r.Columns, ", "))
+	return buf.String(), update.Args(), nil
+}
+func (r *UserPermissionsRepositoryBase) UpdateOneByUserIDAndPermissionSubsystemAndPermissionModuleAndPermissionAction(ctx context.Context, userPermissionsUserID int64, userPermissionsPermissionSubsystem string, userPermissionsPermissionModule string, userPermissionsPermissionAction string, p *UserPermissionsPatch) (*UserPermissionsEntity, error) {
+	query, args, err := r.UpdateOneByUserIDAndPermissionSubsystemAndPermissionModuleAndPermissionActionQuery(userPermissionsUserID, userPermissionsPermissionSubsystem, userPermissionsPermissionModule, userPermissionsPermissionAction, p)
+	if err != nil {
+		return nil, err
+	}
+	var ent UserPermissionsEntity
+	props, err := ent.Props(r.Columns...)
+	if err != nil {
+		return nil, err
+	}
+	err = r.DB.QueryRowContext(ctx, query, args...).Scan(props...)
+	if err != nil {
+		if r.Debug {
+			r.Log.Log("level", "error", "timestamp", time.Now().Format(time.RFC3339), "msg", "insert query failure", "query", query, "table", r.Table, "error", err.Error())
+		}
+		return nil, err
+	}
+
+	if r.Debug {
+		r.Log.Log("level", "debug", "timestamp", time.Now().Format(time.RFC3339), "msg", "insert query success", "query", query, "table", r.Table)
+	}
+
+	return &ent, nil
+}
+func (r *UserPermissionsRepositoryBase) UpsertQuery(e *UserPermissionsEntity, p *UserPermissionsPatch, inf ...string) (string, []interface{}, error) {
+	upsert := NewComposer(16)
+	columns := bytes.NewBuffer(nil)
+	buf := bytes.NewBufferString("INSERT INTO ")
+	buf.WriteString(r.Table)
+
+	if !e.CreatedAt.IsZero() {
+		if columns.Len() > 0 {
+			if _, err := columns.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := columns.WriteString(TableUserPermissionsColumnCreatedAt); err != nil {
+			return "", nil, err
+		}
+		if upsert.Dirty {
+			if _, err := upsert.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if err := upsert.WritePlaceholder(); err != nil {
+			return "", nil, err
+		}
+		upsert.Add(e.CreatedAt)
+		upsert.Dirty = true
+	}
+
+	if columns.Len() > 0 {
+		if _, err := columns.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if _, err := columns.WriteString(TableUserPermissionsColumnCreatedBy); err != nil {
+		return "", nil, err
+	}
+	if upsert.Dirty {
+		if _, err := upsert.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if err := upsert.WritePlaceholder(); err != nil {
+		return "", nil, err
+	}
+	upsert.Add(e.CreatedBy)
+	upsert.Dirty = true
+
+	if columns.Len() > 0 {
+		if _, err := columns.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if _, err := columns.WriteString(TableUserPermissionsColumnPermissionAction); err != nil {
+		return "", nil, err
+	}
+	if upsert.Dirty {
+		if _, err := upsert.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if err := upsert.WritePlaceholder(); err != nil {
+		return "", nil, err
+	}
+	upsert.Add(e.PermissionAction)
+	upsert.Dirty = true
+
+	if columns.Len() > 0 {
+		if _, err := columns.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if _, err := columns.WriteString(TableUserPermissionsColumnPermissionModule); err != nil {
+		return "", nil, err
+	}
+	if upsert.Dirty {
+		if _, err := upsert.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if err := upsert.WritePlaceholder(); err != nil {
+		return "", nil, err
+	}
+	upsert.Add(e.PermissionModule)
+	upsert.Dirty = true
+
+	if columns.Len() > 0 {
+		if _, err := columns.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if _, err := columns.WriteString(TableUserPermissionsColumnPermissionSubsystem); err != nil {
+		return "", nil, err
+	}
+	if upsert.Dirty {
+		if _, err := upsert.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if err := upsert.WritePlaceholder(); err != nil {
+		return "", nil, err
+	}
+	upsert.Add(e.PermissionSubsystem)
+	upsert.Dirty = true
+
+	if e.UpdatedAt.Valid {
+		if columns.Len() > 0 {
+			if _, err := columns.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := columns.WriteString(TableUserPermissionsColumnUpdatedAt); err != nil {
+			return "", nil, err
+		}
+		if upsert.Dirty {
+			if _, err := upsert.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if err := upsert.WritePlaceholder(); err != nil {
+			return "", nil, err
+		}
+		upsert.Add(e.UpdatedAt)
+		upsert.Dirty = true
+	}
+
+	if columns.Len() > 0 {
+		if _, err := columns.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if _, err := columns.WriteString(TableUserPermissionsColumnUpdatedBy); err != nil {
+		return "", nil, err
+	}
+	if upsert.Dirty {
+		if _, err := upsert.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if err := upsert.WritePlaceholder(); err != nil {
+		return "", nil, err
+	}
+	upsert.Add(e.UpdatedBy)
+	upsert.Dirty = true
+
+	if columns.Len() > 0 {
+		if _, err := columns.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if _, err := columns.WriteString(TableUserPermissionsColumnUserID); err != nil {
+		return "", nil, err
+	}
+	if upsert.Dirty {
+		if _, err := upsert.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if err := upsert.WritePlaceholder(); err != nil {
+		return "", nil, err
+	}
+	upsert.Add(e.UserID)
+	upsert.Dirty = true
+
+	if upsert.Dirty {
+		buf.WriteString(" (")
+		buf.ReadFrom(columns)
+		buf.WriteString(") VALUES (")
+		buf.ReadFrom(upsert)
+		buf.WriteString(")")
+	}
+	buf.WriteString(" ON CONFLICT ")
+	if len(inf) > 0 {
+		upsert.Dirty = false
+		if p.CreatedAt.Valid {
+			if upsert.Dirty {
+				if _, err := upsert.WriteString(", "); err != nil {
+					return "", nil, err
+				}
+			}
+			if _, err := upsert.WriteString(TableUserPermissionsColumnCreatedAt); err != nil {
+				return "", nil, err
+			}
+			if _, err := upsert.WriteString("="); err != nil {
+				return "", nil, err
+			}
+			if err := upsert.WritePlaceholder(); err != nil {
+				return "", nil, err
+			}
+			upsert.Add(p.CreatedAt)
+			upsert.Dirty = true
+
+		}
+
+		if p.CreatedBy.Valid {
+			if upsert.Dirty {
+				if _, err := upsert.WriteString(", "); err != nil {
+					return "", nil, err
+				}
+			}
+			if _, err := upsert.WriteString(TableUserPermissionsColumnCreatedBy); err != nil {
+				return "", nil, err
+			}
+			if _, err := upsert.WriteString("="); err != nil {
+				return "", nil, err
+			}
+			if err := upsert.WritePlaceholder(); err != nil {
+				return "", nil, err
+			}
+			upsert.Add(p.CreatedBy)
+			upsert.Dirty = true
+		}
+
+		if p.PermissionAction.Valid {
+			if upsert.Dirty {
+				if _, err := upsert.WriteString(", "); err != nil {
+					return "", nil, err
+				}
+			}
+			if _, err := upsert.WriteString(TableUserPermissionsColumnPermissionAction); err != nil {
+				return "", nil, err
+			}
+			if _, err := upsert.WriteString("="); err != nil {
+				return "", nil, err
+			}
+			if err := upsert.WritePlaceholder(); err != nil {
+				return "", nil, err
+			}
+			upsert.Add(p.PermissionAction)
+			upsert.Dirty = true
+		}
+
+		if p.PermissionModule.Valid {
+			if upsert.Dirty {
+				if _, err := upsert.WriteString(", "); err != nil {
+					return "", nil, err
+				}
+			}
+			if _, err := upsert.WriteString(TableUserPermissionsColumnPermissionModule); err != nil {
+				return "", nil, err
+			}
+			if _, err := upsert.WriteString("="); err != nil {
+				return "", nil, err
+			}
+			if err := upsert.WritePlaceholder(); err != nil {
+				return "", nil, err
+			}
+			upsert.Add(p.PermissionModule)
+			upsert.Dirty = true
+		}
+
+		if p.PermissionSubsystem.Valid {
+			if upsert.Dirty {
+				if _, err := upsert.WriteString(", "); err != nil {
+					return "", nil, err
+				}
+			}
+			if _, err := upsert.WriteString(TableUserPermissionsColumnPermissionSubsystem); err != nil {
+				return "", nil, err
+			}
+			if _, err := upsert.WriteString("="); err != nil {
+				return "", nil, err
+			}
+			if err := upsert.WritePlaceholder(); err != nil {
+				return "", nil, err
+			}
+			upsert.Add(p.PermissionSubsystem)
+			upsert.Dirty = true
+		}
+
+		if p.UpdatedAt.Valid {
+			if upsert.Dirty {
+				if _, err := upsert.WriteString(", "); err != nil {
+					return "", nil, err
+				}
+			}
+			if _, err := upsert.WriteString(TableUserPermissionsColumnUpdatedAt); err != nil {
+				return "", nil, err
+			}
+			if _, err := upsert.WriteString("="); err != nil {
+				return "", nil, err
+			}
+			if err := upsert.WritePlaceholder(); err != nil {
+				return "", nil, err
+			}
+			upsert.Add(p.UpdatedAt)
+			upsert.Dirty = true
+
+		} else {
+			if upsert.Dirty {
+				if _, err := upsert.WriteString(", "); err != nil {
+					return "", nil, err
+				}
+			}
+			if _, err := upsert.WriteString(TableUserPermissionsColumnUpdatedAt); err != nil {
+				return "", nil, err
+			}
+			if _, err := upsert.WriteString("=NOW()"); err != nil {
+				return "", nil, err
+			}
+		}
+
+		if p.UpdatedBy.Valid {
+			if upsert.Dirty {
+				if _, err := upsert.WriteString(", "); err != nil {
+					return "", nil, err
+				}
+			}
+			if _, err := upsert.WriteString(TableUserPermissionsColumnUpdatedBy); err != nil {
+				return "", nil, err
+			}
+			if _, err := upsert.WriteString("="); err != nil {
+				return "", nil, err
+			}
+			if err := upsert.WritePlaceholder(); err != nil {
+				return "", nil, err
+			}
+			upsert.Add(p.UpdatedBy)
+			upsert.Dirty = true
+		}
+
+		if p.UserID.Valid {
+			if upsert.Dirty {
+				if _, err := upsert.WriteString(", "); err != nil {
+					return "", nil, err
+				}
+			}
+			if _, err := upsert.WriteString(TableUserPermissionsColumnUserID); err != nil {
+				return "", nil, err
+			}
+			if _, err := upsert.WriteString("="); err != nil {
+				return "", nil, err
+			}
+			if err := upsert.WritePlaceholder(); err != nil {
+				return "", nil, err
+			}
+			upsert.Add(p.UserID)
+			upsert.Dirty = true
+		}
+
+	}
+
+	if len(inf) > 0 && upsert.Dirty {
+		buf.WriteString("(")
+		for j, i := range inf {
+			if j != 0 {
+				buf.WriteString(", ")
+			}
+			buf.WriteString(i)
+		}
+		buf.WriteString(")")
+		buf.WriteString(" DO UPDATE SET ")
+		buf.ReadFrom(upsert)
+	} else {
+		buf.WriteString(" DO NOTHING ")
+	}
+	if upsert.Dirty {
+		if len(r.Columns) > 0 {
+			buf.WriteString(" RETURNING ")
+			buf.WriteString(strings.Join(r.Columns, ", "))
+		}
+	}
+	return buf.String(), upsert.Args(), nil
+}
+func (r *UserPermissionsRepositoryBase) Upsert(ctx context.Context, e *UserPermissionsEntity, p *UserPermissionsPatch, inf ...string) (*UserPermissionsEntity, error) {
+	query, args, err := r.UpsertQuery(e, p, inf...)
+	if err != nil {
+		return nil, err
+	}
+	if err := r.DB.QueryRowContext(ctx, query, args...).Scan(&e.CreatedAt,
+		&e.CreatedBy,
+		&e.PermissionAction,
+		&e.PermissionModule,
+		&e.PermissionSubsystem,
+		&e.UpdatedAt,
+		&e.UpdatedBy,
+		&e.UserID,
+	); err != nil {
+		if r.Debug {
+			r.Log.Log("level", "error", "timestamp", time.Now().Format(time.RFC3339), "msg", "upsert query failure", "query", query, "table", r.Table, "error", err.Error())
+		}
+		return nil, err
+	}
+	if r.Debug {
+		r.Log.Log("level", "debug", "timestamp", time.Now().Format(time.RFC3339), "msg", "upsert query success", "query", query, "table", r.Table)
+	}
+	return e, nil
+}
+
 func (r *UserPermissionsRepositoryBase) Count(ctx context.Context, c *UserPermissionsCriteria) (int64, error) {
 	query, args, err := r.FindQuery([]string{"COUNT(*)"}, c)
 	if err != nil {
@@ -4381,13 +7892,13 @@ func (r *UserPermissionsRepositoryBase) Count(ctx context.Context, c *UserPermis
 	var count int64
 	if err := r.DB.QueryRowContext(ctx, query, args...).Scan(&count); err != nil {
 		if r.Debug {
-			r.Log.Log("level", "error", "timestamp", time.Now().Format(time.RFC3339), "msg", "insert query failure", "query", query, "table", r.Table, "error", err.Error())
+			r.Log.Log("level", "error", "timestamp", time.Now().Format(time.RFC3339), "msg", "count query failure", "query", query, "table", r.Table, "error", err.Error())
 		}
 		return 0, err
 	}
 
 	if r.Debug {
-		r.Log.Log("level", "debug", "timestamp", time.Now().Format(time.RFC3339), "msg", "insert query success", "query", query, "table", r.Table)
+		r.Log.Log("level", "debug", "timestamp", time.Now().Format(time.RFC3339), "msg", "count query success", "query", query, "table", r.Table)
 	}
 
 	return count, nil
@@ -5188,7 +8699,495 @@ func QueryInt64WhereClause(i *qtypes.Int64, sel string, com *Composer, opt *Comp
 
 	return
 }
+func QueryFloat64WhereClause(i *qtypes.Float64, sel string, com *Composer, opt *CompositionOpts) (err error) {
+	if i == nil || !i.Valid {
+		return nil
+	}
+	switch i.Type {
+	case qtypes.QueryType_NULL:
+		if com.Dirty {
+			if _, err = com.WriteString(opt.Joint); err != nil {
+				return
+			}
+		}
+		com.WriteString(sel)
+		if i.Negation {
+			if _, err = com.WriteString(" IS NOT NULL"); err != nil {
+				return
+			}
+		} else {
+			if _, err = com.WriteString(" IS NULL"); err != nil {
+				return
+			}
+		}
+		com.Dirty = true
+		return
+	case qtypes.QueryType_EQUAL:
+		if com.Dirty {
+			if _, err = com.WriteString(opt.Joint); err != nil {
+				return
+			}
+		}
+		if _, err = com.WriteString(sel); err != nil {
+			return
+		}
+		if i.Negation {
+			if _, err = com.WriteString(" <> "); err != nil {
+				return
+			}
+		} else {
+			if _, err = com.WriteString(" = "); err != nil {
+				return
+			}
+		}
+		if err = com.WritePlaceholder(); err != nil {
+			return
+		}
+		com.Add(i.Value())
+		com.Dirty = true
+	case qtypes.QueryType_GREATER:
+		if com.Dirty {
+			if _, err = com.WriteString(opt.Joint); err != nil {
+				return
+			}
+		}
+		if _, err = com.WriteString(sel); err != nil {
+			return
+		}
+		if i.Negation {
+			if _, err = com.WriteString(" <= "); err != nil {
+				return
+			}
+		} else {
+			if _, err = com.WriteString(" > "); err != nil {
+				return
+			}
+		}
+		if err = com.WritePlaceholder(); err != nil {
+			return
+		}
+		com.Add(i.Value())
+		com.Dirty = true
+	case qtypes.QueryType_GREATER_EQUAL:
+		if com.Dirty {
+			if _, err = com.WriteString(opt.Joint); err != nil {
+				return
+			}
+		}
+		if _, err = com.WriteString(sel); err != nil {
+			return
+		}
+		if i.Negation {
+			if _, err = com.WriteString(" < "); err != nil {
+				return
+			}
+		} else {
+			if _, err = com.WriteString(" >= "); err != nil {
+				return
+			}
+		}
+		if err = com.WritePlaceholder(); err != nil {
+			return
+		}
+		com.Add(i.Value())
+		com.Dirty = true
+	case qtypes.QueryType_LESS:
+		if com.Dirty {
+			if _, err = com.WriteString(opt.Joint); err != nil {
+				return
+			}
+		}
+		if _, err = com.WriteString(sel); err != nil {
+			return
+		}
+		if i.Negation {
+			if _, err = com.WriteString(" >= "); err != nil {
+				return
+			}
+		} else {
+			if _, err = com.WriteString(" < "); err != nil {
+				return
+			}
+		}
+		if err = com.WritePlaceholder(); err != nil {
+			return
+		}
+		com.Add(i.Value())
+		com.Dirty = true
+	case qtypes.QueryType_LESS_EQUAL:
+		if com.Dirty {
+			if _, err = com.WriteString(opt.Joint); err != nil {
+				return
+			}
+		}
+		if _, err = com.WriteString(sel); err != nil {
+			return
+		}
+		if i.Negation {
+			if _, err = com.WriteString(" > "); err != nil {
+				return
+			}
+		} else {
+			if _, err = com.WriteString(" <= "); err != nil {
+				return
+			}
+		}
+		if err = com.WritePlaceholder(); err != nil {
+			return
+		}
+		com.Add(i.Value())
+		com.Dirty = true
+	case qtypes.QueryType_CONTAINS:
+		if !i.Negation {
+			if com.Dirty {
+				if _, err = com.WriteString(opt.Joint); err != nil {
+					return
+				}
+			}
+			if _, err = com.WriteString(sel); err != nil {
+				return
+			}
+			if _, err = com.WriteString(" @> "); err != nil {
+				return
+			}
+			if err = com.WritePlaceholder(); err != nil {
+				return
+			}
+			switch opt.IsJSON {
+			case true:
+				com.Add(JSONArrayFloat64(i.Values))
+			case false:
+				com.Add(pq.Float64Array(i.Values))
+			}
+			com.Dirty = true
+		}
+	case qtypes.QueryType_IS_CONTAINED_BY:
+		if !i.Negation {
+			if com.Dirty {
+				if _, err = com.WriteString(opt.Joint); err != nil {
+					return
+				}
+			}
+			if _, err = com.WriteString(sel); err != nil {
+				return
+			}
+			if _, err = com.WriteString(" <@ "); err != nil {
+				return
+			}
+			if err = com.WritePlaceholder(); err != nil {
+				return
+			}
+			switch opt.IsJSON {
+			case true:
+				com.Add(JSONArrayFloat64(i.Values))
+			case false:
+				com.Add(pq.Float64Array(i.Values))
+			}
+			com.Dirty = true
+		}
+	case qtypes.QueryType_OVERLAP:
+		if !i.Negation {
+			if com.Dirty {
+				if _, err = com.WriteString(opt.Joint); err != nil {
+					return
+				}
+			}
+			if _, err = com.WriteString(sel); err != nil {
+				return
+			}
+			if _, err = com.WriteString(" && "); err != nil {
+				return
+			}
+			if err = com.WritePlaceholder(); err != nil {
+				return
+			}
+			switch opt.IsJSON {
+			case true:
+				com.Add(JSONArrayFloat64(i.Values))
+			case false:
+				com.Add(pq.Float64Array(i.Values))
+			}
+			com.Dirty = true
+		}
+	case qtypes.QueryType_HAS_ANY_ELEMENT:
+		if !i.Negation {
+			if com.Dirty {
+				if _, err = com.WriteString(opt.Joint); err != nil {
+					return
+				}
+			}
+			if _, err = com.WriteString(sel); err != nil {
+				return
+			}
+			if _, err = com.WriteString(" ?| "); err != nil {
+				return
+			}
+			if err = com.WritePlaceholder(); err != nil {
+				return
+			}
+			switch opt.IsJSON {
+			case true:
+				com.Add(JSONArrayFloat64(i.Values))
+			case false:
+				com.Add(pq.Float64Array(i.Values))
+			}
+			com.Dirty = true
+		}
+	case qtypes.QueryType_HAS_ALL_ELEMENTS:
+		if !i.Negation {
+			if com.Dirty {
+				if _, err = com.WriteString(opt.Joint); err != nil {
+					return
+				}
+			}
+			if _, err = com.WriteString(sel); err != nil {
+				return
+			}
+			if _, err = com.WriteString(" ?& "); err != nil {
+				return
+			}
+			if err = com.WritePlaceholder(); err != nil {
+				return
+			}
+			switch opt.IsJSON {
+			case true:
+				com.Add(JSONArrayFloat64(i.Values))
+			case false:
+				com.Add(pq.Float64Array(i.Values))
+			}
+			com.Dirty = true
+		}
+	case qtypes.QueryType_HAS_ELEMENT:
+		if !i.Negation {
+			if com.Dirty {
+				if _, err = com.WriteString(opt.Joint); err != nil {
+					return
+				}
+			}
+			if _, err = com.WriteString(sel); err != nil {
+				return
+			}
+			if _, err = com.WriteString(" ? "); err != nil {
+				return
+			}
+			if err = com.WritePlaceholder(); err != nil {
+				return
+			}
+			com.Add(i.Value())
+			com.Dirty = true
+		}
+	case qtypes.QueryType_IN:
+		if len(i.Values) > 0 {
+			if com.Dirty {
+				if _, err = com.WriteString(opt.Joint); err != nil {
+					return
+				}
+			}
+			if _, err = com.WriteString(sel); err != nil {
+				return
+			}
+			if i.Negation {
+				if _, err = com.WriteString(" NOT IN ("); err != nil {
+					return
+				}
+			} else {
+				if _, err = com.WriteString(" IN ("); err != nil {
+					return
+				}
+			}
+			for i, v := range i.Values {
+				if i != 0 {
+					if _, err = com.WriteString(","); err != nil {
+						return
+					}
+				}
+				if err = com.WritePlaceholder(); err != nil {
+					return
+				}
+				com.Add(v)
+				com.Dirty = true
+			}
+			if _, err = com.WriteString(")"); err != nil {
+				return
+			}
+		}
+	case qtypes.QueryType_BETWEEN:
+		if com.Dirty {
+			if _, err = com.WriteString(opt.Joint); err != nil {
+				return
+			}
+		}
+		if _, err = com.WriteString(sel); err != nil {
+			return
+		}
+		if i.Negation {
+			if _, err = com.WriteString(" <= "); err != nil {
+				return
+			}
+		} else {
+			if _, err = com.WriteString(" > "); err != nil {
+				return
+			}
+		}
+		if err = com.WritePlaceholder(); err != nil {
+			return
+		}
+		com.Add(i.Values[0])
+		if _, err = com.WriteString(" AND "); err != nil {
+			return
+		}
+		if _, err = com.WriteString(sel); err != nil {
+			return
+		}
+		if i.Negation {
+			if _, err = com.WriteString(" >= "); err != nil {
+				return
+			}
+		} else {
+			if _, err = com.WriteString(" < "); err != nil {
+				return
+			}
+		}
+		if err = com.WritePlaceholder(); err != nil {
+			return
+		}
+		com.Add(i.Values[1])
+		com.Dirty = true
+	default:
+		return fmt.Errorf("pqtgo: unknown int64 query type %!s(MISSING)", i.Type.String())
+	}
 
+	if com.Dirty {
+		if opt.Cast != "" {
+			if _, err = com.WriteString(opt.Cast); err != nil {
+				return
+			}
+		}
+	}
+
+	return
+}
+func QueryTimestampWhereClause(t *qtypes.Timestamp, sel string, com *Composer, opt *CompositionOpts) error {
+	if t == nil || !t.Valid {
+		return nil
+	}
+	v := t.Value()
+	if v != nil {
+		vv1, err := ptypes.Timestamp(v)
+		if err != nil {
+			return err
+		}
+		switch t.Type {
+		case qtypes.QueryType_NULL:
+			if com.Dirty {
+				if _, err = com.WriteString(opt.Joint); err != nil {
+					return err
+				}
+			}
+			com.WriteString(sel)
+			if t.Negation {
+				com.WriteString(" IS NOT NULL ")
+			} else {
+				com.WriteString(" IS NULL ")
+			}
+		case qtypes.QueryType_EQUAL:
+			if com.Dirty {
+				if _, err = com.WriteString(opt.Joint); err != nil {
+					return err
+				}
+			}
+			com.WriteString(sel)
+			if t.Negation {
+				com.WriteString(" <> ")
+			} else {
+				com.WriteString(" = ")
+			}
+			com.WritePlaceholder()
+			com.Add(t.Value())
+		case qtypes.QueryType_GREATER:
+			if com.Dirty {
+				if _, err = com.WriteString(opt.Joint); err != nil {
+					return err
+				}
+			}
+			com.WriteString(sel)
+			com.WriteString(">")
+			com.WritePlaceholder()
+			com.Add(t.Value())
+		case qtypes.QueryType_GREATER_EQUAL:
+			if com.Dirty {
+				if _, err = com.WriteString(opt.Joint); err != nil {
+					return err
+				}
+			}
+			com.WriteString(sel)
+			com.WriteString(">=")
+			com.WritePlaceholder()
+			com.Add(t.Value())
+		case qtypes.QueryType_LESS:
+			if com.Dirty {
+				if _, err = com.WriteString(opt.Joint); err != nil {
+					return err
+				}
+			}
+			com.WriteString(sel)
+			com.WriteString(" < ")
+			com.WritePlaceholder()
+			com.Add(t.Value())
+		case qtypes.QueryType_LESS_EQUAL:
+			if com.Dirty {
+				if _, err = com.WriteString(opt.Joint); err != nil {
+					return err
+				}
+			}
+			com.WriteString(sel)
+			com.WriteString(" <= ")
+			com.WritePlaceholder()
+			com.Add(t.Value())
+		case qtypes.QueryType_IN:
+			if len(t.Values) > 0 {
+				if com.Dirty {
+					if _, err = com.WriteString(opt.Joint); err != nil {
+						return err
+					}
+				}
+				com.WriteString(sel)
+				com.WriteString(" IN (")
+				for i, v := range t.Values {
+					if i != 0 {
+						com.WriteString(", ")
+					}
+					com.WritePlaceholder()
+					com.Add(v)
+				}
+				com.WriteString(") ")
+			}
+		case qtypes.QueryType_BETWEEN:
+			if com.Dirty {
+				if _, err = com.WriteString(opt.Joint); err != nil {
+					return err
+				}
+			}
+			v2 := t.Values[1]
+			if v2 != nil {
+				vv2, err := ptypes.Timestamp(v2)
+				if err != nil {
+					return err
+				}
+				com.WriteString(sel)
+				com.WriteString(" > ")
+				com.WritePlaceholder()
+				com.Add(vv1)
+				com.WriteString(" AND ")
+				com.WriteString(sel)
+				com.WriteString(" < ")
+				com.WritePlaceholder()
+				com.Add(vv2)
+			}
+		}
+	}
+	return nil
+}
 func QueryStringWhereClause(s *qtypes.String, sel string, com *Composer, opt *CompositionOpts) (err error) {
 	if s == nil || !s.Valid {
 		return

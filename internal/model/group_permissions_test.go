@@ -12,7 +12,7 @@ var (
 		{
 			ID:          1,
 			Name:        "group_1",
-			Description: ntypes.String{String: "first group", Valid: true},
+			Description: ntypes.String{Chars: "first group", Valid: true},
 			Permissions: []*PermissionEntity{
 				{
 					ID:        1,
@@ -25,7 +25,7 @@ var (
 		{
 			ID:          2,
 			Name:        "group_2",
-			Description: ntypes.String{String: "second group", Valid: true},
+			Description: ntypes.String{Chars: "second group", Valid: true},
 			Permissions: []*PermissionEntity{
 				{
 					ID:        2,

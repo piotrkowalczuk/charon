@@ -34,7 +34,7 @@ func (ge *GroupEntity) Message() (*charonrpc.Group, error) {
 	return &charonrpc.Group{
 		Id:          ge.ID,
 		Name:        ge.Name,
-		Description: ge.Description.String,
+		Description: ge.Description.Chars,
 		CreatedAt:   createdAt,
 		CreatedBy:   &ge.CreatedBy,
 		UpdatedAt:   updatedAt,
