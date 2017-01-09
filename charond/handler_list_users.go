@@ -35,10 +35,10 @@ func (luh *listUsersHandler) List(ctx context.Context, req *charonrpc.ListUsersR
 	}
 
 	if !act.User.IsSuperuser {
-		cri.IsSuperuser = *ntypes.False()
+		cri.IsSuperuser = ntypes.False()
 	}
 	if !act.Permissions.Contains(charon.UserCanRetrieveStaffAsStranger) {
-		cri.IsStaff = *ntypes.False()
+		cri.IsStaff = ntypes.False()
 	}
 	if act.Permissions.Contains(charon.UserCanRetrieveAsOwner, charon.UserCanRetrieveStaffAsOwner) {
 		cri.CreatedBy = qtypes.EqualInt64(act.User.ID)

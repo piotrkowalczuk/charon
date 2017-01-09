@@ -57,7 +57,7 @@ func TestLoginHandler_Login(t *testing.T) {
 				FirstName:     "first-name-not-confirmed",
 				LastName:      "last-name-not-confirmed",
 				PlainPassword: "plain-password-not-confirmed",
-				IsActive:      ntypes.True(),
+				IsActive:      &ntypes.Bool{Bool: true, Valid: true},
 			}
 			_, err := suite.charon.user.Create(ctx, req)
 			if err != nil {
@@ -74,7 +74,7 @@ func TestLoginHandler_Login(t *testing.T) {
 				FirstName:     "first-name-not-active",
 				LastName:      "last-name-not-active",
 				PlainPassword: "plain-password-not-active",
-				IsConfirmed:   ntypes.True(),
+				IsConfirmed:   &ntypes.Bool{Bool: true, Valid: true},
 			}
 			_, err := suite.charon.user.Create(ctx, req)
 			if err != nil {

@@ -1,5 +1,5 @@
 hash: bb490980e08fa632e651a4a754d58cd4a5c426b8821115cbc84581aa148a1c68
-updated: 2017-01-09T13:16:54.66979243+01:00
+updated: 2017-01-09T13:50:40.673632681+01:00
 imports:
 - name: github.com/beorn7/perks
   version: 4c0e84591b9aa9e6dcfdf3e020114cd81f89d5f9
@@ -20,7 +20,7 @@ imports:
 - name: github.com/go-stack/stack
   version: 100eb0c0a9c5b306ca2fb4f165df21d80ada4b82
 - name: github.com/golang/protobuf
-  version: 8ee79997227bf9b34611aee7946ae64735e6fd93
+  version: 2bc9827a78f95c6665b5fe0abd1fd66b496ae2d8
   subpackages:
   - proto
   - ptypes
@@ -29,14 +29,14 @@ imports:
   - ptypes/empty
   - ptypes/timestamp
   - ptypes/wrappers
+- name: github.com/huandu/xstrings
+  version: 3959339b333561bf62a38b424fd41517c2c90f40
 - name: github.com/kr/logfmt
   version: b84e30acd515aadc4b783ad4ff83aff3299bdfe0
 - name: github.com/lib/pq
   version: 8df6253d1317616f36b0c3740eb30c239a7372cb
   subpackages:
   - oid
-- name: github.com/m4rw3r/uuid
-  version: 00c72d48d5aaaf3058e26d9641164c43ba239f33
 - name: github.com/matttproud/golang_protobuf_extensions
   version: c12348ce28de40eed0136aa2b644d0ee0650e56c
   subpackages:
@@ -52,15 +52,22 @@ imports:
   - mnemosynerpc
   - mnemosynetest
 - name: github.com/piotrkowalczuk/ntypes
-  version: b713febf2e072331a9a6404222760d797c79d665
+  version: 8f40ec28048d8c27d08e54af4f9c200f8ad30fd7
+- name: github.com/piotrkowalczuk/ntypespqt
+  version: e81631a047ebf0be1e5c4861eb3c44bb99c8d836
 - name: github.com/piotrkowalczuk/pqcomp
   version: 631b19c36ded8bbe954cf8c15a0044c591033536
 - name: github.com/piotrkowalczuk/pqt
   version: 68ab1b2643f8b59461e0c773783bc6465e2cc909
+  subpackages:
+  - pqtgo
+  - pqtsql
 - name: github.com/piotrkowalczuk/promgrpc
   version: 6dcaf1a8dc829dcea441330ba639d04472b696af
 - name: github.com/piotrkowalczuk/qtypes
   version: 4325c682e95fb74655cedb1e545974ef240c8762
+- name: github.com/piotrkowalczuk/qtypespqt
+  version: 85ae1a9b320da4a1b450126034932852d2e581e3
 - name: github.com/piotrkowalczuk/sklog
   version: ec5c8660c571ff906c65341ba96de449706d63fa
 - name: github.com/pmezard/go-difflib
