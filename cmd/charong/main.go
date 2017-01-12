@@ -53,10 +53,7 @@ func main() {
 				Formatter:  form,
 				Visibility: pqtgo.Public,
 			},
-			&ntypespqt.Plugin{
-				Formatter:  form,
-				Visibility: pqtgo.Public,
-			},
+			&ntypespqt.Plugin{},
 		},
 	}
 	if err := gen.GenerateTo(file, sch); err != nil {
