@@ -1,7 +1,7 @@
 package: github.com/piotrkowalczuk/charon/cmd/charong
 import:
 - package: github.com/piotrkowalczuk/pqt
-  version: feature/plugins
+  version: ~0.10.0
   subpackages:
   - pqtgo
   - pqtsql
