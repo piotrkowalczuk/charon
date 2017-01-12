@@ -1,5 +1,5 @@
-hash: f242539a0f398c02a3ae28dc01c803f44f74281627e0a4dfc9e92177939dd7c2
-updated: 2017-01-12T13:49:59.327227137+01:00
+hash: b5b44cf7b1c767cd227d2a891bd06db9efc6bf410cfc5529313eef426bb45573
+updated: 2017-01-12T14:49:15.732414677+01:00
 imports:
 - name: github.com/beorn7/perks
   version: 4c0e84591b9aa9e6dcfdf3e020114cd81f89d5f9
@@ -50,7 +50,7 @@ imports:
   - mnemosynerpc
   - mnemosynetest
 - name: github.com/piotrkowalczuk/ntypes
-  version: ffbf257476e02c8902e9228abde9384fb3a50dc7
+  version: 32b61fbb8fd6d97a8265563707b7f5cc09f909a1
 - name: github.com/piotrkowalczuk/pqcomp
   version: 631b19c36ded8bbe954cf8c15a0044c591033536
 - name: github.com/piotrkowalczuk/promgrpc

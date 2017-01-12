@@ -109,6 +109,7 @@ type UserEntity struct {
 func (e *UserEntity) Prop(cn string) (interface{}, bool) {
 	switch cn {
 	case TableUserColumnConfirmationToken:
+
 		return &e.ConfirmationToken, true
 	case TableUserColumnCreatedAt:
 		return &e.CreatedAt, true
@@ -131,6 +132,7 @@ func (e *UserEntity) Prop(cn string) (interface{}, bool) {
 	case TableUserColumnLastName:
 		return &e.LastName, true
 	case TableUserColumnPassword:
+
 		return &e.Password, true
 	case TableUserColumnUpdatedAt:
 		return &e.UpdatedAt, true
@@ -1206,13 +1208,18 @@ func (r *UserRepositoryBase) UpdateOneByID(ctx context.Context, pk int64, p *Use
 	if err != nil {
 		return nil, err
 	}
-	err = r.DB.QueryRowContext(ctx, query, args...).Scan(props...)
-	if err != nil {
+	if err = r.DB.QueryRowContext(ctx, query, args...).Scan(props...); err != nil {
+		if r.Debug {
+			r.Log.Log("level", "error", "timestamp", time.Now().Format(time.RFC3339), "msg", "update by primary key query failure", "query", query, "table", r.Table, "error", err.Error())
+		}
 		return nil, err
 	}
-
+	if r.Debug {
+		r.Log.Log("level", "debug", "timestamp", time.Now().Format(time.RFC3339), "msg", "update by primary key query success", "query", query, "table", r.Table)
+	}
 	return &ent, nil
 }
+
 func (r *UserRepositoryBase) UpdateOneByUsernameQuery(userUsername string, p *UserPatch) (string, []interface{}, error) {
 	buf := bytes.NewBufferString("UPDATE ")
 	buf.WriteString(r.Table)
@@ -2887,13 +2894,18 @@ func (r *GroupRepositoryBase) UpdateOneByID(ctx context.Context, pk int64, p *Gr
 	if err != nil {
 		return nil, err
 	}
-	err = r.DB.QueryRowContext(ctx, query, args...).Scan(props...)
-	if err != nil {
+	if err = r.DB.QueryRowContext(ctx, query, args...).Scan(props...); err != nil {
+		if r.Debug {
+			r.Log.Log("level", "error", "timestamp", time.Now().Format(time.RFC3339), "msg", "update by primary key query failure", "query", query, "table", r.Table, "error", err.Error())
+		}
 		return nil, err
 	}
-
+	if r.Debug {
+		r.Log.Log("level", "debug", "timestamp", time.Now().Format(time.RFC3339), "msg", "update by primary key query success", "query", query, "table", r.Table)
+	}
 	return &ent, nil
 }
+
 func (r *GroupRepositoryBase) UpdateOneByNameQuery(groupName string, p *GroupPatch) (string, []interface{}, error) {
 	buf := bytes.NewBufferString("UPDATE ")
 	buf.WriteString(r.Table)
@@ -4045,13 +4057,18 @@ func (r *PermissionRepositoryBase) UpdateOneByID(ctx context.Context, pk int64, 
 	if err != nil {
 		return nil, err
 	}
-	err = r.DB.QueryRowContext(ctx, query, args...).Scan(props...)
-	if err != nil {
+	if err = r.DB.QueryRowContext(ctx, query, args...).Scan(props...); err != nil {
+		if r.Debug {
+			r.Log.Log("level", "error", "timestamp", time.Now().Format(time.RFC3339), "msg", "update by primary key query failure", "query", query, "table", r.Table, "error", err.Error())
+		}
 		return nil, err
 	}
-
+	if r.Debug {
+		r.Log.Log("level", "debug", "timestamp", time.Now().Format(time.RFC3339), "msg", "update by primary key query success", "query", query, "table", r.Table)
+	}
 	return &ent, nil
 }
+
 func (r *PermissionRepositoryBase) UpdateOneBySubsystemAndModuleAndActionQuery(permissionSubsystem string, permissionModule string, permissionAction string, p *PermissionPatch) (string, []interface{}, error) {
 	buf := bytes.NewBufferString("UPDATE ")
 	buf.WriteString(r.Table)
@@ -8686,7 +8703,7 @@ func QueryInt64WhereClause(i *qtypes.Int64, sel string, com *Composer, opt *Comp
 		com.Add(i.Values[1])
 		com.Dirty = true
 	default:
-		return fmt.Errorf("pqtgo: unknown int64 query type %!s(MISSING)", i.Type.String())
+		return fmt.Errorf("pqtgo: unknown int64 query type %s", i.Type.String())
 	}
 
 	if com.Dirty {
@@ -9054,7 +9071,7 @@ func QueryFloat64WhereClause(i *qtypes.Float64, sel string, com *Composer, opt *
 		com.Add(i.Values[1])
 		com.Dirty = true
 	default:
-		return fmt.Errorf("pqtgo: unknown int64 query type %!s(MISSING)", i.Type.String())
+		return fmt.Errorf("pqtgo: unknown int64 query type %s", i.Type.String())
 	}
 
 	if com.Dirty {
@@ -9280,7 +9297,7 @@ func QueryStringWhereClause(s *qtypes.String, sel string, com *Composer, opt *Co
 			return
 		}
 
-		com.Add(fmt.Sprintf("%%!s(MISSING)%", s.Value()))
+		com.Add(fmt.Sprintf("%%%s%%", s.Value()))
 		com.Dirty = true
 	case qtypes.QueryType_HAS_PREFIX:
 		if com.Dirty {
@@ -9317,7 +9334,7 @@ func QueryStringWhereClause(s *qtypes.String, sel string, com *Composer, opt *Co
 			return
 		}
 
-		com.Add(fmt.Sprintf("%!s(MISSING)%", s.Value()))
+		com.Add(fmt.Sprintf("%s%%", s.Value()))
 		com.Dirty = true
 	case qtypes.QueryType_HAS_SUFFIX:
 		if com.Dirty {
@@ -9355,7 +9372,7 @@ func QueryStringWhereClause(s *qtypes.String, sel string, com *Composer, opt *Co
 			return
 		}
 
-		com.Add(fmt.Sprintf("%%!s(MISSING)", s.Value()))
+		com.Add(fmt.Sprintf("%%%s", s.Value()))
 		com.Dirty = true
 	case qtypes.QueryType_CONTAINS:
 		if !s.Negation {
@@ -9515,7 +9532,7 @@ func QueryStringWhereClause(s *qtypes.String, sel string, com *Composer, opt *Co
 			}
 		}
 	default:
-		return fmt.Errorf("pqtgo: unknown string query type %!s(MISSING)", s.Type.String())
+		return fmt.Errorf("pqtgo: unknown string query type %s", s.Type.String())
 	}
 
 	switch {
