@@ -1,6 +1,7 @@
 package model
 
 import (
+	"context"
 	"testing"
 
 	"reflect"
@@ -75,15 +76,15 @@ func TestUserRepository_updateByID(t *testing.T) {
 
 	for res := range loadUserFixtures(t, suite.repository.user, userTestFixtures) {
 		user := res.got
-		modified, err := suite.repository.user.UpdateOneByID(user.ID, &UserPatch{
-			FirstName:   &ntypes.String{String: user.FirstName + suffix, Valid: true},
-			IsActive:    &ntypes.Bool{Bool: true, Valid: true},
-			IsConfirmed: &ntypes.Bool{Bool: true, Valid: true},
-			IsStaff:     &ntypes.Bool{Bool: true, Valid: true},
-			IsSuperuser: &ntypes.Bool{Bool: true, Valid: true},
-			LastName:    &ntypes.String{String: user.LastName + suffix, Valid: true},
+		modified, err := suite.repository.user.UpdateOneByID(context.TODO(), user.ID, &UserPatch{
+			FirstName:   ntypes.String{Chars: user.FirstName + suffix, Valid: true},
+			IsActive:    ntypes.Bool{Bool: true, Valid: true},
+			IsConfirmed: ntypes.Bool{Bool: true, Valid: true},
+			IsStaff:     ntypes.Bool{Bool: true, Valid: true},
+			IsSuperuser: ntypes.Bool{Bool: true, Valid: true},
+			LastName:    ntypes.String{Chars: user.LastName + suffix, Valid: true},
 			Password:    user.Password,
-			Username:    &ntypes.String{String: user.Username + suffix, Valid: true},
+			Username:    ntypes.String{Chars: user.Username + suffix, Valid: true},
 		})
 
 		if err != nil {
@@ -93,7 +94,7 @@ func TestUserRepository_updateByID(t *testing.T) {
 			t.Logf("user with id %d has been modified", modified.ID)
 		}
 
-		if assertfTime(t, modified.UpdatedAt, "invalid updated at field, expected valid time but got %v", modified.UpdatedAt) {
+		if assertfNullTime(t, modified.UpdatedAt, "invalid updated at field, expected valid time but got %v", modified.UpdatedAt) {
 			t.Logf("user has been properly modified at %v", modified.UpdatedAt)
 		}
 		assertf(t, modified.Username == user.Username+suffix, "wrong username, expected %s but got %s", user.Username+suffix, modified.Username)
@@ -113,7 +114,7 @@ func TestUserRepository_DeleteByID(t *testing.T) {
 	defer suite.teardown(t)
 
 	for res := range loadUserFixtures(t, suite.repository.user, userTestFixtures) {
-		affected, err := suite.repository.user.DeleteOneByID(res.got.ID)
+		affected, err := suite.repository.user.DeleteOneByID(context.TODO(), res.got.ID)
 		if err != nil {
 			t.Errorf("user cannot be deleted, unexpected error: %s", err.Error())
 			continue
@@ -131,7 +132,7 @@ func TestUserRepository_FindOneByID(t *testing.T) {
 
 	for res := range loadUserFixtures(t, suite.repository.user, userTestFixtures) {
 		user := res.got
-		found, err := suite.repository.user.FindOneByID(user.ID)
+		found, err := suite.repository.user.FindOneByID(context.TODO(), user.ID)
 
 		if err != nil {
 			t.Errorf("user cannot be found, unexpected error: %s", err.Error())
@@ -150,7 +151,7 @@ func TestUserRepository_updateLastLoginAt(t *testing.T) {
 	defer suite.teardown(t)
 
 	for res := range loadUserFixtures(t, suite.repository.user, userTestFixtures) {
-		affected, err := suite.repository.user.UpdateLastLoginAt(res.got.ID)
+		affected, err := suite.repository.user.UpdateLastLoginAt(context.TODO(), res.got.ID)
 
 		if err != nil {
 			t.Errorf("user cannot be updated, unexpected error: %s", err.Error())
@@ -158,18 +159,18 @@ func TestUserRepository_updateLastLoginAt(t *testing.T) {
 		}
 
 		if assert(t, affected == 1, "user was not updated, no rows affected") {
-			entity, err := suite.repository.user.FindOneByID(res.got.ID)
+			entity, err := suite.repository.user.FindOneByID(context.TODO(), res.got.ID)
 			if err != nil {
 				t.Errorf("user cannot be found, unexpected error: %s", err.Error())
 				continue
 			}
 
-			assertfTime(t, entity.LastLoginAt, "user last login at property was not properly updated, got %v", entity.LastLoginAt)
+			assertfNullTime(t, entity.LastLoginAt, "user last login at property was not properly updated, got %v", entity.LastLoginAt)
 		}
 	}
 }
 
-func TestUserRepository_find(t *testing.T) {
+func TestUserRepository_Find(t *testing.T) {
 	var (
 		err      error
 		entities []*UserEntity
@@ -182,15 +183,17 @@ func TestUserRepository_find(t *testing.T) {
 	for range loadUserFixtures(t, suite.repository.user, userTestFixtures) {
 		all++
 	}
-
-	entities, err = suite.repository.user.Find(&UserCriteria{Limit: all})
+	if all == 0 {
+		t.Fatal("no user has been saved in the database")
+	}
+	entities, err = suite.repository.user.Find(context.TODO(), &UserCriteria{Limit: all})
 	if err != nil {
 		t.Errorf("users can not be retrieved, unexpected error: %s", err.Error())
 	} else {
 		assertf(t, int64(len(entities)) == all, "number of users retrived do not match, expected %d got %d", all, len(entities))
 	}
 
-	entities, err = suite.repository.user.Find(&UserCriteria{
+	entities, err = suite.repository.user.Find(context.TODO(), &UserCriteria{
 		Offset: all,
 		Limit:  all,
 	})
@@ -199,14 +202,14 @@ func TestUserRepository_find(t *testing.T) {
 	} else {
 		assertf(t, len(entities) == 0, "number of users retrived do not match, expected %d got %d", 0, len(entities))
 	}
-	entities, err = suite.repository.user.Find(&UserCriteria{
+	entities, err = suite.repository.user.Find(context.TODO(), &UserCriteria{
 		Limit:             all,
 		Username:          qtypes.EqualString("johnsnow@gmail.com"),
 		Password:          []byte("secret"),
 		FirstName:         qtypes.EqualString("John"),
 		LastName:          qtypes.EqualString("Snow"),
 		ConfirmationToken: []byte("1234567890"),
-		IsSuperuser:       &ntypes.Bool{Bool: true}, // Is not valid, should not affect results
+		IsSuperuser:       ntypes.Bool{Bool: true}, // Is not valid, should not affect results
 	})
 	if err != nil {
 		t.Errorf("users can not be retrieved, unexpected error: %s", err.Error())
@@ -229,7 +232,7 @@ func TestUserRepository_IsGranted(t *testing.T) {
 				PermissionAction:    pr.got.Action,
 			}}
 			for range loadUserPermissionsFixtures(t, suite.repository.userPermissions, add) {
-				exists, err := suite.repository.user.IsGranted(ur.given.ID, pr.given.Permission())
+				exists, err := suite.repository.user.IsGranted(context.TODO(), ur.given.ID, pr.given.Permission())
 
 				if err != nil {
 					t.Errorf("user permission cannot be found, unexpected error: %s", err.Error())
@@ -259,7 +262,7 @@ func loadUserFixtures(t *testing.T, r UserProvider, f []*UserEntity) chan userFi
 
 	go func() {
 		for _, given := range f {
-			entity, err := r.Insert(given)
+			entity, err := r.Insert(context.TODO(), given)
 			if err != nil {
 				t.Errorf("user cannot be created, unexpected error: %s", err.Error())
 				continue

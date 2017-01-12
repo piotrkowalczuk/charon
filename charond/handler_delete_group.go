@@ -1,11 +1,11 @@
 package charond
 
 import (
-	"database/sql"
-
 	"github.com/golang/protobuf/ptypes/wrappers"
 	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/charon/charonrpc"
+	"github.com/piotrkowalczuk/charon/internal/model"
+	"github.com/piotrkowalczuk/charon/internal/session"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -24,24 +24,29 @@ func (dgh *deleteGroupHandler) Delete(ctx context.Context, req *charonrpc.Delete
 		return nil, err
 	}
 
-	affected, err := dgh.repository.group.DeleteOneByID(req.Id)
+	aff, err := dgh.repository.group.DeleteOneByID(ctx, req.Id)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, grpc.Errorf(codes.NotFound, "group does not exists")
+		switch model.ErrorConstraint(err) {
+		case model.TableUserGroupsConstraintGroupIDForeignKey:
+			return nil, grpc.Errorf(codes.FailedPrecondition, "group cannot be removed, is not empty")
+		default:
+			return nil, err
 		}
-		return nil, err
 	}
 
+	if aff == 0 {
+		return nil, grpc.Errorf(codes.NotFound, "group does not exists")
+	}
 	return &wrappers.BoolValue{
-		Value: affected > 0,
+		Value: aff > 0,
 	}, nil
 }
 
-func (dgh *deleteGroupHandler) firewall(req *charonrpc.DeleteGroupRequest, act *actor) error {
-	if act.user.IsSuperuser {
+func (dgh *deleteGroupHandler) firewall(req *charonrpc.DeleteGroupRequest, act *session.Actor) error {
+	if act.User.IsSuperuser {
 		return nil
 	}
-	if act.permissions.Contains(charon.GroupCanDelete) {
+	if act.Permissions.Contains(charon.GroupCanDelete) {
 		return nil
 	}
 

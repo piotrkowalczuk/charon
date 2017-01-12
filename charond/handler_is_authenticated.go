@@ -27,7 +27,7 @@ func (iah *isAuthenticatedHandler) IsAuthenticated(ctx context.Context, req *cha
 	if err != nil {
 		return nil, err
 	}
-	exists, err := iah.repository.user.Exists(uid)
+	exists, err := iah.repository.user.Exists(ctx, uid)
 	if err != nil {
 		return nil, err
 	}

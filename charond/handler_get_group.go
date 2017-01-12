@@ -6,6 +6,7 @@ import (
 	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/charon/charonrpc"
 	"github.com/piotrkowalczuk/charon/internal/model"
+	"github.com/piotrkowalczuk/charon/internal/session"
 
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
@@ -25,7 +26,7 @@ func (ggh *getGroupHandler) Get(ctx context.Context, req *charonrpc.GetGroupRequ
 		return nil, err
 	}
 
-	ent, err := ggh.repository.group.FindOneByID(req.Id)
+	ent, err := ggh.repository.group.FindOneByID(ctx, req.Id)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, grpc.Errorf(codes.NotFound, "group does not exists")
@@ -36,11 +37,11 @@ func (ggh *getGroupHandler) Get(ctx context.Context, req *charonrpc.GetGroupRequ
 	return ggh.response(ent)
 }
 
-func (ggh *getGroupHandler) firewall(req *charonrpc.GetGroupRequest, act *actor) error {
-	if act.user.IsSuperuser {
+func (ggh *getGroupHandler) firewall(req *charonrpc.GetGroupRequest, act *session.Actor) error {
+	if act.User.IsSuperuser {
 		return nil
 	}
-	if act.permissions.Contains(charon.GroupCanRetrieve) {
+	if act.Permissions.Contains(charon.GroupCanRetrieve) {
 		return nil
 	}
 

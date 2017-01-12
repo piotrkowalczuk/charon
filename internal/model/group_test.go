@@ -1,6 +1,9 @@
 package model
 
-import "testing"
+import (
+	"context"
+	"testing"
+)
 
 var (
 	groupTestFixtures = []*GroupEntity{}
@@ -20,7 +23,7 @@ func TestGroupRepository_IsGranted(t *testing.T) {
 				PermissionAction:    pr.got.Action,
 			}}
 			for range loadGroupPermissionsFixtures(t, suite.repository.groupPermissions, add) {
-				exists, err := suite.repository.group.IsGranted(ur.given.ID, pr.given.Permission())
+				exists, err := suite.repository.group.IsGranted(context.TODO(), ur.given.ID, pr.given.Permission())
 
 				if err != nil {
 					t.Errorf("group permission cannot be found, unexpected error: %s", err.Error())
@@ -46,7 +49,7 @@ func loadGroupFixtures(t *testing.T, r GroupProvider, f []*GroupEntity) chan gro
 
 	go func() {
 		for _, given := range f {
-			entity, err := r.Insert(given)
+			entity, err := r.Insert(context.TODO(), given)
 			if err != nil {
 				t.Errorf("group cannot be created, unexpected error: %s", err.Error())
 				continue

@@ -4,6 +4,7 @@ import (
 	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/charon/charonrpc"
 	"github.com/piotrkowalczuk/charon/internal/model"
+	"github.com/piotrkowalczuk/charon/internal/session"
 	"github.com/piotrkowalczuk/ntypes"
 	"github.com/piotrkowalczuk/qtypes"
 	"golang.org/x/net/context"
@@ -24,64 +25,64 @@ func (luh *listUsersHandler) List(ctx context.Context, req *charonrpc.ListUsersR
 		return nil, err
 	}
 
-	criteria := &model.UserCriteria{
+	cri := &model.UserCriteria{
 		Sort:        req.Sort,
 		Offset:      req.Offset.Int64Or(0),
 		Limit:       req.Limit.Int64Or(10),
-		IsSuperuser: req.IsSuperuser,
-		IsStaff:     req.IsStaff,
+		IsSuperuser: *req.IsSuperuser,
+		IsStaff:     *req.IsStaff,
 		CreatedBy:   req.CreatedBy,
 	}
 
-	if !act.user.IsSuperuser {
-		criteria.IsSuperuser = ntypes.False()
+	if !act.User.IsSuperuser {
+		cri.IsSuperuser = *ntypes.False()
 	}
-	if !act.permissions.Contains(charon.UserCanRetrieveStaffAsStranger) {
-		criteria.IsStaff = ntypes.False()
+	if !act.Permissions.Contains(charon.UserCanRetrieveStaffAsStranger) {
+		cri.IsStaff = *ntypes.False()
 	}
-	if act.permissions.Contains(charon.UserCanRetrieveAsOwner, charon.UserCanRetrieveStaffAsOwner) {
-		criteria.CreatedBy = qtypes.EqualInt64(act.user.ID)
+	if act.Permissions.Contains(charon.UserCanRetrieveAsOwner, charon.UserCanRetrieveStaffAsOwner) {
+		cri.CreatedBy = qtypes.EqualInt64(act.User.ID)
 	}
 
-	ents, err := luh.repository.user.Find(criteria)
+	ents, err := luh.repository.user.Find(ctx, cri)
 	if err != nil {
 		return nil, err
 	}
 	return luh.response(ents)
 }
 
-func (luh *listUsersHandler) firewall(req *charonrpc.ListUsersRequest, act *actor) error {
-	if act.user.IsSuperuser {
+func (luh *listUsersHandler) firewall(req *charonrpc.ListUsersRequest, act *session.Actor) error {
+	if act.User.IsSuperuser {
 		return nil
 	}
 	if req.IsSuperuser.BoolOr(false) {
 		return grpc.Errorf(codes.PermissionDenied, "only superuser is permited to retrieve other superusers")
 	}
 	if req.CreatedBy == nil {
-		if !act.permissions.Contains(charon.UserCanRetrieveAsStranger) {
+		if !act.Permissions.Contains(charon.UserCanRetrieveAsStranger) {
 			return grpc.Errorf(codes.PermissionDenied, "list of users cannot be retrieved as a stranger, missing permission")
 		}
 		return nil
 	}
 	if req.IsStaff.BoolOr(false) {
-		if req.CreatedBy.Value() == act.user.ID {
-			if !act.permissions.Contains(charon.UserCanRetrieveStaffAsOwner) {
+		if req.CreatedBy.Value() == act.User.ID {
+			if !act.Permissions.Contains(charon.UserCanRetrieveStaffAsOwner) {
 				return grpc.Errorf(codes.PermissionDenied, "list of staff users cannot be retrieved as an owner, missing permission")
 			}
 			return nil
 		}
-		if !act.permissions.Contains(charon.UserCanRetrieveStaffAsStranger) {
+		if !act.Permissions.Contains(charon.UserCanRetrieveStaffAsStranger) {
 			return grpc.Errorf(codes.PermissionDenied, "list of staff users cannot be retrieved as a stranger, missing permission")
 		}
 		return nil
 	}
-	if req.CreatedBy.Value() == act.user.ID {
-		if !act.permissions.Contains(charon.UserCanRetrieveAsStranger, charon.UserCanRetrieveAsOwner) {
+	if req.CreatedBy.Value() == act.User.ID {
+		if !act.Permissions.Contains(charon.UserCanRetrieveAsStranger, charon.UserCanRetrieveAsOwner) {
 			return grpc.Errorf(codes.PermissionDenied, "list of users cannot be retrieved as an owner, missing permission")
 		}
 		return nil
 	}
-	if !act.permissions.Contains(charon.UserCanRetrieveAsStranger) {
+	if !act.Permissions.Contains(charon.UserCanRetrieveAsStranger) {
 		return nil
 	}
 

@@ -16,7 +16,7 @@ type registerPermissionsHandler struct {
 
 func (rph *registerPermissionsHandler) Register(ctx context.Context, req *charonrpc.RegisterPermissionsRequest) (*charonrpc.RegisterPermissionsResponse, error) {
 	permissions := charon.NewPermissions(req.Permissions...)
-	created, untouched, removed, err := rph.registry.Register(permissions)
+	created, untouched, removed, err := rph.registry.Register(ctx, permissions)
 	if err != nil {
 		return nil, grpc.Errorf(codes.Internal, err.Error())
 	}

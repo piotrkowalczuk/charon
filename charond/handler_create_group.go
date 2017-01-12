@@ -4,7 +4,7 @@ import (
 	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/charon/charonrpc"
 	"github.com/piotrkowalczuk/charon/internal/model"
-	"github.com/piotrkowalczuk/pqt"
+	"github.com/piotrkowalczuk/charon/internal/session"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -15,6 +15,9 @@ type createGroupHandler struct {
 }
 
 func (cgh *createGroupHandler) Create(ctx context.Context, req *charonrpc.CreateGroupRequest) (*charonrpc.CreateGroupResponse, error) {
+	if len(req.Name) < 3 {
+		return nil, grpc.Errorf(codes.InvalidArgument, "group name is required and needs to be at least 3 characters long")
+	}
 	act, err := cgh.retrieveActor(ctx)
 	if err != nil {
 		return nil, err
@@ -23,9 +26,9 @@ func (cgh *createGroupHandler) Create(ctx context.Context, req *charonrpc.Create
 		return nil, err
 	}
 
-	ent, err := cgh.repository.group.Create(act.user.ID, req.Name, req.Description)
+	ent, err := cgh.repository.group.Create(ctx, act.User.ID, req.Name, req.Description)
 	if err != nil {
-		switch pqt.ErrorConstraint(err) {
+		switch model.ErrorConstraint(err) {
 		case model.TableGroupConstraintNameUnique:
 			return nil, grpc.Errorf(codes.AlreadyExists, "group with given name already exists")
 		default:
@@ -36,11 +39,11 @@ func (cgh *createGroupHandler) Create(ctx context.Context, req *charonrpc.Create
 	return cgh.response(ent)
 }
 
-func (cgh *createGroupHandler) firewall(req *charonrpc.CreateGroupRequest, act *actor) error {
-	if act.user.IsSuperuser {
+func (cgh *createGroupHandler) firewall(req *charonrpc.CreateGroupRequest, act *session.Actor) error {
+	if act.User.IsSuperuser {
 		return nil
 	}
-	if act.permissions.Contains(charon.GroupCanCreate) {
+	if act.Permissions.Contains(charon.GroupCanCreate) {
 		return nil
 	}
 

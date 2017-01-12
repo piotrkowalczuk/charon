@@ -6,45 +6,46 @@ import (
 	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/charon/charonrpc"
 	"github.com/piotrkowalczuk/charon/internal/model"
+	"github.com/piotrkowalczuk/charon/internal/session"
 	"github.com/piotrkowalczuk/ntypes"
 )
 
 func TestDeleteUserHandler_firewall_success(t *testing.T) {
 	data := []struct {
 		req charonrpc.DeleteUserRequest
-		act actor
+		act session.Actor
 		ent model.UserEntity
 	}{
 		{
 			req: charonrpc.DeleteUserRequest{},
-			act: actor{
-				user: &model.UserEntity{ID: 1},
-				permissions: charon.Permissions{
+			act: session.Actor{
+				User: &model.UserEntity{ID: 1},
+				Permissions: charon.Permissions{
 					charon.UserCanDeleteAsOwner,
 				},
 			},
 			ent: model.UserEntity{
 				ID:        2,
-				CreatedBy: &ntypes.Int64{Int64: 1, Valid: true},
+				CreatedBy: ntypes.Int64{Int64: 1, Valid: true},
 			},
 		},
 		{
 			req: charonrpc.DeleteUserRequest{},
-			act: actor{
-				user: &model.UserEntity{ID: 1},
-				permissions: charon.Permissions{
+			act: session.Actor{
+				User: &model.UserEntity{ID: 1},
+				Permissions: charon.Permissions{
 					charon.UserCanDeleteAsStranger,
 				},
 			},
 			ent: model.UserEntity{
 				ID:        2,
-				CreatedBy: &ntypes.Int64{Int64: 3, Valid: true},
+				CreatedBy: ntypes.Int64{Int64: 3, Valid: true},
 			},
 		},
 		{
 			req: charonrpc.DeleteUserRequest{},
-			act: actor{
-				user: &model.UserEntity{
+			act: session.Actor{
+				User: &model.UserEntity{
 					ID:          1,
 					IsSuperuser: true,
 				},
@@ -56,8 +57,8 @@ func TestDeleteUserHandler_firewall_success(t *testing.T) {
 		},
 		{
 			req: charonrpc.DeleteUserRequest{},
-			act: actor{
-				user: &model.UserEntity{
+			act: session.Actor{
+				User: &model.UserEntity{
 					ID:          1,
 					IsSuperuser: true,
 				},
@@ -68,34 +69,34 @@ func TestDeleteUserHandler_firewall_success(t *testing.T) {
 		},
 		{
 			req: charonrpc.DeleteUserRequest{},
-			act: actor{
-				user: &model.UserEntity{
+			act: session.Actor{
+				User: &model.UserEntity{
 					ID: 1,
 				},
-				permissions: charon.Permissions{
+				Permissions: charon.Permissions{
 					charon.UserCanDeleteStaffAsOwner,
 				},
 			},
 			ent: model.UserEntity{
 				ID:        2,
 				IsStaff:   true,
-				CreatedBy: &ntypes.Int64{Int64: 1, Valid: true},
+				CreatedBy: ntypes.Int64{Int64: 1, Valid: true},
 			},
 		},
 		{
 			req: charonrpc.DeleteUserRequest{},
-			act: actor{
-				user: &model.UserEntity{
+			act: session.Actor{
+				User: &model.UserEntity{
 					ID: 1,
 				},
-				permissions: charon.Permissions{
+				Permissions: charon.Permissions{
 					charon.UserCanDeleteStaffAsStranger,
 				},
 			},
 			ent: model.UserEntity{
 				ID:        2,
 				IsStaff:   true,
-				CreatedBy: &ntypes.Int64{Int64: 3, Valid: true},
+				CreatedBy: ntypes.Int64{Int64: 3, Valid: true},
 			},
 		},
 	}
@@ -111,20 +112,20 @@ func TestDeleteUserHandler_firewall_success(t *testing.T) {
 func TestDeleteUserHandler_firewall_failure(t *testing.T) {
 	data := []struct {
 		req charonrpc.DeleteUserRequest
-		act actor
+		act session.Actor
 		ent model.UserEntity
 	}{
 		{
 			req: charonrpc.DeleteUserRequest{},
-			act: actor{
-				user: &model.UserEntity{},
+			act: session.Actor{
+				User: &model.UserEntity{},
 			},
 			ent: model.UserEntity{},
 		},
 		{
 			req: charonrpc.DeleteUserRequest{},
-			act: actor{
-				user: &model.UserEntity{ID: 1},
+			act: session.Actor{
+				User: &model.UserEntity{ID: 1},
 			},
 			ent: model.UserEntity{
 				ID: 2,
@@ -132,9 +133,9 @@ func TestDeleteUserHandler_firewall_failure(t *testing.T) {
 		},
 		{
 			req: charonrpc.DeleteUserRequest{},
-			act: actor{
-				user: &model.UserEntity{ID: 1},
-				permissions: charon.Permissions{
+			act: session.Actor{
+				User: &model.UserEntity{ID: 1},
+				Permissions: charon.Permissions{
 					charon.UserCanDeleteAsStranger,
 					charon.UserCanDeleteAsOwner,
 					charon.UserCanDeleteStaffAsStranger,
@@ -147,9 +148,9 @@ func TestDeleteUserHandler_firewall_failure(t *testing.T) {
 		},
 		{
 			req: charonrpc.DeleteUserRequest{},
-			act: actor{
-				user: &model.UserEntity{ID: 1},
-				permissions: charon.Permissions{
+			act: session.Actor{
+				User: &model.UserEntity{ID: 1},
+				Permissions: charon.Permissions{
 					charon.UserCanDeleteAsStranger,
 					charon.UserCanDeleteAsOwner,
 					charon.UserCanDeleteStaffAsStranger,
@@ -163,9 +164,9 @@ func TestDeleteUserHandler_firewall_failure(t *testing.T) {
 		},
 		{
 			req: charonrpc.DeleteUserRequest{},
-			act: actor{
-				user: &model.UserEntity{ID: 1, IsSuperuser: true},
-				permissions: charon.Permissions{
+			act: session.Actor{
+				User: &model.UserEntity{ID: 1, IsSuperuser: true},
+				Permissions: charon.Permissions{
 					charon.UserCanDeleteAsStranger,
 					charon.UserCanDeleteAsOwner,
 					charon.UserCanDeleteStaffAsStranger,

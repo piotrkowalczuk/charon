@@ -3,6 +3,7 @@ package charond
 import (
 	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/charon/charonrpc"
+	"github.com/piotrkowalczuk/charon/internal/session"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -22,7 +23,7 @@ func (suph *setUserPermissionsHandler) SetPermissions(ctx context.Context, req *
 		return nil, err
 	}
 
-	created, removed, err := suph.repository.user.SetPermissions(req.UserId, charon.NewPermissions(req.Permissions...)...)
+	created, removed, err := suph.repository.user.SetPermissions(ctx, req.UserId, charon.NewPermissions(req.Permissions...)...)
 	if err != nil {
 		return nil, err
 	}
@@ -34,14 +35,14 @@ func (suph *setUserPermissionsHandler) SetPermissions(ctx context.Context, req *
 	}, nil
 }
 
-func (suph *setUserPermissionsHandler) firewall(req *charonrpc.SetUserPermissionsRequest, act *actor) error {
-	if act.user.IsSuperuser {
+func (suph *setUserPermissionsHandler) firewall(req *charonrpc.SetUserPermissionsRequest, act *session.Actor) error {
+	if act.User.IsSuperuser {
 		return nil
 	}
 
-	if act.permissions.Contains(charon.UserPermissionCanCreate) && act.permissions.Contains(charon.UserPermissionCanDelete) {
+	if act.Permissions.Contains(charon.UserPermissionCanCreate) && act.Permissions.Contains(charon.UserPermissionCanDelete) {
 		return nil
 	}
 
-	return grpc.Errorf(codes.PermissionDenied, "user permissions cannot be set, missing permission")
+	return grpc.Errorf(codes.PermissionDenied, "User Permissions cannot be set, missing permission")
 }

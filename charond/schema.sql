@@ -1,6 +1,6 @@
 CREATE SCHEMA IF NOT EXISTS charon;
 
-CREATE TABLE IF NOT EXISTS charonrpc.user (
+CREATE TABLE IF NOT EXISTS charonrpc.User (
   id                 SERIAL,
   password           TEXT                      NOT NULL,
   username           TEXT                      NOT NULL,
@@ -19,8 +19,8 @@ CREATE TABLE IF NOT EXISTS charonrpc.user (
 
   CONSTRAINT "charonrpc.user_pkey" PRIMARY KEY (id),
   CONSTRAINT "charonrpc.user_username_key" UNIQUE (username),
-  CONSTRAINT "charonrpc.user_created_by_fkey" FOREIGN KEY (created_by) REFERENCES charonrpc.user (id),
-  CONSTRAINT "charonrpc.user_updated_by_fkey" FOREIGN KEY (updated_by) REFERENCES charonrpc.user (id)
+  CONSTRAINT "charonrpc.user_created_by_fkey" FOREIGN KEY (created_by) REFERENCES charonrpc.User (id),
+  CONSTRAINT "charonrpc.user_updated_by_fkey" FOREIGN KEY (updated_by) REFERENCES charonrpc.User (id)
 );
 
 CREATE TABLE IF NOT EXISTS charonrpc.group (
@@ -32,8 +32,8 @@ CREATE TABLE IF NOT EXISTS charonrpc.group (
   updated_by INTEGER,
 
   CONSTRAINT "charonrpc.group_pkey" PRIMARY KEY (id),
-  CONSTRAINT "charonrpc.group_created_by_fkey" FOREIGN KEY (created_by) REFERENCES charonrpc.user (id),
-  CONSTRAINT "charonrpc.group_updated_by_fkey" FOREIGN KEY (updated_by) REFERENCES charonrpc.user (id)
+  CONSTRAINT "charonrpc.group_created_by_fkey" FOREIGN KEY (created_by) REFERENCES charonrpc.User (id),
+  CONSTRAINT "charonrpc.group_updated_by_fkey" FOREIGN KEY (updated_by) REFERENCES charonrpc.User (id)
 );
 
 CREATE TABLE IF NOT EXISTS charonrpc.user_groups (
@@ -42,9 +42,9 @@ CREATE TABLE IF NOT EXISTS charonrpc.user_groups (
   created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
   created_by INTEGER,
 
-  CONSTRAINT "charonrpc.user_groups_user_id_fkey" FOREIGN KEY (user_id) REFERENCES charonrpc.user (id),
+  CONSTRAINT "charonrpc.user_groups_user_id_fkey" FOREIGN KEY (user_id) REFERENCES charonrpc.User (id),
   CONSTRAINT "charonrpc.user_groups_group_id_fkey" FOREIGN KEY (group_id) REFERENCES charonrpc.group (id),
-  CONSTRAINT "charonrpc.user_groups_created_by_fkey" FOREIGN KEY (created_by) REFERENCES charonrpc.user (id)
+  CONSTRAINT "charonrpc.user_groups_created_by_fkey" FOREIGN KEY (created_by) REFERENCES charonrpc.User (id)
 );
 
 CREATE TABLE IF NOT EXISTS charonrpc.permission (
@@ -59,7 +59,7 @@ CREATE TABLE IF NOT EXISTS charonrpc.permission (
   CONSTRAINT "charonrpc.permission_pkey" PRIMARY KEY (id),
   CONSTRAINT "charonrpc.permission_subsystem_module_action_key" UNIQUE (subsystem, module, action),
   CONSTRAINT "charonrpc.permission_subsystem_id_fkey" FOREIGN KEY (subsystem_id) REFERENCES charonrpc.subsystem (id),
-  CONSTRAINT "charonrpc.permission_created_by_fkey" FOREIGN KEY (created_by) REFERENCES charonrpc.user (id)
+  CONSTRAINT "charonrpc.permission_created_by_fkey" FOREIGN KEY (created_by) REFERENCES charonrpc.User (id)
 );
 
 CREATE TABLE IF NOT EXISTS charonrpc.user_permissions (
@@ -68,9 +68,9 @@ CREATE TABLE IF NOT EXISTS charonrpc.user_permissions (
   created_at    TIMESTAMPTZ DEFAULT NOW() NOT NULL,
   created_by    INTEGER,
 
-  CONSTRAINT "charonrpc.user_permissions_user_id_fkey" FOREIGN KEY (user_id) REFERENCES charonrpc.user (id),
+  CONSTRAINT "charonrpc.user_permissions_user_id_fkey" FOREIGN KEY (user_id) REFERENCES charonrpc.User (id),
   CONSTRAINT "charonrpc.user_permissions_permission_id_fkey" FOREIGN KEY (permission_id) REFERENCES charonrpc.permission (id),
-  CONSTRAINT "charonrpc.user_permissions_created_by_fkey" FOREIGN KEY (created_by) REFERENCES charonrpc.user (id)
+  CONSTRAINT "charonrpc.user_permissions_created_by_fkey" FOREIGN KEY (created_by) REFERENCES charonrpc.User (id)
 );
 
 
@@ -82,5 +82,5 @@ CREATE TABLE IF NOT EXISTS charonrpc.group_permissions (
 
   CONSTRAINT "charonrpc.group_permissions_group_id_fkey" FOREIGN KEY (group_id) REFERENCES charonrpc.group (id),
   CONSTRAINT "charonrpc.group_permissions_permission_id_fkey" FOREIGN KEY (permission_id) REFERENCES charonrpc.permission (id),
-  CONSTRAINT "charonrpc.group_permissions_created_by_fkey" FOREIGN KEY (created_by) REFERENCES charonrpc.user (id)
+  CONSTRAINT "charonrpc.group_permissions_created_by_fkey" FOREIGN KEY (created_by) REFERENCES charonrpc.User (id)
 );

@@ -1,6 +1,7 @@
 package model
 
 import (
+	"context"
 	"database/sql"
 	"strings"
 
@@ -43,8 +44,8 @@ func (ue *UserEntity) Message() (*charonrpc.User, error) {
 	if createdAt, err = ptypes.TimestampProto(ue.CreatedAt); err != nil {
 		return nil, err
 	}
-	if ue.UpdatedAt != nil {
-		if createdAt, err = ptypes.TimestampProto(*ue.UpdatedAt); err != nil {
+	if ue.UpdatedAt.Valid {
+		if createdAt, err = ptypes.TimestampProto(ue.UpdatedAt.Time); err != nil {
 			return nil, err
 		}
 	}
@@ -59,30 +60,30 @@ func (ue *UserEntity) Message() (*charonrpc.User, error) {
 		IsStaff:     ue.IsStaff,
 		IsConfirmed: ue.IsConfirmed,
 		CreatedAt:   createdAt,
-		CreatedBy:   ue.CreatedBy,
+		CreatedBy:   &ue.CreatedBy,
 		UpdatedAt:   updatedAt,
-		UpdatedBy:   ue.UpdatedBy,
+		UpdatedBy:   &ue.UpdatedBy,
 	}, nil
 }
 
 // UserProvider wraps UserRepository into interface.
 type UserProvider interface {
-	Exists(id int64) (bool, error)
-	Create(username string, password []byte, FirstName, LastName string, confirmationToken []byte, isSuperuser, IsStaff, isActive, isConfirmed bool) (*UserEntity, error)
-	Insert(*UserEntity) (*UserEntity, error)
-	CreateSuperuser(username string, password []byte, FirstName, LastName string) (*UserEntity, error)
+	Exists(context.Context, int64) (bool, error)
+	Create(ctx context.Context, username string, password []byte, FirstName, LastName string, confirmationToken []byte, isSuperuser, IsStaff, isActive, isConfirmed bool) (*UserEntity, error)
+	Insert(context.Context, *UserEntity) (*UserEntity, error)
+	CreateSuperuser(ctx context.Context, username string, password []byte, FirstName, LastName string) (*UserEntity, error)
 	// Count retrieves number of all users.
-	Count() (int64, error)
-	UpdateLastLoginAt(id int64) (int64, error)
-	ChangePassword(id int64, password string) error
-	Find(criteria *UserCriteria) ([]*UserEntity, error)
-	FindOneByID(id int64) (*UserEntity, error)
-	FindOneByUsername(username string) (*UserEntity, error)
-	DeleteOneByID(id int64) (int64, error)
-	UpdateOneByID(int64, *UserPatch) (*UserEntity, error)
-	RegistrationConfirmation(id int64, confirmationToken string) error
-	IsGranted(id int64, permission charon.Permission) (bool, error)
-	SetPermissions(id int64, permissions ...charon.Permission) (int64, int64, error)
+	Count(context.Context) (int64, error)
+	UpdateLastLoginAt(ctx context.Context, id int64) (int64, error)
+	ChangePassword(ctx context.Context, id int64, password string) error
+	Find(ctx context.Context, criteria *UserCriteria) ([]*UserEntity, error)
+	FindOneByID(context.Context, int64) (*UserEntity, error)
+	FindOneByUsername(context.Context, string) (*UserEntity, error)
+	DeleteOneByID(context.Context, int64) (int64, error)
+	UpdateOneByID(context.Context, int64, *UserPatch) (*UserEntity, error)
+	RegistrationConfirmation(ctx context.Context, id int64, confirmationToken string) error
+	IsGranted(ctx context.Context, id int64, permission charon.Permission) (bool, error)
+	SetPermissions(ctx context.Context, id int64, permissions ...charon.Permission) (int64, int64, error)
 }
 
 // UserRepository extends UserRepositoryBase.
@@ -94,15 +95,15 @@ type UserRepository struct {
 func NewUserRepository(dbPool *sql.DB) *UserRepository {
 	return &UserRepository{
 		UserRepositoryBase: UserRepositoryBase{
-			db:      dbPool,
-			table:   TableUser,
-			columns: TableUserColumns,
+			DB:      dbPool,
+			Table:   TableUser,
+			Columns: TableUserColumns,
 		},
 	}
 }
 
 // Create implements UserProvider interface.
-func (ur *UserRepository) Create(username string, password []byte, firstName, lastName string, confirmationToken []byte, isSuperuser, isStaff, isActive, isConfirmed bool) (*UserEntity, error) {
+func (ur *UserRepository) Create(ctx context.Context, username string, password []byte, firstName, lastName string, confirmationToken []byte, isSuperuser, isStaff, isActive, isConfirmed bool) (*UserEntity, error) {
 	if isSuperuser {
 		isStaff = true
 		isActive = true
@@ -120,35 +121,30 @@ func (ur *UserRepository) Create(username string, password []byte, firstName, la
 		IsActive:          isActive,
 		IsConfirmed:       isConfirmed,
 	}
-	return ur.Insert(entity)
+	return ur.Insert(ctx, entity)
 }
 
 // CreateSuperuser implements UserProvider interface.
-func (ur *UserRepository) CreateSuperuser(username string, password []byte, FirstName, LastName string) (*UserEntity, error) {
-	return ur.Create(username, password, FirstName, LastName, []byte(UserConfirmationTokenUsed), true, false, true, true)
+func (ur *UserRepository) CreateSuperuser(ctx context.Context, username string, password []byte, FirstName, LastName string) (*UserEntity, error) {
+	return ur.Create(ctx, username, password, FirstName, LastName, []byte(UserConfirmationTokenUsed), true, false, true, true)
 }
 
 // Count implements UserProvider interface.
-func (ur *UserRepository) Count() (n int64, err error) {
-	err = ur.db.QueryRow("SELECT COUNT(*) FROM " + TableUser).Scan(&n)
+func (ur *UserRepository) Count(ctx context.Context) (n int64, err error) {
+	err = ur.DB.QueryRowContext(ctx, "SELECT COUNT(*) FROM "+TableUser).Scan(&n)
 
 	return
 }
 
 // RegistrationConfirmation ...
-func (ur *UserRepository) RegistrationConfirmation(userID int64, confirmationToken string) error {
+func (ur *UserRepository) RegistrationConfirmation(ctx context.Context, userID int64, confirmationToken string) error {
 	query := `
-		UPDATE ` + ur.table + `
+		UPDATE ` + ur.Table + `
 		SET is_confirmed = true, is_active = true, updated_at = NOW(), confirmation_token = $1
 		WHERE is_confirmed = false AND id = $2 AND confirmation_token = $3;
 	`
 
-	result, err := ur.db.Exec(
-		query,
-		UserConfirmationTokenUsed,
-		userID,
-		confirmationToken,
-	)
+	result, err := ur.DB.ExecContext(ctx, query, UserConfirmationTokenUsed, userID, confirmationToken)
 	if err != nil {
 		return err
 	}
@@ -159,18 +155,14 @@ func (ur *UserRepository) RegistrationConfirmation(userID int64, confirmationTok
 }
 
 // ChangePassword ...
-func (ur *UserRepository) ChangePassword(userID int64, password string) error {
+func (ur *UserRepository) ChangePassword(ctx context.Context, userID int64, password string) error {
 	query := `
-		UPDATE ` + ur.table + `
+		UPDATE ` + ur.Table + `
 		SET password = $2, updated_at = NOW()
 		WHERE id = $1;
 	`
 
-	result, err := ur.db.Exec(
-		query,
-		userID,
-		password,
-	)
+	result, err := ur.DB.ExecContext(ctx, query, userID, password)
 	if err != nil {
 		return err
 	}
@@ -180,21 +172,21 @@ func (ur *UserRepository) ChangePassword(userID int64, password string) error {
 }
 
 // FindOneByUsername ...
-func (ur *UserRepository) FindOneByUsername(username string) (*UserEntity, error) {
-	return ur.FindOneBy("username", username)
+func (ur *UserRepository) FindOneByUsername(ctx context.Context, username string) (*UserEntity, error) {
+	return ur.FindOneBy(ctx, "username", username)
 }
 
 // FindOneBy ...
-func (ur *UserRepository) FindOneBy(fieldName string, value interface{}) (*UserEntity, error) {
+func (ur *UserRepository) FindOneBy(ctx context.Context, fieldName string, value interface{}) (*UserEntity, error) {
 	query := `
 		SELECT ` + strings.Join(TableUserColumns, ",") + `
-		FROM ` + ur.table + `
+		FROM ` + ur.Table + `
 		WHERE ` + fieldName + ` = $1
 		LIMIT 1
 	`
 
 	var ent UserEntity
-	err := ur.db.QueryRow(query, value).Scan(
+	err := ur.DB.QueryRowContext(ctx, query, value).Scan(
 		&ent.ConfirmationToken,
 		&ent.CreatedAt,
 		&ent.CreatedBy,
@@ -220,14 +212,14 @@ func (ur *UserRepository) FindOneBy(fieldName string, value interface{}) (*UserE
 }
 
 // UpdateLastLoginAt implements UserProvider interface.
-func (ur *UserRepository) UpdateLastLoginAt(userID int64) (int64, error) {
+func (ur *UserRepository) UpdateLastLoginAt(ctx context.Context, userID int64) (int64, error) {
 	query := `
-		UPDATE ` + ur.table + `
+		UPDATE ` + ur.Table + `
 		SET ` + TableUserColumnLastLoginAt + ` = NOW()
 		WHERE ` + TableUserColumnID + ` = $1
 	`
 
-	result, err := ur.db.Exec(
+	result, err := ur.DB.ExecContext(ctx,
 		query,
 		userID,
 	)
@@ -239,17 +231,17 @@ func (ur *UserRepository) UpdateLastLoginAt(userID int64) (int64, error) {
 }
 
 // Exists implements UserProvider interface.
-func (ur *UserRepository) Exists(userID int64) (bool, error) {
+func (ur *UserRepository) Exists(ctx context.Context, userID int64) (bool, error) {
 	query := `
 		SELECT EXISTS(
 			SELECT 1
-			FROM ` + ur.table + ` AS p
+			FROM ` + ur.Table + ` AS p
 			WHERE ` + TableUserColumnID + ` = $1
 		)
 	`
 
 	var exists bool
-	if err := ur.db.QueryRow(query, userID).Scan(&exists); err != nil {
+	if err := ur.DB.QueryRowContext(ctx, query, userID).Scan(&exists); err != nil {
 		return false, err
 	}
 
@@ -257,10 +249,10 @@ func (ur *UserRepository) Exists(userID int64) (bool, error) {
 }
 
 // IsGranted implements UserProvider interface.
-func (ur *UserRepository) IsGranted(id int64, p charon.Permission) (bool, error) {
+func (ur *UserRepository) IsGranted(ctx context.Context, id int64, p charon.Permission) (bool, error) {
 	var exists bool
 	subsystem, module, action := p.Split()
-	if err := ur.db.QueryRow(isGrantedQuery(
+	if err := ur.DB.QueryRowContext(ctx, isGrantedQuery(
 		TableUserPermissions,
 		TableUserPermissionsColumnUserID,
 		TableUserPermissionsColumnPermissionSubsystem,
@@ -274,8 +266,8 @@ func (ur *UserRepository) IsGranted(id int64, p charon.Permission) (bool, error)
 }
 
 // SetPermissions implements UserProvider interface.
-func (ur *UserRepository) SetPermissions(id int64, p ...charon.Permission) (int64, int64, error) {
-	return setPermissions(ur.db, TableUserPermissions,
+func (ur *UserRepository) SetPermissions(ctx context.Context, id int64, p ...charon.Permission) (int64, int64, error) {
+	return setPermissions(ur.DB, ctx, TableUserPermissions,
 		TableUserPermissionsColumnUserID,
 		TableUserPermissionsColumnPermissionSubsystem,
 		TableUserPermissionsColumnPermissionModule,

@@ -2,6 +2,7 @@ package model
 
 import (
 	"bytes"
+	"context"
 	"database/sql"
 	"errors"
 	"fmt"
@@ -96,7 +97,7 @@ func isGrantedQuery(table, columnID, columnSubsystem, columnModule, columnAction
 	`
 }
 
-func setManyToMany(db *sql.DB, table, column1, column2 string, id int64, ids []int64) (int64, int64, error) {
+func setManyToMany(db *sql.DB, ctx context.Context, table, column1, column2 string, id int64, ids []int64) (int64, int64, error) {
 	var (
 		err                    error
 		aff, inserted, deleted int64
@@ -107,7 +108,7 @@ func setManyToMany(db *sql.DB, table, column1, column2 string, id int64, ids []i
 		granted                bool
 	)
 
-	tx, err = db.Begin()
+	tx, err = db.BeginTx(ctx, nil)
 	if err != nil {
 		return 0, 0, err
 	}
@@ -188,7 +189,7 @@ func setManyToMany(db *sql.DB, table, column1, column2 string, id int64, ids []i
 	return inserted, deleted, nil
 }
 
-func setPermissions(db *sql.DB, table, columnID, columnSubsystem, columnModule, columnAction string, id int64, permissions charon.Permissions) (int64, int64, error) {
+func setPermissions(db *sql.DB, ctx context.Context, table, columnID, columnSubsystem, columnModule, columnAction string, id int64, permissions charon.Permissions) (int64, int64, error) {
 	if len(permissions) == 0 {
 		return 0, 0, errors.New("permission cannot be set, none provided")
 	}
@@ -202,7 +203,7 @@ func setPermissions(db *sql.DB, table, columnID, columnSubsystem, columnModule, 
 		granted                bool
 	)
 
-	tx, err = db.Begin()
+	tx, err = db.BeginTx(ctx, nil)
 	if err != nil {
 		return 0, 0, err
 	}

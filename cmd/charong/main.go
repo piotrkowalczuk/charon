@@ -7,8 +7,10 @@ import (
 	"log"
 	"os"
 
+	"github.com/piotrkowalczuk/ntypespqt"
 	"github.com/piotrkowalczuk/pqt/pqtgo"
 	"github.com/piotrkowalczuk/pqt/pqtsql"
+	"github.com/piotrkowalczuk/qtypespqt"
 )
 
 var (
@@ -20,9 +22,8 @@ var (
 		"net":  "NET",
 		"irc":  "IRC",
 		"io":   "IO",
-		"kpi":  "KPI",
-		"ssp":  "SSP",
 		"uuid": "UUID",
+		"db":   "DB",
 	}
 )
 
@@ -38,12 +39,24 @@ func main() {
 	}
 	defer file.Close()
 
+	form := &pqtgo.Formatter{
+		Acronyms:   acronyms,
+		Visibility: pqtgo.Public,
+	}
 	sch := databaseSchema()
-	if err := pqtgo.NewGenerator().
-		SetAcronyms(acronyms).
-		SetVisibility(pqtgo.Public).
-		SetPackage("model").
-		GenerateTo(sch, file); err != nil {
+	gen := pqtgo.Generator{
+		Formatter: form,
+		Pkg:       "model",
+		Version:   9.5,
+		Plugins: []pqtgo.Plugin{
+			&qtypespqt.Plugin{
+				Formatter:  form,
+				Visibility: pqtgo.Public,
+			},
+			&ntypespqt.Plugin{},
+		},
+	}
+	if err := gen.GenerateTo(file, sch); err != nil {
 		log.Fatal(err)
 	}
 	fmt.Fprint(file, "const SQL = `\n")

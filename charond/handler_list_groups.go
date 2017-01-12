@@ -4,6 +4,7 @@ import (
 	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/charon/charonrpc"
 	"github.com/piotrkowalczuk/charon/internal/model"
+	"github.com/piotrkowalczuk/charon/internal/session"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -22,7 +23,7 @@ func (lgh *listGroupsHandler) List(ctx context.Context, req *charonrpc.ListGroup
 		return nil, err
 	}
 
-	ents, err := lgh.repository.group.Find(&model.GroupCriteria{
+	ents, err := lgh.repository.group.Find(ctx, &model.GroupCriteria{
 		Offset: req.Offset.Int64Or(0),
 		Limit:  req.Limit.Int64Or(10),
 	})
@@ -33,11 +34,11 @@ func (lgh *listGroupsHandler) List(ctx context.Context, req *charonrpc.ListGroup
 	return lgh.response(ents)
 }
 
-func (lgh *listGroupsHandler) firewall(req *charonrpc.ListGroupsRequest, act *actor) error {
-	if act.user.IsSuperuser {
+func (lgh *listGroupsHandler) firewall(req *charonrpc.ListGroupsRequest, act *session.Actor) error {
+	if act.User.IsSuperuser {
 		return nil
 	}
-	if act.permissions.Contains(charon.GroupCanRetrieve) {
+	if act.Permissions.Contains(charon.GroupCanRetrieve) {
 		return nil
 	}
 

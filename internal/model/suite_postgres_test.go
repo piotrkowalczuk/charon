@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/go-kit/kit/log"
+	"github.com/lib/pq"
 	"github.com/piotrkowalczuk/sklog"
 )
 
@@ -60,6 +61,15 @@ func assert(t *testing.T, is bool, msg string) bool {
 
 func assertfTime(t *testing.T, tm *time.Time, msg string, args ...interface{}) bool {
 	if tm == nil || tm.IsZero() {
+		t.Errorf(msg, args...)
+		return false
+	}
+
+	return true
+}
+
+func assertfNullTime(t *testing.T, tm pq.NullTime, msg string, args ...interface{}) bool {
+	if !tm.Valid || tm.Time.IsZero() {
 		t.Errorf(msg, args...)
 		return false
 	}

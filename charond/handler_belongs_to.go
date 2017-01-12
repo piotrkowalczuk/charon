@@ -4,6 +4,7 @@ import (
 	"github.com/golang/protobuf/ptypes/wrappers"
 	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/charon/charonrpc"
+	"github.com/piotrkowalczuk/charon/internal/session"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -18,7 +19,7 @@ func (bth *belongsToHandler) BelongsTo(ctx context.Context, req *charonrpc.Belon
 		return nil, grpc.Errorf(codes.InvalidArgument, "group id needs to be greater than zero")
 	}
 	if req.UserId < 1 {
-		return nil, grpc.Errorf(codes.InvalidArgument, "user id needs to be greater than zero")
+		return nil, grpc.Errorf(codes.InvalidArgument, "User id needs to be greater than zero")
 	}
 
 	act, err := bth.retrieveActor(ctx)
@@ -29,7 +30,7 @@ func (bth *belongsToHandler) BelongsTo(ctx context.Context, req *charonrpc.Belon
 		return nil, err
 	}
 
-	belongs, err := bth.repository.userGroups.Exists(req.UserId, req.GroupId)
+	belongs, err := bth.repository.userGroups.Exists(ctx, req.UserId, req.GroupId)
 	if err != nil {
 		return nil, err
 	}
@@ -37,14 +38,14 @@ func (bth *belongsToHandler) BelongsTo(ctx context.Context, req *charonrpc.Belon
 	return &wrappers.BoolValue{Value: belongs}, nil
 }
 
-func (bth *belongsToHandler) firewall(req *charonrpc.BelongsToRequest, act *actor) error {
-	if act.user.ID == req.UserId {
+func (bth *belongsToHandler) firewall(req *charonrpc.BelongsToRequest, act *session.Actor) error {
+	if act.User.ID == req.UserId {
 		return nil
 	}
-	if act.user.IsSuperuser {
+	if act.User.IsSuperuser {
 		return nil
 	}
-	if act.permissions.Contains(charon.UserGroupCanCheckBelongingAsStranger) {
+	if act.Permissions.Contains(charon.UserGroupCanCheckBelongingAsStranger) {
 		return nil
 	}
 

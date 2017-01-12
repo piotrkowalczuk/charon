@@ -4,6 +4,7 @@ import (
 	"github.com/golang/protobuf/ptypes/wrappers"
 	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/charon/charonrpc"
+	"github.com/piotrkowalczuk/charon/internal/session"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -18,7 +19,7 @@ func (ig *isGrantedHandler) IsGranted(ctx context.Context, req *charonrpc.IsGran
 		return nil, grpc.Errorf(codes.InvalidArgument, "permission cannot be empty")
 	}
 	if req.UserId < 1 {
-		return nil, grpc.Errorf(codes.InvalidArgument, "user id needs to be greater than zero")
+		return nil, grpc.Errorf(codes.InvalidArgument, "User id needs to be greater than zero")
 	}
 
 	act, err := ig.retrieveActor(ctx)
@@ -29,7 +30,7 @@ func (ig *isGrantedHandler) IsGranted(ctx context.Context, req *charonrpc.IsGran
 		return nil, err
 	}
 
-	granted, err := ig.repository.user.IsGranted(req.UserId, charon.Permission(req.Permission))
+	granted, err := ig.repository.user.IsGranted(ctx, req.UserId, charon.Permission(req.Permission))
 	if err != nil {
 		return nil, err
 	}
@@ -39,14 +40,14 @@ func (ig *isGrantedHandler) IsGranted(ctx context.Context, req *charonrpc.IsGran
 	}, nil
 }
 
-func (ig *isGrantedHandler) firewall(req *charonrpc.IsGrantedRequest, act *actor) error {
-	if act.user.ID == req.UserId {
+func (ig *isGrantedHandler) firewall(req *charonrpc.IsGrantedRequest, act *session.Actor) error {
+	if act.User.ID == req.UserId {
 		return nil
 	}
-	if act.user.IsSuperuser {
+	if act.User.IsSuperuser {
 		return nil
 	}
-	if act.permissions.Contains(charon.UserPermissionCanCheckGrantingAsStranger) {
+	if act.Permissions.Contains(charon.UserPermissionCanCheckGrantingAsStranger) {
 		return nil
 	}
 

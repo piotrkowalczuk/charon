@@ -121,7 +121,7 @@ FixturesLoop:
 
 		res, err := c.group.Create(ctx, &charonrpc.CreateGroupRequest{
 			Name:        group.Name,
-			Description: &ntypes.String{String: group.Description, Valid: len(group.Description) > 0},
+			Description: &ntypes.String{Chars: group.Description, Valid: len(group.Description) > 0},
 		})
 		if err != nil {
 			if grpc.Code(err) == codes.AlreadyExists {

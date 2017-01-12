@@ -16,7 +16,6 @@ import (
 	"github.com/piotrkowalczuk/charon/internal/password"
 	"github.com/piotrkowalczuk/charon/internal/session"
 	"github.com/piotrkowalczuk/mnemosyne/mnemosynerpc"
-	"github.com/piotrkowalczuk/pqt"
 	"github.com/piotrkowalczuk/qtypes"
 	"github.com/piotrkowalczuk/sklog"
 	"golang.org/x/net/context"
@@ -49,12 +48,12 @@ func (lh *loginHandler) Login(ctx context.Context, r *charonrpc.LoginRequest) (*
 		}
 
 		conn := got.(*libldap.Conn)
-		usr, err = lh.handleLDAP(conn, r)
+		usr, err = lh.handleLDAP(ctx, conn, r)
 		if err != nil {
 			if terr, ok := err.(*libldap.Error); ok && terr.ResultCode >= libldap.ErrorNetwork {
 				// on network issue, try once again
 				<-time.After(1 * time.Second)
-				if usr, err = lh.handleLDAP(conn, r); err != nil {
+				if usr, err = lh.handleLDAP(ctx, conn, r); err != nil {
 					conn.Close()
 					return nil, err
 				}
@@ -64,9 +63,9 @@ func (lh *loginHandler) Login(ctx context.Context, r *charonrpc.LoginRequest) (*
 		}
 		lh.ldap.Put(conn)
 	} else {
-		usr, err = lh.repository.user.FindOneByUsername(r.Username)
+		usr, err = lh.repository.user.FindOneByUsername(ctx, r.Username)
 		if err != nil {
-			return nil, grpc.Errorf(codes.Unauthenticated, "user does not exists")
+			return nil, grpc.Errorf(codes.Unauthenticated, "User does not exists")
 		}
 	}
 
@@ -80,11 +79,11 @@ func (lh *loginHandler) Login(ctx context.Context, r *charonrpc.LoginRequest) (*
 	}
 
 	if !usr.IsConfirmed {
-		return nil, grpc.Errorf(codes.Unauthenticated, "user is not confirmed")
+		return nil, grpc.Errorf(codes.Unauthenticated, "User is not confirmed")
 	}
 
 	if !usr.IsActive {
-		return nil, grpc.Errorf(codes.Unauthenticated, "user is not active")
+		return nil, grpc.Errorf(codes.Unauthenticated, "User is not active")
 	}
 
 	res, err := lh.session.Start(ctx, &mnemosynerpc.StartRequest{
@@ -102,7 +101,7 @@ func (lh *loginHandler) Login(ctx context.Context, r *charonrpc.LoginRequest) (*
 		return nil, err
 	}
 
-	_, err = lh.repository.user.UpdateLastLoginAt(usr.ID)
+	_, err = lh.repository.user.UpdateLastLoginAt(ctx, usr.ID)
 	if err != nil {
 		return nil, grpc.Errorf(codes.Internal, "last login update failure: %s", err)
 	}
@@ -110,7 +109,7 @@ func (lh *loginHandler) Login(ctx context.Context, r *charonrpc.LoginRequest) (*
 	return &wrappers.StringValue{Value: res.Session.AccessToken}, nil
 }
 
-func (lh *loginHandler) handleLDAP(conn *libldap.Conn, r *charonrpc.LoginRequest) (*model.UserEntity, error) {
+func (lh *loginHandler) handleLDAP(ctx context.Context, conn *libldap.Conn, r *charonrpc.LoginRequest) (*model.UserEntity, error) {
 	var filter string
 	if strings.Contains(r.Username, "@") {
 		filter = fmt.Sprintf("(&(objectClass=organizationalPerson)(mail=%s))", libldap.EscapeFilter(r.Username))
@@ -133,7 +132,7 @@ func (lh *loginHandler) handleLDAP(conn *libldap.Conn, r *charonrpc.LoginRequest
 	}
 
 	if len(res.Entries) != 1 {
-		return nil, grpc.Errorf(codes.Unauthenticated, "user '%s' does not exist, number of ldap entries found: %d", r.Username, len(res.Entries))
+		return nil, grpc.Errorf(codes.Unauthenticated, "User '%s' does not exist, number of ldap entries found: %d", r.Username, len(res.Entries))
 	}
 
 	if err = conn.Bind(res.Entries[0].DN, r.Password); err != nil {
@@ -142,17 +141,18 @@ func (lh *loginHandler) handleLDAP(conn *libldap.Conn, r *charonrpc.LoginRequest
 
 	username := res.Entries[0].GetAttributeValue("mail")
 
-	sklog.Debug(lh.logger, "user found in ldap", "username_given", r.Username, "username_got", username, "attributes_got", res.Entries[0].Attributes, "attributes_asked", lh.mappings.Attributes)
+	sklog.Debug(lh.logger, "User found in ldap", "username_given", r.Username, "username_got", username, "attributes_got", res.Entries[0].Attributes, "attributes_asked", lh.mappings.Attributes)
 
 	mapping, found := lh.mappings.Map(res.Entries[0].Attributes)
 
 	var usr *model.UserEntity
-	usr, err = lh.repository.user.FindOneByUsername(username)
+	usr, err = lh.repository.user.FindOneByUsername(ctx, username)
 	if err != nil {
 		if err == sql.ErrNoRows && lh.opts.LDAP {
-			sklog.Debug(lh.logger, "user found in ldap but does not exists in database", "username", username)
+			sklog.Debug(lh.logger, "User found in ldap but does not exists in database", "username", username)
 
 			usr, err = lh.repository.user.Create(
+				ctx,
 				username,
 				model.ExternalPassword,
 				res.Entries[0].GetAttributeValue("givenName"),
@@ -164,16 +164,16 @@ func (lh *loginHandler) handleLDAP(conn *libldap.Conn, r *charonrpc.LoginRequest
 				true,
 			)
 			if err != nil {
-				switch pqt.ErrorConstraint(err) {
+				switch model.ErrorConstraint(err) {
 				case model.TableUserConstraintPrimaryKey:
-					return nil, grpc.Errorf(codes.AlreadyExists, "user with such id already exists")
+					return nil, grpc.Errorf(codes.AlreadyExists, "User with such id already exists")
 				case model.TableUserConstraintUsernameUnique:
-					return nil, grpc.Errorf(codes.AlreadyExists, "user with such username already exists")
+					return nil, grpc.Errorf(codes.AlreadyExists, "User with such username already exists")
 				default:
 					return nil, err
 				}
 			}
-			sklog.Debug(lh.logger, "user found in ldap has been created", "username", username, "first_name", usr.FirstName, "last_name", usr.LastName)
+			sklog.Debug(lh.logger, "User found in ldap has been created", "username", username, "first_name", usr.FirstName, "last_name", usr.LastName)
 		} else {
 			return nil, grpc.Errorf(codes.Unauthenticated, "the username and password do not match")
 		}
@@ -182,19 +182,19 @@ func (lh *loginHandler) handleLDAP(conn *libldap.Conn, r *charonrpc.LoginRequest
 		sklog.Debug(lh.logger, "ldap mapping found", "username", username, "count_groups", len(mapping.Groups), "count_permissions", len(mapping.Permissions))
 
 		if len(mapping.Permissions) > 0 {
-			inserted, _, err := lh.repository.user.SetPermissions(usr.ID, charon.NewPermissions(mapping.Permissions...)...)
+			inserted, _, err := lh.repository.user.SetPermissions(ctx, usr.ID, charon.NewPermissions(mapping.Permissions...)...)
 			if err != nil {
 				return nil, err
 			}
-			sklog.Debug(lh.logger, "permissions given to the user", "username", username, "user_id", usr.ID, "inserted", inserted)
+			sklog.Debug(lh.logger, "Permissions given to the User", "username", username, "user_id", usr.ID, "inserted", inserted)
 		} else {
-			if _, err = lh.repository.userPermissions.DeleteByUserID(usr.ID); err != nil {
+			if _, err = lh.repository.userPermissions.DeleteByUserID(ctx, usr.ID); err != nil {
 				return nil, err
 			}
 		}
 
 		if len(mapping.Groups) > 0 {
-			groupsFound, err := lh.repository.group.Find(&model.GroupCriteria{
+			groupsFound, err := lh.repository.group.Find(ctx, &model.GroupCriteria{
 				Name: &qtypes.String{
 					Values: mapping.Groups,
 					Type:   qtypes.QueryType_IN,
@@ -205,20 +205,20 @@ func (lh *loginHandler) handleLDAP(conn *libldap.Conn, r *charonrpc.LoginRequest
 				return nil, err
 			}
 			if len(groupsFound) == 0 {
-				sklog.Debug(lh.logger, "user not added to groups, none found", "user_id", usr.ID, "groups", strings.Join(mapping.Groups, ","))
+				sklog.Debug(lh.logger, "User not added to groups, none found", "user_id", usr.ID, "groups", strings.Join(mapping.Groups, ","))
 				return usr, nil
 			}
 			var ids []int64
 			for _, g := range groupsFound {
 				ids = append(ids, g.ID)
 			}
-			_, _, err = lh.repository.userGroups.Set(usr.ID, ids)
+			_, _, err = lh.repository.userGroups.Set(ctx, usr.ID, ids)
 			if err != nil {
 				return nil, err
 			}
-			sklog.Debug(lh.logger, "user added to groups", "user_id", usr.ID, "count", len(ids))
+			sklog.Debug(lh.logger, "User added to groups", "user_id", usr.ID, "count", len(ids))
 		} else {
-			if _, err = lh.repository.userGroups.DeleteByUserID(usr.ID); err != nil {
+			if _, err = lh.repository.userGroups.DeleteByUserID(ctx, usr.ID); err != nil {
 				return nil, err
 			}
 		}

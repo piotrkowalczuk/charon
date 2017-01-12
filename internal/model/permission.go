@@ -1,6 +1,7 @@
 package model
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"strings"
@@ -17,14 +18,14 @@ func (pe *PermissionEntity) Permission() charon.Permission {
 
 // PermissionProvider ...
 type PermissionProvider interface {
-	Find(criteria *PermissionCriteria) ([]*PermissionEntity, error)
-	FindOneByID(id int64) (entity *PermissionEntity, err error)
+	Find(ctx context.Context, criteria *PermissionCriteria) ([]*PermissionEntity, error)
+	FindOneByID(ctx context.Context, id int64) (entity *PermissionEntity, err error)
 	// FindByUserID retrieves all permissions for user represented by given id.
-	FindByUserID(userID int64) (entities []*PermissionEntity, err error)
+	FindByUserID(ctx context.Context, userID int64) (entities []*PermissionEntity, err error)
 	// FindByGroupID retrieves all permissions for group represented by given id.
-	FindByGroupID(groupID int64) (entities []*PermissionEntity, err error)
-	Register(permissions charon.Permissions) (created, untouched, removed int64, err error)
-	Insert(entity *PermissionEntity) (*PermissionEntity, error)
+	FindByGroupID(ctx context.Context, groupID int64) (entities []*PermissionEntity, err error)
+	Register(ctx context.Context, permissions charon.Permissions) (created, untouched, removed int64, err error)
+	Insert(ctx context.Context, entity *PermissionEntity) (*PermissionEntity, error)
 }
 
 // PermissionRepository extends PermissionRepositoryBase
@@ -37,9 +38,9 @@ type PermissionRepository struct {
 func NewPermissionRepository(dbPool *sql.DB) *PermissionRepository {
 	return &PermissionRepository{
 		PermissionRepositoryBase: PermissionRepositoryBase{
-			db:      dbPool,
-			table:   TablePermission,
-			columns: TablePermissionColumns,
+			DB:      dbPool,
+			Table:   TablePermission,
+			Columns: TablePermissionColumns,
 		},
 		findByUserIDQuery: `SELECT DISTINCT ON (p.ID)
 			` + columns(TablePermissionColumns, "p") + `
@@ -64,26 +65,26 @@ func NewPermissionRepository(dbPool *sql.DB) *PermissionRepository {
 }
 
 // FindByUserID implements PermissionProvider interface.
-func (pr *PermissionRepository) FindByUserID(userID int64) ([]*PermissionEntity, error) {
+func (pr *PermissionRepository) FindByUserID(ctx context.Context, userID int64) ([]*PermissionEntity, error) {
 	// TODO: does it work?
-	return pr.FindBy(pr.findByUserIDQuery, userID)
+	return pr.FindBy(ctx, pr.findByUserIDQuery, userID)
 }
 
 // FindByGroupID implements PermissionProvider interface.
-func (pr *PermissionRepository) FindByGroupID(userID int64) ([]*PermissionEntity, error) {
+func (pr *PermissionRepository) FindByGroupID(ctx context.Context, userID int64) ([]*PermissionEntity, error) {
 	// TODO: does it work?
-	return pr.FindBy(`
+	return pr.FindBy(ctx, `
 		SELECT DISTINCT ON (p.ID)
 			`+columns(TablePermissionColumns, "p")+`
-		FROM `+pr.table+` AS p
+		FROM `+pr.Table+` AS p
 		LEFT JOIN `+TableGroupPermissions+` AS gp ON gp.permission_id = p.ID AND gp.group_id = ug.group_id
 		WHERE up.user_id = $1 OR ug.user_id = $1
 	`, userID)
 }
 
 // FindBy ...
-func (pr *PermissionRepository) FindBy(query string, args ...interface{}) ([]*PermissionEntity, error) {
-	rows, err := pr.db.Query(query, args...)
+func (pr *PermissionRepository) FindBy(ctx context.Context, query string, args ...interface{}) ([]*PermissionEntity, error) {
+	rows, err := pr.DB.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -114,15 +115,15 @@ func (pr *PermissionRepository) FindBy(query string, args ...interface{}) ([]*Pe
 }
 
 func (pr *PermissionRepository) findOneStmt() (*sql.Stmt, error) {
-	return pr.db.Prepare(
+	return pr.DB.Prepare(
 		"SELECT " + strings.Join(TablePermissionColumns, ",") + " " +
-			"FROM " + pr.table + " AS p " +
+			"FROM " + pr.Table + " AS p " +
 			"WHERE p.subsystem = $1 AND p.module = $2 AND p.action = $3",
 	)
 }
 
 // Register ...
-func (pr *PermissionRepository) Register(permissions charon.Permissions) (created, unt, removed int64, err error) {
+func (pr *PermissionRepository) Register(ctx context.Context, permissions charon.Permissions) (created, unt, removed int64, err error) {
 	var (
 		tx             *sql.Tx
 		insert, delete *sql.Stmt
@@ -147,7 +148,7 @@ func (pr *PermissionRepository) Register(permissions charon.Permissions) (create
 		}
 	}
 
-	tx, err = pr.db.Begin()
+	tx, err = pr.DB.BeginTx(ctx, nil)
 	if err != nil {
 		return
 	}
@@ -160,7 +161,7 @@ func (pr *PermissionRepository) Register(permissions charon.Permissions) (create
 		}
 	}()
 
-	rows, err = tx.Query("SELECT "+strings.Join(TablePermissionColumns, ",")+" FROM "+pr.table+" AS p WHERE p.subsystem = $1", subsystem)
+	rows, err = tx.Query("SELECT "+strings.Join(TablePermissionColumns, ",")+" FROM "+pr.Table+" AS p WHERE p.subsystem = $1", subsystem)
 	if err != nil {
 		return
 	}
@@ -186,7 +187,7 @@ func (pr *PermissionRepository) Register(permissions charon.Permissions) (create
 		return 0, 0, 0, rows.Err()
 	}
 
-	insert, err = tx.Prepare("INSERT INTO " + pr.table + " (subsystem, module, action) VALUES ($1, $2, $3)")
+	insert, err = tx.Prepare("INSERT INTO " + pr.Table + " (subsystem, module, action) VALUES ($1, $2, $3)")
 	if err != nil {
 		return
 	}
@@ -208,7 +209,7 @@ MissingPermissionsLoop:
 		created += affected
 	}
 
-	delete, err = tx.Prepare("DELETE FROM " + pr.table + " AS p WHERE p.ID = $1")
+	delete, err = tx.Prepare("DELETE FROM " + pr.Table + " AS p WHERE p.ID = $1")
 	if err != nil {
 		return
 	}
@@ -239,11 +240,11 @@ RedundantPermissionsLoop:
 // Should be only used as a proxy for registration process to avoid multiple sql hits.
 type PermissionRegistry interface {
 	// Exists returns true if given charon.Permission was already registered.
-	Exists(permission charon.Permission) (exists bool)
+	Exists(ctx context.Context, permission charon.Permission) (exists bool)
 	// Register checks if given collection is valid and
 	// calls PermissionProvider to store provided permissions
 	// in persistent way.
-	Register(permissions charon.Permissions) (created, untouched, removed int64, err error)
+	Register(ctx context.Context, permissions charon.Permissions) (created, untouched, removed int64, err error)
 }
 
 // PermissionReg ...
@@ -262,7 +263,7 @@ func NewPermissionRegistry(r PermissionProvider) *PermissionReg {
 }
 
 // Exists ...
-func (pr *PermissionReg) Exists(permission charon.Permission) (ok bool) {
+func (pr *PermissionReg) Exists(_ context.Context, permission charon.Permission) (ok bool) {
 	pr.RLock()
 	pr.RUnlock()
 
@@ -271,7 +272,7 @@ func (pr *PermissionReg) Exists(permission charon.Permission) (ok bool) {
 }
 
 // Register ...
-func (pr *PermissionReg) Register(permissions charon.Permissions) (created, untouched, removed int64, err error) {
+func (pr *PermissionReg) Register(ctx context.Context, permissions charon.Permissions) (created, untouched, removed int64, err error) {
 	pr.Lock()
 	defer pr.Unlock()
 
@@ -284,25 +285,25 @@ func (pr *PermissionReg) Register(permissions charon.Permissions) (created, unto
 	}
 
 	if nb > 0 {
-		return pr.repository.Register(permissions)
+		return pr.repository.Register(ctx, permissions)
 	}
 
 	return 0, 0, 0, nil
 }
 
 // FindByTag ...
-func (pr *PermissionRepository) FindByTag(userID int64) ([]*PermissionEntity, error) {
+func (pr *PermissionRepository) FindByTag(ctx context.Context, userID int64) ([]*PermissionEntity, error) {
 	query := `
 		SELECT DISTINCT ON (p.ID)
 			` + columns(TablePermissionColumns, "p") + `
-		FROM ` + pr.table + ` AS p
+		FROM ` + pr.Table + ` AS p
 		LEFT JOIN ` + TableUserPermissions + ` AS up ON up.permission_id = p.ID AND up.user_id = $1
 		LEFT JOIN ` + TableUserGroups + ` AS ug ON ug.user_id = $1
 		LEFT JOIN ` + TableGroupPermissions + ` AS gp ON gp.permission_id = p.ID AND gp.group_id = ug.group_id
 		WHERE up.user_id = $1 OR ug.user_id = $1
 	`
 
-	rows, err := pr.db.Query(query, userID)
+	rows, err := pr.DB.QueryContext(ctx, query, userID)
 	if err != nil {
 		return nil, err
 	}
