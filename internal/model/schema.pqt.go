@@ -108,8 +108,8 @@ type UserEntity struct {
 
 func (e *UserEntity) Prop(cn string) (interface{}, bool) {
 	switch cn {
-	case TableUserColumnConfirmationToken:
 
+	case TableUserColumnConfirmationToken:
 		return &e.ConfirmationToken, true
 	case TableUserColumnCreatedAt:
 		return &e.CreatedAt, true
@@ -132,7 +132,6 @@ func (e *UserEntity) Prop(cn string) (interface{}, bool) {
 	case TableUserColumnLastName:
 		return &e.LastName, true
 	case TableUserColumnPassword:
-
 		return &e.Password, true
 	case TableUserColumnUpdatedAt:
 		return &e.UpdatedAt, true
@@ -1219,7 +1218,6 @@ func (r *UserRepositoryBase) UpdateOneByID(ctx context.Context, pk int64, p *Use
 	}
 	return &ent, nil
 }
-
 func (r *UserRepositoryBase) UpdateOneByUsernameQuery(userUsername string, p *UserPatch) (string, []interface{}, error) {
 	buf := bytes.NewBufferString("UPDATE ")
 	buf.WriteString(r.Table)
@@ -2271,6 +2269,7 @@ type GroupEntity struct {
 
 func (e *GroupEntity) Prop(cn string) (interface{}, bool) {
 	switch cn {
+
 	case TableGroupColumnCreatedAt:
 		return &e.CreatedAt, true
 	case TableGroupColumnCreatedBy:
@@ -2905,7 +2904,6 @@ func (r *GroupRepositoryBase) UpdateOneByID(ctx context.Context, pk int64, p *Gr
 	}
 	return &ent, nil
 }
-
 func (r *GroupRepositoryBase) UpdateOneByNameQuery(groupName string, p *GroupPatch) (string, []interface{}, error) {
 	buf := bytes.NewBufferString("UPDATE ")
 	buf.WriteString(r.Table)
@@ -3469,6 +3467,7 @@ type PermissionEntity struct {
 
 func (e *PermissionEntity) Prop(cn string) (interface{}, bool) {
 	switch cn {
+
 	case TablePermissionColumnAction:
 		return &e.Action, true
 	case TablePermissionColumnCreatedAt:
@@ -4068,7 +4067,6 @@ func (r *PermissionRepositoryBase) UpdateOneByID(ctx context.Context, pk int64, 
 	}
 	return &ent, nil
 }
-
 func (r *PermissionRepositoryBase) UpdateOneBySubsystemAndModuleAndActionQuery(permissionSubsystem string, permissionModule string, permissionAction string, p *PermissionPatch) (string, []interface{}, error) {
 	buf := bytes.NewBufferString("UPDATE ")
 	buf.WriteString(r.Table)
@@ -4594,6 +4592,7 @@ type UserGroupsEntity struct {
 
 func (e *UserGroupsEntity) Prop(cn string) (interface{}, bool) {
 	switch cn {
+
 	case TableUserGroupsColumnCreatedAt:
 		return &e.CreatedAt, true
 	case TableUserGroupsColumnCreatedBy:
@@ -5597,6 +5596,7 @@ type GroupPermissionsEntity struct {
 
 func (e *GroupPermissionsEntity) Prop(cn string) (interface{}, bool) {
 	switch cn {
+
 	case TableGroupPermissionsColumnCreatedAt:
 		return &e.CreatedAt, true
 	case TableGroupPermissionsColumnCreatedBy:
@@ -6790,6 +6790,7 @@ type UserPermissionsEntity struct {
 
 func (e *UserPermissionsEntity) Prop(cn string) (interface{}, bool) {
 	switch cn {
+
 	case TableUserPermissionsColumnCreatedAt:
 		return &e.CreatedAt, true
 	case TableUserPermissionsColumnCreatedBy:
@@ -8347,7 +8348,6 @@ func (c *Composer) Add(arg interface{}) {
 func (c *Composer) Args() []interface{} {
 	return c.args
 }
-
 func QueryInt64WhereClause(i *qtypes.Int64, sel string, com *Composer, opt *CompositionOpts) (err error) {
 	if i == nil || !i.Valid {
 		return nil
