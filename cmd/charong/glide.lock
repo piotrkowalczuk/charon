@@ -1,6 +1,14 @@
 hash: 93b3b7b014ace02c15a1d0f04fd81f53f962242c47f4ebfa2cb9b63b208360b8
-updated: 2017-01-09T13:32:58.792219345+01:00
+updated: 2017-01-12T10:45:51.891066823+01:00
 imports:
+- name: github.com/golang/protobuf
+  version: 2bc9827a78f95c6665b5fe0abd1fd66b496ae2d8
+  subpackages:
+  - proto
+  - ptypes
+  - ptypes/any
+  - ptypes/duration
+  - ptypes/timestamp
 - name: github.com/huandu/xstrings
   version: 3959339b333561bf62a38b424fd41517c2c90f40
 - name: github.com/lib/pq
@@ -8,12 +16,14 @@ imports:
   subpackages:
   - oid
 - name: github.com/piotrkowalczuk/ntypespqt
-  version: e81631a047ebf0be1e5c4861eb3c44bb99c8d836
+  version: fce4ab21c4b6d3d77b039ac69469c556256b8dad
 - name: github.com/piotrkowalczuk/pqt
-  version: 68ab1b2643f8b59461e0c773783bc6465e2cc909
+  version: 8ea5ed3cffe8ac93c07ac5e5ed7af2d22ff831a1
   subpackages:
   - pqtgo
   - pqtsql
+- name: github.com/piotrkowalczuk/qtypes
+  version: 4325c682e95fb74655cedb1e545974ef240c8762
 - name: github.com/piotrkowalczuk/qtypespqt
-  version: 85ae1a9b320da4a1b450126034932852d2e581e3
+  version: 7bdb2366a6e0597f86d75fb9dd8993142ce2f374
 testImports: []

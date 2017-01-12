@@ -6,5 +6,7 @@ import:
   - pqtgo
   - pqtsql
 - package: github.com/piotrkowalczuk/qtypespqt
+  version: ~0.1.0
 - package: github.com/piotrkowalczuk/ntypespqt
+  version: ~0.1.0
 - package: github.com/huandu/xstrings
