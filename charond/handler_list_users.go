@@ -29,8 +29,8 @@ func (luh *listUsersHandler) List(ctx context.Context, req *charonrpc.ListUsersR
 		Sort:        req.Sort,
 		Offset:      req.Offset.Int64Or(0),
 		Limit:       req.Limit.Int64Or(10),
-		IsSuperuser: *req.IsSuperuser,
-		IsStaff:     *req.IsStaff,
+		IsSuperuser: allocNilBool(req.IsSuperuser),
+		IsStaff:     allocNilBool(req.IsStaff),
 		CreatedBy:   req.CreatedBy,
 	}
 

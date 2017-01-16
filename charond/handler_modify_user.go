@@ -37,15 +37,15 @@ func (muh *modifyUserHandler) Modify(ctx context.Context, req *charonrpc.ModifyU
 	}
 
 	ent, err = muh.repository.user.UpdateOneByID(ctx, req.Id, &model.UserPatch{
-		FirstName:   *req.FirstName,
-		IsActive:    *req.IsActive,
-		IsConfirmed: *req.IsConfirmed,
-		IsStaff:     *req.IsStaff,
-		IsSuperuser: *req.IsSuperuser,
-		LastName:    *req.LastName,
+		FirstName:   allocNilString(req.FirstName),
+		IsActive:    allocNilBool(req.IsActive),
+		IsConfirmed: allocNilBool(req.IsConfirmed),
+		IsStaff:     allocNilBool(req.IsStaff),
+		IsSuperuser: allocNilBool(req.IsSuperuser),
+		LastName:    allocNilString(req.LastName),
 		Password:    req.SecurePassword,
 		UpdatedBy:   ntypes.Int64{Int64: act.User.ID, Valid: act.User.ID != 0},
-		Username:    *req.Username,
+		Username:    allocNilString(req.Username),
 	})
 	if err != nil {
 		if err == sql.ErrNoRows {
