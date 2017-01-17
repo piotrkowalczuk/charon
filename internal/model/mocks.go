@@ -4,11 +4,10 @@ import (
 	"context"
 	"testing"
 
+	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/ntypes"
 	"github.com/stretchr/testify/mock"
 )
-
-import "github.com/piotrkowalczuk/charon"
 
 type MockGroupProvider struct {
 	mock.Mock

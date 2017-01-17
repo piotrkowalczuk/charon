@@ -1,5 +1,5 @@
-hash: 57f032f98255707e5a510c9479a9860dc4714b058507c67ad460dd293bd42022
-updated: 2017-01-13T18:19:41.858427263+01:00
+hash: 07d791c5b77c6862fcf8ab1677a757b84c8748baaf53cca1729a2120ae5dc1b3
+updated: 2017-01-17T23:54:07.168075405+01:00
 imports:
 - name: github.com/beorn7/perks
   version: 4c0e84591b9aa9e6dcfdf3e020114cd81f89d5f9
@@ -32,7 +32,7 @@ imports:
 - name: github.com/kr/logfmt
   version: b84e30acd515aadc4b783ad4ff83aff3299bdfe0
 - name: github.com/lib/pq
-  version: d8eeeb8bae8896dd8e1b7e514ab0d396c4f12a1b
+  version: 67c3f2a8884c9b1aac5503c8d42ae4f73a93511c
   subpackages:
   - oid
 - name: github.com/matttproud/golang_protobuf_extensions
@@ -72,13 +72,13 @@ imports:
   subpackages:
   - go
 - name: github.com/prometheus/common
-  version: 85637ea67b04b5c3bb25e671dacded2977f8f9f6
+  version: dd2f054febf4a6c00f2343686efb775948a8bff4
   subpackages:
   - expfmt
   - internal/bitbucket.org/ww/goautoneg
   - model
 - name: github.com/prometheus/procfs
-  version: abf152e5f3e97f2fafac028d2cc06c1feb87ffa5
+  version: fcdb11ccb4389efb1b210b7ffb623ab71c5fdd60
 - name: github.com/stretchr/objx
   version: cbeaeb16a013161a98496fad62933b1d21786672
 - name: github.com/stretchr/testify
@@ -87,7 +87,7 @@ imports:
   - assert
   - mock
 - name: golang.org/x/crypto
-  version: 9477e0b78b9ac3d0b03822fd95422e2fe07627cd
+  version: 91902e332b9d47760598861512d2ae148f94ca58
   subpackages:
   - bcrypt
   - blowfish

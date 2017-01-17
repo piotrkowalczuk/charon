@@ -28,6 +28,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/grpclog"
+	"golang.org/x/net/trace"
 )
 
 // DaemonOpts ...
@@ -218,6 +219,24 @@ func (d *Daemon) Run() (err error) {
 			mux.Handle("/debug/pprof/symbol", http.HandlerFunc(pprof.Symbol))
 			mux.Handle("/debug/pprof/trace", http.HandlerFunc(pprof.Trace))
 			mux.Handle("/metrics", prometheus.Handler())
+			mux.Handle("/debug/requests", http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+				any, sensitive := trace.AuthRequest(req)
+				if !any {
+					http.Error(w, "not allowed", http.StatusUnauthorized)
+					return
+				}
+				w.Header().Set("Content-Type", "text/html; charset=utf-8")
+				trace.Render(w, req, sensitive)
+			}))
+			mux.Handle("/debug/events", http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+				any, sensitive := trace.AuthRequest(req)
+				if !any {
+					http.Error(w, "not allowed", http.StatusUnauthorized)
+					return
+				}
+				w.Header().Set("Content-Type", "text/html; charset=utf-8")
+				trace.RenderEvents(w, req, sensitive)
+			}))
 			sklog.Error(d.logger, http.Serve(d.debugListener, mux))
 		}()
 	}

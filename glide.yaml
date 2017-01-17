@@ -45,6 +45,7 @@ import:
 - package: golang.org/x/net
   subpackages:
   - context
+  - trace
 - package: golang.org/x/oauth2
 - package: google.golang.org/grpc
   version: ~1.0.5
