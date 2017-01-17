@@ -2,7 +2,7 @@
 
 bash <(curl -s https://codecov.io/bash)
 
-if [ $TRAVIS_GO_VERSION == "1.7" ]; then
+if [ $TRAVIS_GO_VERSION == "1.8" ]; then
 	docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
 	if [ ! -z "$TRAVIS_TAG" ]; then
 		export VCS_REF=$TRAVIS_TAG
