@@ -189,6 +189,8 @@ func initLDAP(address, baseDN, password string, logger log.Logger) (*ldap.Conn, 
 		if err != nil {
 			return nil, fmt.Errorf("ldap connection failure: %s", err.Error())
 		}
+		// request timeout
+		conn.SetTimeout(5 *time.Second)
 		err = conn.StartTLS(&tls.Config{InsecureSkipVerify: true})
 		if err != nil {
 			return nil, fmt.Errorf("ldap start tls reconnection failure: %s", err.Error())

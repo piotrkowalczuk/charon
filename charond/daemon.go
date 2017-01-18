@@ -127,6 +127,8 @@ func (d *Daemon) Run() (err error) {
 
 	var passwordHasher password.Hasher
 	if d.opts.LDAP {
+		// dial timeout
+		libldap.DefaultTimeout = 5*time.Second
 		// open connection to check if it is reachable
 		if d.ldap, err = initLDAP(d.opts.LDAPAddress, d.opts.LDAPBaseDN, d.opts.LDAPBasePassword, d.logger); err != nil {
 			return
