@@ -27,7 +27,7 @@ import:
   version: ~0.4.0
 - package: github.com/piotrkowalczuk/pqcomp
 - package: github.com/piotrkowalczuk/promgrpc
-  version: ~0.2.0
+  version: ~0.3.0
 - package: github.com/piotrkowalczuk/qtypes
   version: ~0.2.3
 - package: github.com/piotrkowalczuk/sklog

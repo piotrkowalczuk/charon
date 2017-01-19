@@ -195,6 +195,7 @@ func (d *Daemon) Run() (err error) {
 	charonrpc.RegisterUserManagerServer(gRPCServer, newUserManager(server))
 	charonrpc.RegisterGroupManagerServer(gRPCServer, newGroupManager(server))
 	charonrpc.RegisterPermissionManagerServer(gRPCServer, newPermissionManager(server))
+	promgrpc.RegisterInterceptor(gRPCServer, interceptor)
 
 	go func() {
 		sklog.Info(d.logger, "rpc server is running", "address", d.rpcListener.Addr().String())
