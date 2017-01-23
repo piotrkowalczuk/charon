@@ -24,11 +24,11 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"golang.org/x/crypto/bcrypt"
 	"golang.org/x/net/context"
+	"golang.org/x/net/trace"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/grpclog"
-	"golang.org/x/net/trace"
 )
 
 // DaemonOpts ...
@@ -128,7 +128,7 @@ func (d *Daemon) Run() (err error) {
 	var passwordHasher password.Hasher
 	if d.opts.LDAP {
 		// dial timeout
-		libldap.DefaultTimeout = 5*time.Second
+		libldap.DefaultTimeout = 5 * time.Second
 		// open connection to check if it is reachable
 		if d.ldap, err = initLDAP(d.opts.LDAPAddress, d.opts.LDAPBaseDN, d.opts.LDAPBasePassword, d.logger); err != nil {
 			return
@@ -223,22 +223,22 @@ func (d *Daemon) Run() (err error) {
 			mux.Handle("/debug/pprof/trace", http.HandlerFunc(pprof.Trace))
 			mux.Handle("/metrics", prometheus.Handler())
 			mux.Handle("/debug/requests", http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-				any, sensitive := trace.AuthRequest(req)
-				if !any {
-					http.Error(w, "not allowed", http.StatusUnauthorized)
-					return
-				}
+				//any, sensitive := trace.AuthRequest(req)
+				//if !any {
+				//	http.Error(w, "not allowed", http.StatusUnauthorized)
+				//	return
+				//}
 				w.Header().Set("Content-Type", "text/html; charset=utf-8")
-				trace.Render(w, req, sensitive)
+				trace.Render(w, req, true)
 			}))
 			mux.Handle("/debug/events", http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-				any, sensitive := trace.AuthRequest(req)
-				if !any {
-					http.Error(w, "not allowed", http.StatusUnauthorized)
-					return
-				}
+				//any, sensitive := trace.AuthRequest(req)
+				//if !any {
+				//	http.Error(w, "not allowed", http.StatusUnauthorized)
+				//	return
+				//}
 				w.Header().Set("Content-Type", "text/html; charset=utf-8")
-				trace.RenderEvents(w, req, sensitive)
+				trace.RenderEvents(w, req, true)
 			}))
 			sklog.Error(d.logger, http.Serve(d.debugListener, mux))
 		}()

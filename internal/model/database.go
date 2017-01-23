@@ -121,11 +121,11 @@ func setManyToMany(db *sql.DB, ctx context.Context, table, column1, column2 stri
 	}()
 
 	if len(ids) > 0 {
-		insert, err = tx.Prepare(`INSERT INTO ` + table + ` (` + column1 + `, ` + column2 + `) VALUES ($1, $2)`)
+		insert, err = tx.PrepareContext(ctx, `INSERT INTO ` + table + ` (` + column1 + `, ` + column2 + `) VALUES ($1, $2)`)
 		if err != nil {
 			return 0, 0, err
 		}
-		exists, err = tx.Prepare(existsManyToManyQuery(table, column1, column2))
+		exists, err = tx.PrepareContext(ctx, existsManyToManyQuery(table, column1, column2))
 		if err != nil {
 			return 0, 0, err
 		}
@@ -133,7 +133,7 @@ func setManyToMany(db *sql.DB, ctx context.Context, table, column1, column2 stri
 		in = make([]int64, 0, len(ids))
 	InsertLoop:
 		for _, idd := range ids {
-			if err = exists.QueryRow(id, idd).Scan(&granted); err != nil {
+			if err = exists.QueryRowContext(ctx, id, idd).Scan(&granted); err != nil {
 				return 0, 0, err
 			}
 			// Given combination already exists, ignore.
@@ -142,7 +142,7 @@ func setManyToMany(db *sql.DB, ctx context.Context, table, column1, column2 stri
 				granted = false
 				continue InsertLoop
 			}
-			res, err = insert.Exec(id, idd)
+			res, err = insert.ExecContext(ctx, id, idd)
 			if err != nil {
 				return 0, 0, err
 			}
@@ -177,7 +177,7 @@ func setManyToMany(db *sql.DB, ctx context.Context, table, column1, column2 stri
 		fmt.Fprint(query, ")")
 	}
 
-	res, err = tx.Exec(query.String(), delete.Args()...)
+	res, err = tx.ExecContext(ctx, query.String(), delete.Args()...)
 	if err != nil {
 		return 0, 0, err
 	}
