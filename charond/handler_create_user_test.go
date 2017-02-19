@@ -27,7 +27,7 @@ func TestCreateUserHandler_Create(t *testing.T) {
 				LastName:      "last-name-full",
 				PlainPassword: "plain-password-full",
 			}
-			res, err := suite.charon.user.Create(ctx, req)
+			res, err := suite.charon.user.Create(timeout(ctx), req)
 			if err != nil {
 				t.Fatalf("unexpected error: %s", err.Error())
 			}
@@ -48,11 +48,11 @@ func TestCreateUserHandler_Create(t *testing.T) {
 				LastName:      "last-name-same-username-twice",
 				PlainPassword: "plain-password-same-username-twice",
 			}
-			_, err := suite.charon.user.Create(ctx, req)
+			_, err := suite.charon.user.Create(timeout(ctx), req)
 			if err != nil {
 				t.Fatalf("unexpected error: %s", err.Error())
 			}
-			_, err = suite.charon.user.Create(ctx, req)
+			_, err = suite.charon.user.Create(timeout(ctx), req)
 			if grpc.Code(err) != codes.AlreadyExists {
 				t.Errorf("wrong status code, expected %s but got %s", codes.AlreadyExists.String(), grpc.Code(err).String())
 			}

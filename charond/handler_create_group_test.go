@@ -28,7 +28,7 @@ func TestCreateGroupHandler_Create(t *testing.T) {
 					Chars: "description",
 				},
 			}
-			res, err := suite.charon.group.Create(ctx, req)
+			res, err := suite.charon.group.Create(timeout(ctx), req)
 			if err != nil {
 				t.Fatalf("unexpected error: %s", err.Error())
 			}
@@ -43,7 +43,7 @@ func TestCreateGroupHandler_Create(t *testing.T) {
 			req := &charonrpc.CreateGroupRequest{
 				Name: "name-only-name",
 			}
-			res, err := suite.charon.group.Create(ctx, req)
+			res, err := suite.charon.group.Create(timeout(ctx), req)
 			if err != nil {
 				t.Fatalf("unexpected error: %s", err.Error())
 			}
@@ -58,7 +58,7 @@ func TestCreateGroupHandler_Create(t *testing.T) {
 			req := &charonrpc.CreateGroupRequest{
 				Name: "same-name-twice",
 			}
-			_, err := suite.charon.group.Create(ctx, req)
+			_, err := suite.charon.group.Create(timeout(ctx), req)
 			if err != nil {
 				t.Fatalf("unexpected error: %s", err.Error())
 			}
@@ -74,7 +74,7 @@ func TestCreateGroupHandler_Create(t *testing.T) {
 					Chars: "description",
 				},
 			}
-			_, err := suite.charon.group.Create(ctx, req)
+			_, err := suite.charon.group.Create(timeout(ctx), req)
 			if grpc.Code(err) != codes.InvalidArgument {
 				t.Fatalf("wrong status code, expected %s but got %s", codes.InvalidArgument.String(), grpc.Code(err).String())
 			}

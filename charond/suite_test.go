@@ -5,6 +5,9 @@ import (
 	"os"
 	"testing"
 
+	"context"
+	"time"
+
 	_ "github.com/lib/pq"
 )
 
@@ -24,4 +27,9 @@ func getStringEnvOr(env, or string) string {
 		return v
 	}
 	return or
+}
+
+func timeout(ctx context.Context) context.Context {
+	ctx, _ = context.WithTimeout(ctx, 5*time.Second)
+	return ctx
 }
