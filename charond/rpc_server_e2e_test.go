@@ -21,26 +21,26 @@ func TestRPCServer_minimal(t *testing.T) {
 		"winterfell:castle:can close as a lord",
 	}
 
-	createUserResponse := testRPCServerCreateUser(t, suite, ctx, &charonrpc.CreateUserRequest{
+	createUserResponse := testRPCServerCreateUser(t, suite, timeout(ctx), &charonrpc.CreateUserRequest{
 		Username:      "john@snow.com",
 		PlainPassword: "winteriscomming",
 		FirstName:     "John",
 		LastName:      "Snow",
 	})
-	createGroupResponse := testRPCServerCreateGroup(t, suite, ctx, &charonrpc.CreateGroupRequest{
+	createGroupResponse := testRPCServerCreateGroup(t, suite, timeout(ctx), &charonrpc.CreateGroupRequest{
 		Name: "winterfell",
 	})
-	registerPermissionsResponse := testRPCServerRegisterPermissions(t, suite, ctx, &charonrpc.RegisterPermissionsRequest{
+	registerPermissionsResponse := testRPCServerRegisterPermissions(t, suite, timeout(ctx), &charonrpc.RegisterPermissionsRequest{
 		Permissions: permissions,
 	})
 	if registerPermissionsResponse.Created != 2 {
 		t.Fatalf("wrong number of registered Permissions, expected 2 but got %d", registerPermissionsResponse.Created)
 	}
-	_ = testRPCServerSetUserPermissions(t, suite, ctx, &charonrpc.SetUserPermissionsRequest{
+	_ = testRPCServerSetUserPermissions(t, suite, timeout(ctx), &charonrpc.SetUserPermissionsRequest{
 		UserId:      createUserResponse.User.Id,
 		Permissions: permissions,
 	})
-	_ = testRPCServerSetUserGroups(t, suite, ctx, &charonrpc.SetUserGroupsRequest{
+	_ = testRPCServerSetUserGroups(t, suite, timeout(ctx), &charonrpc.SetUserGroupsRequest{
 		UserId: createUserResponse.User.Id,
 		Groups: []int64{createGroupResponse.Group.Id},
 	})

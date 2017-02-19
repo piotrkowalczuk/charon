@@ -41,7 +41,7 @@ func TestActorHandler_Actor(t *testing.T) {
 			}
 		},
 		"context": func(t *testing.T) {
-			res, err := suite.charon.auth.Actor(ctx, &wrappers.StringValue{})
+			res, err := suite.charon.auth.Actor(timeout(ctx), &wrappers.StringValue{})
 			if err != nil {
 				t.Fatalf("unexpected error: %s", err.Error())
 			}

@@ -20,14 +20,14 @@ func TestBelongsToHandler_BelongsTo(t *testing.T) {
 	defer suite.teardown(t)
 
 	ctx := testRPCServerLogin(t, suite)
-	resAct, err := suite.charon.auth.Actor(ctx, &wrappers.StringValue{})
+	resAct, err := suite.charon.auth.Actor(timeout(ctx), &wrappers.StringValue{})
 	if err != nil {
 		t.Fatalf("unexpected error: %s", err.Error())
 	}
 
 	var groups []int64
 	for i := 0; i < 10; i++ {
-		resGroup, err := suite.charon.group.Create(ctx, &charonrpc.CreateGroupRequest{
+		resGroup, err := suite.charon.group.Create(timeout(ctx), &charonrpc.CreateGroupRequest{
 			Name: fmt.Sprintf("name-%d", i),
 			Description: &ntypes.String{
 				Valid: true,
@@ -50,7 +50,7 @@ func TestBelongsToHandler_BelongsTo(t *testing.T) {
 
 	cases := map[string]func(t *testing.T){
 		"belongs": func(t *testing.T) {
-			res, err := suite.charon.auth.BelongsTo(ctx, &charonrpc.BelongsToRequest{
+			res, err := suite.charon.auth.BelongsTo(timeout(ctx), &charonrpc.BelongsToRequest{
 				UserId:  resAct.Id,
 				GroupId: groups[0],
 			})
@@ -62,7 +62,7 @@ func TestBelongsToHandler_BelongsTo(t *testing.T) {
 			}
 		},
 		"not-belongs": func(t *testing.T) {
-			res, err := suite.charon.auth.BelongsTo(ctx, &charonrpc.BelongsToRequest{
+			res, err := suite.charon.auth.BelongsTo(timeout(ctx), &charonrpc.BelongsToRequest{
 				UserId:  resAct.Id,
 				GroupId: groups[len(groups)-1],
 			})
@@ -74,7 +74,7 @@ func TestBelongsToHandler_BelongsTo(t *testing.T) {
 			}
 		},
 		"group-does-not-exists": func(t *testing.T) {
-			res, err := suite.charon.auth.BelongsTo(ctx, &charonrpc.BelongsToRequest{
+			res, err := suite.charon.auth.BelongsTo(timeout(ctx), &charonrpc.BelongsToRequest{
 				UserId:  resAct.Id,
 				GroupId: 99999999,
 			})
@@ -86,7 +86,7 @@ func TestBelongsToHandler_BelongsTo(t *testing.T) {
 			}
 		},
 		"without-user-id": func(t *testing.T) {
-			_, err := suite.charon.auth.BelongsTo(ctx, &charonrpc.BelongsToRequest{
+			_, err := suite.charon.auth.BelongsTo(timeout(ctx), &charonrpc.BelongsToRequest{
 				GroupId: groups[0],
 			})
 			if grpc.Code(err) != codes.InvalidArgument {
@@ -95,7 +95,7 @@ func TestBelongsToHandler_BelongsTo(t *testing.T) {
 		},
 
 		"without-group-id": func(t *testing.T) {
-			_, err := suite.charon.auth.BelongsTo(ctx, &charonrpc.BelongsToRequest{
+			_, err := suite.charon.auth.BelongsTo(timeout(ctx), &charonrpc.BelongsToRequest{
 				UserId: resAct.Id,
 			})
 			if grpc.Code(err) != codes.InvalidArgument {

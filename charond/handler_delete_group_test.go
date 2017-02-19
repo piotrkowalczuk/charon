@@ -22,14 +22,14 @@ func TestDeleteGroupHandler_Delete(t *testing.T) {
 	defer suite.teardown(t)
 
 	ctx := testRPCServerLogin(t, suite)
-	resAct, err := suite.charon.auth.Actor(ctx, &wrappers.StringValue{})
+	resAct, err := suite.charon.auth.Actor(timeout(ctx), &wrappers.StringValue{})
 	if err != nil {
 		t.Fatalf("unexpected error: %s", err.Error())
 	}
 
 	var groups []int64
 	for i := 0; i < 10; i++ {
-		resGroup, err := suite.charon.group.Create(ctx, &charonrpc.CreateGroupRequest{
+		resGroup, err := suite.charon.group.Create(timeout(ctx), &charonrpc.CreateGroupRequest{
 			Name: fmt.Sprintf("name-%d", i),
 			Description: &ntypes.String{
 				Valid: true,
@@ -42,7 +42,7 @@ func TestDeleteGroupHandler_Delete(t *testing.T) {
 		groups = append(groups, resGroup.Group.Id)
 	}
 
-	_, err = suite.charon.user.SetGroups(ctx, &charonrpc.SetUserGroupsRequest{
+	_, err = suite.charon.user.SetGroups(timeout(ctx), &charonrpc.SetUserGroupsRequest{
 		UserId: resAct.Id,
 		Groups: groups[:len(groups)/2],
 	})
@@ -51,7 +51,7 @@ func TestDeleteGroupHandler_Delete(t *testing.T) {
 	}
 	cases := map[string]func(t *testing.T){
 		"not-assigned": func(t *testing.T) {
-			done, err := suite.charon.group.Delete(ctx, &charonrpc.DeleteGroupRequest{
+			done, err := suite.charon.group.Delete(timeout(ctx), &charonrpc.DeleteGroupRequest{
 				Id: groups[len(groups)-1],
 			})
 			if err != nil {
@@ -62,7 +62,7 @@ func TestDeleteGroupHandler_Delete(t *testing.T) {
 			}
 		},
 		"not-existing": func(t *testing.T) {
-			_, err := suite.charon.group.Delete(ctx, &charonrpc.DeleteGroupRequest{
+			_, err := suite.charon.group.Delete(timeout(ctx), &charonrpc.DeleteGroupRequest{
 				Id: math.MaxInt64,
 			})
 			if grpc.Code(err) != codes.NotFound {
@@ -70,7 +70,7 @@ func TestDeleteGroupHandler_Delete(t *testing.T) {
 			}
 		},
 		"assigned": func(t *testing.T) {
-			_, err := suite.charon.group.Delete(ctx, &charonrpc.DeleteGroupRequest{
+			_, err := suite.charon.group.Delete(timeout(ctx), &charonrpc.DeleteGroupRequest{
 				Id: groups[0],
 			})
 			if grpc.Code(err) != codes.FailedPrecondition {

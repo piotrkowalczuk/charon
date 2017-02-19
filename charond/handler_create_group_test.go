@@ -62,7 +62,7 @@ func TestCreateGroupHandler_Create(t *testing.T) {
 			if err != nil {
 				t.Fatalf("unexpected error: %s", err.Error())
 			}
-			_, err = suite.charon.group.Create(ctx, req)
+			_, err = suite.charon.group.Create(timeout(ctx), req)
 			if grpc.Code(err) != codes.AlreadyExists {
 				t.Fatalf("wrong status code, expected %s but got %s", codes.AlreadyExists.String(), grpc.Code(err).String())
 			}
