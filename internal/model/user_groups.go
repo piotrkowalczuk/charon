@@ -8,11 +8,11 @@ import (
 
 // UserGroupsProvider ...
 type UserGroupsProvider interface {
-	Insert(context.Context, *UserGroupsEntity) (*UserGroupsEntity, error)
+	Insert(ctx context.Context, ent *UserGroupsEntity) (*UserGroupsEntity, error)
 	Exists(ctx context.Context, userID, groupID int64) (bool, error)
-	Find(context.Context, *UserGroupsCriteria) ([]*UserGroupsEntity, error)
+	Find(ctx context.Context, expr *UserGroupsFindExpr) ([]*UserGroupsEntity, error)
 	Set(ctx context.Context, userID int64, groupIDs []int64) (int64, int64, error)
-	DeleteByUserID(context.Context, int64) (int64, error)
+	DeleteByUserID(ctx context.Context, id int64) (int64, error)
 }
 
 // UserGroupsRepository ...

@@ -17,7 +17,6 @@ import (
 	"github.com/piotrkowalczuk/mnemosyne/mnemosynerpc"
 	"github.com/piotrkowalczuk/promgrpc"
 	"github.com/piotrkowalczuk/sklog"
-	"github.com/prometheus/client_golang/prometheus"
 	"google.golang.org/grpc"
 )
 
@@ -104,83 +103,6 @@ func initPermissionRegistry(r model.PermissionProvider, permissions charon.Permi
 	sklog.Info(logger, "charon Permissions has been registered", "created", created, "untouched", untouched, "removed", removed)
 
 	return
-}
-
-func initPrometheus(namespace string, enabled bool, constLabels prometheus.Labels) *monitoring {
-	rpcRequests := prometheus.NewCounterVec(
-		prometheus.CounterOpts{
-			Namespace:   namespace,
-			Subsystem:   "rpc",
-			Name:        "requests_total",
-			Help:        "Total number of RPC requests made.",
-			ConstLabels: constLabels,
-		},
-		monitoringRPCLabels,
-	)
-	rpcErrors := prometheus.NewCounterVec(
-		prometheus.CounterOpts{
-			Namespace:   namespace,
-			Subsystem:   "rpc",
-			Name:        "errors_total",
-			Help:        "Total number of errors that happen during RPC calles.",
-			ConstLabels: constLabels,
-		},
-		monitoringRPCLabels,
-	)
-	rpcDuration := prometheus.NewSummaryVec(
-		prometheus.SummaryOpts{
-			Namespace:   namespace,
-			Subsystem:   "rpc",
-			Name:        "request_duration_microseconds",
-			Help:        "The RPC request latencies in microseconds.",
-			ConstLabels: constLabels,
-		},
-		[]string{"handler", "code"},
-	)
-
-	postgresQueries := prometheus.NewCounterVec(
-		prometheus.CounterOpts{
-			Namespace:   namespace,
-			Subsystem:   "dal",
-			Name:        "postgres_queries_total",
-			Help:        "Total number of SQL queries made.",
-			ConstLabels: constLabels,
-		},
-		monitoringPostgresLabels,
-	)
-	postgresErrors := prometheus.NewCounterVec(
-		prometheus.CounterOpts{
-			Namespace:   namespace,
-			Subsystem:   "dal",
-			Name:        "postgres_errors_total",
-			Help:        "Total number of errors that happen during SQL queries.",
-			ConstLabels: constLabels,
-		},
-		monitoringPostgresLabels,
-	)
-
-	if enabled {
-		prometheus.MustRegisterOrGet(rpcRequests)
-		prometheus.MustRegisterOrGet(rpcDuration)
-		prometheus.MustRegisterOrGet(rpcErrors)
-		prometheus.MustRegisterOrGet(postgresQueries)
-		prometheus.MustRegisterOrGet(postgresErrors)
-	}
-
-	return &monitoring{
-		enabled: true,
-		rpc: monitoringRPC{
-			enabled:  true,
-			requests: rpcRequests,
-			errors:   rpcErrors,
-			duration: rpcDuration,
-		},
-		postgres: monitoringPostgres{
-			enabled: true,
-			queries: postgresQueries,
-			errors:  postgresErrors,
-		},
-	}
 }
 
 func initLDAP(address, baseDN, password string, logger log.Logger) (*ldap.Conn, error) {

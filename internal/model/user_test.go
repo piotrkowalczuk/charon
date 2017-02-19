@@ -186,14 +186,16 @@ func TestUserRepository_Find(t *testing.T) {
 	if all == 0 {
 		t.Fatal("no user has been saved in the database")
 	}
-	entities, err = suite.repository.user.Find(context.TODO(), &UserCriteria{Limit: all})
+	entities, err = suite.repository.user.Find(context.TODO(), &UserFindExpr{
+		Limit: all,
+	})
 	if err != nil {
 		t.Errorf("users can not be retrieved, unexpected error: %s", err.Error())
 	} else {
 		assertf(t, int64(len(entities)) == all, "number of users retrived do not match, expected %d got %d", all, len(entities))
 	}
 
-	entities, err = suite.repository.user.Find(context.TODO(), &UserCriteria{
+	entities, err = suite.repository.user.Find(context.TODO(), &UserFindExpr{
 		Offset: all,
 		Limit:  all,
 	})
@@ -202,14 +204,16 @@ func TestUserRepository_Find(t *testing.T) {
 	} else {
 		assertf(t, len(entities) == 0, "number of users retrived do not match, expected %d got %d", 0, len(entities))
 	}
-	entities, err = suite.repository.user.Find(context.TODO(), &UserCriteria{
-		Limit:             all,
-		Username:          qtypes.EqualString("johnsnow@gmail.com"),
-		Password:          []byte("secret"),
-		FirstName:         qtypes.EqualString("John"),
-		LastName:          qtypes.EqualString("Snow"),
-		ConfirmationToken: []byte("1234567890"),
-		IsSuperuser:       ntypes.Bool{Bool: true}, // Is not valid, should not affect results
+	entities, err = suite.repository.user.Find(context.TODO(), &UserFindExpr{
+		Limit: all,
+		Where: &UserCriteria{
+			Username:          qtypes.EqualString("johnsnow@gmail.com"),
+			Password:          []byte("secret"),
+			FirstName:         qtypes.EqualString("John"),
+			LastName:          qtypes.EqualString("Snow"),
+			ConfirmationToken: []byte("1234567890"),
+			IsSuperuser:       ntypes.Bool{Bool: true}, // Is not valid, should not affect results
+		},
 	})
 	if err != nil {
 		t.Errorf("users can not be retrieved, unexpected error: %s", err.Error())

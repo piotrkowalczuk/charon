@@ -23,7 +23,6 @@ type handler struct {
 	logger     log.Logger
 	repository repositories
 	session    mnemosynerpc.SessionManagerClient
-	monitor    monitoringRPC
 	ldap       *sync.Pool
 }
 

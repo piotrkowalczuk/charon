@@ -18,7 +18,7 @@ func (pe *PermissionEntity) Permission() charon.Permission {
 
 // PermissionProvider ...
 type PermissionProvider interface {
-	Find(ctx context.Context, criteria *PermissionCriteria) ([]*PermissionEntity, error)
+	Find(ctx context.Context, criteria *PermissionFindExpr) ([]*PermissionEntity, error)
 	FindOneByID(ctx context.Context, id int64) (entity *PermissionEntity, err error)
 	// FindByUserID retrieves all permissions for user represented by given id.
 	FindByUserID(ctx context.Context, userID int64) (entities []*PermissionEntity, err error)

@@ -17,7 +17,6 @@ type rpcServer struct {
 	meta               metadata.MD
 	logger             log.Logger
 	ldap               *sync.Pool
-	monitor            monitoring
 	session            mnemosynerpc.SessionManagerClient
 	passwordHasher     password.Hasher
 	permissionRegistry model.PermissionRegistry

@@ -23,9 +23,9 @@ func (lgh *listGroupsHandler) List(ctx context.Context, req *charonrpc.ListGroup
 		return nil, err
 	}
 
-	ents, err := lgh.repository.group.Find(ctx, &model.GroupCriteria{
-		Offset: req.Offset.Int64Or(0),
+	ents, err := lgh.repository.group.Find(ctx, &model.GroupFindExpr{
 		Limit:  req.Limit.Int64Or(10),
+		Offset: req.Offset.Int64Or(0),
 	})
 	if err != nil {
 		return nil, err

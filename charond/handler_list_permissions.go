@@ -23,12 +23,14 @@ func (lph *listPermissionsHandler) List(ctx context.Context, req *charonrpc.List
 		return nil, err
 	}
 
-	entities, err := lph.repository.permission.Find(ctx, &model.PermissionCriteria{
-		Offset:    req.Offset.Int64Or(0),
-		Limit:     req.Limit.Int64Or(10),
-		Subsystem: req.Subsystem,
-		Module:    req.Module,
-		Action:    req.Action,
+	entities, err := lph.repository.permission.Find(ctx, &model.PermissionFindExpr{
+		Offset: req.Offset.Int64Or(0),
+		Limit:  req.Limit.Int64Or(10),
+		Where: &model.PermissionCriteria{
+			Subsystem: req.Subsystem,
+			Module:    req.Module,
+			Action:    req.Action,
+		},
 	})
 	if err != nil {
 		return nil, err

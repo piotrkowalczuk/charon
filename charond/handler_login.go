@@ -198,11 +198,13 @@ func (lh *loginHandler) handleLDAP(ctx context.Context, conn *libldap.Conn, r *c
 		}
 
 		if len(mapping.Groups) > 0 {
-			groupsFound, err := lh.repository.group.Find(ctx, &model.GroupCriteria{
-				Name: &qtypes.String{
-					Values: mapping.Groups,
-					Type:   qtypes.QueryType_IN,
-					Valid:  true,
+			groupsFound, err := lh.repository.group.Find(ctx, &model.GroupFindExpr{
+				Where: &model.GroupCriteria{
+					Name: &qtypes.String{
+						Values: mapping.Groups,
+						Type:   qtypes.QueryType_IN,
+						Valid:  true,
+					},
 				},
 			})
 			if err != nil {
@@ -212,7 +214,9 @@ func (lh *loginHandler) handleLDAP(ctx context.Context, conn *libldap.Conn, r *c
 				sklog.Debug(lh.logger, "user not added to groups, none found", "user_id", usr.ID, "groups", strings.Join(mapping.Groups, ","))
 				return usr, nil
 			}
-			userGroups, err := lh.repository.userGroups.Find(ctx, &model.UserGroupsCriteria{UserID: qtypes.EqualInt64(usr.ID)})
+			userGroups, err := lh.repository.userGroups.Find(ctx, &model.UserGroupsFindExpr{
+				Where: &model.UserGroupsCriteria{UserID: qtypes.EqualInt64(usr.ID)},
+			})
 			if err != nil {
 				return nil, err
 			}

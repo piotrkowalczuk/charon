@@ -7,7 +7,6 @@ import (
 	"net"
 	"net/http"
 	"net/http/pprof"
-	"os"
 	"sync"
 	"testing"
 	"time"
@@ -62,7 +61,6 @@ type TestDaemonOpts struct {
 // Daemon ...
 type Daemon struct {
 	opts          DaemonOpts
-	monitor       *monitoring
 	ldap          *libldap.Conn
 	logger        log.Logger
 	rpcListener   net.Listener
@@ -112,9 +110,6 @@ func TestDaemon(t *testing.T, opts TestDaemonOpts) (net.Addr, io.Closer) {
 // Run ...
 func (d *Daemon) Run() (err error) {
 	interceptor := promgrpc.NewInterceptor()
-	if err = d.initMonitoring(); err != nil {
-		return
-	}
 
 	var db *sql.DB
 	db, err = initPostgres(d.opts.PostgresAddress, d.opts.Test, d.logger)
@@ -267,13 +262,4 @@ func (d *Daemon) Close() (err error) {
 // Addr returns net.Addr that rpc service is listening on.
 func (d *Daemon) Addr() net.Addr {
 	return d.rpcListener.Addr()
-}
-
-func (d *Daemon) initMonitoring() (err error) {
-	hostname, err := os.Hostname()
-	if err != nil {
-		return errors.New("getting hostname failed")
-	}
-	d.monitor = initPrometheus("charon", d.opts.Monitoring, prometheus.Labels{"server": hostname})
-	return nil
 }

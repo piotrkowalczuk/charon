@@ -83,11 +83,11 @@ func (_m *MockGroupProvider) FindOneByID(_a0 context.Context, _a1 int64) (*Group
 }
 
 // Find provides a mock function with given fields: _a0, _a1
-func (_m *MockGroupProvider) Find(_a0 context.Context, _a1 *GroupCriteria) ([]*GroupEntity, error) {
+func (_m *MockGroupProvider) Find(_a0 context.Context, _a1 *GroupFindExpr) ([]*GroupEntity, error) {
 	ret := _m.Called(_a0, _a1)
 
 	var r0 []*GroupEntity
-	if rf, ok := ret.Get(0).(func(context.Context, *GroupCriteria) []*GroupEntity); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, *GroupFindExpr) []*GroupEntity); ok {
 		r0 = rf(_a0, _a1)
 	} else {
 		if ret.Get(0) != nil {
@@ -96,7 +96,7 @@ func (_m *MockGroupProvider) Find(_a0 context.Context, _a1 *GroupCriteria) ([]*G
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, *GroupCriteria) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, *GroupFindExpr) error); ok {
 		r1 = rf(_a0, _a1)
 	} else {
 		r1 = ret.Error(1)
@@ -253,11 +253,11 @@ type MockPermissionProvider struct {
 }
 
 // Find provides a mock function with given fields: ctx, criteria
-func (_m *MockPermissionProvider) Find(ctx context.Context, criteria *PermissionCriteria) ([]*PermissionEntity, error) {
+func (_m *MockPermissionProvider) Find(ctx context.Context, criteria *PermissionFindExpr) ([]*PermissionEntity, error) {
 	ret := _m.Called(ctx, criteria)
 
 	var r0 []*PermissionEntity
-	if rf, ok := ret.Get(0).(func(context.Context, *PermissionCriteria) []*PermissionEntity); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, *PermissionFindExpr) []*PermissionEntity); ok {
 		r0 = rf(ctx, criteria)
 	} else {
 		if ret.Get(0) != nil {
@@ -266,7 +266,7 @@ func (_m *MockPermissionProvider) Find(ctx context.Context, criteria *Permission
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, *PermissionCriteria) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, *PermissionFindExpr) error); ok {
 		r1 = rf(ctx, criteria)
 	} else {
 		r1 = ret.Error(1)
@@ -637,13 +637,13 @@ func (_m *MockUserProvider) ChangePassword(ctx context.Context, id int64, passwo
 	return r0
 }
 
-// Find provides a mock function with given fields: ctx, criteria
-func (_m *MockUserProvider) Find(ctx context.Context, criteria *UserCriteria) ([]*UserEntity, error) {
-	ret := _m.Called(ctx, criteria)
+// Find provides a mock function with given fields: _a0, _a1
+func (_m *MockUserProvider) Find(_a0 context.Context, _a1 *UserFindExpr) ([]*UserEntity, error) {
+	ret := _m.Called(_a0, _a1)
 
 	var r0 []*UserEntity
-	if rf, ok := ret.Get(0).(func(context.Context, *UserCriteria) []*UserEntity); ok {
-		r0 = rf(ctx, criteria)
+	if rf, ok := ret.Get(0).(func(context.Context, *UserFindExpr) []*UserEntity); ok {
+		r0 = rf(_a0, _a1)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*UserEntity)
@@ -651,8 +651,8 @@ func (_m *MockUserProvider) Find(ctx context.Context, criteria *UserCriteria) ([
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, *UserCriteria) error); ok {
-		r1 = rf(ctx, criteria)
+	if rf, ok := ret.Get(1).(func(context.Context, *UserFindExpr) error); ok {
+		r1 = rf(_a0, _a1)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -817,13 +817,13 @@ type MockUserGroupsProvider struct {
 	mock.Mock
 }
 
-// Insert provides a mock function with given fields: _a0, _a1
-func (_m *MockUserGroupsProvider) Insert(_a0 context.Context, _a1 *UserGroupsEntity) (*UserGroupsEntity, error) {
-	ret := _m.Called(_a0, _a1)
+// Insert provides a mock function with given fields: ctx, ent
+func (_m *MockUserGroupsProvider) Insert(ctx context.Context, ent *UserGroupsEntity) (*UserGroupsEntity, error) {
+	ret := _m.Called(ctx, ent)
 
 	var r0 *UserGroupsEntity
 	if rf, ok := ret.Get(0).(func(context.Context, *UserGroupsEntity) *UserGroupsEntity); ok {
-		r0 = rf(_a0, _a1)
+		r0 = rf(ctx, ent)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*UserGroupsEntity)
@@ -832,7 +832,7 @@ func (_m *MockUserGroupsProvider) Insert(_a0 context.Context, _a1 *UserGroupsEnt
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(context.Context, *UserGroupsEntity) error); ok {
-		r1 = rf(_a0, _a1)
+		r1 = rf(ctx, ent)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -861,13 +861,13 @@ func (_m *MockUserGroupsProvider) Exists(ctx context.Context, userID int64, grou
 	return r0, r1
 }
 
-// Find provides a mock function with given fields: _a0, _a1
-func (_m *MockUserGroupsProvider) Find(_a0 context.Context, _a1 *UserGroupsCriteria) ([]*UserGroupsEntity, error) {
-	ret := _m.Called(_a0, _a1)
+// Find provides a mock function with given fields: ctx, expr
+func (_m *MockUserGroupsProvider) Find(ctx context.Context, expr *UserGroupsFindExpr) ([]*UserGroupsEntity, error) {
+	ret := _m.Called(ctx, expr)
 
 	var r0 []*UserGroupsEntity
-	if rf, ok := ret.Get(0).(func(context.Context, *UserGroupsCriteria) []*UserGroupsEntity); ok {
-		r0 = rf(_a0, _a1)
+	if rf, ok := ret.Get(0).(func(context.Context, *UserGroupsFindExpr) []*UserGroupsEntity); ok {
+		r0 = rf(ctx, expr)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*UserGroupsEntity)
@@ -875,8 +875,8 @@ func (_m *MockUserGroupsProvider) Find(_a0 context.Context, _a1 *UserGroupsCrite
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, *UserGroupsCriteria) error); ok {
-		r1 = rf(_a0, _a1)
+	if rf, ok := ret.Get(1).(func(context.Context, *UserGroupsFindExpr) error); ok {
+		r1 = rf(ctx, expr)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -912,20 +912,20 @@ func (_m *MockUserGroupsProvider) Set(ctx context.Context, userID int64, groupID
 	return r0, r1, r2
 }
 
-// DeleteByUserID provides a mock function with given fields: _a0, _a1
-func (_m *MockUserGroupsProvider) DeleteByUserID(_a0 context.Context, _a1 int64) (int64, error) {
-	ret := _m.Called(_a0, _a1)
+// DeleteByUserID provides a mock function with given fields: ctx, id
+func (_m *MockUserGroupsProvider) DeleteByUserID(ctx context.Context, id int64) (int64, error) {
+	ret := _m.Called(ctx, id)
 
 	var r0 int64
 	if rf, ok := ret.Get(0).(func(context.Context, int64) int64); ok {
-		r0 = rf(_a0, _a1)
+		r0 = rf(ctx, id)
 	} else {
 		r0 = ret.Get(0).(int64)
 	}
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(context.Context, int64) error); ok {
-		r1 = rf(_a0, _a1)
+		r1 = rf(ctx, id)
 	} else {
 		r1 = ret.Error(1)
 	}

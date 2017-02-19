@@ -76,7 +76,7 @@ type UserProvider interface {
 	Count(context.Context) (int64, error)
 	UpdateLastLoginAt(ctx context.Context, id int64) (int64, error)
 	ChangePassword(ctx context.Context, id int64, password string) error
-	Find(ctx context.Context, criteria *UserCriteria) ([]*UserEntity, error)
+	Find(context.Context, *UserFindExpr) ([]*UserEntity, error)
 	FindOneByID(context.Context, int64) (*UserEntity, error)
 	FindOneByUsername(context.Context, string) (*UserEntity, error)
 	DeleteOneByID(context.Context, int64) (int64, error)

@@ -26,9 +26,6 @@ func (luh *listUsersHandler) List(ctx context.Context, req *charonrpc.ListUsersR
 	}
 
 	cri := &model.UserCriteria{
-		Sort:        req.Sort,
-		Offset:      req.Offset.Int64Or(0),
-		Limit:       req.Limit.Int64Or(10),
 		IsSuperuser: allocNilBool(req.IsSuperuser),
 		IsStaff:     allocNilBool(req.IsStaff),
 		CreatedBy:   req.CreatedBy,
@@ -44,7 +41,12 @@ func (luh *listUsersHandler) List(ctx context.Context, req *charonrpc.ListUsersR
 		cri.CreatedBy = qtypes.EqualInt64(act.User.ID)
 	}
 
-	ents, err := luh.repository.user.Find(ctx, cri)
+	ents, err := luh.repository.user.Find(ctx, &model.UserFindExpr{
+		OrderBy: req.Sort,
+		Offset:  req.Offset.Int64Or(0),
+		Limit:   req.Limit.Int64Or(10),
+		Where:   cri,
+	})
 	if err != nil {
 		return nil, err
 	}
