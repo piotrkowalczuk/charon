@@ -2,6 +2,7 @@ package model
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"testing"
 	"time"
@@ -168,6 +169,20 @@ func TestUserRepository_DeleteOneByID(t *testing.T) {
 	}
 }
 
+func TestUserRepository_ChangePassword(t *testing.T) {
+	suite := &postgresSuite{}
+	suite.setup(t)
+	defer suite.teardown(t)
+
+	for res := range loadUserFixtures(t, suite.repository.user, userTestFixtures) {
+		err := suite.repository.user.ChangePassword(context.TODO(), res.got.ID, fmt.Sprintf("new-password-%d", res.got.ID))
+		if err != nil {
+			t.Errorf("user password cannot be changed, unexpected error: %s", err.Error())
+			continue
+		}
+	}
+}
+
 func TestUserRepository_Create(t *testing.T) {
 	suite := &postgresSuite{}
 	suite.setup(t)
@@ -204,6 +219,44 @@ func TestUserRepository_FindOneByID(t *testing.T) {
 		if assert(t, found != nil, "user was not found, nil object returned") {
 			assertf(t, reflect.DeepEqual(res.got, *found), "created and retrieved entity should be equal, but its not\ncreated: %#v\nfounded: %#v", res.got, found)
 		}
+	}
+}
+
+func TestUserRepository_FindOneByUsername(t *testing.T) {
+	suite := &postgresSuite{}
+	suite.setup(t)
+	defer suite.teardown(t)
+
+	for res := range loadUserFixtures(t, suite.repository.user, userTestFixtures) {
+		user := res.got
+		found, err := suite.repository.user.FindOneByUsername(context.TODO(), user.Username)
+
+		if err != nil {
+			t.Errorf("user cannot be found, unexpected error: %s", err.Error())
+			continue
+		}
+
+		if assert(t, found != nil, "user was not found, nil object returned") {
+			assertf(t, reflect.DeepEqual(res.got, *found), "created and retrieved entity should be equal, but its not\ncreated: %#v\nfounded: %#v", res.got, found)
+		}
+	}
+}
+
+func TestUserRepository_Exists(t *testing.T) {
+	suite := &postgresSuite{}
+	suite.setup(t)
+	defer suite.teardown(t)
+
+	for res := range loadUserFixtures(t, suite.repository.user, userTestFixtures) {
+		user := res.got
+		found, err := suite.repository.user.Exists(context.TODO(), user.ID)
+
+		if err != nil {
+			t.Errorf("user cannot be found, unexpected error: %s", err.Error())
+			continue
+		}
+
+		assert(t, found, "user was not found")
 	}
 }
 
