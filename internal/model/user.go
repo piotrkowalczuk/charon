@@ -41,11 +41,13 @@ func (ue *UserEntity) Message() (*charonrpc.User, error) {
 		createdAt, updatedAt *pbts.Timestamp
 	)
 
-	if createdAt, err = ptypes.TimestampProto(ue.CreatedAt); err != nil {
-		return nil, err
+	if !ue.CreatedAt.IsZero() {
+		if createdAt, err = ptypes.TimestampProto(ue.CreatedAt); err != nil {
+			return nil, err
+		}
 	}
 	if ue.UpdatedAt.Valid {
-		if createdAt, err = ptypes.TimestampProto(ue.UpdatedAt.Time); err != nil {
+		if updatedAt, err = ptypes.TimestampProto(ue.UpdatedAt.Time); err != nil {
 			return nil, err
 		}
 	}

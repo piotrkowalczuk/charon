@@ -121,7 +121,7 @@ func setManyToMany(db *sql.DB, ctx context.Context, table, column1, column2 stri
 	}()
 
 	if len(ids) > 0 {
-		insert, err = tx.PrepareContext(ctx, `INSERT INTO ` + table + ` (` + column1 + `, ` + column2 + `) VALUES ($1, $2)`)
+		insert, err = tx.PrepareContext(ctx, `INSERT INTO `+table+` (`+column1+`, `+column2+`) VALUES ($1, $2)`)
 		if err != nil {
 			return 0, 0, err
 		}
