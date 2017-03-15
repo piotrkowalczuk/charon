@@ -751,17 +751,24 @@ func (_m *MockUserProvider) UpdateOneByID(_a0 context.Context, _a1 int64, _a2 *U
 }
 
 // RegistrationConfirmation provides a mock function with given fields: ctx, id, confirmationToken
-func (_m *MockUserProvider) RegistrationConfirmation(ctx context.Context, id int64, confirmationToken string) error {
+func (_m *MockUserProvider) RegistrationConfirmation(ctx context.Context, id int64, confirmationToken string) (int64, error) {
 	ret := _m.Called(ctx, id, confirmationToken)
 
-	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, int64, string) error); ok {
+	var r0 int64
+	if rf, ok := ret.Get(0).(func(context.Context, int64, string) int64); ok {
 		r0 = rf(ctx, id, confirmationToken)
 	} else {
-		r0 = ret.Error(0)
+		r0 = ret.Get(0).(int64)
 	}
 
-	return r0
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, int64, string) error); ok {
+		r1 = rf(ctx, id, confirmationToken)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 // IsGranted provides a mock function with given fields: ctx, id, permission

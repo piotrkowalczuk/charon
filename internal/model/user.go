@@ -83,7 +83,7 @@ type UserProvider interface {
 	FindOneByUsername(context.Context, string) (*UserEntity, error)
 	DeleteOneByID(context.Context, int64) (int64, error)
 	UpdateOneByID(context.Context, int64, *UserPatch) (*UserEntity, error)
-	RegistrationConfirmation(ctx context.Context, id int64, confirmationToken string) error
+	RegistrationConfirmation(ctx context.Context, id int64, confirmationToken string) (int64, error)
 	IsGranted(ctx context.Context, id int64, permission charon.Permission) (bool, error)
 	SetPermissions(ctx context.Context, id int64, permissions ...charon.Permission) (int64, int64, error)
 }
@@ -127,8 +127,8 @@ func (ur *UserRepository) Create(ctx context.Context, username string, password 
 }
 
 // CreateSuperuser implements UserProvider interface.
-func (ur *UserRepository) CreateSuperuser(ctx context.Context, username string, password []byte, FirstName, LastName string) (*UserEntity, error) {
-	return ur.Create(ctx, username, password, FirstName, LastName, []byte(UserConfirmationTokenUsed), true, false, true, true)
+func (ur *UserRepository) CreateSuperuser(ctx context.Context, username string, password []byte, firstName, lastName string) (*UserEntity, error) {
+	return ur.Create(ctx, username, password, firstName, lastName, []byte(UserConfirmationTokenUsed), true, false, true, true)
 }
 
 // Count implements UserProvider interface.
@@ -139,7 +139,7 @@ func (ur *UserRepository) Count(ctx context.Context) (n int64, err error) {
 }
 
 // RegistrationConfirmation ...
-func (ur *UserRepository) RegistrationConfirmation(ctx context.Context, userID int64, confirmationToken string) error {
+func (ur *UserRepository) RegistrationConfirmation(ctx context.Context, userID int64, confirmationToken string) (int64, error) {
 	query := `
 		UPDATE ` + ur.Table + `
 		SET is_confirmed = true, is_active = true, updated_at = NOW(), confirmation_token = $1
@@ -148,12 +148,10 @@ func (ur *UserRepository) RegistrationConfirmation(ctx context.Context, userID i
 
 	result, err := ur.DB.ExecContext(ctx, query, UserConfirmationTokenUsed, userID, confirmationToken)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
-	_, err = result.RowsAffected()
-
-	return err
+	return result.RowsAffected()
 }
 
 // ChangePassword ...
