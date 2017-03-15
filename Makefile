@@ -1,4 +1,4 @@
-VERSION=$(shell git describe --tags --always --dirty)
+VERSION?=$(shell git describe --tags --always --dirty)
 SERVICE=charon
 
 PACKAGE=github.com/piotrkowalczuk/charon
@@ -47,10 +47,3 @@ publish:
 		--build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
 		-t piotrkowalczuk/${SERVICE}:${VERSION} .
 	@docker push piotrkowalczuk/${SERVICE}:${VERSION}
-
-publish-test:
-	@docker build \
-		--build-arg VCS_REF=${VCS_REF} \
-		--build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
-		-t piotrkowalczuk/${SERVICE}:test .
-	@docker push piotrkowalczuk/${SERVICE}:test
