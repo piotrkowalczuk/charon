@@ -111,24 +111,6 @@ func TestUserEntity_Message(t *testing.T) {
 	}
 }
 
-func TestUserRepository_Create(t *testing.T) {
-	suite := &postgresSuite{}
-	suite.setup(t)
-	defer suite.teardown(t)
-
-	for res := range loadUserFixtures(t, suite.repository.user, userTestFixtures) {
-		if res.got.CreatedAt.IsZero() {
-			t.Errorf("invalid created at field, expected valid time but got %v", res.got.CreatedAt)
-		} else {
-			t.Logf("user has been properly created at %v", res.got.CreatedAt)
-		}
-
-		if res.got.Username != res.given.Username {
-			t.Errorf("wrong username, expected %s but got %s", res.given.Username, res.got.Username)
-		}
-	}
-}
-
 func TestUserRepository_UpdateOneByID(t *testing.T) {
 	suffix := "_modified"
 	suite := &postgresSuite{}
@@ -183,6 +165,25 @@ func TestUserRepository_DeleteOneByID(t *testing.T) {
 
 		assert(t, affected == 1, "user was not deleted, no rows affected")
 
+	}
+}
+
+func TestUserRepository_Create(t *testing.T) {
+	suite := &postgresSuite{}
+	suite.setup(t)
+	defer suite.teardown(t)
+
+	_, err := suite.repository.user.Create(
+		context.TODO(),
+		"username",
+		[]byte("password"),
+		"firstname",
+		"lastname",
+		[]byte("confirmation-token"),
+		false, false, false, false,
+	)
+	if err != nil {
+		t.Errorf("user cannot be deleted, unexpected error: %s", err.Error())
 	}
 }
 
