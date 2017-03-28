@@ -217,6 +217,10 @@ func (d *Daemon) Run() (err error) {
 			mux.Handle("/debug/pprof/symbol", http.HandlerFunc(pprof.Symbol))
 			mux.Handle("/debug/pprof/trace", http.HandlerFunc(pprof.Trace))
 			mux.Handle("/metrics", prometheus.Handler())
+			mux.Handle("/health", &healthHandler{
+				logger:   d.logger,
+				postgres: db,
+			})
 			mux.Handle("/debug/requests", http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 				//any, sensitive := trace.AuthRequest(req)
 				//if !any {
