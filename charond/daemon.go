@@ -27,7 +27,6 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials"
-	"google.golang.org/grpc/grpclog"
 )
 
 // DaemonOpts ...
@@ -89,7 +88,6 @@ func TestDaemon(t *testing.T, opts TestDaemonOpts) (net.Addr, io.Closer) {
 	}
 
 	logger := sklog.NewTestLogger(t)
-	grpclog.SetLogger(sklog.NewGRPCLogger(logger))
 
 	d := NewDaemon(DaemonOpts{
 		Test:               true,

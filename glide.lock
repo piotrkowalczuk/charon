@@ -1,5 +1,5 @@
 hash: b96c43ac37f9cae01716e67163546879e3be5e3f36a080488fd8ed1115daa7f0
-updated: 2017-03-29T10:59:00.465378228+02:00
+updated: 2017-03-29T11:46:38.822405972+02:00
 imports:
 - name: github.com/beorn7/perks
   version: 4c0e84591b9aa9e6dcfdf3e020114cd81f89d5f9
@@ -20,7 +20,7 @@ imports:
 - name: github.com/go-stack/stack
   version: 100eb0c0a9c5b306ca2fb4f165df21d80ada4b82
 - name: github.com/golang/protobuf
-  version: 2bc9827a78f95c6665b5fe0abd1fd66b496ae2d8
+  version: c9c7427a2a70d2eb3bafa0ab2dc163e45f143317
   subpackages:
   - proto
   - ptypes
@@ -32,7 +32,7 @@ imports:
 - name: github.com/kr/logfmt
   version: b84e30acd515aadc4b783ad4ff83aff3299bdfe0
 - name: github.com/lib/pq
-  version: ba5d4f7a35561e22fbdf7a39aa0070f4d460cfc0
+  version: 2704adc878c21e1329f46f6e56a1c387d788ff94
   subpackages:
   - oid
 - name: github.com/matttproud/golang_protobuf_extensions
@@ -42,7 +42,7 @@ imports:
 - name: github.com/pborman/uuid
   version: a97ce2ca70fa5a848076093f05e639a89ca34d06
 - name: github.com/piotrkowalczuk/mnemosyne
-  version: 42a2cb64194c51850b94f4c71639ab0c428790cc
+  version: 56fc6742e1541106ba0fb0e575632b9bef7af8e4
   subpackages:
   - internal/cluster
   - internal/jump
@@ -89,13 +89,13 @@ imports:
   - assert
   - mock
 - name: golang.org/x/crypto
-  version: 453249f01cfeb54c3d549ddb75ff152ca243f9d8
+  version: 459e26527287adbc2adcc5d0d49abff9a5f315a7
   subpackages:
   - bcrypt
   - blowfish
   - sha3
 - name: golang.org/x/net
-  version: 0e2717dc3cc05907dc23096ef3a9086ea93f567f
+  version: 05d3205156cb1bdc096578d6457fa161cd950aa2
   subpackages:
   - context
   - http2
@@ -105,11 +105,18 @@ imports:
   - lex/httplex
   - trace
 - name: golang.org/x/oauth2
-  version: 1e695b1c8febf17aad3bfa7bf0a819ef94b98ad5
+  version: 7fdf09982454086d5570c7db3e11f360194830ca
   subpackages:
   - internal
+- name: golang.org/x/text
+  version: fc7fa097411d30e6708badff276c4c164425590c
+  subpackages:
+  - secure/bidirule
+  - transform
+  - unicode/bidi
+  - unicode/norm
 - name: google.golang.org/appengine
-  version: c7b8227c83007befd67b324a64c969ebc1d7475d
+  version: 56d253d1dd14aa01937e12c73a0971bcfd797ff2
   subpackages:
   - internal
   - internal/base
@@ -135,7 +142,7 @@ imports:
   version: 4e86f4367175e39f69d9358a5f17b4dda270378d
 testImports:
 - name: github.com/gopherjs/gopherjs
-  version: b9bcb1da229a59cc1e1d168401662cb6450aae08
+  version: 3496c6f94e1b945f3fc9580f6982675c0a74cd6c
   subpackages:
   - js
 - name: github.com/jtolds/gls
