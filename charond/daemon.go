@@ -167,7 +167,6 @@ func (d *Daemon) Run() (err error) {
 		opts = append(opts, grpc.Creds(creds))
 	}
 
-	grpclog.SetLogger(sklog.NewGRPCLogger(d.logger))
 	gRPCServer := grpc.NewServer(opts...)
 	server := &rpcServer{
 		opts:               d.opts,

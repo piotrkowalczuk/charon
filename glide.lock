@@ -1,5 +1,5 @@
-hash: fa172044f09f3761549e90805f17abe891dc41df4b1f6cf93a5cce29d43a5e8c
-updated: 2017-02-19T21:01:17.312034414+01:00
+hash: b96c43ac37f9cae01716e67163546879e3be5e3f36a080488fd8ed1115daa7f0
+updated: 2017-03-29T10:59:00.465378228+02:00
 imports:
 - name: github.com/beorn7/perks
   version: 4c0e84591b9aa9e6dcfdf3e020114cd81f89d5f9
@@ -42,7 +42,7 @@ imports:
 - name: github.com/pborman/uuid
   version: a97ce2ca70fa5a848076093f05e639a89ca34d06
 - name: github.com/piotrkowalczuk/mnemosyne
-  version: 71c876ce335e932ee915e9e963a0568be10b29de
+  version: 42a2cb64194c51850b94f4c71639ab0c428790cc
   subpackages:
   - internal/cluster
   - internal/jump
@@ -72,7 +72,7 @@ imports:
   subpackages:
   - go
 - name: github.com/prometheus/common
-  version: 3007b6072c17c8d985734e6e19b1dea9174e13d3
+  version: 49fee292b27bfff7f354ee0f64e1bc4850462edf
   subpackages:
   - expfmt
   - internal/bitbucket.org/ww/goautoneg
