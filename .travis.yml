@@ -1,10 +1,12 @@
 language: go
+dist: trusty
+sudo: required
 go:
-- tip
+  - 1.8
 services:
 - docker
 addons:
-  postgresql: '9.3'
+  postgresql: '9.6'
   code_climate:
     repo_token: 6e0f648267827e942b80676d93220b191a0cd2122e87a24be5a9eb45c680bbda
 env:

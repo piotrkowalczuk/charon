@@ -13,12 +13,11 @@ LABEL org.label-schema.build-date=$BUILD_DATE \
 	org.label-schema.vcs-type="git" \
 	org.label-schema.vcs-url="https://github.com/piotrkowalczuk/charon"
 
-RUN apk --no-cache add curl
-
 COPY ./bin /usr/local/bin/
 COPY ./scripts/docker-entrypoint.sh /
 COPY ./scripts/docker-healthcheck.sh /
 
+RUN apk --no-cache add curl
 RUN mkdir /data && echo '[]' > /data/ldap.json
 
 VOLUME /data

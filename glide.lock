@@ -1,5 +1,5 @@
-hash: b96c43ac37f9cae01716e67163546879e3be5e3f36a080488fd8ed1115daa7f0
-updated: 2017-03-29T11:46:38.822405972+02:00
+hash: 73ec8108c0ce595fcee488b1736c601c26a394a6c342b55181f159c352efa55d
+updated: 2017-04-04T00:32:42.228510275+02:00
 imports:
 - name: github.com/beorn7/perks
   version: 4c0e84591b9aa9e6dcfdf3e020114cd81f89d5f9
@@ -20,7 +20,7 @@ imports:
 - name: github.com/go-stack/stack
   version: 100eb0c0a9c5b306ca2fb4f165df21d80ada4b82
 - name: github.com/golang/protobuf
-  version: c9c7427a2a70d2eb3bafa0ab2dc163e45f143317
+  version: 2bc9827a78f95c6665b5fe0abd1fd66b496ae2d8
   subpackages:
   - proto
   - ptypes
@@ -42,7 +42,7 @@ imports:
 - name: github.com/pborman/uuid
   version: a97ce2ca70fa5a848076093f05e639a89ca34d06
 - name: github.com/piotrkowalczuk/mnemosyne
-  version: 56fc6742e1541106ba0fb0e575632b9bef7af8e4
+  version: 777012b89ccdd34421d5738c604eff3d02523d3d
   subpackages:
   - internal/cluster
   - internal/jump
@@ -89,13 +89,13 @@ imports:
   - assert
   - mock
 - name: golang.org/x/crypto
-  version: 459e26527287adbc2adcc5d0d49abff9a5f315a7
+  version: 573951cbe80bb6352881271bb276f48749eab6f4
   subpackages:
   - bcrypt
   - blowfish
   - sha3
 - name: golang.org/x/net
-  version: 05d3205156cb1bdc096578d6457fa161cd950aa2
+  version: 0e2717dc3cc05907dc23096ef3a9086ea93f567f
   subpackages:
   - context
   - http2
@@ -105,18 +105,11 @@ imports:
   - lex/httplex
   - trace
 - name: golang.org/x/oauth2
-  version: 7fdf09982454086d5570c7db3e11f360194830ca
+  version: 1e695b1c8febf17aad3bfa7bf0a819ef94b98ad5
   subpackages:
   - internal
-- name: golang.org/x/text
-  version: fc7fa097411d30e6708badff276c4c164425590c
-  subpackages:
-  - secure/bidirule
-  - transform
-  - unicode/bidi
-  - unicode/norm
 - name: google.golang.org/appengine
-  version: 56d253d1dd14aa01937e12c73a0971bcfd797ff2
+  version: c7b8227c83007befd67b324a64c969ebc1d7475d
   subpackages:
   - internal
   - internal/base
