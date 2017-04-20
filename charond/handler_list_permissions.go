@@ -53,5 +53,5 @@ func (lph *listPermissionsHandler) firewall(req *charonrpc.ListPermissionsReques
 		return nil
 	}
 
-	return grpc.Errorf(codes.PermissionDenied, "list of Permissions cannot be retrieved, missing permission")
+	return grpc.Errorf(codes.PermissionDenied, "list of permissions cannot be retrieved, missing permission")
 }

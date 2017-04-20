@@ -95,6 +95,22 @@ func TestMapping_Map(t *testing.T) {
 					Groups:  []string{"project-manager"},
 				},
 			},
+			{
+				From: map[string][]string{
+					"memberOf": {"cn=cmt-service-example1-read", "cn=cmt"},
+				},
+				To: ldap.MappingTo{
+					Groups: []string{"Example1 Service Readers"},
+				},
+			},
+			{
+				From: map[string][]string{
+					"memberOf": {"cn=cmt-service-example2-read", "cn=cmt"},
+				},
+				To: ldap.MappingTo{
+					Groups: []string{"Example2 Service Readers"},
+				},
+			},
 		},
 	}
 
@@ -167,6 +183,17 @@ func TestMapping_Map(t *testing.T) {
 			groups:  []string{"project-manager"},
 			attributes: []*libldap.EntryAttribute{
 				{Name: "memberOf", Values: []string{"cn=project1,cn=company", "cn=project2,cn=company"}},
+			},
+			ok: true,
+		},
+		"xxx": {
+			groups: []string{"Example1 Service Readers", "Example2 Service Readers"},
+			attributes: []*libldap.EntryAttribute{
+				{Name: "memberOf", Values: []string{
+					"cn=cmt-service-example1-read,cn=cmt,cn=groups,dc=ext,dc=acme,dc=com",
+					"cn=Domain Users,cn=groups,dc=ext,dc=acme,dc=com",
+					"cn=cmt-service-example2-read,cn=cmt,cn=groups,dc=ext,dc=acme,dc=com",
+				}},
 			},
 			ok: true,
 		},

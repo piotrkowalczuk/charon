@@ -214,6 +214,7 @@ func (lh *loginHandler) handleLDAP(ctx context.Context, conn *libldap.Conn, r *c
 				sklog.Debug(lh.logger, "user not added to groups, none found", "user_id", usr.ID, "groups", strings.Join(mapping.Groups, ","))
 				return usr, nil
 			}
+
 			userGroups, err := lh.repository.userGroups.Find(ctx, &model.UserGroupsFindExpr{
 				Where: &model.UserGroupsCriteria{UserID: qtypes.EqualInt64(usr.ID)},
 			})
@@ -231,7 +232,15 @@ func (lh *loginHandler) handleLDAP(ctx context.Context, conn *libldap.Conn, r *c
 				}
 				ids = append(ids, gf.ID)
 			}
+
+			// If at least one group is different, set everything from scratch.
 			if len(ids) > 0 {
+				// set ids from scratch so they hold all necessary information
+				ids = []int64{}
+				for _, gf := range groupsFound {
+					ids = append(ids, gf.ID)
+				}
+
 				_, _, err = lh.repository.userGroups.Set(ctx, usr.ID, ids)
 				if err != nil {
 					return nil, err
