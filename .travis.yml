@@ -35,6 +35,6 @@ deploy:
   skip_upload_docs: true
   user: piotrkowalczuk
   password:
-    secure: PQZLkrIrarIizJiIe1yR5FciBKOgQcsOq6gxZkO+epeBxdysZBIU25OqCu15Fj9gmDd8ljbdjaoa0of7m0uk6RHohclAANuIRAukGFqDPuFi2RA6299fjU0Z3LXhtwGzBMSYVPZ7d71o14Q8HAn+MtJPAD4tCGJX3ZhwPTSx0Ec=
+    secure: hD0y9S8BD0ZhmpOa/Ks/J49lufEwAgW7df1I/vC6RdzbiinqFM4PQLHTF5yjHmRMoqxYfKwco48/A9wduLxoQoZN/0Md7HTQC197XciN/OMyqkKJmqajslXycs55YSRwUWl6eXz40jln7wq/5mlT/dhJGXpLtdB2YI+HGmDvQ2k=
   on:
     tags: true
