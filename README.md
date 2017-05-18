@@ -5,6 +5,7 @@
 [![codecov.io](https://codecov.io/github/piotrkowalczuk/charon/coverage.svg?branch=master)](https://codecov.io/github/piotrkowalczuk/charon?branch=master)
 [![Code Climate](https://codeclimate.com/github/piotrkowalczuk/charon/badges/gpa.svg)](https://codeclimate.com/github/piotrkowalczuk/charon)
 [![Go Report Card](https://goreportcard.com/badge/github.com/piotrkowalczuk/charon)](https://goreportcard.com/report/github.com/piotrkowalczuk/charon)
+[![pypi](https://img.shields.io/pypi/v/charon-client.svg)](https://pypi.python.org/pypi/charon-client)
 
 <img src="/data/logo/charon.png?raw=true" width="300">
 
