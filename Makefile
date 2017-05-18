@@ -9,9 +9,12 @@ PACKAGE_CMD_GENERATOR=$(PACKAGE)/cmd/$(SERVICE)g
 
 LDFLAGS = -X 'main.version=$(VERSION)'
 
-.PHONY:	all build install gen test cover get publish
+.PHONY:	all version build install gen test cover get publish
 
 all: get install
+
+version:
+	@echo ${VERSION} > VERSION.txt
 
 build:
 	@CGO_ENABLED=0 GOOS=linux go build -ldflags "${LDFLAGS}" -a -o bin/${SERVICE}g ${PACKAGE_CMD_GENERATOR}

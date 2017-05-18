@@ -2,7 +2,7 @@ language: go
 dist: trusty
 sudo: required
 go:
-  - 1.8
+- 1.8
 services:
 - docker
 addons:
@@ -26,3 +26,15 @@ after_success:
 notifications:
   slack:
     secure: GlbUiPiSpa05wDHorgk+uOmupZ0kNNcaoGaJehhPRKrD6NZRgLr9bjrQgzHOKxZqgbK98l4aGPsCCJXtIw5bUrXu/Si7AaxzE4qP74FUnzpXkXxUxqexV+DAvI3WuPaqho7NXkqMs+EvYj/roM+ieuZ47jM2noPpPvLbw7Vp8CE=
+before_deploy:
+- make version
+- python setup.py egg_info
+deploy:
+  provider: pypi
+  skip_cleanup: true
+  skip_upload_docs: true
+  user: piotrkowalczuk
+  password:
+    secure: PQZLkrIrarIizJiIe1yR5FciBKOgQcsOq6gxZkO+epeBxdysZBIU25OqCu15Fj9gmDd8ljbdjaoa0of7m0uk6RHohclAANuIRAukGFqDPuFi2RA6299fjU0Z3LXhtwGzBMSYVPZ7d71o14Q8HAn+MtJPAD4tCGJX3ZhwPTSx0Ec=
+  on:
+    tags: true

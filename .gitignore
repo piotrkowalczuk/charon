@@ -9,4 +9,6 @@ run.sh
 coverage.txt
 *.out
 bin
+charon_client.egg-info
+VERSION.txt
 
