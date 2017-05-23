@@ -38,6 +38,27 @@ func (m *Group) String() string            { return proto.CompactTextString(m) }
 func (*Group) ProtoMessage()               {}
 func (*Group) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{0} }
 
+func (m *Group) GetId() int64 {
+	if m != nil {
+		return m.Id
+	}
+	return 0
+}
+
+func (m *Group) GetName() string {
+	if m != nil {
+		return m.Name
+	}
+	return ""
+}
+
+func (m *Group) GetDescription() string {
+	if m != nil {
+		return m.Description
+	}
+	return ""
+}
+
 func (m *Group) GetCreatedAt() *google_protobuf2.Timestamp {
 	if m != nil {
 		return m.CreatedAt
@@ -76,6 +97,13 @@ func (m *CreateGroupRequest) String() string            { return proto.CompactTe
 func (*CreateGroupRequest) ProtoMessage()               {}
 func (*CreateGroupRequest) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{1} }
 
+func (m *CreateGroupRequest) GetName() string {
+	if m != nil {
+		return m.Name
+	}
+	return ""
+}
+
 func (m *CreateGroupRequest) GetDescription() *ntypes.String {
 	if m != nil {
 		return m.Description
@@ -107,6 +135,13 @@ func (m *GetGroupRequest) Reset()                    { *m = GetGroupRequest{} }
 func (m *GetGroupRequest) String() string            { return proto.CompactTextString(m) }
 func (*GetGroupRequest) ProtoMessage()               {}
 func (*GetGroupRequest) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{3} }
+
+func (m *GetGroupRequest) GetId() int64 {
+	if m != nil {
+		return m.Id
+	}
+	return 0
+}
 
 type GetGroupResponse struct {
 	Group *Group `protobuf:"bytes,1,opt,name=group" json:"group,omitempty"`
@@ -173,6 +208,13 @@ func (m *DeleteGroupRequest) String() string            { return proto.CompactTe
 func (*DeleteGroupRequest) ProtoMessage()               {}
 func (*DeleteGroupRequest) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{7} }
 
+func (m *DeleteGroupRequest) GetId() int64 {
+	if m != nil {
+		return m.Id
+	}
+	return 0
+}
+
 type ModifyGroupRequest struct {
 	Id          int64          `protobuf:"varint,1,opt,name=id" json:"id,omitempty"`
 	Name        *ntypes.String `protobuf:"bytes,2,opt,name=name" json:"name,omitempty"`
@@ -183,6 +225,13 @@ func (m *ModifyGroupRequest) Reset()                    { *m = ModifyGroupReques
 func (m *ModifyGroupRequest) String() string            { return proto.CompactTextString(m) }
 func (*ModifyGroupRequest) ProtoMessage()               {}
 func (*ModifyGroupRequest) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{8} }
+
+func (m *ModifyGroupRequest) GetId() int64 {
+	if m != nil {
+		return m.Id
+	}
+	return 0
+}
 
 func (m *ModifyGroupRequest) GetName() *ntypes.String {
 	if m != nil {
@@ -224,6 +273,20 @@ func (m *SetGroupPermissionsRequest) String() string            { return proto.C
 func (*SetGroupPermissionsRequest) ProtoMessage()               {}
 func (*SetGroupPermissionsRequest) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{10} }
 
+func (m *SetGroupPermissionsRequest) GetGroupId() int64 {
+	if m != nil {
+		return m.GroupId
+	}
+	return 0
+}
+
+func (m *SetGroupPermissionsRequest) GetPermissions() []string {
+	if m != nil {
+		return m.Permissions
+	}
+	return nil
+}
+
 type SetGroupPermissionsResponse struct {
 	Created   int64 `protobuf:"varint,1,opt,name=created" json:"created,omitempty"`
 	Removed   int64 `protobuf:"varint,2,opt,name=removed" json:"removed,omitempty"`
@@ -235,6 +298,27 @@ func (m *SetGroupPermissionsResponse) String() string            { return proto.
 func (*SetGroupPermissionsResponse) ProtoMessage()               {}
 func (*SetGroupPermissionsResponse) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{11} }
 
+func (m *SetGroupPermissionsResponse) GetCreated() int64 {
+	if m != nil {
+		return m.Created
+	}
+	return 0
+}
+
+func (m *SetGroupPermissionsResponse) GetRemoved() int64 {
+	if m != nil {
+		return m.Removed
+	}
+	return 0
+}
+
+func (m *SetGroupPermissionsResponse) GetUntouched() int64 {
+	if m != nil {
+		return m.Untouched
+	}
+	return 0
+}
+
 type ListGroupPermissionsRequest struct {
 	Id int64 `protobuf:"varint,1,opt,name=id" json:"id,omitempty"`
 }
@@ -244,6 +328,13 @@ func (m *ListGroupPermissionsRequest) String() string            { return proto.
 func (*ListGroupPermissionsRequest) ProtoMessage()               {}
 func (*ListGroupPermissionsRequest) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{12} }
 
+func (m *ListGroupPermissionsRequest) GetId() int64 {
+	if m != nil {
+		return m.Id
+	}
+	return 0
+}
+
 type ListGroupPermissionsResponse struct {
 	Permissions []string `protobuf:"bytes,1,rep,name=permissions" json:"permissions,omitempty"`
 }
@@ -252,6 +343,13 @@ func (m *ListGroupPermissionsResponse) Reset()                    { *m = ListGro
 func (m *ListGroupPermissionsResponse) String() string            { return proto.CompactTextString(m) }
 func (*ListGroupPermissionsResponse) ProtoMessage()               {}
 func (*ListGroupPermissionsResponse) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{13} }
+
+func (m *ListGroupPermissionsResponse) GetPermissions() []string {
+	if m != nil {
+		return m.Permissions
+	}
+	return nil
+}
 
 func init() {
 	proto.RegisterType((*Group)(nil), "charonrpc.Group")
@@ -544,7 +642,7 @@ func init() { proto.RegisterFile("group.proto", fileDescriptor2) }
 
 var fileDescriptor2 = []byte{
 	// 727 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x09, 0x6e, 0x88, 0x02, 0xff, 0x94, 0x54, 0x61, 0x4f, 0xd3, 0x5c,
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x94, 0x54, 0x61, 0x4f, 0xd3, 0x5c,
 	0x14, 0xa6, 0xeb, 0x36, 0xd8, 0xd9, 0xfb, 0x02, 0x5e, 0xbf, 0xd4, 0x02, 0x66, 0x56, 0xc1, 0x7d,
 	0x90, 0xce, 0x80, 0x31, 0x41, 0xa3, 0x41, 0xd4, 0x10, 0x8c, 0x24, 0x66, 0x18, 0x13, 0xfd, 0x42,
 	0xba, 0xf5, 0xae, 0xdc, 0xb0, 0xf6, 0x5e, 0xda, 0x5b, 0x49, 0xf9, 0x33, 0xfe, 0x12, 0xff, 0x9b,

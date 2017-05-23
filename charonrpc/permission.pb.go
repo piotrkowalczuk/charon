@@ -29,6 +29,13 @@ func (m *RegisterPermissionsRequest) String() string            { return proto.C
 func (*RegisterPermissionsRequest) ProtoMessage()               {}
 func (*RegisterPermissionsRequest) Descriptor() ([]byte, []int) { return fileDescriptor3, []int{0} }
 
+func (m *RegisterPermissionsRequest) GetPermissions() []string {
+	if m != nil {
+		return m.Permissions
+	}
+	return nil
+}
+
 type RegisterPermissionsResponse struct {
 	Created   int64 `protobuf:"varint,1,opt,name=created" json:"created,omitempty"`
 	Removed   int64 `protobuf:"varint,2,opt,name=removed" json:"removed,omitempty"`
@@ -39,6 +46,27 @@ func (m *RegisterPermissionsResponse) Reset()                    { *m = Register
 func (m *RegisterPermissionsResponse) String() string            { return proto.CompactTextString(m) }
 func (*RegisterPermissionsResponse) ProtoMessage()               {}
 func (*RegisterPermissionsResponse) Descriptor() ([]byte, []int) { return fileDescriptor3, []int{1} }
+
+func (m *RegisterPermissionsResponse) GetCreated() int64 {
+	if m != nil {
+		return m.Created
+	}
+	return 0
+}
+
+func (m *RegisterPermissionsResponse) GetRemoved() int64 {
+	if m != nil {
+		return m.Removed
+	}
+	return 0
+}
+
+func (m *RegisterPermissionsResponse) GetUntouched() int64 {
+	if m != nil {
+		return m.Untouched
+	}
+	return 0
+}
 
 type ListPermissionsRequest struct {
 	Subsystem *qtypes.String    `protobuf:"bytes,1,opt,name=subsystem" json:"subsystem,omitempty"`
@@ -121,6 +149,13 @@ func (m *ListPermissionsResponse) String() string            { return proto.Comp
 func (*ListPermissionsResponse) ProtoMessage()               {}
 func (*ListPermissionsResponse) Descriptor() ([]byte, []int) { return fileDescriptor3, []int{3} }
 
+func (m *ListPermissionsResponse) GetPermissions() []string {
+	if m != nil {
+		return m.Permissions
+	}
+	return nil
+}
+
 type GetPermissionRequest struct {
 	Id int64 `protobuf:"varint,1,opt,name=id" json:"id,omitempty"`
 }
@@ -130,6 +165,13 @@ func (m *GetPermissionRequest) String() string            { return proto.Compact
 func (*GetPermissionRequest) ProtoMessage()               {}
 func (*GetPermissionRequest) Descriptor() ([]byte, []int) { return fileDescriptor3, []int{4} }
 
+func (m *GetPermissionRequest) GetId() int64 {
+	if m != nil {
+		return m.Id
+	}
+	return 0
+}
+
 type GetPermissionResponse struct {
 	Permission string `protobuf:"bytes,1,opt,name=permission" json:"permission,omitempty"`
 }
@@ -138,6 +180,13 @@ func (m *GetPermissionResponse) Reset()                    { *m = GetPermissionR
 func (m *GetPermissionResponse) String() string            { return proto.CompactTextString(m) }
 func (*GetPermissionResponse) ProtoMessage()               {}
 func (*GetPermissionResponse) Descriptor() ([]byte, []int) { return fileDescriptor3, []int{5} }
+
+func (m *GetPermissionResponse) GetPermission() string {
+	if m != nil {
+		return m.Permission
+	}
+	return ""
+}
 
 func init() {
 	proto.RegisterType((*RegisterPermissionsRequest)(nil), "charonrpc.RegisterPermissionsRequest")
@@ -290,7 +339,7 @@ func init() { proto.RegisterFile("permission.proto", fileDescriptor3) }
 
 var fileDescriptor3 = []byte{
 	// 523 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x09, 0x6e, 0x88, 0x02, 0xff, 0x84, 0x94, 0xef, 0x8a, 0xd3, 0x4c,
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x84, 0x94, 0xef, 0x8a, 0xd3, 0x4c,
 	0x14, 0xc6, 0xdf, 0x36, 0x6d, 0xdf, 0xe6, 0x14, 0x97, 0xee, 0xb0, 0x6a, 0x88, 0xa2, 0x35, 0xb2,
 	0xa5, 0xa0, 0x66, 0xa5, 0x8a, 0x2b, 0x0a, 0x8a, 0x82, 0x2c, 0x2e, 0x8a, 0x92, 0xf5, 0x9b, 0x1f,
 	0x24, 0x4d, 0x4e, 0xdb, 0xa1, 0xcd, 0x4c, 0x76, 0xe6, 0x64, 0x25, 0xde, 0x83, 0x37, 0xe5, 0x95,

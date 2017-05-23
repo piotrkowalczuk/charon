@@ -42,6 +42,62 @@ func (m *User) String() string            { return proto.CompactTextString(m) }
 func (*User) ProtoMessage()               {}
 func (*User) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{0} }
 
+func (m *User) GetId() int64 {
+	if m != nil {
+		return m.Id
+	}
+	return 0
+}
+
+func (m *User) GetUsername() string {
+	if m != nil {
+		return m.Username
+	}
+	return ""
+}
+
+func (m *User) GetFirstName() string {
+	if m != nil {
+		return m.FirstName
+	}
+	return ""
+}
+
+func (m *User) GetLastName() string {
+	if m != nil {
+		return m.LastName
+	}
+	return ""
+}
+
+func (m *User) GetIsSuperuser() bool {
+	if m != nil {
+		return m.IsSuperuser
+	}
+	return false
+}
+
+func (m *User) GetIsActive() bool {
+	if m != nil {
+		return m.IsActive
+	}
+	return false
+}
+
+func (m *User) GetIsStaff() bool {
+	if m != nil {
+		return m.IsStaff
+	}
+	return false
+}
+
+func (m *User) GetIsConfirmed() bool {
+	if m != nil {
+		return m.IsConfirmed
+	}
+	return false
+}
+
 func (m *User) GetCreatedAt() *google_protobuf2.Timestamp {
 	if m != nil {
 		return m.CreatedAt
@@ -86,6 +142,41 @@ func (m *CreateUserRequest) Reset()                    { *m = CreateUserRequest{
 func (m *CreateUserRequest) String() string            { return proto.CompactTextString(m) }
 func (*CreateUserRequest) ProtoMessage()               {}
 func (*CreateUserRequest) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{1} }
+
+func (m *CreateUserRequest) GetUsername() string {
+	if m != nil {
+		return m.Username
+	}
+	return ""
+}
+
+func (m *CreateUserRequest) GetPlainPassword() string {
+	if m != nil {
+		return m.PlainPassword
+	}
+	return ""
+}
+
+func (m *CreateUserRequest) GetSecurePassword() []byte {
+	if m != nil {
+		return m.SecurePassword
+	}
+	return nil
+}
+
+func (m *CreateUserRequest) GetFirstName() string {
+	if m != nil {
+		return m.FirstName
+	}
+	return ""
+}
+
+func (m *CreateUserRequest) GetLastName() string {
+	if m != nil {
+		return m.LastName
+	}
+	return ""
+}
 
 func (m *CreateUserRequest) GetIsSuperuser() *ntypes.Bool {
 	if m != nil {
@@ -139,6 +230,13 @@ func (m *GetUserRequest) Reset()                    { *m = GetUserRequest{} }
 func (m *GetUserRequest) String() string            { return proto.CompactTextString(m) }
 func (*GetUserRequest) ProtoMessage()               {}
 func (*GetUserRequest) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{3} }
+
+func (m *GetUserRequest) GetId() int64 {
+	if m != nil {
+		return m.Id
+	}
+	return 0
+}
 
 type GetUserResponse struct {
 	User *User `protobuf:"bytes,1,opt,name=user" json:"user,omitempty"`
@@ -237,6 +335,13 @@ func (m *DeleteUserRequest) String() string            { return proto.CompactTex
 func (*DeleteUserRequest) ProtoMessage()               {}
 func (*DeleteUserRequest) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{7} }
 
+func (m *DeleteUserRequest) GetId() int64 {
+	if m != nil {
+		return m.Id
+	}
+	return 0
+}
+
 type ModifyUserRequest struct {
 	Id             int64          `protobuf:"varint,1,opt,name=id" json:"id,omitempty"`
 	Username       *ntypes.String `protobuf:"bytes,2,opt,name=username" json:"username,omitempty"`
@@ -255,6 +360,13 @@ func (m *ModifyUserRequest) String() string            { return proto.CompactTex
 func (*ModifyUserRequest) ProtoMessage()               {}
 func (*ModifyUserRequest) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{8} }
 
+func (m *ModifyUserRequest) GetId() int64 {
+	if m != nil {
+		return m.Id
+	}
+	return 0
+}
+
 func (m *ModifyUserRequest) GetUsername() *ntypes.String {
 	if m != nil {
 		return m.Username
@@ -265,6 +377,13 @@ func (m *ModifyUserRequest) GetUsername() *ntypes.String {
 func (m *ModifyUserRequest) GetPlainPassword() *ntypes.String {
 	if m != nil {
 		return m.PlainPassword
+	}
+	return nil
+}
+
+func (m *ModifyUserRequest) GetSecurePassword() []byte {
+	if m != nil {
+		return m.SecurePassword
 	}
 	return nil
 }
@@ -336,6 +455,13 @@ func (m *ListUserPermissionsRequest) String() string            { return proto.C
 func (*ListUserPermissionsRequest) ProtoMessage()               {}
 func (*ListUserPermissionsRequest) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{10} }
 
+func (m *ListUserPermissionsRequest) GetId() int64 {
+	if m != nil {
+		return m.Id
+	}
+	return 0
+}
+
 type ListUserPermissionsResponse struct {
 	Permissions []string `protobuf:"bytes,1,rep,name=permissions" json:"permissions,omitempty"`
 }
@@ -344,6 +470,13 @@ func (m *ListUserPermissionsResponse) Reset()                    { *m = ListUser
 func (m *ListUserPermissionsResponse) String() string            { return proto.CompactTextString(m) }
 func (*ListUserPermissionsResponse) ProtoMessage()               {}
 func (*ListUserPermissionsResponse) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{11} }
+
+func (m *ListUserPermissionsResponse) GetPermissions() []string {
+	if m != nil {
+		return m.Permissions
+	}
+	return nil
+}
 
 type SetUserPermissionsRequest struct {
 	UserId      int64    `protobuf:"varint,1,opt,name=user_id,json=userId" json:"user_id,omitempty"`
@@ -354,6 +487,20 @@ func (m *SetUserPermissionsRequest) Reset()                    { *m = SetUserPer
 func (m *SetUserPermissionsRequest) String() string            { return proto.CompactTextString(m) }
 func (*SetUserPermissionsRequest) ProtoMessage()               {}
 func (*SetUserPermissionsRequest) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{12} }
+
+func (m *SetUserPermissionsRequest) GetUserId() int64 {
+	if m != nil {
+		return m.UserId
+	}
+	return 0
+}
+
+func (m *SetUserPermissionsRequest) GetPermissions() []string {
+	if m != nil {
+		return m.Permissions
+	}
+	return nil
+}
 
 type SetUserPermissionsResponse struct {
 	Created   int64 `protobuf:"varint,1,opt,name=created" json:"created,omitempty"`
@@ -366,6 +513,27 @@ func (m *SetUserPermissionsResponse) String() string            { return proto.C
 func (*SetUserPermissionsResponse) ProtoMessage()               {}
 func (*SetUserPermissionsResponse) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{13} }
 
+func (m *SetUserPermissionsResponse) GetCreated() int64 {
+	if m != nil {
+		return m.Created
+	}
+	return 0
+}
+
+func (m *SetUserPermissionsResponse) GetRemoved() int64 {
+	if m != nil {
+		return m.Removed
+	}
+	return 0
+}
+
+func (m *SetUserPermissionsResponse) GetUntouched() int64 {
+	if m != nil {
+		return m.Untouched
+	}
+	return 0
+}
+
 type ListUserGroupsRequest struct {
 	Id int64 `protobuf:"varint,1,opt,name=id" json:"id,omitempty"`
 }
@@ -374,6 +542,13 @@ func (m *ListUserGroupsRequest) Reset()                    { *m = ListUserGroups
 func (m *ListUserGroupsRequest) String() string            { return proto.CompactTextString(m) }
 func (*ListUserGroupsRequest) ProtoMessage()               {}
 func (*ListUserGroupsRequest) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{14} }
+
+func (m *ListUserGroupsRequest) GetId() int64 {
+	if m != nil {
+		return m.Id
+	}
+	return 0
+}
 
 type ListUserGroupsResponse struct {
 	Groups []*Group `protobuf:"bytes,1,rep,name=groups" json:"groups,omitempty"`
@@ -401,6 +576,20 @@ func (m *SetUserGroupsRequest) String() string            { return proto.Compact
 func (*SetUserGroupsRequest) ProtoMessage()               {}
 func (*SetUserGroupsRequest) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{16} }
 
+func (m *SetUserGroupsRequest) GetUserId() int64 {
+	if m != nil {
+		return m.UserId
+	}
+	return 0
+}
+
+func (m *SetUserGroupsRequest) GetGroups() []int64 {
+	if m != nil {
+		return m.Groups
+	}
+	return nil
+}
+
 type SetUserGroupsResponse struct {
 	Created   int64 `protobuf:"varint,1,opt,name=created" json:"created,omitempty"`
 	Removed   int64 `protobuf:"varint,2,opt,name=removed" json:"removed,omitempty"`
@@ -411,6 +600,27 @@ func (m *SetUserGroupsResponse) Reset()                    { *m = SetUserGroupsR
 func (m *SetUserGroupsResponse) String() string            { return proto.CompactTextString(m) }
 func (*SetUserGroupsResponse) ProtoMessage()               {}
 func (*SetUserGroupsResponse) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{17} }
+
+func (m *SetUserGroupsResponse) GetCreated() int64 {
+	if m != nil {
+		return m.Created
+	}
+	return 0
+}
+
+func (m *SetUserGroupsResponse) GetRemoved() int64 {
+	if m != nil {
+		return m.Removed
+	}
+	return 0
+}
+
+func (m *SetUserGroupsResponse) GetUntouched() int64 {
+	if m != nil {
+		return m.Untouched
+	}
+	return 0
+}
 
 func init() {
 	proto.RegisterType((*User)(nil), "charonrpc.User")
@@ -773,7 +983,7 @@ func init() { proto.RegisterFile("user.proto", fileDescriptor1) }
 
 var fileDescriptor1 = []byte{
 	// 1105 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x09, 0x6e, 0x88, 0x02, 0xff, 0xb4, 0x56, 0xdb, 0x6e, 0xdb, 0x46,
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xb4, 0x56, 0xdb, 0x6e, 0xdb, 0x46,
 	0x13, 0xb6, 0x44, 0x9d, 0x38, 0x72, 0x64, 0x7b, 0x91, 0xe4, 0xa7, 0x69, 0x07, 0xbf, 0x42, 0xd7,
 	0xb5, 0xda, 0x26, 0x12, 0xe0, 0xb6, 0x69, 0x9d, 0x02, 0x2d, 0x62, 0xa7, 0x30, 0x52, 0x34, 0x85,
 	0x41, 0xb5, 0xb9, 0x15, 0x28, 0x69, 0x25, 0x2f, 0x2c, 0x71, 0xe9, 0xdd, 0xa5, 0x0d, 0xf5, 0xe1,

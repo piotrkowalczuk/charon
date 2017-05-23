@@ -92,6 +92,27 @@ func (m *LoginRequest) String() string            { return proto.CompactTextStri
 func (*LoginRequest) ProtoMessage()               {}
 func (*LoginRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{0} }
 
+func (m *LoginRequest) GetUsername() string {
+	if m != nil {
+		return m.Username
+	}
+	return ""
+}
+
+func (m *LoginRequest) GetPassword() string {
+	if m != nil {
+		return m.Password
+	}
+	return ""
+}
+
+func (m *LoginRequest) GetClient() string {
+	if m != nil {
+		return m.Client
+	}
+	return ""
+}
+
 type LogoutRequest struct {
 	AccessToken string `protobuf:"bytes,1,opt,name=access_token,json=accessToken" json:"access_token,omitempty"`
 }
@@ -101,6 +122,13 @@ func (m *LogoutRequest) String() string            { return proto.CompactTextStr
 func (*LogoutRequest) ProtoMessage()               {}
 func (*LogoutRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{1} }
 
+func (m *LogoutRequest) GetAccessToken() string {
+	if m != nil {
+		return m.AccessToken
+	}
+	return ""
+}
+
 type IsAuthenticatedRequest struct {
 	AccessToken string `protobuf:"bytes,1,opt,name=access_token,json=accessToken" json:"access_token,omitempty"`
 }
@@ -109,6 +137,13 @@ func (m *IsAuthenticatedRequest) Reset()                    { *m = IsAuthenticat
 func (m *IsAuthenticatedRequest) String() string            { return proto.CompactTextString(m) }
 func (*IsAuthenticatedRequest) ProtoMessage()               {}
 func (*IsAuthenticatedRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{2} }
+
+func (m *IsAuthenticatedRequest) GetAccessToken() string {
+	if m != nil {
+		return m.AccessToken
+	}
+	return ""
+}
 
 type IsGrantedRequest struct {
 	UserId     int64  `protobuf:"varint,1,opt,name=user_id,json=userId" json:"user_id,omitempty"`
@@ -120,6 +155,20 @@ func (m *IsGrantedRequest) String() string            { return proto.CompactText
 func (*IsGrantedRequest) ProtoMessage()               {}
 func (*IsGrantedRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{3} }
 
+func (m *IsGrantedRequest) GetUserId() int64 {
+	if m != nil {
+		return m.UserId
+	}
+	return 0
+}
+
+func (m *IsGrantedRequest) GetPermission() string {
+	if m != nil {
+		return m.Permission
+	}
+	return ""
+}
+
 type BelongsToRequest struct {
 	UserId  int64 `protobuf:"varint,1,opt,name=user_id,json=userId" json:"user_id,omitempty"`
 	GroupId int64 `protobuf:"varint,2,opt,name=group_id,json=groupId" json:"group_id,omitempty"`
@@ -129,6 +178,20 @@ func (m *BelongsToRequest) Reset()                    { *m = BelongsToRequest{} 
 func (m *BelongsToRequest) String() string            { return proto.CompactTextString(m) }
 func (*BelongsToRequest) ProtoMessage()               {}
 func (*BelongsToRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{4} }
+
+func (m *BelongsToRequest) GetUserId() int64 {
+	if m != nil {
+		return m.UserId
+	}
+	return 0
+}
+
+func (m *BelongsToRequest) GetGroupId() int64 {
+	if m != nil {
+		return m.GroupId
+	}
+	return 0
+}
 
 type ActorResponse struct {
 	Id          int64    `protobuf:"varint,1,opt,name=id" json:"id,omitempty"`
@@ -146,6 +209,69 @@ func (m *ActorResponse) Reset()                    { *m = ActorResponse{} }
 func (m *ActorResponse) String() string            { return proto.CompactTextString(m) }
 func (*ActorResponse) ProtoMessage()               {}
 func (*ActorResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{5} }
+
+func (m *ActorResponse) GetId() int64 {
+	if m != nil {
+		return m.Id
+	}
+	return 0
+}
+
+func (m *ActorResponse) GetUsername() string {
+	if m != nil {
+		return m.Username
+	}
+	return ""
+}
+
+func (m *ActorResponse) GetFirstName() string {
+	if m != nil {
+		return m.FirstName
+	}
+	return ""
+}
+
+func (m *ActorResponse) GetLastName() string {
+	if m != nil {
+		return m.LastName
+	}
+	return ""
+}
+
+func (m *ActorResponse) GetPermissions() []string {
+	if m != nil {
+		return m.Permissions
+	}
+	return nil
+}
+
+func (m *ActorResponse) GetIsSuperuser() bool {
+	if m != nil {
+		return m.IsSuperuser
+	}
+	return false
+}
+
+func (m *ActorResponse) GetIsActive() bool {
+	if m != nil {
+		return m.IsActive
+	}
+	return false
+}
+
+func (m *ActorResponse) GetIsStuff() bool {
+	if m != nil {
+		return m.IsStuff
+	}
+	return false
+}
+
+func (m *ActorResponse) GetIsConfirmed() bool {
+	if m != nil {
+		return m.IsConfirmed
+	}
+	return false
+}
 
 func init() {
 	proto.RegisterType((*LoginRequest)(nil), "charonrpc.LoginRequest")
@@ -397,7 +523,7 @@ func init() { proto.RegisterFile("auth.proto", fileDescriptor0) }
 
 var fileDescriptor0 = []byte{
 	// 548 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x09, 0x6e, 0x88, 0x02, 0xff, 0x94, 0x53, 0x4d, 0x6f, 0xd3, 0x40,
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x94, 0x53, 0x4d, 0x6f, 0xd3, 0x40,
 	0x14, 0x54, 0x9d, 0x36, 0x89, 0x5f, 0x5a, 0xa8, 0xf6, 0x90, 0x1a, 0x17, 0x50, 0x9a, 0x53, 0x4f,
 	0x8e, 0xd4, 0x9e, 0x00, 0x09, 0x94, 0x52, 0x40, 0x11, 0x15, 0x42, 0x49, 0xc5, 0x91, 0x68, 0x63,
 	0x6f, 0x9c, 0x15, 0xce, 0xee, 0xb2, 0x6f, 0x4d, 0xd5, 0x5f, 0xc2, 0x99, 0x7f, 0x8a, 0x76, 0x1d,
