@@ -44,7 +44,7 @@ func main() {
 		Visibility: pqtgo.Public,
 	}
 	sch := databaseSchema()
-	gen := pqtgo.Generator{
+	genGo := &pqtgo.Generator{
 		Formatter: form,
 		Pkg:       "model",
 		Version:   9.5,
@@ -56,11 +56,12 @@ func main() {
 			&ntypespqt.Plugin{},
 		},
 	}
-	if err := gen.GenerateTo(file, sch); err != nil {
+	genSQL := &pqtsql.Generator{}
+	if err := genGo.GenerateTo(file, sch); err != nil {
 		log.Fatal(err)
 	}
 	fmt.Fprint(file, "const SQL = `\n")
-	if err := pqtsql.NewGenerator().GenerateTo(sch, file); err != nil {
+	if err := genSQL.GenerateTo(sch, file); err != nil {
 		log.Fatal(err)
 	}
 	fmt.Fprint(file, "`")

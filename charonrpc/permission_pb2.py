@@ -13,17 +13,17 @@ from google.protobuf import descriptor_pb2
 _sym_db = _symbol_database.Default()
 
 
-from github.com.piotrkowalczuk.qtypes import qtypes_pb2 as github_dot_com_dot_piotrkowalczuk_dot_qtypes_dot_qtypes__pb2
-from github.com.piotrkowalczuk.ntypes import ntypes_pb2 as github_dot_com_dot_piotrkowalczuk_dot_ntypes_dot_ntypes__pb2
+from qtypes import qtypes_pb2 as qtypes_dot_qtypes__pb2
+from ntypes import ntypes_pb2 as ntypes_dot_ntypes__pb2
 
 
 DESCRIPTOR = _descriptor.FileDescriptor(
   name='permission.proto',
   package='charonrpc',
   syntax='proto3',
-  serialized_pb=_b('\n\x10permission.proto\x12\tcharonrpc\x1a-github.com/piotrkowalczuk/qtypes/qtypes.proto\x1a-github.com/piotrkowalczuk/ntypes/ntypes.proto\"1\n\x1aRegisterPermissionsRequest\x12\x13\n\x0bpermissions\x18\x01 \x03(\t\"R\n\x1bRegisterPermissionsResponse\x12\x0f\n\x07\x63reated\x18\x01 \x01(\x03\x12\x0f\n\x07removed\x18\x02 \x01(\x03\x12\x11\n\tuntouched\x18\x03 \x01(\x03\"\xf0\x02\n\x16ListPermissionsRequest\x12!\n\tsubsystem\x18\x01 \x01(\x0b\x32\x0e.qtypes.String\x12\x1e\n\x06module\x18\x02 \x01(\x0b\x32\x0e.qtypes.String\x12\x1e\n\x06\x61\x63tion\x18\x03 \x01(\x0b\x32\x0e.qtypes.String\x12%\n\ncreated_at\x18\x04 \x01(\x0b\x32\x11.qtypes.Timestamp\x12!\n\ncreated_by\x18\x05 \x01(\x0b\x32\r.qtypes.Int64\x12\x1d\n\x06offset\x18\x64 \x01(\x0b\x32\r.ntypes.Int64\x12\x1c\n\x05limit\x18\x65 \x01(\x0b\x32\r.ntypes.Int64\x12\x39\n\x04sort\x18\x66 \x03(\x0b\x32+.charonrpc.ListPermissionsRequest.SortEntry\x1a+\n\tSortEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x08:\x02\x38\x01J\x04\x08\x06\x10\x64\".\n\x17ListPermissionsResponse\x12\x13\n\x0bpermissions\x18\x01 \x03(\t\"\"\n\x14GetPermissionRequest\x12\n\n\x02id\x18\x01 \x01(\x03\"+\n\x15GetPermissionResponse\x12\x12\n\npermission\x18\x01 \x01(\t2\x8d\x02\n\x11PermissionManager\x12[\n\x08Register\x12%.charonrpc.RegisterPermissionsRequest\x1a&.charonrpc.RegisterPermissionsResponse\"\x00\x12O\n\x04List\x12!.charonrpc.ListPermissionsRequest\x1a\".charonrpc.ListPermissionsResponse\"\x00\x12J\n\x03Get\x12\x1f.charonrpc.GetPermissionRequest\x1a .charonrpc.GetPermissionResponse\"\x00\x62\x06proto3')
+  serialized_pb=_b('\n\x10permission.proto\x12\tcharonrpc\x1a\x13qtypes/qtypes.proto\x1a\x13ntypes/ntypes.proto\"1\n\x1aRegisterPermissionsRequest\x12\x13\n\x0bpermissions\x18\x01 \x03(\t\"R\n\x1bRegisterPermissionsResponse\x12\x0f\n\x07\x63reated\x18\x01 \x01(\x03\x12\x0f\n\x07removed\x18\x02 \x01(\x03\x12\x11\n\tuntouched\x18\x03 \x01(\x03\"\xf0\x02\n\x16ListPermissionsRequest\x12!\n\tsubsystem\x18\x01 \x01(\x0b\x32\x0e.qtypes.String\x12\x1e\n\x06module\x18\x02 \x01(\x0b\x32\x0e.qtypes.String\x12\x1e\n\x06\x61\x63tion\x18\x03 \x01(\x0b\x32\x0e.qtypes.String\x12%\n\ncreated_at\x18\x04 \x01(\x0b\x32\x11.qtypes.Timestamp\x12!\n\ncreated_by\x18\x05 \x01(\x0b\x32\r.qtypes.Int64\x12\x1d\n\x06offset\x18\x64 \x01(\x0b\x32\r.ntypes.Int64\x12\x1c\n\x05limit\x18\x65 \x01(\x0b\x32\r.ntypes.Int64\x12\x39\n\x04sort\x18\x66 \x03(\x0b\x32+.charonrpc.ListPermissionsRequest.SortEntry\x1a+\n\tSortEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x08:\x02\x38\x01J\x04\x08\x06\x10\x64\".\n\x17ListPermissionsResponse\x12\x13\n\x0bpermissions\x18\x01 \x03(\t\"\"\n\x14GetPermissionRequest\x12\n\n\x02id\x18\x01 \x01(\x03\"+\n\x15GetPermissionResponse\x12\x12\n\npermission\x18\x01 \x01(\t2\x8d\x02\n\x11PermissionManager\x12[\n\x08Register\x12%.charonrpc.RegisterPermissionsRequest\x1a&.charonrpc.RegisterPermissionsResponse\"\x00\x12O\n\x04List\x12!.charonrpc.ListPermissionsRequest\x1a\".charonrpc.ListPermissionsResponse\"\x00\x12J\n\x03Get\x12\x1f.charonrpc.GetPermissionRequest\x1a .charonrpc.GetPermissionResponse\"\x00\x62\x06proto3')
   ,
-  dependencies=[github_dot_com_dot_piotrkowalczuk_dot_qtypes_dot_qtypes__pb2.DESCRIPTOR,github_dot_com_dot_piotrkowalczuk_dot_ntypes_dot_ntypes__pb2.DESCRIPTOR,])
+  dependencies=[qtypes_dot_qtypes__pb2.DESCRIPTOR,ntypes_dot_ntypes__pb2.DESCRIPTOR,])
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 
@@ -55,8 +55,8 @@ _REGISTERPERMISSIONSREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=125,
-  serialized_end=174,
+  serialized_start=73,
+  serialized_end=122,
 )
 
 
@@ -100,8 +100,8 @@ _REGISTERPERMISSIONSRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=176,
-  serialized_end=258,
+  serialized_start=124,
+  serialized_end=206,
 )
 
 
@@ -138,8 +138,8 @@ _LISTPERMISSIONSREQUEST_SORTENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=580,
-  serialized_end=623,
+  serialized_start=528,
+  serialized_end=571,
 )
 
 _LISTPERMISSIONSREQUEST = _descriptor.Descriptor(
@@ -217,8 +217,8 @@ _LISTPERMISSIONSREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=261,
-  serialized_end=629,
+  serialized_start=209,
+  serialized_end=577,
 )
 
 
@@ -248,8 +248,8 @@ _LISTPERMISSIONSRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=631,
-  serialized_end=677,
+  serialized_start=579,
+  serialized_end=625,
 )
 
 
@@ -279,8 +279,8 @@ _GETPERMISSIONREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=679,
-  serialized_end=713,
+  serialized_start=627,
+  serialized_end=661,
 )
 
 
@@ -310,18 +310,18 @@ _GETPERMISSIONRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=715,
-  serialized_end=758,
+  serialized_start=663,
+  serialized_end=706,
 )
 
 _LISTPERMISSIONSREQUEST_SORTENTRY.containing_type = _LISTPERMISSIONSREQUEST
-_LISTPERMISSIONSREQUEST.fields_by_name['subsystem'].message_type = github_dot_com_dot_piotrkowalczuk_dot_qtypes_dot_qtypes__pb2._STRING
-_LISTPERMISSIONSREQUEST.fields_by_name['module'].message_type = github_dot_com_dot_piotrkowalczuk_dot_qtypes_dot_qtypes__pb2._STRING
-_LISTPERMISSIONSREQUEST.fields_by_name['action'].message_type = github_dot_com_dot_piotrkowalczuk_dot_qtypes_dot_qtypes__pb2._STRING
-_LISTPERMISSIONSREQUEST.fields_by_name['created_at'].message_type = github_dot_com_dot_piotrkowalczuk_dot_qtypes_dot_qtypes__pb2._TIMESTAMP
-_LISTPERMISSIONSREQUEST.fields_by_name['created_by'].message_type = github_dot_com_dot_piotrkowalczuk_dot_qtypes_dot_qtypes__pb2._INT64
-_LISTPERMISSIONSREQUEST.fields_by_name['offset'].message_type = github_dot_com_dot_piotrkowalczuk_dot_ntypes_dot_ntypes__pb2._INT64
-_LISTPERMISSIONSREQUEST.fields_by_name['limit'].message_type = github_dot_com_dot_piotrkowalczuk_dot_ntypes_dot_ntypes__pb2._INT64
+_LISTPERMISSIONSREQUEST.fields_by_name['subsystem'].message_type = qtypes_dot_qtypes__pb2._STRING
+_LISTPERMISSIONSREQUEST.fields_by_name['module'].message_type = qtypes_dot_qtypes__pb2._STRING
+_LISTPERMISSIONSREQUEST.fields_by_name['action'].message_type = qtypes_dot_qtypes__pb2._STRING
+_LISTPERMISSIONSREQUEST.fields_by_name['created_at'].message_type = qtypes_dot_qtypes__pb2._TIMESTAMP
+_LISTPERMISSIONSREQUEST.fields_by_name['created_by'].message_type = qtypes_dot_qtypes__pb2._INT64
+_LISTPERMISSIONSREQUEST.fields_by_name['offset'].message_type = ntypes_dot_ntypes__pb2._INT64
+_LISTPERMISSIONSREQUEST.fields_by_name['limit'].message_type = ntypes_dot_ntypes__pb2._INT64
 _LISTPERMISSIONSREQUEST.fields_by_name['sort'].message_type = _LISTPERMISSIONSREQUEST_SORTENTRY
 DESCRIPTOR.message_types_by_name['RegisterPermissionsRequest'] = _REGISTERPERMISSIONSREQUEST
 DESCRIPTOR.message_types_by_name['RegisterPermissionsResponse'] = _REGISTERPERMISSIONSRESPONSE
