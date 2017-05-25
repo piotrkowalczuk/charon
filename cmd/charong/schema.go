@@ -1,6 +1,8 @@
 package main
 
-import "github.com/piotrkowalczuk/pqt"
+import (
+	"github.com/piotrkowalczuk/pqt"
+)
 
 func databaseSchema() *pqt.Schema {
 	user := databaseTableUser()
@@ -63,41 +65,44 @@ func databaseTablePermission(user, group *pqt.Table) (*pqt.Table, *pqt.Table, *p
 	identifierable(permission)
 	timestampable(permission)
 
+	// USER PERMISSIONS
+	userPermissions := pqt.NewTable("user_permissions", pqt.WithTableIfNotExists())
+	userPermissions.AddRelationship(pqt.ManyToMany(
+		user,
+		permission,
+		pqt.WithBidirectional(),
+		pqt.WithInversedForeignKey(
+			pqt.Columns{subsystem, module, action},
+			pqt.Columns{
+				notNullText("permission_subsystem", "subsystem"),
+				notNullText("permission_module", "module"),
+				notNullText("permission_action", "action"),
+			},
+		),
+	), pqt.WithNotNull())
+
+	ownerable(userPermissions, user)
+
+	timestampable(userPermissions)
+
+	// GROUP PERMISSIONS
 	groupPermissions := pqt.NewTable("group_permissions", pqt.WithTableIfNotExists()).
 		AddRelationship(pqt.ManyToMany(
 			group,
 			permission,
 			pqt.WithBidirectional(),
 			pqt.WithInversedForeignKey(
+				pqt.Columns{subsystem, module, action},
 				pqt.Columns{
 					notNullText("permission_subsystem", "subsystem"),
 					notNullText("permission_module", "module"),
 					notNullText("permission_action", "action"),
 				},
-				pqt.Columns{subsystem, module, action},
 			),
 		), pqt.WithNotNull())
 
 	ownerable(groupPermissions, user)
 	timestampable(groupPermissions)
-
-	userPermissions := pqt.NewTable("user_permissions", pqt.WithTableIfNotExists()).
-		AddRelationship(pqt.ManyToMany(
-			user,
-			permission,
-			pqt.WithBidirectional(),
-			pqt.WithInversedForeignKey(
-				pqt.Columns{
-					notNullText("permission_subsystem", "subsystem"),
-					notNullText("permission_module", "module"),
-					notNullText("permission_action", "action"),
-				},
-				pqt.Columns{subsystem, module, action},
-			),
-		), pqt.WithNotNull())
-
-	ownerable(userPermissions, user)
-	timestampable(userPermissions)
 
 	return permission, groupPermissions, userPermissions
 }

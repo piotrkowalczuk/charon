@@ -16,6 +16,8 @@ with open('VERSION.txt', 'r') as content_file:
         install_requires=[
             'protobuf',
             'grpcio',
+            'protobuf-ntypes',
+            'protobuf-qtypes',
         ],
         zip_safe=False,
         keywords=['charon', 'grpc', 'authentication', 'authorization', 'service', 'client'],

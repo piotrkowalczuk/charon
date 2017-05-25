@@ -13,17 +13,17 @@ from google.protobuf import descriptor_pb2
 _sym_db = _symbol_database.Default()
 
 
-from github.com.golang.protobuf.ptypes.empty import empty_pb2 as github_dot_com_dot_golang_dot_protobuf_dot_ptypes_dot_empty_dot_empty__pb2
-from github.com.golang.protobuf.ptypes.wrappers import wrappers_pb2 as github_dot_com_dot_golang_dot_protobuf_dot_ptypes_dot_wrappers_dot_wrappers__pb2
+from google.protobuf import empty_pb2 as google_dot_protobuf_dot_empty__pb2
+from google.protobuf import wrappers_pb2 as google_dot_protobuf_dot_wrappers__pb2
 
 
 DESCRIPTOR = _descriptor.FileDescriptor(
   name='auth.proto',
   package='charonrpc',
   syntax='proto3',
-  serialized_pb=_b('\n\nauth.proto\x12\tcharonrpc\x1a\x33github.com/golang/protobuf/ptypes/empty/empty.proto\x1a\x39github.com/golang/protobuf/ptypes/wrappers/wrappers.proto\"B\n\x0cLoginRequest\x12\x10\n\x08username\x18\x01 \x01(\t\x12\x10\n\x08password\x18\x02 \x01(\t\x12\x0e\n\x06\x63lient\x18\x03 \x01(\t\"%\n\rLogoutRequest\x12\x14\n\x0c\x61\x63\x63\x65ss_token\x18\x01 \x01(\t\".\n\x16IsAuthenticatedRequest\x12\x14\n\x0c\x61\x63\x63\x65ss_token\x18\x01 \x01(\t\"7\n\x10IsGrantedRequest\x12\x0f\n\x07user_id\x18\x01 \x01(\x03\x12\x12\n\npermission\x18\x02 \x01(\t\"5\n\x10\x42\x65longsToRequest\x12\x0f\n\x07user_id\x18\x01 \x01(\x03\x12\x10\n\x08group_id\x18\x02 \x01(\x03\"\xba\x01\n\rActorResponse\x12\n\n\x02id\x18\x01 \x01(\x03\x12\x10\n\x08username\x18\x02 \x01(\t\x12\x12\n\nfirst_name\x18\x03 \x01(\t\x12\x11\n\tlast_name\x18\x04 \x01(\t\x12\x13\n\x0bpermissions\x18\x05 \x03(\t\x12\x14\n\x0cis_superuser\x18\x06 \x01(\x08\x12\x11\n\tis_active\x18\x07 \x01(\x08\x12\x10\n\x08is_stuff\x18\x08 \x01(\x08\x12\x14\n\x0cis_confirmed\x18\t \x01(\x08\x32\xa1\x03\n\x04\x41uth\x12>\n\x05Login\x12\x17.charonrpc.LoginRequest\x1a\x1c.google.protobuf.StringValue\x12:\n\x06Logout\x12\x18.charonrpc.LogoutRequest\x1a\x16.google.protobuf.Empty\x12P\n\x0fIsAuthenticated\x12!.charonrpc.IsAuthenticatedRequest\x1a\x1a.google.protobuf.BoolValue\x12?\n\x05\x41\x63tor\x12\x1c.google.protobuf.StringValue\x1a\x18.charonrpc.ActorResponse\x12\x44\n\tIsGranted\x12\x1b.charonrpc.IsGrantedRequest\x1a\x1a.google.protobuf.BoolValue\x12\x44\n\tBelongsTo\x12\x1b.charonrpc.BelongsToRequest\x1a\x1a.google.protobuf.BoolValueb\x06proto3')
+  serialized_pb=_b('\n\nauth.proto\x12\tcharonrpc\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1egoogle/protobuf/wrappers.proto\"B\n\x0cLoginRequest\x12\x10\n\x08username\x18\x01 \x01(\t\x12\x10\n\x08password\x18\x02 \x01(\t\x12\x0e\n\x06\x63lient\x18\x03 \x01(\t\"%\n\rLogoutRequest\x12\x14\n\x0c\x61\x63\x63\x65ss_token\x18\x01 \x01(\t\".\n\x16IsAuthenticatedRequest\x12\x14\n\x0c\x61\x63\x63\x65ss_token\x18\x01 \x01(\t\"7\n\x10IsGrantedRequest\x12\x0f\n\x07user_id\x18\x01 \x01(\x03\x12\x12\n\npermission\x18\x02 \x01(\t\"5\n\x10\x42\x65longsToRequest\x12\x0f\n\x07user_id\x18\x01 \x01(\x03\x12\x10\n\x08group_id\x18\x02 \x01(\x03\"\xba\x01\n\rActorResponse\x12\n\n\x02id\x18\x01 \x01(\x03\x12\x10\n\x08username\x18\x02 \x01(\t\x12\x12\n\nfirst_name\x18\x03 \x01(\t\x12\x11\n\tlast_name\x18\x04 \x01(\t\x12\x13\n\x0bpermissions\x18\x05 \x03(\t\x12\x14\n\x0cis_superuser\x18\x06 \x01(\x08\x12\x11\n\tis_active\x18\x07 \x01(\x08\x12\x10\n\x08is_stuff\x18\x08 \x01(\x08\x12\x14\n\x0cis_confirmed\x18\t \x01(\x08\x32\xa1\x03\n\x04\x41uth\x12>\n\x05Login\x12\x17.charonrpc.LoginRequest\x1a\x1c.google.protobuf.StringValue\x12:\n\x06Logout\x12\x18.charonrpc.LogoutRequest\x1a\x16.google.protobuf.Empty\x12P\n\x0fIsAuthenticated\x12!.charonrpc.IsAuthenticatedRequest\x1a\x1a.google.protobuf.BoolValue\x12?\n\x05\x41\x63tor\x12\x1c.google.protobuf.StringValue\x1a\x18.charonrpc.ActorResponse\x12\x44\n\tIsGranted\x12\x1b.charonrpc.IsGrantedRequest\x1a\x1a.google.protobuf.BoolValue\x12\x44\n\tBelongsTo\x12\x1b.charonrpc.BelongsToRequest\x1a\x1a.google.protobuf.BoolValueb\x06proto3')
   ,
-  dependencies=[github_dot_com_dot_golang_dot_protobuf_dot_ptypes_dot_empty_dot_empty__pb2.DESCRIPTOR,github_dot_com_dot_golang_dot_protobuf_dot_ptypes_dot_wrappers_dot_wrappers__pb2.DESCRIPTOR,])
+  dependencies=[google_dot_protobuf_dot_empty__pb2.DESCRIPTOR,google_dot_protobuf_dot_wrappers__pb2.DESCRIPTOR,])
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 
@@ -69,8 +69,8 @@ _LOGINREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=137,
-  serialized_end=203,
+  serialized_start=86,
+  serialized_end=152,
 )
 
 
@@ -100,8 +100,8 @@ _LOGOUTREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=205,
-  serialized_end=242,
+  serialized_start=154,
+  serialized_end=191,
 )
 
 
@@ -131,8 +131,8 @@ _ISAUTHENTICATEDREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=244,
-  serialized_end=290,
+  serialized_start=193,
+  serialized_end=239,
 )
 
 
@@ -169,8 +169,8 @@ _ISGRANTEDREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=292,
-  serialized_end=347,
+  serialized_start=241,
+  serialized_end=296,
 )
 
 
@@ -207,8 +207,8 @@ _BELONGSTOREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=349,
-  serialized_end=402,
+  serialized_start=298,
+  serialized_end=351,
 )
 
 
@@ -294,8 +294,8 @@ _ACTORRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=405,
-  serialized_end=591,
+  serialized_start=354,
+  serialized_end=540,
 )
 
 DESCRIPTOR.message_types_by_name['LoginRequest'] = _LOGINREQUEST
@@ -369,32 +369,32 @@ try:
       self.Login = channel.unary_unary(
           '/charonrpc.Auth/Login',
           request_serializer=LoginRequest.SerializeToString,
-          response_deserializer=github_dot_com_dot_golang_dot_protobuf_dot_ptypes_dot_wrappers_dot_wrappers__pb2.StringValue.FromString,
+          response_deserializer=google_dot_protobuf_dot_wrappers__pb2.StringValue.FromString,
           )
       self.Logout = channel.unary_unary(
           '/charonrpc.Auth/Logout',
           request_serializer=LogoutRequest.SerializeToString,
-          response_deserializer=github_dot_com_dot_golang_dot_protobuf_dot_ptypes_dot_empty_dot_empty__pb2.Empty.FromString,
+          response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
           )
       self.IsAuthenticated = channel.unary_unary(
           '/charonrpc.Auth/IsAuthenticated',
           request_serializer=IsAuthenticatedRequest.SerializeToString,
-          response_deserializer=github_dot_com_dot_golang_dot_protobuf_dot_ptypes_dot_wrappers_dot_wrappers__pb2.BoolValue.FromString,
+          response_deserializer=google_dot_protobuf_dot_wrappers__pb2.BoolValue.FromString,
           )
       self.Actor = channel.unary_unary(
           '/charonrpc.Auth/Actor',
-          request_serializer=github_dot_com_dot_golang_dot_protobuf_dot_ptypes_dot_wrappers_dot_wrappers__pb2.StringValue.SerializeToString,
+          request_serializer=google_dot_protobuf_dot_wrappers__pb2.StringValue.SerializeToString,
           response_deserializer=ActorResponse.FromString,
           )
       self.IsGranted = channel.unary_unary(
           '/charonrpc.Auth/IsGranted',
           request_serializer=IsGrantedRequest.SerializeToString,
-          response_deserializer=github_dot_com_dot_golang_dot_protobuf_dot_ptypes_dot_wrappers_dot_wrappers__pb2.BoolValue.FromString,
+          response_deserializer=google_dot_protobuf_dot_wrappers__pb2.BoolValue.FromString,
           )
       self.BelongsTo = channel.unary_unary(
           '/charonrpc.Auth/BelongsTo',
           request_serializer=BelongsToRequest.SerializeToString,
-          response_deserializer=github_dot_com_dot_golang_dot_protobuf_dot_ptypes_dot_wrappers_dot_wrappers__pb2.BoolValue.FromString,
+          response_deserializer=google_dot_protobuf_dot_wrappers__pb2.BoolValue.FromString,
           )
 
 
@@ -436,32 +436,32 @@ try:
         'Login': grpc.unary_unary_rpc_method_handler(
             servicer.Login,
             request_deserializer=LoginRequest.FromString,
-            response_serializer=github_dot_com_dot_golang_dot_protobuf_dot_ptypes_dot_wrappers_dot_wrappers__pb2.StringValue.SerializeToString,
+            response_serializer=google_dot_protobuf_dot_wrappers__pb2.StringValue.SerializeToString,
         ),
         'Logout': grpc.unary_unary_rpc_method_handler(
             servicer.Logout,
             request_deserializer=LogoutRequest.FromString,
-            response_serializer=github_dot_com_dot_golang_dot_protobuf_dot_ptypes_dot_empty_dot_empty__pb2.Empty.SerializeToString,
+            response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
         ),
         'IsAuthenticated': grpc.unary_unary_rpc_method_handler(
             servicer.IsAuthenticated,
             request_deserializer=IsAuthenticatedRequest.FromString,
-            response_serializer=github_dot_com_dot_golang_dot_protobuf_dot_ptypes_dot_wrappers_dot_wrappers__pb2.BoolValue.SerializeToString,
+            response_serializer=google_dot_protobuf_dot_wrappers__pb2.BoolValue.SerializeToString,
         ),
         'Actor': grpc.unary_unary_rpc_method_handler(
             servicer.Actor,
-            request_deserializer=github_dot_com_dot_golang_dot_protobuf_dot_ptypes_dot_wrappers_dot_wrappers__pb2.StringValue.FromString,
+            request_deserializer=google_dot_protobuf_dot_wrappers__pb2.StringValue.FromString,
             response_serializer=ActorResponse.SerializeToString,
         ),
         'IsGranted': grpc.unary_unary_rpc_method_handler(
             servicer.IsGranted,
             request_deserializer=IsGrantedRequest.FromString,
-            response_serializer=github_dot_com_dot_golang_dot_protobuf_dot_ptypes_dot_wrappers_dot_wrappers__pb2.BoolValue.SerializeToString,
+            response_serializer=google_dot_protobuf_dot_wrappers__pb2.BoolValue.SerializeToString,
         ),
         'BelongsTo': grpc.unary_unary_rpc_method_handler(
             servicer.BelongsTo,
             request_deserializer=BelongsToRequest.FromString,
-            response_serializer=github_dot_com_dot_golang_dot_protobuf_dot_ptypes_dot_wrappers_dot_wrappers__pb2.BoolValue.SerializeToString,
+            response_serializer=google_dot_protobuf_dot_wrappers__pb2.BoolValue.SerializeToString,
         ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -522,7 +522,7 @@ try:
     file not marked beta) for all further purposes. This function was
     generated only to ease transition from grpcio<0.15.0 to grpcio>=0.15.0"""
     request_deserializers = {
-      ('charonrpc.Auth', 'Actor'): github_dot_com_dot_golang_dot_protobuf_dot_ptypes_dot_wrappers_dot_wrappers__pb2.StringValue.FromString,
+      ('charonrpc.Auth', 'Actor'): google_dot_protobuf_dot_wrappers__pb2.StringValue.FromString,
       ('charonrpc.Auth', 'BelongsTo'): BelongsToRequest.FromString,
       ('charonrpc.Auth', 'IsAuthenticated'): IsAuthenticatedRequest.FromString,
       ('charonrpc.Auth', 'IsGranted'): IsGrantedRequest.FromString,
@@ -531,11 +531,11 @@ try:
     }
     response_serializers = {
       ('charonrpc.Auth', 'Actor'): ActorResponse.SerializeToString,
-      ('charonrpc.Auth', 'BelongsTo'): github_dot_com_dot_golang_dot_protobuf_dot_ptypes_dot_wrappers_dot_wrappers__pb2.BoolValue.SerializeToString,
-      ('charonrpc.Auth', 'IsAuthenticated'): github_dot_com_dot_golang_dot_protobuf_dot_ptypes_dot_wrappers_dot_wrappers__pb2.BoolValue.SerializeToString,
-      ('charonrpc.Auth', 'IsGranted'): github_dot_com_dot_golang_dot_protobuf_dot_ptypes_dot_wrappers_dot_wrappers__pb2.BoolValue.SerializeToString,
-      ('charonrpc.Auth', 'Login'): github_dot_com_dot_golang_dot_protobuf_dot_ptypes_dot_wrappers_dot_wrappers__pb2.StringValue.SerializeToString,
-      ('charonrpc.Auth', 'Logout'): github_dot_com_dot_golang_dot_protobuf_dot_ptypes_dot_empty_dot_empty__pb2.Empty.SerializeToString,
+      ('charonrpc.Auth', 'BelongsTo'): google_dot_protobuf_dot_wrappers__pb2.BoolValue.SerializeToString,
+      ('charonrpc.Auth', 'IsAuthenticated'): google_dot_protobuf_dot_wrappers__pb2.BoolValue.SerializeToString,
+      ('charonrpc.Auth', 'IsGranted'): google_dot_protobuf_dot_wrappers__pb2.BoolValue.SerializeToString,
+      ('charonrpc.Auth', 'Login'): google_dot_protobuf_dot_wrappers__pb2.StringValue.SerializeToString,
+      ('charonrpc.Auth', 'Logout'): google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
     }
     method_implementations = {
       ('charonrpc.Auth', 'Actor'): face_utilities.unary_unary_inline(servicer.Actor),
@@ -556,7 +556,7 @@ try:
     file not marked beta) for all further purposes. This function was
     generated only to ease transition from grpcio<0.15.0 to grpcio>=0.15.0"""
     request_serializers = {
-      ('charonrpc.Auth', 'Actor'): github_dot_com_dot_golang_dot_protobuf_dot_ptypes_dot_wrappers_dot_wrappers__pb2.StringValue.SerializeToString,
+      ('charonrpc.Auth', 'Actor'): google_dot_protobuf_dot_wrappers__pb2.StringValue.SerializeToString,
       ('charonrpc.Auth', 'BelongsTo'): BelongsToRequest.SerializeToString,
       ('charonrpc.Auth', 'IsAuthenticated'): IsAuthenticatedRequest.SerializeToString,
       ('charonrpc.Auth', 'IsGranted'): IsGrantedRequest.SerializeToString,
@@ -565,11 +565,11 @@ try:
     }
     response_deserializers = {
       ('charonrpc.Auth', 'Actor'): ActorResponse.FromString,
-      ('charonrpc.Auth', 'BelongsTo'): github_dot_com_dot_golang_dot_protobuf_dot_ptypes_dot_wrappers_dot_wrappers__pb2.BoolValue.FromString,
-      ('charonrpc.Auth', 'IsAuthenticated'): github_dot_com_dot_golang_dot_protobuf_dot_ptypes_dot_wrappers_dot_wrappers__pb2.BoolValue.FromString,
-      ('charonrpc.Auth', 'IsGranted'): github_dot_com_dot_golang_dot_protobuf_dot_ptypes_dot_wrappers_dot_wrappers__pb2.BoolValue.FromString,
-      ('charonrpc.Auth', 'Login'): github_dot_com_dot_golang_dot_protobuf_dot_ptypes_dot_wrappers_dot_wrappers__pb2.StringValue.FromString,
-      ('charonrpc.Auth', 'Logout'): github_dot_com_dot_golang_dot_protobuf_dot_ptypes_dot_empty_dot_empty__pb2.Empty.FromString,
+      ('charonrpc.Auth', 'BelongsTo'): google_dot_protobuf_dot_wrappers__pb2.BoolValue.FromString,
+      ('charonrpc.Auth', 'IsAuthenticated'): google_dot_protobuf_dot_wrappers__pb2.BoolValue.FromString,
+      ('charonrpc.Auth', 'IsGranted'): google_dot_protobuf_dot_wrappers__pb2.BoolValue.FromString,
+      ('charonrpc.Auth', 'Login'): google_dot_protobuf_dot_wrappers__pb2.StringValue.FromString,
+      ('charonrpc.Auth', 'Logout'): google_dot_protobuf_dot_empty__pb2.Empty.FromString,
     }
     cardinalities = {
       'Actor': cardinality.Cardinality.UNARY_UNARY,

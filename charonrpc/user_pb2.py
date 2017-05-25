@@ -13,10 +13,10 @@ from google.protobuf import descriptor_pb2
 _sym_db = _symbol_database.Default()
 
 
-from github.com.golang.protobuf.ptypes.timestamp import timestamp_pb2 as github_dot_com_dot_golang_dot_protobuf_dot_ptypes_dot_timestamp_dot_timestamp__pb2
-from github.com.golang.protobuf.ptypes.wrappers import wrappers_pb2 as github_dot_com_dot_golang_dot_protobuf_dot_ptypes_dot_wrappers_dot_wrappers__pb2
-from github.com.piotrkowalczuk.qtypes import qtypes_pb2 as github_dot_com_dot_piotrkowalczuk_dot_qtypes_dot_qtypes__pb2
-from github.com.piotrkowalczuk.ntypes import ntypes_pb2 as github_dot_com_dot_piotrkowalczuk_dot_ntypes_dot_ntypes__pb2
+from google.protobuf import timestamp_pb2 as google_dot_protobuf_dot_timestamp__pb2
+from google.protobuf import wrappers_pb2 as google_dot_protobuf_dot_wrappers__pb2
+from qtypes import qtypes_pb2 as qtypes_dot_qtypes__pb2
+from ntypes import ntypes_pb2 as ntypes_dot_ntypes__pb2
 import group_pb2 as group__pb2
 
 
@@ -24,9 +24,9 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='user.proto',
   package='charonrpc',
   syntax='proto3',
-  serialized_pb=_b('\n\nuser.proto\x12\tcharonrpc\x1a;github.com/golang/protobuf/ptypes/timestamp/timestamp.proto\x1a\x39github.com/golang/protobuf/ptypes/wrappers/wrappers.proto\x1a-github.com/piotrkowalczuk/qtypes/qtypes.proto\x1a-github.com/piotrkowalczuk/ntypes/ntypes.proto\x1a\x0bgroup.proto\"\xc2\x02\n\x04User\x12\n\n\x02id\x18\x01 \x01(\x03\x12\x10\n\x08username\x18\x02 \x01(\t\x12\x12\n\nfirst_name\x18\x03 \x01(\t\x12\x11\n\tlast_name\x18\x04 \x01(\t\x12\x14\n\x0cis_superuser\x18\x05 \x01(\x08\x12\x11\n\tis_active\x18\x06 \x01(\x08\x12\x10\n\x08is_staff\x18\x07 \x01(\x08\x12\x14\n\x0cis_confirmed\x18\x08 \x01(\x08\x12.\n\ncreated_at\x18\t \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12!\n\ncreated_by\x18\n \x01(\x0b\x32\r.ntypes.Int64\x12.\n\nupdated_at\x18\x0b \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12!\n\nupdated_by\x18\x0c \x01(\x0b\x32\r.ntypes.Int64\"\x86\x02\n\x11\x43reateUserRequest\x12\x10\n\x08username\x18\x01 \x01(\t\x12\x16\n\x0eplain_password\x18\x02 \x01(\t\x12\x17\n\x0fsecure_password\x18\x03 \x01(\x0c\x12\x12\n\nfirst_name\x18\x04 \x01(\t\x12\x11\n\tlast_name\x18\x05 \x01(\t\x12\"\n\x0cis_superuser\x18\x06 \x01(\x0b\x32\x0c.ntypes.Bool\x12\x1f\n\tis_active\x18\x07 \x01(\x0b\x32\x0c.ntypes.Bool\x12\x1e\n\x08is_staff\x18\x08 \x01(\x0b\x32\x0c.ntypes.Bool\x12\"\n\x0cis_confirmed\x18\t \x01(\x0b\x32\x0c.ntypes.Bool\"3\n\x12\x43reateUserResponse\x12\x1d\n\x04user\x18\x01 \x01(\x0b\x32\x0f.charonrpc.User\"\x1c\n\x0eGetUserRequest\x12\n\n\x02id\x18\x01 \x01(\x03\"0\n\x0fGetUserResponse\x12\x1d\n\x04user\x18\x01 \x01(\x0b\x32\x0f.charonrpc.User\"\x9e\x02\n\x10ListUsersRequest\x12\"\n\x0cis_superuser\x18\x01 \x01(\x0b\x32\x0c.ntypes.Bool\x12\x1e\n\x08is_staff\x18\x02 \x01(\x0b\x32\x0c.ntypes.Bool\x12!\n\ncreated_by\x18\x03 \x01(\x0b\x32\r.qtypes.Int64\x12\x1d\n\x06offset\x18\x64 \x01(\x0b\x32\r.ntypes.Int64\x12\x1c\n\x05limit\x18\x65 \x01(\x0b\x32\r.ntypes.Int64\x12\x33\n\x04sort\x18\x66 \x03(\x0b\x32%.charonrpc.ListUsersRequest.SortEntry\x1a+\n\tSortEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x08:\x02\x38\x01J\x04\x08\x04\x10\x64\"3\n\x11ListUsersResponse\x12\x1e\n\x05users\x18\x01 \x03(\x0b\x32\x0f.charonrpc.User\"\x1f\n\x11\x44\x65leteUserRequest\x12\n\n\x02id\x18\x01 \x01(\x03\"\xd2\x02\n\x11ModifyUserRequest\x12\n\n\x02id\x18\x01 \x01(\x03\x12 \n\x08username\x18\x02 \x01(\x0b\x32\x0e.ntypes.String\x12&\n\x0eplain_password\x18\x03 \x01(\x0b\x32\x0e.ntypes.String\x12\x17\n\x0fsecure_password\x18\x04 \x01(\x0c\x12\"\n\nfirst_name\x18\x05 \x01(\x0b\x32\x0e.ntypes.String\x12!\n\tlast_name\x18\x06 \x01(\x0b\x32\x0e.ntypes.String\x12\"\n\x0cis_superuser\x18\x07 \x01(\x0b\x32\x0c.ntypes.Bool\x12\x1f\n\tis_active\x18\x08 \x01(\x0b\x32\x0c.ntypes.Bool\x12\x1e\n\x08is_staff\x18\t \x01(\x0b\x32\x0c.ntypes.Bool\x12\"\n\x0cis_confirmed\x18\n \x01(\x0b\x32\x0c.ntypes.Bool\"3\n\x12ModifyUserResponse\x12\x1d\n\x04user\x18\x01 \x01(\x0b\x32\x0f.charonrpc.User\"(\n\x1aListUserPermissionsRequest\x12\n\n\x02id\x18\x01 \x01(\x03\"2\n\x1bListUserPermissionsResponse\x12\x13\n\x0bpermissions\x18\x01 \x03(\t\"A\n\x19SetUserPermissionsRequest\x12\x0f\n\x07user_id\x18\x01 \x01(\x03\x12\x13\n\x0bpermissions\x18\x02 \x03(\t\"Q\n\x1aSetUserPermissionsResponse\x12\x0f\n\x07\x63reated\x18\x01 \x01(\x03\x12\x0f\n\x07removed\x18\x02 \x01(\x03\x12\x11\n\tuntouched\x18\x03 \x01(\x03\"#\n\x15ListUserGroupsRequest\x12\n\n\x02id\x18\x01 \x01(\x03\":\n\x16ListUserGroupsResponse\x12 \n\x06groups\x18\x01 \x03(\x0b\x32\x10.charonrpc.Group\"7\n\x14SetUserGroupsRequest\x12\x0f\n\x07user_id\x18\x01 \x01(\x03\x12\x0e\n\x06groups\x18\x02 \x03(\x03\"L\n\x15SetUserGroupsResponse\x12\x0f\n\x07\x63reated\x18\x01 \x01(\x03\x12\x0f\n\x07removed\x18\x02 \x01(\x03\x12\x11\n\tuntouched\x18\x03 \x01(\x03\x32\xd6\x05\n\x0bUserManager\x12G\n\x06\x43reate\x12\x1c.charonrpc.CreateUserRequest\x1a\x1d.charonrpc.CreateUserResponse\"\x00\x12G\n\x06Modify\x12\x1c.charonrpc.ModifyUserRequest\x1a\x1d.charonrpc.ModifyUserResponse\"\x00\x12>\n\x03Get\x12\x19.charonrpc.GetUserRequest\x1a\x1a.charonrpc.GetUserResponse\"\x00\x12\x43\n\x04List\x12\x1b.charonrpc.ListUsersRequest\x1a\x1c.charonrpc.ListUsersResponse\"\x00\x12\x44\n\x06\x44\x65lete\x12\x1c.charonrpc.DeleteUserRequest\x1a\x1a.google.protobuf.BoolValue\"\x00\x12\x62\n\x0fListPermissions\x12%.charonrpc.ListUserPermissionsRequest\x1a&.charonrpc.ListUserPermissionsResponse\"\x00\x12_\n\x0eSetPermissions\x12$.charonrpc.SetUserPermissionsRequest\x1a%.charonrpc.SetUserPermissionsResponse\"\x00\x12S\n\nListGroups\x12 .charonrpc.ListUserGroupsRequest\x1a!.charonrpc.ListUserGroupsResponse\"\x00\x12P\n\tSetGroups\x12\x1f.charonrpc.SetUserGroupsRequest\x1a .charonrpc.SetUserGroupsResponse\"\x00\x62\x06proto3')
+  serialized_pb=_b('\n\nuser.proto\x12\tcharonrpc\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1egoogle/protobuf/wrappers.proto\x1a\x13qtypes/qtypes.proto\x1a\x13ntypes/ntypes.proto\x1a\x0bgroup.proto\"\xc2\x02\n\x04User\x12\n\n\x02id\x18\x01 \x01(\x03\x12\x10\n\x08username\x18\x02 \x01(\t\x12\x12\n\nfirst_name\x18\x03 \x01(\t\x12\x11\n\tlast_name\x18\x04 \x01(\t\x12\x14\n\x0cis_superuser\x18\x05 \x01(\x08\x12\x11\n\tis_active\x18\x06 \x01(\x08\x12\x10\n\x08is_staff\x18\x07 \x01(\x08\x12\x14\n\x0cis_confirmed\x18\x08 \x01(\x08\x12.\n\ncreated_at\x18\t \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12!\n\ncreated_by\x18\n \x01(\x0b\x32\r.ntypes.Int64\x12.\n\nupdated_at\x18\x0b \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12!\n\nupdated_by\x18\x0c \x01(\x0b\x32\r.ntypes.Int64\"\x86\x02\n\x11\x43reateUserRequest\x12\x10\n\x08username\x18\x01 \x01(\t\x12\x16\n\x0eplain_password\x18\x02 \x01(\t\x12\x17\n\x0fsecure_password\x18\x03 \x01(\x0c\x12\x12\n\nfirst_name\x18\x04 \x01(\t\x12\x11\n\tlast_name\x18\x05 \x01(\t\x12\"\n\x0cis_superuser\x18\x06 \x01(\x0b\x32\x0c.ntypes.Bool\x12\x1f\n\tis_active\x18\x07 \x01(\x0b\x32\x0c.ntypes.Bool\x12\x1e\n\x08is_staff\x18\x08 \x01(\x0b\x32\x0c.ntypes.Bool\x12\"\n\x0cis_confirmed\x18\t \x01(\x0b\x32\x0c.ntypes.Bool\"3\n\x12\x43reateUserResponse\x12\x1d\n\x04user\x18\x01 \x01(\x0b\x32\x0f.charonrpc.User\"\x1c\n\x0eGetUserRequest\x12\n\n\x02id\x18\x01 \x01(\x03\"0\n\x0fGetUserResponse\x12\x1d\n\x04user\x18\x01 \x01(\x0b\x32\x0f.charonrpc.User\"\x9e\x02\n\x10ListUsersRequest\x12\"\n\x0cis_superuser\x18\x01 \x01(\x0b\x32\x0c.ntypes.Bool\x12\x1e\n\x08is_staff\x18\x02 \x01(\x0b\x32\x0c.ntypes.Bool\x12!\n\ncreated_by\x18\x03 \x01(\x0b\x32\r.qtypes.Int64\x12\x1d\n\x06offset\x18\x64 \x01(\x0b\x32\r.ntypes.Int64\x12\x1c\n\x05limit\x18\x65 \x01(\x0b\x32\r.ntypes.Int64\x12\x33\n\x04sort\x18\x66 \x03(\x0b\x32%.charonrpc.ListUsersRequest.SortEntry\x1a+\n\tSortEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x08:\x02\x38\x01J\x04\x08\x04\x10\x64\"3\n\x11ListUsersResponse\x12\x1e\n\x05users\x18\x01 \x03(\x0b\x32\x0f.charonrpc.User\"\x1f\n\x11\x44\x65leteUserRequest\x12\n\n\x02id\x18\x01 \x01(\x03\"\xd2\x02\n\x11ModifyUserRequest\x12\n\n\x02id\x18\x01 \x01(\x03\x12 \n\x08username\x18\x02 \x01(\x0b\x32\x0e.ntypes.String\x12&\n\x0eplain_password\x18\x03 \x01(\x0b\x32\x0e.ntypes.String\x12\x17\n\x0fsecure_password\x18\x04 \x01(\x0c\x12\"\n\nfirst_name\x18\x05 \x01(\x0b\x32\x0e.ntypes.String\x12!\n\tlast_name\x18\x06 \x01(\x0b\x32\x0e.ntypes.String\x12\"\n\x0cis_superuser\x18\x07 \x01(\x0b\x32\x0c.ntypes.Bool\x12\x1f\n\tis_active\x18\x08 \x01(\x0b\x32\x0c.ntypes.Bool\x12\x1e\n\x08is_staff\x18\t \x01(\x0b\x32\x0c.ntypes.Bool\x12\"\n\x0cis_confirmed\x18\n \x01(\x0b\x32\x0c.ntypes.Bool\"3\n\x12ModifyUserResponse\x12\x1d\n\x04user\x18\x01 \x01(\x0b\x32\x0f.charonrpc.User\"(\n\x1aListUserPermissionsRequest\x12\n\n\x02id\x18\x01 \x01(\x03\"2\n\x1bListUserPermissionsResponse\x12\x13\n\x0bpermissions\x18\x01 \x03(\t\"A\n\x19SetUserPermissionsRequest\x12\x0f\n\x07user_id\x18\x01 \x01(\x03\x12\x13\n\x0bpermissions\x18\x02 \x03(\t\"Q\n\x1aSetUserPermissionsResponse\x12\x0f\n\x07\x63reated\x18\x01 \x01(\x03\x12\x0f\n\x07removed\x18\x02 \x01(\x03\x12\x11\n\tuntouched\x18\x03 \x01(\x03\"#\n\x15ListUserGroupsRequest\x12\n\n\x02id\x18\x01 \x01(\x03\":\n\x16ListUserGroupsResponse\x12 \n\x06groups\x18\x01 \x03(\x0b\x32\x10.charonrpc.Group\"7\n\x14SetUserGroupsRequest\x12\x0f\n\x07user_id\x18\x01 \x01(\x03\x12\x0e\n\x06groups\x18\x02 \x03(\x03\"L\n\x15SetUserGroupsResponse\x12\x0f\n\x07\x63reated\x18\x01 \x01(\x03\x12\x0f\n\x07removed\x18\x02 \x01(\x03\x12\x11\n\tuntouched\x18\x03 \x01(\x03\x32\xd6\x05\n\x0bUserManager\x12G\n\x06\x43reate\x12\x1c.charonrpc.CreateUserRequest\x1a\x1d.charonrpc.CreateUserResponse\"\x00\x12G\n\x06Modify\x12\x1c.charonrpc.ModifyUserRequest\x1a\x1d.charonrpc.ModifyUserResponse\"\x00\x12>\n\x03Get\x12\x19.charonrpc.GetUserRequest\x1a\x1a.charonrpc.GetUserResponse\"\x00\x12\x43\n\x04List\x12\x1b.charonrpc.ListUsersRequest\x1a\x1c.charonrpc.ListUsersResponse\"\x00\x12\x44\n\x06\x44\x65lete\x12\x1c.charonrpc.DeleteUserRequest\x1a\x1a.google.protobuf.BoolValue\"\x00\x12\x62\n\x0fListPermissions\x12%.charonrpc.ListUserPermissionsRequest\x1a&.charonrpc.ListUserPermissionsResponse\"\x00\x12_\n\x0eSetPermissions\x12$.charonrpc.SetUserPermissionsRequest\x1a%.charonrpc.SetUserPermissionsResponse\"\x00\x12S\n\nListGroups\x12 .charonrpc.ListUserGroupsRequest\x1a!.charonrpc.ListUserGroupsResponse\"\x00\x12P\n\tSetGroups\x12\x1f.charonrpc.SetUserGroupsRequest\x1a .charonrpc.SetUserGroupsResponse\"\x00\x62\x06proto3')
   ,
-  dependencies=[github_dot_com_dot_golang_dot_protobuf_dot_ptypes_dot_timestamp_dot_timestamp__pb2.DESCRIPTOR,github_dot_com_dot_golang_dot_protobuf_dot_ptypes_dot_wrappers_dot_wrappers__pb2.DESCRIPTOR,github_dot_com_dot_piotrkowalczuk_dot_qtypes_dot_qtypes__pb2.DESCRIPTOR,github_dot_com_dot_piotrkowalczuk_dot_ntypes_dot_ntypes__pb2.DESCRIPTOR,group__pb2.DESCRIPTOR,])
+  dependencies=[google_dot_protobuf_dot_timestamp__pb2.DESCRIPTOR,google_dot_protobuf_dot_wrappers__pb2.DESCRIPTOR,qtypes_dot_qtypes__pb2.DESCRIPTOR,ntypes_dot_ntypes__pb2.DESCRIPTOR,group__pb2.DESCRIPTOR,])
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 
@@ -135,8 +135,8 @@ _USER = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=253,
-  serialized_end=575,
+  serialized_start=146,
+  serialized_end=468,
 )
 
 
@@ -222,8 +222,8 @@ _CREATEUSERREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=578,
-  serialized_end=840,
+  serialized_start=471,
+  serialized_end=733,
 )
 
 
@@ -253,8 +253,8 @@ _CREATEUSERRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=842,
-  serialized_end=893,
+  serialized_start=735,
+  serialized_end=786,
 )
 
 
@@ -284,8 +284,8 @@ _GETUSERREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=895,
-  serialized_end=923,
+  serialized_start=788,
+  serialized_end=816,
 )
 
 
@@ -315,8 +315,8 @@ _GETUSERRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=925,
-  serialized_end=973,
+  serialized_start=818,
+  serialized_end=866,
 )
 
 
@@ -353,8 +353,8 @@ _LISTUSERSREQUEST_SORTENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1213,
-  serialized_end=1256,
+  serialized_start=1106,
+  serialized_end=1149,
 )
 
 _LISTUSERSREQUEST = _descriptor.Descriptor(
@@ -418,8 +418,8 @@ _LISTUSERSREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=976,
-  serialized_end=1262,
+  serialized_start=869,
+  serialized_end=1155,
 )
 
 
@@ -449,8 +449,8 @@ _LISTUSERSRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1264,
-  serialized_end=1315,
+  serialized_start=1157,
+  serialized_end=1208,
 )
 
 
@@ -480,8 +480,8 @@ _DELETEUSERREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1317,
-  serialized_end=1348,
+  serialized_start=1210,
+  serialized_end=1241,
 )
 
 
@@ -574,8 +574,8 @@ _MODIFYUSERREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1351,
-  serialized_end=1689,
+  serialized_start=1244,
+  serialized_end=1582,
 )
 
 
@@ -605,8 +605,8 @@ _MODIFYUSERRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1691,
-  serialized_end=1742,
+  serialized_start=1584,
+  serialized_end=1635,
 )
 
 
@@ -636,8 +636,8 @@ _LISTUSERPERMISSIONSREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1744,
-  serialized_end=1784,
+  serialized_start=1637,
+  serialized_end=1677,
 )
 
 
@@ -667,8 +667,8 @@ _LISTUSERPERMISSIONSRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1786,
-  serialized_end=1836,
+  serialized_start=1679,
+  serialized_end=1729,
 )
 
 
@@ -705,8 +705,8 @@ _SETUSERPERMISSIONSREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1838,
-  serialized_end=1903,
+  serialized_start=1731,
+  serialized_end=1796,
 )
 
 
@@ -750,8 +750,8 @@ _SETUSERPERMISSIONSRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1905,
-  serialized_end=1986,
+  serialized_start=1798,
+  serialized_end=1879,
 )
 
 
@@ -781,8 +781,8 @@ _LISTUSERGROUPSREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1988,
-  serialized_end=2023,
+  serialized_start=1881,
+  serialized_end=1916,
 )
 
 
@@ -812,8 +812,8 @@ _LISTUSERGROUPSRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2025,
-  serialized_end=2083,
+  serialized_start=1918,
+  serialized_end=1976,
 )
 
 
@@ -850,8 +850,8 @@ _SETUSERGROUPSREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2085,
-  serialized_end=2140,
+  serialized_start=1978,
+  serialized_end=2033,
 )
 
 
@@ -895,36 +895,36 @@ _SETUSERGROUPSRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2142,
-  serialized_end=2218,
+  serialized_start=2035,
+  serialized_end=2111,
 )
 
-_USER.fields_by_name['created_at'].message_type = github_dot_com_dot_golang_dot_protobuf_dot_ptypes_dot_timestamp_dot_timestamp__pb2._TIMESTAMP
-_USER.fields_by_name['created_by'].message_type = github_dot_com_dot_piotrkowalczuk_dot_ntypes_dot_ntypes__pb2._INT64
-_USER.fields_by_name['updated_at'].message_type = github_dot_com_dot_golang_dot_protobuf_dot_ptypes_dot_timestamp_dot_timestamp__pb2._TIMESTAMP
-_USER.fields_by_name['updated_by'].message_type = github_dot_com_dot_piotrkowalczuk_dot_ntypes_dot_ntypes__pb2._INT64
-_CREATEUSERREQUEST.fields_by_name['is_superuser'].message_type = github_dot_com_dot_piotrkowalczuk_dot_ntypes_dot_ntypes__pb2._BOOL
-_CREATEUSERREQUEST.fields_by_name['is_active'].message_type = github_dot_com_dot_piotrkowalczuk_dot_ntypes_dot_ntypes__pb2._BOOL
-_CREATEUSERREQUEST.fields_by_name['is_staff'].message_type = github_dot_com_dot_piotrkowalczuk_dot_ntypes_dot_ntypes__pb2._BOOL
-_CREATEUSERREQUEST.fields_by_name['is_confirmed'].message_type = github_dot_com_dot_piotrkowalczuk_dot_ntypes_dot_ntypes__pb2._BOOL
+_USER.fields_by_name['created_at'].message_type = google_dot_protobuf_dot_timestamp__pb2._TIMESTAMP
+_USER.fields_by_name['created_by'].message_type = ntypes_dot_ntypes__pb2._INT64
+_USER.fields_by_name['updated_at'].message_type = google_dot_protobuf_dot_timestamp__pb2._TIMESTAMP
+_USER.fields_by_name['updated_by'].message_type = ntypes_dot_ntypes__pb2._INT64
+_CREATEUSERREQUEST.fields_by_name['is_superuser'].message_type = ntypes_dot_ntypes__pb2._BOOL
+_CREATEUSERREQUEST.fields_by_name['is_active'].message_type = ntypes_dot_ntypes__pb2._BOOL
+_CREATEUSERREQUEST.fields_by_name['is_staff'].message_type = ntypes_dot_ntypes__pb2._BOOL
+_CREATEUSERREQUEST.fields_by_name['is_confirmed'].message_type = ntypes_dot_ntypes__pb2._BOOL
 _CREATEUSERRESPONSE.fields_by_name['user'].message_type = _USER
 _GETUSERRESPONSE.fields_by_name['user'].message_type = _USER
 _LISTUSERSREQUEST_SORTENTRY.containing_type = _LISTUSERSREQUEST
-_LISTUSERSREQUEST.fields_by_name['is_superuser'].message_type = github_dot_com_dot_piotrkowalczuk_dot_ntypes_dot_ntypes__pb2._BOOL
-_LISTUSERSREQUEST.fields_by_name['is_staff'].message_type = github_dot_com_dot_piotrkowalczuk_dot_ntypes_dot_ntypes__pb2._BOOL
-_LISTUSERSREQUEST.fields_by_name['created_by'].message_type = github_dot_com_dot_piotrkowalczuk_dot_qtypes_dot_qtypes__pb2._INT64
-_LISTUSERSREQUEST.fields_by_name['offset'].message_type = github_dot_com_dot_piotrkowalczuk_dot_ntypes_dot_ntypes__pb2._INT64
-_LISTUSERSREQUEST.fields_by_name['limit'].message_type = github_dot_com_dot_piotrkowalczuk_dot_ntypes_dot_ntypes__pb2._INT64
+_LISTUSERSREQUEST.fields_by_name['is_superuser'].message_type = ntypes_dot_ntypes__pb2._BOOL
+_LISTUSERSREQUEST.fields_by_name['is_staff'].message_type = ntypes_dot_ntypes__pb2._BOOL
+_LISTUSERSREQUEST.fields_by_name['created_by'].message_type = qtypes_dot_qtypes__pb2._INT64
+_LISTUSERSREQUEST.fields_by_name['offset'].message_type = ntypes_dot_ntypes__pb2._INT64
+_LISTUSERSREQUEST.fields_by_name['limit'].message_type = ntypes_dot_ntypes__pb2._INT64
 _LISTUSERSREQUEST.fields_by_name['sort'].message_type = _LISTUSERSREQUEST_SORTENTRY
 _LISTUSERSRESPONSE.fields_by_name['users'].message_type = _USER
-_MODIFYUSERREQUEST.fields_by_name['username'].message_type = github_dot_com_dot_piotrkowalczuk_dot_ntypes_dot_ntypes__pb2._STRING
-_MODIFYUSERREQUEST.fields_by_name['plain_password'].message_type = github_dot_com_dot_piotrkowalczuk_dot_ntypes_dot_ntypes__pb2._STRING
-_MODIFYUSERREQUEST.fields_by_name['first_name'].message_type = github_dot_com_dot_piotrkowalczuk_dot_ntypes_dot_ntypes__pb2._STRING
-_MODIFYUSERREQUEST.fields_by_name['last_name'].message_type = github_dot_com_dot_piotrkowalczuk_dot_ntypes_dot_ntypes__pb2._STRING
-_MODIFYUSERREQUEST.fields_by_name['is_superuser'].message_type = github_dot_com_dot_piotrkowalczuk_dot_ntypes_dot_ntypes__pb2._BOOL
-_MODIFYUSERREQUEST.fields_by_name['is_active'].message_type = github_dot_com_dot_piotrkowalczuk_dot_ntypes_dot_ntypes__pb2._BOOL
-_MODIFYUSERREQUEST.fields_by_name['is_staff'].message_type = github_dot_com_dot_piotrkowalczuk_dot_ntypes_dot_ntypes__pb2._BOOL
-_MODIFYUSERREQUEST.fields_by_name['is_confirmed'].message_type = github_dot_com_dot_piotrkowalczuk_dot_ntypes_dot_ntypes__pb2._BOOL
+_MODIFYUSERREQUEST.fields_by_name['username'].message_type = ntypes_dot_ntypes__pb2._STRING
+_MODIFYUSERREQUEST.fields_by_name['plain_password'].message_type = ntypes_dot_ntypes__pb2._STRING
+_MODIFYUSERREQUEST.fields_by_name['first_name'].message_type = ntypes_dot_ntypes__pb2._STRING
+_MODIFYUSERREQUEST.fields_by_name['last_name'].message_type = ntypes_dot_ntypes__pb2._STRING
+_MODIFYUSERREQUEST.fields_by_name['is_superuser'].message_type = ntypes_dot_ntypes__pb2._BOOL
+_MODIFYUSERREQUEST.fields_by_name['is_active'].message_type = ntypes_dot_ntypes__pb2._BOOL
+_MODIFYUSERREQUEST.fields_by_name['is_staff'].message_type = ntypes_dot_ntypes__pb2._BOOL
+_MODIFYUSERREQUEST.fields_by_name['is_confirmed'].message_type = ntypes_dot_ntypes__pb2._BOOL
 _MODIFYUSERRESPONSE.fields_by_name['user'].message_type = _USER
 _LISTUSERGROUPSRESPONSE.fields_by_name['groups'].message_type = group__pb2._GROUP
 DESCRIPTOR.message_types_by_name['User'] = _USER
@@ -1124,7 +1124,7 @@ try:
       self.Delete = channel.unary_unary(
           '/charonrpc.UserManager/Delete',
           request_serializer=DeleteUserRequest.SerializeToString,
-          response_deserializer=github_dot_com_dot_golang_dot_protobuf_dot_ptypes_dot_wrappers_dot_wrappers__pb2.BoolValue.FromString,
+          response_deserializer=google_dot_protobuf_dot_wrappers__pb2.BoolValue.FromString,
           )
       self.ListPermissions = channel.unary_unary(
           '/charonrpc.UserManager/ListPermissions',
@@ -1221,7 +1221,7 @@ try:
         'Delete': grpc.unary_unary_rpc_method_handler(
             servicer.Delete,
             request_deserializer=DeleteUserRequest.FromString,
-            response_serializer=github_dot_com_dot_golang_dot_protobuf_dot_ptypes_dot_wrappers_dot_wrappers__pb2.BoolValue.SerializeToString,
+            response_serializer=google_dot_protobuf_dot_wrappers__pb2.BoolValue.SerializeToString,
         ),
         'ListPermissions': grpc.unary_unary_rpc_method_handler(
             servicer.ListPermissions,
@@ -1329,7 +1329,7 @@ try:
     }
     response_serializers = {
       ('charonrpc.UserManager', 'Create'): CreateUserResponse.SerializeToString,
-      ('charonrpc.UserManager', 'Delete'): github_dot_com_dot_golang_dot_protobuf_dot_ptypes_dot_wrappers_dot_wrappers__pb2.BoolValue.SerializeToString,
+      ('charonrpc.UserManager', 'Delete'): google_dot_protobuf_dot_wrappers__pb2.BoolValue.SerializeToString,
       ('charonrpc.UserManager', 'Get'): GetUserResponse.SerializeToString,
       ('charonrpc.UserManager', 'List'): ListUsersResponse.SerializeToString,
       ('charonrpc.UserManager', 'ListGroups'): ListUserGroupsResponse.SerializeToString,
@@ -1372,7 +1372,7 @@ try:
     }
     response_deserializers = {
       ('charonrpc.UserManager', 'Create'): CreateUserResponse.FromString,
-      ('charonrpc.UserManager', 'Delete'): github_dot_com_dot_golang_dot_protobuf_dot_ptypes_dot_wrappers_dot_wrappers__pb2.BoolValue.FromString,
+      ('charonrpc.UserManager', 'Delete'): google_dot_protobuf_dot_wrappers__pb2.BoolValue.FromString,
       ('charonrpc.UserManager', 'Get'): GetUserResponse.FromString,
       ('charonrpc.UserManager', 'List'): ListUsersResponse.FromString,
       ('charonrpc.UserManager', 'ListGroups'): ListUserGroupsResponse.FromString,

@@ -2,8 +2,8 @@ syntax = "proto3";
 
 package charonrpc;
 
-import "github.com/golang/protobuf/ptypes/empty/empty.proto";
-import "github.com/golang/protobuf/ptypes/wrappers/wrappers.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/wrappers.proto";
 
 service Auth {
     rpc Login (LoginRequest) returns (google.protobuf.StringValue);

@@ -3,7 +3,7 @@ import grpc
 from grpc.framework.common import cardinality
 from grpc.framework.interfaces.face import utilities as face_utilities
 
-import github.com.golang.protobuf.ptypes.wrappers.wrappers_pb2 as github_dot_com_dot_golang_dot_protobuf_dot_ptypes_dot_wrappers_dot_wrappers__pb2
+import google.protobuf.wrappers_pb2 as google_dot_protobuf_dot_wrappers__pb2
 import user_pb2 as user__pb2
 
 
@@ -38,7 +38,7 @@ class UserManagerStub(object):
     self.Delete = channel.unary_unary(
         '/charonrpc.UserManager/Delete',
         request_serializer=user__pb2.DeleteUserRequest.SerializeToString,
-        response_deserializer=github_dot_com_dot_golang_dot_protobuf_dot_ptypes_dot_wrappers_dot_wrappers__pb2.BoolValue.FromString,
+        response_deserializer=google_dot_protobuf_dot_wrappers__pb2.BoolValue.FromString,
         )
     self.ListPermissions = channel.unary_unary(
         '/charonrpc.UserManager/ListPermissions',
@@ -135,7 +135,7 @@ def add_UserManagerServicer_to_server(servicer, server):
       'Delete': grpc.unary_unary_rpc_method_handler(
           servicer.Delete,
           request_deserializer=user__pb2.DeleteUserRequest.FromString,
-          response_serializer=github_dot_com_dot_golang_dot_protobuf_dot_ptypes_dot_wrappers_dot_wrappers__pb2.BoolValue.SerializeToString,
+          response_serializer=google_dot_protobuf_dot_wrappers__pb2.BoolValue.SerializeToString,
       ),
       'ListPermissions': grpc.unary_unary_rpc_method_handler(
           servicer.ListPermissions,

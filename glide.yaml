@@ -1,8 +1,15 @@
-package: github.com/piotrkowalczuk/charon
-excludeDirs:
-- cmd/charong
-- data
+package: github.com/piotrkowalczuk/charonc
 import:
+- package: github.com/piotrkowalczuk/pqt
+  version: ~0.17.0
+  subpackages:
+  - pqtgo
+  - pqtsql
+- package: github.com/piotrkowalczuk/qtypespqt
+  version: ~0.3.3
+- package: github.com/piotrkowalczuk/ntypespqt
+  version: ~0.2.5
+- package: github.com/huandu/xstrings
 - package: github.com/go-kit/kit
   version: ~0.2.0
   subpackages:
@@ -13,9 +20,6 @@ import:
   subpackages:
   - proto
   - ptypes
-  - ptypes/empty
-  - ptypes/timestamp
-  - ptypes/wrappers
 - package: github.com/lib/pq
 - package: github.com/pborman/uuid
   version: ~1.0.0
@@ -23,13 +27,9 @@ import:
   version: ~0.8.4
   subpackages:
   - mnemosynerpc
-- package: github.com/piotrkowalczuk/ntypes
-  version: ~0.4.0
 - package: github.com/piotrkowalczuk/pqcomp
 - package: github.com/piotrkowalczuk/promgrpc
   version: ~0.3.0
-- package: github.com/piotrkowalczuk/qtypes
-  version: ~0.2.3
 - package: github.com/piotrkowalczuk/sklog
 - package: github.com/prometheus/client_golang
   version: ~0.8.0

@@ -4,8 +4,8 @@ from grpc.framework.common import cardinality
 from grpc.framework.interfaces.face import utilities as face_utilities
 
 import auth_pb2 as auth__pb2
-import github.com.golang.protobuf.ptypes.empty.empty_pb2 as github_dot_com_dot_golang_dot_protobuf_dot_ptypes_dot_empty_dot_empty__pb2
-import github.com.golang.protobuf.ptypes.wrappers.wrappers_pb2 as github_dot_com_dot_golang_dot_protobuf_dot_ptypes_dot_wrappers_dot_wrappers__pb2
+import google.protobuf.empty_pb2 as google_dot_protobuf_dot_empty__pb2
+import google.protobuf.wrappers_pb2 as google_dot_protobuf_dot_wrappers__pb2
 
 
 class AuthStub(object):
@@ -19,32 +19,32 @@ class AuthStub(object):
     self.Login = channel.unary_unary(
         '/charonrpc.Auth/Login',
         request_serializer=auth__pb2.LoginRequest.SerializeToString,
-        response_deserializer=github_dot_com_dot_golang_dot_protobuf_dot_ptypes_dot_wrappers_dot_wrappers__pb2.StringValue.FromString,
+        response_deserializer=google_dot_protobuf_dot_wrappers__pb2.StringValue.FromString,
         )
     self.Logout = channel.unary_unary(
         '/charonrpc.Auth/Logout',
         request_serializer=auth__pb2.LogoutRequest.SerializeToString,
-        response_deserializer=github_dot_com_dot_golang_dot_protobuf_dot_ptypes_dot_empty_dot_empty__pb2.Empty.FromString,
+        response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
         )
     self.IsAuthenticated = channel.unary_unary(
         '/charonrpc.Auth/IsAuthenticated',
         request_serializer=auth__pb2.IsAuthenticatedRequest.SerializeToString,
-        response_deserializer=github_dot_com_dot_golang_dot_protobuf_dot_ptypes_dot_wrappers_dot_wrappers__pb2.BoolValue.FromString,
+        response_deserializer=google_dot_protobuf_dot_wrappers__pb2.BoolValue.FromString,
         )
     self.Actor = channel.unary_unary(
         '/charonrpc.Auth/Actor',
-        request_serializer=github_dot_com_dot_golang_dot_protobuf_dot_ptypes_dot_wrappers_dot_wrappers__pb2.StringValue.SerializeToString,
+        request_serializer=google_dot_protobuf_dot_wrappers__pb2.StringValue.SerializeToString,
         response_deserializer=auth__pb2.ActorResponse.FromString,
         )
     self.IsGranted = channel.unary_unary(
         '/charonrpc.Auth/IsGranted',
         request_serializer=auth__pb2.IsGrantedRequest.SerializeToString,
-        response_deserializer=github_dot_com_dot_golang_dot_protobuf_dot_ptypes_dot_wrappers_dot_wrappers__pb2.BoolValue.FromString,
+        response_deserializer=google_dot_protobuf_dot_wrappers__pb2.BoolValue.FromString,
         )
     self.BelongsTo = channel.unary_unary(
         '/charonrpc.Auth/BelongsTo',
         request_serializer=auth__pb2.BelongsToRequest.SerializeToString,
-        response_deserializer=github_dot_com_dot_golang_dot_protobuf_dot_ptypes_dot_wrappers_dot_wrappers__pb2.BoolValue.FromString,
+        response_deserializer=google_dot_protobuf_dot_wrappers__pb2.BoolValue.FromString,
         )
 
 
@@ -86,32 +86,32 @@ def add_AuthServicer_to_server(servicer, server):
       'Login': grpc.unary_unary_rpc_method_handler(
           servicer.Login,
           request_deserializer=auth__pb2.LoginRequest.FromString,
-          response_serializer=github_dot_com_dot_golang_dot_protobuf_dot_ptypes_dot_wrappers_dot_wrappers__pb2.StringValue.SerializeToString,
+          response_serializer=google_dot_protobuf_dot_wrappers__pb2.StringValue.SerializeToString,
       ),
       'Logout': grpc.unary_unary_rpc_method_handler(
           servicer.Logout,
           request_deserializer=auth__pb2.LogoutRequest.FromString,
-          response_serializer=github_dot_com_dot_golang_dot_protobuf_dot_ptypes_dot_empty_dot_empty__pb2.Empty.SerializeToString,
+          response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
       ),
       'IsAuthenticated': grpc.unary_unary_rpc_method_handler(
           servicer.IsAuthenticated,
           request_deserializer=auth__pb2.IsAuthenticatedRequest.FromString,
-          response_serializer=github_dot_com_dot_golang_dot_protobuf_dot_ptypes_dot_wrappers_dot_wrappers__pb2.BoolValue.SerializeToString,
+          response_serializer=google_dot_protobuf_dot_wrappers__pb2.BoolValue.SerializeToString,
       ),
       'Actor': grpc.unary_unary_rpc_method_handler(
           servicer.Actor,
-          request_deserializer=github_dot_com_dot_golang_dot_protobuf_dot_ptypes_dot_wrappers_dot_wrappers__pb2.StringValue.FromString,
+          request_deserializer=google_dot_protobuf_dot_wrappers__pb2.StringValue.FromString,
           response_serializer=auth__pb2.ActorResponse.SerializeToString,
       ),
       'IsGranted': grpc.unary_unary_rpc_method_handler(
           servicer.IsGranted,
           request_deserializer=auth__pb2.IsGrantedRequest.FromString,
-          response_serializer=github_dot_com_dot_golang_dot_protobuf_dot_ptypes_dot_wrappers_dot_wrappers__pb2.BoolValue.SerializeToString,
+          response_serializer=google_dot_protobuf_dot_wrappers__pb2.BoolValue.SerializeToString,
       ),
       'BelongsTo': grpc.unary_unary_rpc_method_handler(
           servicer.BelongsTo,
           request_deserializer=auth__pb2.BelongsToRequest.FromString,
-          response_serializer=github_dot_com_dot_golang_dot_protobuf_dot_ptypes_dot_wrappers_dot_wrappers__pb2.BoolValue.SerializeToString,
+          response_serializer=google_dot_protobuf_dot_wrappers__pb2.BoolValue.SerializeToString,
       ),
   }
   generic_handler = grpc.method_handlers_generic_handler(

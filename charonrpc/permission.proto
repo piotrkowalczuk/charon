@@ -2,8 +2,8 @@ syntax = "proto3";
 
 package charonrpc;
 
-import "github.com/piotrkowalczuk/qtypes/qtypes.proto";
-import "github.com/piotrkowalczuk/ntypes/ntypes.proto";
+import "qtypes/qtypes.proto";
+import "ntypes/ntypes.proto";
 
 service PermissionManager {
     rpc Register(RegisterPermissionsRequest) returns (RegisterPermissionsResponse) {};
