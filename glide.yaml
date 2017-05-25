@@ -1,4 +1,4 @@
-package: github.com/piotrkowalczuk/charonc
+package: github.com/piotrkowalczuk/charon
 import:
 - package: github.com/piotrkowalczuk/pqt
   version: ~0.17.0
@@ -9,7 +9,6 @@ import:
   version: ~0.3.3
 - package: github.com/piotrkowalczuk/ntypespqt
   version: ~0.2.5
-- package: github.com/huandu/xstrings
 - package: github.com/go-kit/kit
   version: ~0.2.0
   subpackages:
