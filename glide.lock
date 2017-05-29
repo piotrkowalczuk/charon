@@ -1,5 +1,5 @@
-hash: b6b664c52cd87820fa70c5fe56dc407c400dee20b4447f1f663623b75cd597b2
-updated: 2017-05-25T16:22:57.256708213+02:00
+hash: 1bb3bf7d1f72fef6acd67ed6245d8d1da6cd4108f8f9c2f58b268d627406490d
+updated: 2017-05-29T16:51:58.39491026+02:00
 imports:
 - name: github.com/beorn7/perks
   version: 4c0e84591b9aa9e6dcfdf3e020114cd81f89d5f9
@@ -20,7 +20,7 @@ imports:
 - name: github.com/go-stack/stack
   version: 7a2f19628aabfe68f0766b59e74d6315f8347d22
 - name: github.com/golang/protobuf
-  version: 7a211bcf3bce0e3f1d74f9894916e6f116ae83b4
+  version: 9f174c986221c608fb5143bd623b6076a71feae3
   subpackages:
   - proto
   - ptypes
@@ -29,8 +29,6 @@ imports:
   - ptypes/empty
   - ptypes/timestamp
   - ptypes/wrappers
-- name: github.com/huandu/xstrings
-  version: 3959339b333561bf62a38b424fd41517c2c90f40
 - name: github.com/kr/logfmt
   version: b84e30acd515aadc4b783ad4ff83aff3299bdfe0
 - name: github.com/lib/pq
@@ -53,21 +51,12 @@ imports:
   - mnemosynetest
 - name: github.com/piotrkowalczuk/ntypes
   version: 882a818521511e35b8ba1c816b42b49ee7d8aebb
-- name: github.com/piotrkowalczuk/ntypespqt
-  version: fccd84359508315ece20494381cb7802ab34ab3b
 - name: github.com/piotrkowalczuk/pqcomp
   version: 631b19c36ded8bbe954cf8c15a0044c591033536
-- name: github.com/piotrkowalczuk/pqt
-  version: 0776c002306b70c9db3b235991def832ea21ec43
-  subpackages:
-  - pqtgo
-  - pqtsql
 - name: github.com/piotrkowalczuk/promgrpc
   version: 437fcdf88ffa78175786066ee4e359f43bcfb53a
 - name: github.com/piotrkowalczuk/qtypes
   version: cfa1f627c009055e907c566011e5c1b9559ae1e8
-- name: github.com/piotrkowalczuk/qtypespqt
-  version: eb49bca7d22cb00b04894def991d271074a1b889
 - name: github.com/piotrkowalczuk/sklog
   version: ec5c8660c571ff906c65341ba96de449706d63fa
 - name: github.com/pmezard/go-difflib
@@ -106,7 +95,7 @@ imports:
   - blowfish
   - sha3
 - name: golang.org/x/net
-  version: 7dcfb8076726a3fdd9353b6b8a1f1b6be6811bd6
+  version: 48359f4f600b3a2d5cf657458e3f940021631a56
   subpackages:
   - context
   - http2
@@ -153,7 +142,7 @@ imports:
   version: 379148ca0225df7a432012b8df0355c2a2063ac0
 testImports:
 - name: github.com/gopherjs/gopherjs
-  version: 6997325cc76f13635f68ad9e1c38544966eb7de2
+  version: 7cde3d36aea3e1b3be7827c4dcbe6bbae73d012e
   subpackages:
   - js
 - name: github.com/jtolds/gls

@@ -1,5 +1,6 @@
 .vagrant
 .idea
+.
 .tmp
 example/client/client
 /temp

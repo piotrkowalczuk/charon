@@ -1,14 +1,8 @@
 package: github.com/piotrkowalczuk/charon
+excludeDirs:
+- cmd/charong
+- data
 import:
-- package: github.com/piotrkowalczuk/pqt
-  version: ~0.17.0
-  subpackages:
-  - pqtgo
-  - pqtsql
-- package: github.com/piotrkowalczuk/qtypespqt
-  version: ~0.3.3
-- package: github.com/piotrkowalczuk/ntypespqt
-  version: ~0.2.5
 - package: github.com/go-kit/kit
   version: ~0.2.0
   subpackages:
