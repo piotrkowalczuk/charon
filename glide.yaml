@@ -17,7 +17,7 @@ import:
 - package: github.com/pborman/uuid
   version: ~1.0.0
 - package: github.com/piotrkowalczuk/mnemosyne
-  version: ~0.8.4
+  version: ~0.10.0
   subpackages:
   - mnemosynerpc
 - package: github.com/piotrkowalczuk/pqcomp
@@ -48,6 +48,10 @@ import:
   - grpclog
   - metadata
   - peer
+- package: github.com/piotrkowalczuk/ntypes
+  version: ^1.0.0
+- package: github.com/piotrkowalczuk/qtypes
+  version: ~0.3.6
 testImport:
 - package: github.com/smartystreets/goconvey
   version: ~1.6.2

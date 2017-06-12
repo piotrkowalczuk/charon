@@ -1,6 +1,5 @@
 .vagrant
 .idea
-.
 .tmp
 example/client/client
 /temp
@@ -12,4 +11,4 @@ coverage.txt
 bin
 charon_client.egg-info
 VERSION.txt
-
+*.pyc

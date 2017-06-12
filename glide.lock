@@ -1,5 +1,5 @@
-hash: 1bb3bf7d1f72fef6acd67ed6245d8d1da6cd4108f8f9c2f58b268d627406490d
-updated: 2017-05-29T16:51:58.39491026+02:00
+hash: 6cead245b3ee2532601283faac361eb279b4ed50ba21b6dcdb4071fddf3e9d77
+updated: 2017-06-12T17:43:03.862973484+02:00
 imports:
 - name: github.com/beorn7/perks
   version: 4c0e84591b9aa9e6dcfdf3e020114cd81f89d5f9
@@ -18,9 +18,9 @@ imports:
 - name: github.com/go-logfmt/logfmt
   version: 390ab7935ee28ec6b286364bba9b4dd6410cb3d5
 - name: github.com/go-stack/stack
-  version: 7a2f19628aabfe68f0766b59e74d6315f8347d22
+  version: 100eb0c0a9c5b306ca2fb4f165df21d80ada4b82
 - name: github.com/golang/protobuf
-  version: 9f174c986221c608fb5143bd623b6076a71feae3
+  version: 2bc9827a78f95c6665b5fe0abd1fd66b496ae2d8
   subpackages:
   - proto
   - ptypes
@@ -32,7 +32,7 @@ imports:
 - name: github.com/kr/logfmt
   version: b84e30acd515aadc4b783ad4ff83aff3299bdfe0
 - name: github.com/lib/pq
-  version: 2704adc878c21e1329f46f6e56a1c387d788ff94
+  version: 4a82388ebc5138c8289fe9bc602cb0b3e32cd617
   subpackages:
   - oid
 - name: github.com/matttproud/golang_protobuf_extensions
@@ -42,15 +42,16 @@ imports:
 - name: github.com/pborman/uuid
   version: a97ce2ca70fa5a848076093f05e639a89ca34d06
 - name: github.com/piotrkowalczuk/mnemosyne
-  version: 777012b89ccdd34421d5738c604eff3d02523d3d
+  version: 47ab40fb65920fa9779d789661883340db4c284d
   subpackages:
   - internal/cluster
   - internal/jump
+  - internal/service/postgres
   - mnemosyned
   - mnemosynerpc
   - mnemosynetest
 - name: github.com/piotrkowalczuk/ntypes
-  version: 882a818521511e35b8ba1c816b42b49ee7d8aebb
+  version: f36241dd0e90df20dd397b29b74cd6e7d89ba9ce
 - name: github.com/piotrkowalczuk/pqcomp
   version: 631b19c36ded8bbe954cf8c15a0044c591033536
 - name: github.com/piotrkowalczuk/promgrpc
@@ -72,13 +73,13 @@ imports:
   subpackages:
   - go
 - name: github.com/prometheus/common
-  version: 13ba4ddd0caa9c28ca7b7bffe1dfa9ed8d5ef207
+  version: 49fee292b27bfff7f354ee0f64e1bc4850462edf
   subpackages:
   - expfmt
   - internal/bitbucket.org/ww/goautoneg
   - model
 - name: github.com/prometheus/procfs
-  version: 65c1f6f8f0fc1e2185eb9863a3bc751496404259
+  version: a1dba9ce8baed984a2495b658c82687f8157b98f
   subpackages:
   - xfs
 - name: github.com/stretchr/objx
@@ -88,14 +89,25 @@ imports:
   subpackages:
   - assert
   - mock
+- name: go.uber.org/atomic
+  version: 4e336646b2ef9fc6e47be8e21594178f98e5ebcf
+- name: go.uber.org/zap
+  version: 9cabc84638b70e564c3dab2766efcb1ded2aac9f
+  subpackages:
+  - buffer
+  - internal/bufferpool
+  - internal/color
+  - internal/exit
+  - internal/multierror
+  - zapcore
 - name: golang.org/x/crypto
-  version: 7e9105388ebff089b3f99f0ef676ea55a6da3a7e
+  version: 6022e334c1a8cce46fb30629dc30e835faa3844d
   subpackages:
   - bcrypt
   - blowfish
   - sha3
 - name: golang.org/x/net
-  version: 48359f4f600b3a2d5cf657458e3f940021631a56
+  version: 0e2717dc3cc05907dc23096ef3a9086ea93f567f
   subpackages:
   - context
   - http2
@@ -105,18 +117,11 @@ imports:
   - lex/httplex
   - trace
 - name: golang.org/x/oauth2
-  version: f047394b6d14284165300fd82dad67edb3a4d7f6
+  version: 1e695b1c8febf17aad3bfa7bf0a819ef94b98ad5
   subpackages:
   - internal
-- name: golang.org/x/text
-  version: 19e51611da83d6be54ddafce4a4af510cb3e9ea4
-  subpackages:
-  - secure/bidirule
-  - transform
-  - unicode/bidi
-  - unicode/norm
 - name: google.golang.org/appengine
-  version: a2f4131514e563cedfdb6e7d267df9ad48591e93
+  version: c7b8227c83007befd67b324a64c969ebc1d7475d
   subpackages:
   - internal
   - internal/base
@@ -139,16 +144,16 @@ imports:
   - tap
   - transport
 - name: gopkg.in/asn1-ber.v1
-  version: 379148ca0225df7a432012b8df0355c2a2063ac0
+  version: 4e86f4367175e39f69d9358a5f17b4dda270378d
 testImports:
 - name: github.com/gopherjs/gopherjs
-  version: 7cde3d36aea3e1b3be7827c4dcbe6bbae73d012e
+  version: 9659c814f1d54d63f9c623449a7111d3864c1361
   subpackages:
   - js
 - name: github.com/jtolds/gls
-  version: 77f18212c9c7edc9bd6a33d383a7b545ce62f064
+  version: bb0351aa7eb6f322f32667d51375f26a2bca6628
 - name: github.com/smartystreets/assertions
-  version: f8459f92181409546d2762c9e9c4bedc23c92d76
+  version: c9ee7d9e9a2aeec0bee7c4a516f3e0ad7cb7e558
   subpackages:
   - internal/go-render/render
   - internal/oglematchers
