@@ -17,6 +17,7 @@ import (
 	"github.com/piotrkowalczuk/charon/charonrpc"
 	"github.com/piotrkowalczuk/charon/internal/ldap"
 	"github.com/piotrkowalczuk/charon/internal/password"
+	"github.com/piotrkowalczuk/mnemosyne"
 	"github.com/piotrkowalczuk/mnemosyne/mnemosynerpc"
 	"github.com/piotrkowalczuk/promgrpc"
 	"github.com/piotrkowalczuk/sklog"
@@ -27,6 +28,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/metadata"
 )
 
 // DaemonOpts ...
@@ -107,7 +109,7 @@ func TestDaemon(t *testing.T, opts TestDaemonOpts) (net.Addr, io.Closer) {
 
 // Run ...
 func (d *Daemon) Run() (err error) {
-	interceptor := promgrpc.NewInterceptor()
+	interceptor := promgrpc.NewInterceptor(promgrpc.InterceptorOpts{})
 
 	clientOpts := []grpc.DialOption{
 		grpc.WithTimeout(10 * time.Second),
@@ -124,6 +126,14 @@ func (d *Daemon) Run() (err error) {
 		grpc.UnaryInterceptor(unaryServerInterceptors(
 			func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 				start := time.Now()
+
+				if md, ok := metadata.FromIncomingContext(ctx); ok {
+					ctx = metadata.NewOutgoingContext(ctx, metadata.MD{
+						mnemosyne.AccessTokenMetadataKey: md[mnemosyne.AccessTokenMetadataKey],
+						"request_id":                     md["request_id"],
+					})
+				}
+
 				res, err := handler(ctx, req)
 
 				if err != nil && grpc.Code(err) != codes.OK {

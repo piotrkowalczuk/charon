@@ -47,12 +47,18 @@ func TestRPCServer_minimal(t *testing.T) {
 }
 
 func testRPCServerLogin(t *testing.T, suite *endToEndSuite) context.Context {
-	token, err := suite.charon.auth.Login(context.TODO(), &charonrpc.LoginRequest{Username: "test", Password: "test"})
+	token, err := suite.charon.auth.Login(context.TODO(), &charonrpc.LoginRequest{
+		Username: "test",
+		Password: "test",
+	})
 	if err != nil {
 		t.Fatalf("unexpected login error: %s: with code %s", grpc.ErrorDesc(err), grpc.Code(err))
 	}
-	meta := metadata.Pairs(mnemosyne.AccessTokenMetadataKey, token.Value)
-	return metadata.NewContext(context.Background(), meta)
+
+	return metadata.NewOutgoingContext(
+		context.Background(),
+		metadata.Pairs(mnemosyne.AccessTokenMetadataKey, token.Value),
+	)
 }
 
 func testRPCServerCreateUser(t *testing.T, suite *endToEndSuite, ctx context.Context, req *charonrpc.CreateUserRequest) *charonrpc.CreateUserResponse {

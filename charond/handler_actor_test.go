@@ -20,7 +20,7 @@ func TestActorHandler_Actor(t *testing.T) {
 
 	cases := map[string]func(t *testing.T){
 		"correct-token": func(t *testing.T) {
-			md, ok := metadata.FromContext(ctx)
+			md, ok := metadata.FromOutgoingContext(ctx)
 			if !ok {
 				t.Fatal("metadata not present in context")
 			}
