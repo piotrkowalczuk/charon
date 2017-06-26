@@ -15,7 +15,6 @@ import (
 	"github.com/piotrkowalczuk/charon/internal/model"
 	"github.com/piotrkowalczuk/charon/internal/password"
 	"github.com/piotrkowalczuk/mnemosyne/mnemosynerpc"
-	"github.com/piotrkowalczuk/promgrpc"
 	"github.com/piotrkowalczuk/sklog"
 	"google.golang.org/grpc"
 )
@@ -60,21 +59,12 @@ func initPostgres(address string, test bool, logger log.Logger) (*sql.DB, error)
 	return db, nil
 }
 
-func initMnemosyne(address string, interceptor *promgrpc.Interceptor, logger log.Logger) (mnemosynerpc.SessionManagerClient, *grpc.ClientConn) {
+func initMnemosyne(address string, logger log.Logger, opts []grpc.DialOption) (mnemosynerpc.SessionManagerClient, *grpc.ClientConn) {
 	if address == "" {
 		sklog.Fatal(logger, errors.New("missing mnemosyne address"))
 
 	}
-	conn, err := grpc.Dial(address,
-		grpc.WithUserAgent("charond"),
-		grpc.WithInsecure(),
-		grpc.WithTimeout(5*time.Second),
-		grpc.WithDialer(interceptor.Dialer(func(addr string, timeout time.Duration) (net.Conn, error) {
-			return net.DialTimeout("tcp", addr, timeout)
-		})),
-		grpc.WithUnaryInterceptor(interceptor.UnaryClient()),
-		grpc.WithStreamInterceptor(interceptor.StreamClient()),
-	)
+	conn, err := grpc.Dial(address, opts...)
 	if err != nil {
 		sklog.Fatal(logger, err, "address", address)
 	}

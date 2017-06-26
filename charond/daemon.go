@@ -109,37 +109,16 @@ func TestDaemon(t *testing.T, opts TestDaemonOpts) (net.Addr, io.Closer) {
 func (d *Daemon) Run() (err error) {
 	interceptor := promgrpc.NewInterceptor()
 
-	var db *sql.DB
-	db, err = initPostgres(d.opts.PostgresAddress, d.opts.Test, d.logger)
-	if err != nil {
-		return err
+	clientOpts := []grpc.DialOption{
+		grpc.WithTimeout(10 * time.Second),
+		grpc.WithUserAgent("charond"),
+		grpc.WithDialer(interceptor.Dialer(func(addr string, timeout time.Duration) (net.Conn, error) {
+			return net.DialTimeout("tcp", addr, timeout)
+		})),
+		grpc.WithUnaryInterceptor(interceptor.UnaryClient()),
+		grpc.WithStreamInterceptor(interceptor.StreamClient()),
 	}
-	repos := newRepositories(db)
-
-	d.mnemosyne, d.mnemosyneConn = initMnemosyne(d.opts.MnemosyneAddress, interceptor, d.logger)
-
-	var passwordHasher password.Hasher
-	if d.opts.LDAP {
-		// dial timeout
-		libldap.DefaultTimeout = 5 * time.Second
-		// open connection to check if it is reachable
-		if d.ldap, err = initLDAP(d.opts.LDAPAddress, d.opts.LDAPBaseDN, d.opts.LDAPBasePassword, d.logger); err != nil {
-			return
-		}
-		d.ldap.Close()
-	}
-
-	passwordHasher = initHasher(d.opts.PasswordBCryptCost, d.logger)
-	if d.opts.Test {
-		if _, err = createDummyTestUser(context.TODO(), repos.user, passwordHasher); err != nil {
-			return
-		}
-		sklog.Info(d.logger, "test super User has been created")
-	}
-
-	permissionReg := initPermissionRegistry(repos.permission, charon.AllPermissions, d.logger)
-
-	opts := []grpc.ServerOption{
+	serverOpts := []grpc.ServerOption{
 		grpc.MaxConcurrentStreams(100),
 		// No stream endpoint available at the moment.
 		grpc.UnaryInterceptor(unaryServerInterceptors(
@@ -162,10 +141,43 @@ func (d *Daemon) Run() (err error) {
 		if err != nil {
 			return err
 		}
-		opts = append(opts, grpc.Creds(creds))
+		serverOpts = append(serverOpts, grpc.Creds(creds))
+		clientOpts = append(clientOpts, grpc.WithTransportCredentials(creds))
+	} else {
+		clientOpts = append(clientOpts, grpc.WithInsecure())
 	}
 
-	gRPCServer := grpc.NewServer(opts...)
+	var db *sql.DB
+	db, err = initPostgres(d.opts.PostgresAddress, d.opts.Test, d.logger)
+	if err != nil {
+		return err
+	}
+	repos := newRepositories(db)
+
+	d.mnemosyne, d.mnemosyneConn = initMnemosyne(d.opts.MnemosyneAddress, d.logger, clientOpts)
+
+	var passwordHasher password.Hasher
+	if d.opts.LDAP {
+		// dial timeout
+		libldap.DefaultTimeout = 5 * time.Second
+		// open connection to check if it is reachable
+		if d.ldap, err = initLDAP(d.opts.LDAPAddress, d.opts.LDAPBaseDN, d.opts.LDAPBasePassword, d.logger); err != nil {
+			return
+		}
+		d.ldap.Close()
+	}
+
+	passwordHasher = initHasher(d.opts.PasswordBCryptCost, d.logger)
+	if d.opts.Test {
+		if _, err = createDummyTestUser(context.TODO(), repos.user, passwordHasher); err != nil {
+			return
+		}
+		sklog.Info(d.logger, "test super User has been created")
+	}
+
+	permissionReg := initPermissionRegistry(repos.permission, charon.AllPermissions, d.logger)
+
+	gRPCServer := grpc.NewServer(serverOpts...)
 	server := &rpcServer{
 		opts:               d.opts,
 		logger:             d.logger,

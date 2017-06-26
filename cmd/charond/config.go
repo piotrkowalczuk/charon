@@ -69,8 +69,8 @@ func (c *configuration) init() {
 	flag.BoolVar(&c.postgres.debug, "postgres.debug", false, "if true database queries are logged")
 	// TLS
 	flag.BoolVar(&c.tls.enabled, "tls", false, "tls enable flag")
-	flag.StringVar(&c.tls.certFile, "tls.certfile", "", "path to tls cert file")
-	flag.StringVar(&c.tls.keyFile, "tls.keyfile", "", "path to tls key file")
+	flag.StringVar(&c.tls.certFile, "tls.crt", "", "path to tls cert file")
+	flag.StringVar(&c.tls.keyFile, "tls.key", "", "path to tls key file")
 	// LDAP
 	flag.BoolVar(&c.ldap.enabled, "ldap", false, "ldap enable flag")
 	flag.StringVar(&c.ldap.address, "ldap.address", "", "ldap server address")
