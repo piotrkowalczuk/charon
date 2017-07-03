@@ -1,5 +1,5 @@
 hash: 7e4305492bd2e1754dcbe342f39f425ff16713e8ceb7e8a5d6dbebd00d394855
-updated: 2017-06-26T23:25:33.895905203+02:00
+updated: 2017-07-03T11:56:25.677978214+02:00
 imports:
 - name: github.com/beorn7/perks
   version: 4c0e84591b9aa9e6dcfdf3e020114cd81f89d5f9
@@ -20,7 +20,7 @@ imports:
 - name: github.com/go-stack/stack
   version: 7a2f19628aabfe68f0766b59e74d6315f8347d22
 - name: github.com/golang/protobuf
-  version: 6a1fa9404c0aebf36c879bc50152edcc953910d2
+  version: 7a211bcf3bce0e3f1d74f9894916e6f116ae83b4
   subpackages:
   - proto
   - ptypes
@@ -32,7 +32,7 @@ imports:
 - name: github.com/kr/logfmt
   version: b84e30acd515aadc4b783ad4ff83aff3299bdfe0
 - name: github.com/lib/pq
-  version: 8837942c3e09574accbc5f150e2c5e057189cace
+  version: 4a82388ebc5138c8289fe9bc602cb0b3e32cd617
   subpackages:
   - oid
 - name: github.com/matttproud/golang_protobuf_extensions
@@ -42,7 +42,7 @@ imports:
 - name: github.com/pborman/uuid
   version: a97ce2ca70fa5a848076093f05e639a89ca34d06
 - name: github.com/piotrkowalczuk/mnemosyne
-  version: 227867d44d8d4c55725085a0e80c85f2532c3c39
+  version: e1d34e6ba8f55acd83daab78eef12a07bcad4184
   subpackages:
   - internal/cluster
   - internal/jump
@@ -56,7 +56,7 @@ imports:
 - name: github.com/piotrkowalczuk/pqcomp
   version: 631b19c36ded8bbe954cf8c15a0044c591033536
 - name: github.com/piotrkowalczuk/promgrpc
-  version: 109e886b8cbbf144d9d5a0b676e37b3430353ec5
+  version: 056fdef9c141014fec040c34f08d5e7e31cb2965
 - name: github.com/piotrkowalczuk/qtypes
   version: cfa1f627c009055e907c566011e5c1b9559ae1e8
 - name: github.com/piotrkowalczuk/sklog
@@ -102,13 +102,13 @@ imports:
   - internal/multierror
   - zapcore
 - name: golang.org/x/crypto
-  version: adbae1b6b6fb4b02448a0fc0dbbc9ba2b95b294d
+  version: 368a6044bc0e88e78f6dd705a6c8eb1fd69b6676
   subpackages:
   - bcrypt
   - blowfish
   - sha3
 - name: golang.org/x/net
-  version: 5f8847ae0d0e90b6a9dc8148e7ad616874625171
+  version: 1a26cf06691746ee35aa7113c9b37289afc7ea28
   subpackages:
   - context
   - http2
@@ -118,11 +118,11 @@ imports:
   - lex/httplex
   - trace
 - name: golang.org/x/oauth2
-  version: f047394b6d14284165300fd82dad67edb3a4d7f6
+  version: 96382aa079b72d8c014eb0c50f6c223d1e6a2de0
   subpackages:
   - internal
 - name: golang.org/x/text
-  version: 4e9ab9ee170f2a39bd66c92b3e0a47ff47a4bc77
+  version: a263ba8db058568bb9beba166777d9c9dbe75d68
   subpackages:
   - secure/bidirule
   - transform
@@ -139,7 +139,7 @@ imports:
   - internal/urlfetch
   - urlfetch
 - name: google.golang.org/genproto
-  version: aa2eb687b4d3e17154372564ad8d6bf11c3cf21f
+  version: b3e7c2fb04031add52c4817f53f43757ccbf9c18
   subpackages:
   - googleapis/rpc/status
 - name: google.golang.org/grpc
@@ -162,7 +162,7 @@ imports:
   version: 379148ca0225df7a432012b8df0355c2a2063ac0
 testImports:
 - name: github.com/gopherjs/gopherjs
-  version: dc374d32704510cb387457180ca9d5193978b555
+  version: 2b1d432c8a82c9bff0b0baffaeb3ec6e92974112
   subpackages:
   - js
 - name: github.com/jtolds/gls
