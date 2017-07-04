@@ -1,5 +1,5 @@
-hash: 7e4305492bd2e1754dcbe342f39f425ff16713e8ceb7e8a5d6dbebd00d394855
-updated: 2017-07-03T11:56:25.677978214+02:00
+hash: 23d05d5a2510a44ee1c94f202588b11cd8a2f246d45f046945781ac8f424a1ba
+updated: 2017-07-04T18:38:58.057582832+02:00
 imports:
 - name: github.com/beorn7/perks
   version: 4c0e84591b9aa9e6dcfdf3e020114cd81f89d5f9
@@ -42,7 +42,7 @@ imports:
 - name: github.com/pborman/uuid
   version: a97ce2ca70fa5a848076093f05e639a89ca34d06
 - name: github.com/piotrkowalczuk/mnemosyne
-  version: e1d34e6ba8f55acd83daab78eef12a07bcad4184
+  version: c107dc3e5035cc4d47737b028c22b7fa3ea594a9
   subpackages:
   - internal/cluster
   - internal/jump
@@ -80,7 +80,7 @@ imports:
   - internal/bitbucket.org/ww/goautoneg
   - model
 - name: github.com/prometheus/procfs
-  version: 822d4a1f8edcbcbc71e8d1fd6527b12331a6d0ad
+  version: e645f4e5aaa8506fc71d6edbc5c4ff02c04c46f2
   subpackages:
   - xfs
 - name: github.com/stretchr/objx
@@ -102,7 +102,7 @@ imports:
   - internal/multierror
   - zapcore
 - name: golang.org/x/crypto
-  version: 368a6044bc0e88e78f6dd705a6c8eb1fd69b6676
+  version: 51714a8c4ac1764f07ab4127d7f739351ced4759
   subpackages:
   - bcrypt
   - blowfish
