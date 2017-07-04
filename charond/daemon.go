@@ -147,12 +147,17 @@ func (d *Daemon) Run() (err error) {
 		)),
 	}
 	if d.opts.TLS {
-		creds, err := credentials.NewServerTLSFromFile(d.opts.TLSCertFile, d.opts.TLSKeyFile)
+		serverCreds, err := credentials.NewServerTLSFromFile(d.opts.TLSCertFile, d.opts.TLSKeyFile)
 		if err != nil {
 			return err
 		}
-		serverOpts = append(serverOpts, grpc.Creds(creds))
-		clientOpts = append(clientOpts, grpc.WithTransportCredentials(creds))
+		serverOpts = append(serverOpts, grpc.Creds(serverCreds))
+
+		clientCreds, err := credentials.NewClientTLSFromFile(d.opts.TLSCertFile, "")
+		if err != nil {
+			return err
+		}
+		clientOpts = append(clientOpts, grpc.WithTransportCredentials(clientCreds))
 	} else {
 		clientOpts = append(clientOpts, grpc.WithInsecure())
 	}
