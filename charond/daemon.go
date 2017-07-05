@@ -33,24 +33,26 @@ import (
 
 // DaemonOpts ...
 type DaemonOpts struct {
-	Test               bool
-	Monitoring         bool
-	TLS                bool
-	TLSCertFile        string
-	TLSKeyFile         string
-	PostgresAddress    string
-	PostgresDebug      bool
-	PasswordBCryptCost int
-	MnemosyneAddress   string
-	LDAP               bool
-	LDAPAddress        string
-	LDAPBaseDN         string
-	LDAPSearchDN       string
-	LDAPBasePassword   string
-	LDAPMappings       *ldap.Mappings
-	Logger             log.Logger
-	RPCListener        net.Listener
-	DebugListener      net.Listener
+	Test                 bool
+	Monitoring           bool
+	TLS                  bool
+	TLSCertFile          string
+	TLSKeyFile           string
+	PostgresAddress      string
+	PostgresDebug        bool
+	PasswordBCryptCost   int
+	MnemosyneAddress     string
+	MnemosyneTLS         bool
+	MnemosyneTLSCertFile string
+	LDAP                 bool
+	LDAPAddress          string
+	LDAPBaseDN           string
+	LDAPSearchDN         string
+	LDAPBasePassword     string
+	LDAPMappings         *ldap.Mappings
+	Logger               log.Logger
+	RPCListener          net.Listener
+	DebugListener        net.Listener
 }
 
 // TestDaemonOpts represent set of options that can be passed to the TestDaemon constructor.
@@ -112,6 +114,7 @@ func (d *Daemon) Run() (err error) {
 	interceptor := promgrpc.NewInterceptor(promgrpc.InterceptorOpts{})
 
 	clientOpts := []grpc.DialOption{
+		grpc.WithBlock(),
 		grpc.WithTimeout(10 * time.Second),
 		grpc.WithUserAgent("charond"),
 		grpc.WithDialer(interceptor.Dialer(func(addr string, timeout time.Duration) (net.Conn, error) {
@@ -152,8 +155,10 @@ func (d *Daemon) Run() (err error) {
 			return err
 		}
 		serverOpts = append(serverOpts, grpc.Creds(serverCreds))
+	}
 
-		clientCreds, err := credentials.NewClientTLSFromFile(d.opts.TLSCertFile, "")
+	if d.opts.MnemosyneTLS {
+		clientCreds, err := credentials.NewClientTLSFromFile(d.opts.MnemosyneTLSCertFile, "")
 		if err != nil {
 			return err
 		}

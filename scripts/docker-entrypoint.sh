@@ -10,6 +10,7 @@ set -e
 : ${CHAROND_MONITORING:=false}
 : ${CHAROND_PASSWORD_BCRYPT_COST:=10}
 : ${CHAROND_MNEMOSYNED_ADDRESS:=mnemosyned:8080}
+: ${CHAROND_MNEMOSYNED_TLS_ENABLED:=false}
 : ${CHAROND_POSTGRES_ADDRESS:=postgres://postgres:postgres@postgres/postgres?sslmode=disable}
 : ${CHAROND_POSTGRES_DEBUG:=false}
 : ${CHAROND_TLS_ENABLED:=false}
@@ -24,20 +25,22 @@ if [ "$1" = 'charond' ]; then
 		-log.format=${CHAROND_LOG_FORMAT} \
 		-log.level=${CHAROND_LOG_LEVEL} \
 		-mnemosyned.address=${CHAROND_MNEMOSYNED_ADDRESS} \
-		-password.strategy=$CHAROND_PASSWORD_STRATEGY \
-		-password.bcryptcost=$CHAROND_PASSWORD_BCRYPT_COST \
-		-monitoring=$CHAROND_MONITORING \
-		-postgres.address=$CHAROND_POSTGRES_ADDRESS \
-		-postgres.debug=$CHAROND_POSTGRES_DEBUG \
-		-tls=$CHAROND_TLS_ENABLED \
-		-tls.crt=$CHAROND_TLS_CRT \
-		-tls.key=$CHAROND_TLS_KEY \
-		-ldap=$CHAROND_LDAP_ENABLED \
-		-ldap.address=$CHAROND_LDAP_ADDRESS \
-		-ldap.base.dn=$CHAROND_LDAP_BASE_DN \
-		-ldap.base.password=$CHAROND_LDAP_BASE_PASSWORD \
-		-ldap.search=$CHAROND_LDAP_SEARCH \
-		-ldap.mappings=$CHAROND_LDAP_MAPPINGS
+		-mnemosyned.tls=${CHAROND_MNEMOSYNED_TLS_ENABLED} \
+		-mnemosyned.tls.crt=${CHAROND_MNEMOSYNED_TLS_CRT} \
+		-password.strategy=${CHAROND_PASSWORD_STRATEGY} \
+		-password.bcryptcost=${CHAROND_PASSWORD_BCRYPT_COST} \
+		-monitoring=${CHAROND_MONITORING} \
+		-postgres.address=${CHAROND_POSTGRES_ADDRESS} \
+		-postgres.debug=${CHAROND_POSTGRES_DEBUG} \
+		-tls=${CHAROND_TLS_ENABLED} \
+		-tls.crt=${CHAROND_TLS_CRT} \
+		-tls.key=${CHAROND_TLS_KEY} \
+		-ldap=${CHAROND_LDAP_ENABLED} \
+		-ldap.address=${CHAROND_LDAP_ADDRESS} \
+		-ldap.base.dn=${CHAROND_LDAP_BASE_DN} \
+		-ldap.base.password=${CHAROND_LDAP_BASE_PASSWORD} \
+		-ldap.search=${CHAROND_LDAP_SEARCH} \
+		-ldap.mappings=${CHAROND_LDAP_MAPPINGS}
 fi
 
 : ${CHARONCTL_CHAROND_HOST:=charond}

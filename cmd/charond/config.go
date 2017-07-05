@@ -19,6 +19,10 @@ type configuration struct {
 	}
 	mnemosyned struct {
 		address string
+		tls     struct {
+			enabled  bool
+			certFile string
+		}
 	}
 	password struct {
 		strategy string
@@ -60,7 +64,11 @@ func (c *configuration) init() {
 	flag.StringVar(&c.logger.adapter, "log.adapter", loggerAdapterStdOut, "logger adapter")
 	flag.StringVar(&c.logger.format, "log.format", loggerFormatJSON, "logger format")
 	flag.IntVar(&c.logger.level, "log.level", 6, "logger level")
+	// MNEMOSYNE
 	flag.StringVar(&c.mnemosyned.address, "mnemosyned.address", "mnemosyned:8080", "mnemosyne daemon session store connection address")
+	flag.BoolVar(&c.mnemosyned.tls.enabled, "mnemosyned.tls", false, "tls enable flag for mnemosyned client connection")
+	flag.StringVar(&c.mnemosyned.tls.certFile, "mnemosyned.tls.crt", "", "path to tls cert file for mnemosyned client connection")
+	// PASSWORD
 	flag.StringVar(&c.password.strategy, "password.strategy", "bcrypt", "strategy how password will be stored")
 	flag.IntVar(&c.password.bcrypt.cost, "password.bcryptcost", 10, "bcrypt cost, bigget than safer (and longer to create)")
 	flag.BoolVar(&c.monitoring.enabled, "monitoring", false, "toggle application monitoring")
