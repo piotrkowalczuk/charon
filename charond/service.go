@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"net/url"
 	"time"
 
 	"github.com/go-kit/kit/log"
@@ -54,7 +55,16 @@ func initPostgres(address string, test bool, logger log.Logger) (*sql.DB, error)
 		return nil, err
 	}
 
-	sklog.Info(logger, "postgres connection has been established", "address", address)
+	u, err := url.Parse(address)
+	if err != nil {
+		return nil, err
+	}
+	username := ""
+	if u.User != nil {
+		username = u.User.Username()
+	}
+
+	sklog.Info(logger, "postgres connection has been established", "host", u.Host, "username", username)
 
 	return db, nil
 }

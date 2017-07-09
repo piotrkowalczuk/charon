@@ -32,6 +32,8 @@ func main() {
 		sklog.Info(logger, "ldap mappings has been loaded")
 	}
 
+	grpclog.SetLogger(sklog.NewGRPCLogger(logger))
+
 	daemon := charond.NewDaemon(charond.DaemonOpts{
 		Test:                 config.test,
 		TLS:                  config.tls.enabled,
@@ -55,7 +57,6 @@ func main() {
 		LDAPMappings:         mappings,
 	})
 
-	grpclog.SetLogger(sklog.NewGRPCLogger(logger))
 	if err := daemon.Run(); err != nil {
 		sklog.Fatal(logger, err)
 	}
