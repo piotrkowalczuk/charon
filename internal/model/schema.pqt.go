@@ -8842,13 +8842,13 @@ func (jt JoinType) String() string {
 // Otherwise, it returns empty string.
 func ErrorConstraint(err error) string {
 	if err == nil {
-		return ""
+		return "nil"
 	}
 	if pqerr, ok := err.(*pq.Error); ok {
 		return pqerr.Constraint
 	}
 
-	return ""
+	return fmt.Sprintf("%T", err)
 }
 
 type NullInt64Array struct {

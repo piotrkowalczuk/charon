@@ -1,8 +1,10 @@
 package charond
 
 import (
+	"github.com/lib/pq"
 	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/charon/charonrpc"
+	"github.com/piotrkowalczuk/charon/internal/model"
 	"github.com/piotrkowalczuk/charon/internal/session"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
@@ -25,7 +27,14 @@ func (sgph *setGroupPermissionsHandler) SetPermissions(ctx context.Context, req 
 
 	created, removed, err := sgph.repository.group.SetPermissions(ctx, req.GroupId, charon.NewPermissions(req.Permissions...)...)
 	if err != nil {
-		return nil, err
+		switch model.ErrorConstraint(err) {
+		case model.TableGroupPermissionsConstraintGroupIDForeignKey:
+			return nil, errf(codes.NotFound, "%s: group does not exist", err.(*pq.Error).Detail)
+		case model.TableGroupPermissionsConstraintPermissionSubsystemPermissionModulePermissionActionForeignKey:
+			return nil, errf(codes.NotFound, "%s: permission does not exist", err.(*pq.Error).Detail)
+		default:
+			return nil, err
+		}
 	}
 
 	return &charonrpc.SetGroupPermissionsResponse{
@@ -43,5 +52,5 @@ func (sgph *setGroupPermissionsHandler) firewall(req *charonrpc.SetGroupPermissi
 		return nil
 	}
 
-	return grpc.Errorf(codes.PermissionDenied, "group Permissions cannot be set, missing permission")
+	return grpc.Errorf(codes.PermissionDenied, "group permissions cannot be set, missing permission")
 }

@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/lib/pq"
 	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/pqcomp"
 )
@@ -235,7 +236,7 @@ func setPermissions(db *sql.DB, ctx context.Context, table, columnID, columnSubs
 			subsystem, module, action = p.Split()
 
 			if err = exists.QueryRow(id, subsystem, module, action).Scan(&granted); err != nil {
-				return 0, 0, fmt.Errorf("error on permission check: %s", err.Error())
+				return 0, 0, pqErrorPrefix(err, "error on permission check")
 			}
 			// Given combination already exists, ignore.
 			if granted {
@@ -245,7 +246,7 @@ func setPermissions(db *sql.DB, ctx context.Context, table, columnID, columnSubs
 			}
 			res, err = insert.Exec(id, subsystem, module, action)
 			if err != nil {
-				return 0, 0, fmt.Errorf("error on permission insert: %s", err.Error())
+				return 0, 0, pqErrorPrefix(err, "error on permission insert")
 			}
 
 			aff, err = res.RowsAffected()
@@ -258,13 +259,13 @@ func setPermissions(db *sql.DB, ctx context.Context, table, columnID, columnSubs
 		}
 	}
 
-	delete := pqcomp.New(1, len(in)*3)
-	delete.AddArg(id)
+	del := pqcomp.New(1, len(in)*3)
+	del.AddArg(id)
 	for _, p := range in {
 		subsystem, module, action = p.Split()
-		delete.AddExpr(columnSubsystem, "IN", subsystem)
-		delete.AddExpr(columnModule, "IN", module)
-		delete.AddExpr(columnAction, "IN", action)
+		del.AddExpr(columnSubsystem, "IN", subsystem)
+		del.AddExpr(columnModule, "IN", module)
+		del.AddExpr(columnAction, "IN", action)
 	}
 
 	query := bytes.NewBufferString(`DELETE FROM ` + table + ` WHERE ` + columnID + ` = $1`)
@@ -274,19 +275,19 @@ func setPermissions(db *sql.DB, ctx context.Context, table, columnID, columnSubs
 			if i != 0 {
 				fmt.Fprint(query, ", ")
 			}
-			delete.Next()
-			fmt.Fprintf(query, "(%s", delete.PlaceHolder())
-			delete.Next()
-			fmt.Fprintf(query, ",%s,", delete.PlaceHolder())
-			delete.Next()
-			fmt.Fprintf(query, "%s)", delete.PlaceHolder())
+			del.Next()
+			fmt.Fprintf(query, "(%s", del.PlaceHolder())
+			del.Next()
+			fmt.Fprintf(query, ",%s,", del.PlaceHolder())
+			del.Next()
+			fmt.Fprintf(query, "%s)", del.PlaceHolder())
 		}
 		fmt.Fprint(query, ")")
 	}
 
-	res, err = tx.Exec(query.String(), delete.Args()...)
+	res, err = tx.Exec(query.String(), del.Args()...)
 	if err != nil {
-		return 0, 0, fmt.Errorf("charond: error on redundant permission removal: %s", err.Error())
+		return 0, 0, pqErrorPrefix(err, "error on redundant permission removal")
 	}
 	deleted, err = res.RowsAffected()
 	if err != nil {
@@ -294,4 +295,13 @@ func setPermissions(db *sql.DB, ctx context.Context, table, columnID, columnSubs
 	}
 
 	return inserted, deleted, nil
+}
+
+func pqErrorPrefix(err error, pre string) error {
+	if pqerr, ok := err.(*pq.Error); ok {
+		pqerr.Message = pre + ": " + pqerr.Message
+		return pqerr
+	}
+
+	return errors.New(pre + ": " + err.Error())
 }
