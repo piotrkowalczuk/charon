@@ -9,6 +9,68 @@ import (
 	"github.com/piotrkowalczuk/charon/internal/session"
 )
 
+func TestSetUserGroupsHandler_SetGroups(t *testing.T) {
+	suite := &endToEndSuite{}
+	suite.setup(t)
+	defer suite.teardown(t)
+
+	ctx := testRPCServerLogin(t, suite)
+
+	createGroupResp, err := suite.charon.group.Create(ctx, &charonrpc.CreateGroupRequest{
+		Name: "existing-group",
+	})
+	if err != nil {
+		t.Fatalf("unexpected error: %s", err.Error())
+	}
+
+	_, err = suite.charon.user.SetGroups(ctx, &charonrpc.SetUserGroupsRequest{
+		Groups: []int64{createGroupResp.Group.Id},
+		UserId: 1,
+	})
+	if err != nil {
+		t.Fatalf("unexpected error: %s", err.Error())
+	}
+}
+
+func TestSetUserGroupsHandler_SetGroups_nonExistingGroup(t *testing.T) {
+	suite := &endToEndSuite{}
+	suite.setup(t)
+	defer suite.teardown(t)
+
+	ctx := testRPCServerLogin(t, suite)
+
+	_, err := suite.charon.user.SetGroups(ctx, &charonrpc.SetUserGroupsRequest{
+		Groups: []int64{1},
+		UserId: 1,
+	})
+	if err != nil {
+		t.Fatalf("unexpected error: %s", err.Error())
+	}
+}
+
+func TestSetUserGroupsHandler_SetGroups_nonExistingUser(t *testing.T) {
+	suite := &endToEndSuite{}
+	suite.setup(t)
+	defer suite.teardown(t)
+
+	ctx := testRPCServerLogin(t, suite)
+
+	createGroupResp, err := suite.charon.group.Create(ctx, &charonrpc.CreateGroupRequest{
+		Name: "existing-group",
+	})
+	if err != nil {
+		t.Fatalf("unexpected error: %s", err.Error())
+	}
+
+	_, err = suite.charon.user.SetGroups(ctx, &charonrpc.SetUserGroupsRequest{
+		Groups: []int64{createGroupResp.Group.Id},
+		UserId: 2,
+	})
+	if err != nil {
+		t.Fatalf("unexpected error: %s", err.Error())
+	}
+}
+
 func TestSetUserGroupsHandler_firewall_success(t *testing.T) {
 	data := []struct {
 		req charonrpc.SetUserGroupsRequest

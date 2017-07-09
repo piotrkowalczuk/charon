@@ -1,8 +1,10 @@
 package charond
 
 import (
+	"github.com/lib/pq"
 	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/charon/charonrpc"
+	"github.com/piotrkowalczuk/charon/internal/model"
 	"github.com/piotrkowalczuk/charon/internal/session"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
@@ -25,7 +27,14 @@ func (sugh *setUserGroupsHandler) SetGroups(ctx context.Context, req *charonrpc.
 
 	created, removed, err := sugh.repository.userGroups.Set(ctx, req.UserId, req.Groups)
 	if err != nil {
-		return nil, err
+		switch model.ErrorConstraint(err) {
+		case model.TableUserGroupsConstraintGroupIDForeignKey:
+			return nil, errf(codes.NotFound, "%s: group does not exist", err.(*pq.Error).Detail)
+		case model.TableUserGroupsConstraintUserIDForeignKey:
+			return nil, errf(codes.NotFound, "%s: user does not exist", err.(*pq.Error).Detail)
+		default:
+			return nil, err
+		}
 	}
 
 	return &charonrpc.SetUserGroupsResponse{
