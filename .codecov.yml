@@ -1,5 +1,7 @@
 comment:
   layout: header, changes, diff
+codecov:
+  branch: master
 coverage:
   ignore:
   - charonrpc/*.pb.go
