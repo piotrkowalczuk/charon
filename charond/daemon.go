@@ -158,7 +158,11 @@ func (d *Daemon) Run() (err error) {
 	}
 
 	if d.opts.MnemosyneTLS {
-		clientCreds, err := credentials.NewClientTLSFromFile(d.opts.MnemosyneTLSCertFile, "")
+		var serverNameOverride string
+		if d.opts.Test {
+			serverNameOverride = "test.local.tld"
+		}
+		clientCreds, err := credentials.NewClientTLSFromFile(d.opts.MnemosyneTLSCertFile, serverNameOverride)
 		if err != nil {
 			return err
 		}
