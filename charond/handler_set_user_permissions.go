@@ -1,8 +1,10 @@
 package charond
 
 import (
+	"github.com/lib/pq"
 	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/charon/charonrpc"
+	"github.com/piotrkowalczuk/charon/internal/model"
 	"github.com/piotrkowalczuk/charon/internal/session"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
@@ -25,7 +27,14 @@ func (suph *setUserPermissionsHandler) SetPermissions(ctx context.Context, req *
 
 	created, removed, err := suph.repository.user.SetPermissions(ctx, req.UserId, charon.NewPermissions(req.Permissions...)...)
 	if err != nil {
-		return nil, err
+		switch model.ErrorConstraint(err) {
+		case model.TableUserPermissionsConstraintUserIDForeignKey:
+			return nil, errf(codes.NotFound, "%s: user does not exist", err.(*pq.Error).Detail)
+		case model.TableUserPermissionsConstraintPermissionSubsystemPermissionModulePermissionActionForeignKey:
+			return nil, errf(codes.NotFound, "%s: permission does not exist", err.(*pq.Error).Detail)
+		default:
+			return nil, err
+		}
 	}
 
 	return &charonrpc.SetUserPermissionsResponse{
