@@ -21,7 +21,10 @@ func (iah *isAuthenticatedHandler) IsAuthenticated(ctx context.Context, req *cha
 
 	ses, err := iah.session.Get(ctx, &mnemosynerpc.GetRequest{AccessToken: req.AccessToken})
 	if err != nil {
-		return nil, handleMnemosyneError(err)
+		if grpc.Code(err) == codes.NotFound {
+			return &wrappers.BoolValue{Value: false}, nil
+		}
+		return nil, err
 	}
 	uid, err := session.ActorID(ses.Session.SubjectId).UserID()
 	if err != nil {
