@@ -3,6 +3,9 @@ package charond
 import (
 	"testing"
 
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+
 	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/charon/charonrpc"
 	"github.com/piotrkowalczuk/charon/internal/model"
@@ -44,7 +47,13 @@ func TestSetUserGroupsHandler_SetGroups_nonExistingGroup(t *testing.T) {
 		UserId: 1,
 	})
 	if err != nil {
-		t.Fatalf("unexpected error: %s", err.Error())
+		if st, ok := status.FromError(err); ok {
+			if st.Code() != codes.NotFound {
+				t.Fatalf("wrong error code, expected %s but got %s for error: %s", codes.NotFound, st.Code(), err.Error())
+			}
+		} else {
+			t.Errorf("wrong error type: %T", err)
+		}
 	}
 }
 
@@ -67,7 +76,13 @@ func TestSetUserGroupsHandler_SetGroups_nonExistingUser(t *testing.T) {
 		UserId: 2,
 	})
 	if err != nil {
-		t.Fatalf("unexpected error: %s", err.Error())
+		if st, ok := status.FromError(err); ok {
+			if st.Code() != codes.NotFound {
+				t.Fatalf("wrong error code, expected %s but got %s for error: %s", codes.NotFound, st.Code(), err.Error())
+			}
+		} else {
+			t.Errorf("wrong error type: %T", err)
+		}
 	}
 }
 
