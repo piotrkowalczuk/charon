@@ -1,5 +1,5 @@
-hash: 23d05d5a2510a44ee1c94f202588b11cd8a2f246d45f046945781ac8f424a1ba
-updated: 2017-07-04T18:38:58.057582832+02:00
+hash: 2d1c7920fd9455bc2efddc5b08c0b399239105bfcf7f8d1e63e270a82d15935e
+updated: 2017-07-17T18:35:53.724090566+02:00
 imports:
 - name: github.com/beorn7/perks
   version: 4c0e84591b9aa9e6dcfdf3e020114cd81f89d5f9
@@ -42,7 +42,7 @@ imports:
 - name: github.com/pborman/uuid
   version: a97ce2ca70fa5a848076093f05e639a89ca34d06
 - name: github.com/piotrkowalczuk/mnemosyne
-  version: c107dc3e5035cc4d47737b028c22b7fa3ea594a9
+  version: 2b01ea16c9d75a27eb108a08758e3673c4a6697f
   subpackages:
   - internal/cluster
   - internal/jump
@@ -56,7 +56,7 @@ imports:
 - name: github.com/piotrkowalczuk/pqcomp
   version: 631b19c36ded8bbe954cf8c15a0044c591033536
 - name: github.com/piotrkowalczuk/promgrpc
-  version: 056fdef9c141014fec040c34f08d5e7e31cb2965
+  version: 0e26f2ba72229007f089dc61245283130f7feaa9
 - name: github.com/piotrkowalczuk/qtypes
   version: cfa1f627c009055e907c566011e5c1b9559ae1e8
 - name: github.com/piotrkowalczuk/sklog
@@ -80,7 +80,7 @@ imports:
   - internal/bitbucket.org/ww/goautoneg
   - model
 - name: github.com/prometheus/procfs
-  version: e645f4e5aaa8506fc71d6edbc5c4ff02c04c46f2
+  version: 822d4a1f8edcbcbc71e8d1fd6527b12331a6d0ad
   subpackages:
   - xfs
 - name: github.com/stretchr/objx
@@ -102,7 +102,7 @@ imports:
   - internal/multierror
   - zapcore
 - name: golang.org/x/crypto
-  version: 51714a8c4ac1764f07ab4127d7f739351ced4759
+  version: 5ef0053f77724838734b6945dd364d3847e5de1d
   subpackages:
   - bcrypt
   - blowfish
@@ -162,7 +162,7 @@ imports:
   version: 379148ca0225df7a432012b8df0355c2a2063ac0
 testImports:
 - name: github.com/gopherjs/gopherjs
-  version: 2b1d432c8a82c9bff0b0baffaeb3ec6e92974112
+  version: dc374d32704510cb387457180ca9d5193978b555
   subpackages:
   - js
 - name: github.com/jtolds/gls

@@ -17,12 +17,12 @@ import:
 - package: github.com/pborman/uuid
   version: ~1.0.0
 - package: github.com/piotrkowalczuk/mnemosyne
-  version: ~0.11.4
+  version: ~0.11.5
   subpackages:
   - mnemosynerpc
 - package: github.com/piotrkowalczuk/pqcomp
 - package: github.com/piotrkowalczuk/promgrpc
-  version: ~0.5.1
+  version: ~0.6.0
 - package: github.com/piotrkowalczuk/sklog
 - package: github.com/prometheus/client_golang
   version: ~0.8.0

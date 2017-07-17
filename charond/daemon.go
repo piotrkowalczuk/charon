@@ -111,7 +111,14 @@ func TestDaemon(t *testing.T, opts TestDaemonOpts) (net.Addr, io.Closer) {
 
 // Run ...
 func (d *Daemon) Run() (err error) {
-	interceptor := promgrpc.NewInterceptor(promgrpc.InterceptorOpts{})
+	interceptor := promgrpc.NewInterceptor(promgrpc.InterceptorOpts{
+		Registerer: func() prometheus.Registerer {
+			if d.opts.Test {
+				return prometheus.NewRegistry()
+			}
+			return prometheus.DefaultRegisterer
+		}(),
+	})
 
 	clientOpts := []grpc.DialOption{
 		grpc.WithBlock(),
