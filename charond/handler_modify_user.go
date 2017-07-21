@@ -29,6 +29,9 @@ func (muh *modifyUserHandler) Modify(ctx context.Context, req *charonrpc.ModifyU
 
 	ent, err := muh.repository.user.FindOneByID(ctx, req.Id)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, grpc.Errorf(codes.NotFound, "user does not exists")
+		}
 		return nil, err
 	}
 
@@ -48,9 +51,6 @@ func (muh *modifyUserHandler) Modify(ctx context.Context, req *charonrpc.ModifyU
 		Username:    allocNilString(req.Username),
 	})
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, grpc.Errorf(codes.NotFound, "group does not exists")
-		}
 		switch model.ErrorConstraint(err) {
 		case model.TableUserConstraintUsernameUnique:
 			return nil, grpc.Errorf(codes.AlreadyExists, "user with such username already exists")
@@ -69,14 +69,14 @@ func (muh *modifyUserHandler) firewall(req *charonrpc.ModifyUserRequest, ent *mo
 		switch {
 		case ent.IsSuperuser:
 			return "only superuser can modify a superuser account", false
-		case ent.IsStaff && !isOwner && actor.Permissions.Contains(charon.UserCanModifyStaffAsStranger):
-			return "missing permission to modify an account as a stranger", false
-		case ent.IsStaff && isOwner && actor.Permissions.Contains(charon.UserCanModifyStaffAsOwner):
-			return "missing permission to modify an account as an owner", false
+		case ent.IsStaff && !isOwner && !actor.Permissions.Contains(charon.UserCanModifyStaffAsStranger):
+			return "missing permission to modify staff account as a stranger", false
+		case ent.IsStaff && isOwner && !actor.Permissions.Contains(charon.UserCanModifyStaffAsOwner):
+			return "missing permission to modify staff account as an owner", false
 		case req.IsSuperuser != nil && req.IsSuperuser.Valid:
 			return "only superuser can change existing account to superuser", false
 		case req.IsStaff != nil && req.IsStaff.Valid && !actor.Permissions.Contains(charon.UserCanCreateStaff):
-			return "user is not allowed to create user with is_staff property that has custom value", false
+			return "missing permission to change existing account to staff", false
 		}
 	}
 
