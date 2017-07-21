@@ -20,6 +20,7 @@ func TestBelongsToHandler_BelongsTo(t *testing.T) {
 	defer suite.teardown(t)
 
 	ctx := testRPCServerLogin(t, suite)
+
 	resAct, err := suite.charon.auth.Actor(timeout(ctx), &wrappers.StringValue{})
 	if err != nil {
 		t.Fatalf("unexpected error: %s", err.Error())

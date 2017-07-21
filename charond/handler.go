@@ -56,8 +56,8 @@ func (h *handler) retrieveActor(ctx context.Context) (act *session.Actor, err er
 	res, err = h.session.Context(ctx, none())
 	if err != nil {
 		// TODO: make it better ;(
-		if peer, ok := peer.FromContext(ctx); ok {
-			if strings.HasPrefix(peer.Addr.String(), "127.0.0.1") {
+		if p, ok := peer.FromContext(ctx); ok {
+			if strings.HasPrefix(p.Addr.String(), "127.0.0.1") {
 				return &session.Actor{
 					User:    &model.UserEntity{},
 					IsLocal: true,

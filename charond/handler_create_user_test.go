@@ -1,6 +1,7 @@
 package charond
 
 import (
+	"context"
 	"testing"
 
 	"github.com/piotrkowalczuk/charon"
@@ -39,6 +40,18 @@ func TestCreateUserHandler_Create(t *testing.T) {
 			}
 			if res.User.LastName != req.LastName {
 				t.Errorf("wrong last name, expected %#v but got %#v", req.LastName, res.User.LastName)
+			}
+		},
+		"local": func(t *testing.T) {
+			req := &charonrpc.CreateUserRequest{
+				Username:      "username-local",
+				FirstName:     "first-name-local",
+				LastName:      "last-name-local",
+				PlainPassword: "plain-password-local",
+			}
+			_, err := suite.charon.user.Create(timeout(context.Background()), req)
+			if err != nil {
+				t.Fatalf("unexpected error: %s", err.Error())
 			}
 		},
 		"same-username-twice": func(t *testing.T) {
