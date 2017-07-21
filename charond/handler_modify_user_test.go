@@ -26,13 +26,13 @@ func TestModifyUserHandler_Firewall(t *testing.T) {
 			user:   model.UserEntity{ID: 1, IsSuperuser: true},
 		},
 		{
-			hint:   "superuser should be able to promote an User",
+			hint:   "superuser should be able to promote an user",
 			req:    charonrpc.ModifyUserRequest{Id: 2, IsSuperuser: &ntypes.Bool{Bool: true, Valid: true}},
 			entity: model.UserEntity{ID: 2},
 			user:   model.UserEntity{ID: 1, IsSuperuser: true},
 		},
 		{
-			hint:   "superuser should be able to promote a staff User",
+			hint:   "superuser should be able to promote a staff user",
 			req:    charonrpc.ModifyUserRequest{Id: 2, IsSuperuser: &ntypes.Bool{Bool: true, Valid: true}},
 			entity: model.UserEntity{ID: 2},
 			user:   model.UserEntity{ID: 1, IsSuperuser: true},
@@ -44,14 +44,14 @@ func TestModifyUserHandler_Firewall(t *testing.T) {
 			user:   model.UserEntity{ID: 1, IsSuperuser: true},
 		},
 		{
-			hint:   "if User has permission to modify an User as a stranger, he should be able to do that",
+			hint:   "if user has permission to modify an user as a stranger, he should be able to do that",
 			req:    charonrpc.ModifyUserRequest{Id: 2},
 			entity: model.UserEntity{ID: 2},
 			user:   model.UserEntity{ID: 1},
 			perm:   charon.Permissions{charon.UserCanModifyAsStranger},
 		},
 		{
-			hint:   "if User has permission to modify an User as an owner, he should be able to do that",
+			hint:   "if user has permission to modify an user as an owner, he should be able to do that",
 			req:    charonrpc.ModifyUserRequest{Id: 1},
 			entity: model.UserEntity{ID: 1},
 			user:   model.UserEntity{ID: 1},

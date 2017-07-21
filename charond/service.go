@@ -100,7 +100,7 @@ func initPermissionRegistry(r model.PermissionProvider, permissions charon.Permi
 		sklog.Fatal(logger, err)
 	}
 
-	sklog.Info(logger, "charon Permissions has been registered", "created", created, "untouched", untouched, "removed", removed)
+	sklog.Info(logger, "charon permissions has been registered", "created", created, "untouched", untouched, "removed", removed)
 
 	return
 }

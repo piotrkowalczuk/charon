@@ -29,8 +29,8 @@ func (cuh *createUserHandler) Create(ctx context.Context, req *charonrpc.CreateU
 				return nil, grpc.Errorf(codes.AlreadyExists, "initial superuser account already exists")
 			}
 
-			// If session.Actor does not exists, even single User does not exists and request contains IsSuperuser equals to true.
-			// Then move forward, its request that is trying to create first User (that needs to be a superuser).
+			// If session.Actor does not exists, even single user does not exists and request contains IsSuperuser equals to true.
+			// Then move forward, its request that is trying to create first user (that needs to be a superuser).
 		} else {
 			return nil, err
 		}
@@ -48,7 +48,7 @@ func (cuh *createUserHandler) Create(ctx context.Context, req *charonrpc.CreateU
 	} else {
 		// TODO: only one superuser can be defined so this else statement makes no sense in this place.
 		if !act.User.IsSuperuser {
-			return nil, grpc.Errorf(codes.PermissionDenied, "only superuser can create an User with manualy defined secure password")
+			return nil, grpc.Errorf(codes.PermissionDenied, "only superuser can create an user with manually defined secure password")
 		}
 	}
 
@@ -83,13 +83,13 @@ func (cuh *createUserHandler) firewall(req *charonrpc.CreateUserRequest, act *se
 		return nil
 	}
 	if req.IsSuperuser.BoolOr(false) {
-		return grpc.Errorf(codes.PermissionDenied, "User is not allowed to create superuser")
+		return grpc.Errorf(codes.PermissionDenied, "user is not allowed to create superuser")
 	}
 	if req.IsStaff.BoolOr(false) && !act.Permissions.Contains(charon.UserCanCreateStaff) {
-		return grpc.Errorf(codes.PermissionDenied, "User is not allowed to create staff User")
+		return grpc.Errorf(codes.PermissionDenied, "user is not allowed to create staff user")
 	}
 	if !act.Permissions.Contains(charon.UserCanCreateStaff, charon.UserCanCreate) {
-		return grpc.Errorf(codes.PermissionDenied, "User is not allowed to create another User")
+		return grpc.Errorf(codes.PermissionDenied, "user is not allowed to create another user")
 	}
 
 	return nil

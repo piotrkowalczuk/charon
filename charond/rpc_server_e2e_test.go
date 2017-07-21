@@ -64,12 +64,12 @@ func testRPCServerLogin(t *testing.T, suite *endToEndSuite) context.Context {
 func testRPCServerCreateUser(t *testing.T, suite *endToEndSuite, ctx context.Context, req *charonrpc.CreateUserRequest) *charonrpc.CreateUserResponse {
 	res, err := suite.charon.user.Create(ctx, req)
 	if err != nil {
-		t.Fatalf("unexpected create User error: %s", err.Error())
+		t.Fatalf("unexpected create user error: %s", err.Error())
 	}
 	if res.User.Id == 0 {
-		t.Fatal("created User wrong id")
+		t.Fatal("created user wrong id")
 	} else {
-		t.Logf("User has been created with id %d", res.User.Id)
+		t.Logf("user has been created with id %d", res.User.Id)
 	}
 
 	return res
@@ -101,7 +101,7 @@ func testRPCServerRegisterPermissions(t *testing.T, suite *endToEndSuite, ctx co
 func testRPCServerSetUserPermissions(t *testing.T, suite *endToEndSuite, ctx context.Context, req *charonrpc.SetUserPermissionsRequest) *charonrpc.SetUserPermissionsResponse {
 	res, err := suite.charon.user.SetPermissions(ctx, req)
 	if err != nil {
-		t.Fatalf("unexpected set User Permissions error: %s", err.Error())
+		t.Fatalf("unexpected set user permissions error: %s", err.Error())
 	}
 
 	return res
@@ -110,7 +110,7 @@ func testRPCServerSetUserPermissions(t *testing.T, suite *endToEndSuite, ctx con
 func testRPCServerSetUserGroups(t *testing.T, suite *endToEndSuite, ctx context.Context, req *charonrpc.SetUserGroupsRequest) *charonrpc.SetUserGroupsResponse {
 	res, err := suite.charon.user.SetGroups(ctx, req)
 	if err != nil {
-		t.Fatalf("unexpected set User groups error: %s", err.Error())
+		t.Fatalf("unexpected set user groups error: %s", err.Error())
 	}
 
 	return res

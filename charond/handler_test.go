@@ -35,7 +35,7 @@ func TestHandler(t *testing.T) {
 		h.repository.user = userRepositoryMock
 		h.repository.permission = permissionRepositoryMock
 
-		Convey("As unauthenticated User", func() {
+		Convey("As unauthenticated user", func() {
 			ctx = context.Background()
 			sessionMock.On("Context", mock.Anything, none(), mock.Anything).
 				Return(nil, errors.New("mnemosyned: test error")).
@@ -48,7 +48,7 @@ func TestHandler(t *testing.T) {
 				So(act, ShouldBeNil)
 			})
 		})
-		Convey("As authenticated User", func() {
+		Convey("As authenticated user", func() {
 			id = 7856282
 			tkn = "0000000001hash"
 			ctx = mnemosyne.NewAccessTokenContext(context.Background(), tkn)
@@ -61,7 +61,7 @@ func TestHandler(t *testing.T) {
 				}, nil).
 				Once()
 
-			Convey("When User exists", func() {
+			Convey("When user exists", func() {
 				userRepositoryMock.On("FindOneByID", mock.Anything, id).
 					Return(&model.UserEntity{ID: id}, nil).
 					Once()

@@ -19,7 +19,7 @@ func (ig *isGrantedHandler) IsGranted(ctx context.Context, req *charonrpc.IsGran
 		return nil, grpc.Errorf(codes.InvalidArgument, "permission cannot be empty")
 	}
 	if req.UserId < 1 {
-		return nil, grpc.Errorf(codes.InvalidArgument, "User id needs to be greater than zero")
+		return nil, grpc.Errorf(codes.InvalidArgument, "user id needs to be greater than zero")
 	}
 
 	act, err := ig.retrieveActor(ctx)

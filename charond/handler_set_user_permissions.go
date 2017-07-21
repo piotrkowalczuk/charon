@@ -53,5 +53,5 @@ func (suph *setUserPermissionsHandler) firewall(req *charonrpc.SetUserPermission
 		return nil
 	}
 
-	return grpc.Errorf(codes.PermissionDenied, "User Permissions cannot be set, missing permission")
+	return grpc.Errorf(codes.PermissionDenied, "user permissions cannot be set, missing permission")
 }

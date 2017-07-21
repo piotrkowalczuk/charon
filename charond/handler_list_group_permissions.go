@@ -21,7 +21,7 @@ func (luph *listGroupPermissionsHandler) ListPermissions(ctx context.Context, re
 	permissions, err := luph.repository.permission.FindByGroupID(ctx, req.Id)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			sklog.Debug(luph.logger, "group Permissions retrieved", "group_id", req.Id, "count", len(permissions))
+			sklog.Debug(luph.logger, "group permissions retrieved", "group_id", req.Id, "count", len(permissions))
 
 			return &charonrpc.ListGroupPermissionsResponse{}, nil
 		}
@@ -46,5 +46,5 @@ func (luph *listGroupPermissionsHandler) firewall(req *charonrpc.ListGroupPermis
 		return nil
 	}
 
-	return grpc.Errorf(codes.PermissionDenied, "list of group Permissions cannot be retrieved, missing permission")
+	return grpc.Errorf(codes.PermissionDenied, "list of group permissions cannot be retrieved, missing permission")
 }

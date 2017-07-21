@@ -203,7 +203,7 @@ func (d *Daemon) Run() (err error) {
 		if _, err = createDummyTestUser(context.TODO(), repos.user, passwordHasher); err != nil {
 			return
 		}
-		sklog.Info(d.logger, "test super User has been created")
+		sklog.Info(d.logger, "test super user has been created")
 	}
 
 	permissionReg := initPermissionRegistry(repos.permission, charon.AllPermissions, d.logger)

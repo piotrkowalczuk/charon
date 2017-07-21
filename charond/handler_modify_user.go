@@ -19,7 +19,7 @@ type modifyUserHandler struct {
 
 func (muh *modifyUserHandler) Modify(ctx context.Context, req *charonrpc.ModifyUserRequest) (*charonrpc.ModifyUserResponse, error) {
 	if req.Id <= 0 {
-		return nil, grpc.Errorf(codes.InvalidArgument, "User cannot be modified, invalid ID: %d", req.Id)
+		return nil, grpc.Errorf(codes.InvalidArgument, "user cannot be modified, invalid ID: %d", req.Id)
 	}
 
 	act, err := muh.retrieveActor(ctx)
@@ -53,7 +53,7 @@ func (muh *modifyUserHandler) Modify(ctx context.Context, req *charonrpc.ModifyU
 		}
 		switch model.ErrorConstraint(err) {
 		case model.TableUserConstraintUsernameUnique:
-			return nil, grpc.Errorf(codes.AlreadyExists, "User with such username already exists")
+			return nil, grpc.Errorf(codes.AlreadyExists, "user with such username already exists")
 		default:
 			return nil, err
 		}
@@ -76,7 +76,7 @@ func (muh *modifyUserHandler) firewall(req *charonrpc.ModifyUserRequest, ent *mo
 		case req.IsSuperuser != nil && req.IsSuperuser.Valid:
 			return "only superuser can change existing account to superuser", false
 		case req.IsStaff != nil && req.IsStaff.Valid && !actor.Permissions.Contains(charon.UserCanCreateStaff):
-			return "User is not allowed to create User with is_staff property that has custom value", false
+			return "user is not allowed to create user with is_staff property that has custom value", false
 		}
 	}
 

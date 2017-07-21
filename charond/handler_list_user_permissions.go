@@ -21,7 +21,7 @@ func (luph *listUserPermissionsHandler) ListPermissions(ctx context.Context, req
 	permissions, err := luph.repository.permission.FindByUserID(ctx, req.Id)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			sklog.Debug(luph.logger, "User Permissions retrieved", "user_id", req.Id, "count", len(permissions))
+			sklog.Debug(luph.logger, "user permissions retrieved", "user_id", req.Id, "count", len(permissions))
 
 			return &charonrpc.ListUserPermissionsResponse{}, nil
 		}
@@ -46,5 +46,5 @@ func (luph *listUserPermissionsHandler) firewall(req *charonrpc.ListUserPermissi
 		return nil
 	}
 
-	return grpc.Errorf(codes.PermissionDenied, "list of User Permissions cannot be retrieved, missing permission")
+	return grpc.Errorf(codes.PermissionDenied, "list of user permissions cannot be retrieved, missing permission")
 }

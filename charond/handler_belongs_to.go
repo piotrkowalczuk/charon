@@ -19,7 +19,7 @@ func (bth *belongsToHandler) BelongsTo(ctx context.Context, req *charonrpc.Belon
 		return nil, grpc.Errorf(codes.InvalidArgument, "group id needs to be greater than zero")
 	}
 	if req.UserId < 1 {
-		return nil, grpc.Errorf(codes.InvalidArgument, "User id needs to be greater than zero")
+		return nil, grpc.Errorf(codes.InvalidArgument, "user id needs to be greater than zero")
 	}
 
 	act, err := bth.retrieveActor(ctx)

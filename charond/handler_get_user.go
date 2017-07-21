@@ -24,7 +24,7 @@ func (guh *getUserHandler) Get(ctx context.Context, req *charonrpc.GetUserReques
 	ent, err := guh.repository.user.FindOneByID(ctx, req.Id)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, grpc.Errorf(codes.NotFound, "User does not exists")
+			return nil, grpc.Errorf(codes.NotFound, "user does not exists")
 		}
 		return nil, err
 	}
@@ -40,28 +40,28 @@ func (guh *getUserHandler) firewall(req *charonrpc.GetUserRequest, act *session.
 		return nil
 	}
 	if ent.IsSuperuser {
-		return grpc.Errorf(codes.PermissionDenied, "only superuser is permited to retrieve other superuser")
+		return grpc.Errorf(codes.PermissionDenied, "only superuser is permitted to retrieve other superuser")
 	}
 	if ent.IsStaff {
 		if ent.CreatedBy.Int64Or(0) == act.User.ID {
 			if !act.Permissions.Contains(charon.UserCanRetrieveStaffAsOwner) {
-				return grpc.Errorf(codes.PermissionDenied, "staff User cannot be retrieved as an owner, missing permission")
+				return grpc.Errorf(codes.PermissionDenied, "staff user cannot be retrieved as an owner, missing permission")
 			}
 			return nil
 		}
 		if !act.Permissions.Contains(charon.UserCanRetrieveStaffAsStranger) {
-			return grpc.Errorf(codes.PermissionDenied, "staff User cannot be retrieved as a stranger, missing permission")
+			return grpc.Errorf(codes.PermissionDenied, "staff user cannot be retrieved as a stranger, missing permission")
 		}
 		return nil
 	}
 	if ent.CreatedBy.Int64Or(0) == act.User.ID {
 		if !act.Permissions.Contains(charon.UserCanRetrieveAsOwner) {
-			return grpc.Errorf(codes.PermissionDenied, "User cannot be retrieved as an owner, missing permission")
+			return grpc.Errorf(codes.PermissionDenied, "user cannot be retrieved as an owner, missing permission")
 		}
 		return nil
 	}
 	if !act.Permissions.Contains(charon.UserCanRetrieveAsStranger) {
-		return grpc.Errorf(codes.PermissionDenied, "User cannot be retrieved as a stranger, missing permission")
+		return grpc.Errorf(codes.PermissionDenied, "user cannot be retrieved as a stranger, missing permission")
 	}
 	return nil
 }
