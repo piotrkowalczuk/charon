@@ -122,6 +122,12 @@ func (pr *PermissionRepository) findOneStmt() (*sql.Stmt, error) {
 	)
 }
 
+var (
+	ErrEmptySliceOfPermissions = errors.New("empty slice, permissions cannot be registered")
+	ErrEmptySubsystem          = errors.New("subsystem name is empty string, permissions cannot be registered")
+	ErrorInconsistentSubsystem = errors.New("provided permissions do not belong to one subsystem, permissions cannot be registered")
+)
+
 // Register ...
 func (pr *PermissionRepository) Register(ctx context.Context, permissions charon.Permissions) (created, unt, removed int64, err error) {
 	var (
@@ -134,17 +140,17 @@ func (pr *PermissionRepository) Register(ctx context.Context, permissions charon
 		affected       int64
 	)
 	if len(permissions) == 0 {
-		return 0, 0, 0, errors.New("empty slice, permissions cannot be registered")
+		return 0, 0, 0, ErrEmptySliceOfPermissions
 	}
 
 	subsystem = permissions[0].Subsystem()
 	if subsystem == "" {
-		return 0, 0, 0, errors.New("subsystem name is empty string, permissions cannot be registered")
+		return 0, 0, 0, ErrEmptySubsystem
 	}
 
 	for _, p := range permissions {
 		if p.Subsystem() != subsystem {
-			return 0, 0, 0, errors.New("provided permissions do not belong to one subsystem, permissions cannot be registered")
+			return 0, 0, 0, ErrorInconsistentSubsystem
 		}
 	}
 

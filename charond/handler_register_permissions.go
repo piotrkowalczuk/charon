@@ -5,7 +5,6 @@ import (
 	"github.com/piotrkowalczuk/charon/charonrpc"
 	"github.com/piotrkowalczuk/charon/internal/model"
 	"golang.org/x/net/context"
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 )
 
@@ -18,7 +17,12 @@ func (rph *registerPermissionsHandler) Register(ctx context.Context, req *charon
 	permissions := charon.NewPermissions(req.Permissions...)
 	created, untouched, removed, err := rph.registry.Register(ctx, permissions)
 	if err != nil {
-		return nil, grpc.Errorf(codes.Internal, err.Error())
+		switch err {
+		case model.ErrEmptySliceOfPermissions, model.ErrEmptySubsystem, model.ErrorInconsistentSubsystem:
+			return nil, errf(codes.InvalidArgument, err.Error())
+		default:
+			return nil, err
+		}
 	}
 
 	return &charonrpc.RegisterPermissionsResponse{
