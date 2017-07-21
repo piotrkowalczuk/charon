@@ -62,20 +62,20 @@ func (muh *modifyUserHandler) Modify(ctx context.Context, req *charonrpc.ModifyU
 	return muh.response(ent)
 }
 
-func (muh *modifyUserHandler) firewall(req *charonrpc.ModifyUserRequest, ent *model.UserEntity, actor *session.Actor) (string, bool) {
-	isOwner := actor.User.ID == ent.ID
+func (muh *modifyUserHandler) firewall(req *charonrpc.ModifyUserRequest, ent *model.UserEntity, act *session.Actor) (string, bool) {
+	isOwner := act.User.ID == ent.ID
 
-	if !actor.User.IsSuperuser {
+	if !act.User.IsSuperuser {
 		switch {
 		case ent.IsSuperuser:
 			return "only superuser can modify a superuser account", false
-		case ent.IsStaff && !isOwner && !actor.Permissions.Contains(charon.UserCanModifyStaffAsStranger):
+		case ent.IsStaff && !isOwner && !act.Permissions.Contains(charon.UserCanModifyStaffAsStranger):
 			return "missing permission to modify staff account as a stranger", false
-		case ent.IsStaff && isOwner && !actor.Permissions.Contains(charon.UserCanModifyStaffAsOwner):
+		case ent.IsStaff && isOwner && !act.Permissions.Contains(charon.UserCanModifyStaffAsOwner):
 			return "missing permission to modify staff account as an owner", false
 		case req.IsSuperuser != nil && req.IsSuperuser.Valid:
 			return "only superuser can change existing account to superuser", false
-		case req.IsStaff != nil && req.IsStaff.Valid && !actor.Permissions.Contains(charon.UserCanCreateStaff):
+		case req.IsStaff != nil && req.IsStaff.Valid && !act.Permissions.Contains(charon.UserCanCreateStaff):
 			return "missing permission to change existing account to staff", false
 		}
 	}
