@@ -1,8 +1,8 @@
-hash: 4657952e113c00081487852801018111b213c0b4a4cc82d1ec9847a0f9add9d5
-updated: 2017-05-29T16:47:33.804213818+02:00
+hash: a29c5dbd5758d51d33a0f1b0d66d161c7d1e0b93f0562040fbe8ccb6ca8e74ec
+updated: 2017-07-21T19:50:27.033464999+02:00
 imports:
 - name: github.com/golang/protobuf
-  version: 9f174c986221c608fb5143bd623b6076a71feae3
+  version: 7a211bcf3bce0e3f1d74f9894916e6f116ae83b4
   subpackages:
   - proto
   - ptypes
@@ -14,7 +14,7 @@ imports:
 - name: github.com/piotrkowalczuk/ntypespqt
   version: fccd84359508315ece20494381cb7802ab34ab3b
 - name: github.com/piotrkowalczuk/pqt
-  version: 251e7f0fa7d4b29ae53f11bfbc901442371bcfde
+  version: 3647e5ba2b64deb699a09ea4c78736af65c3931e
   subpackages:
   - pqtgo
   - pqtsql

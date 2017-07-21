@@ -129,13 +129,13 @@ func (_m *MockGroupProvider) Create(ctx context.Context, createdBy int64, name s
 	return r0, r1
 }
 
-// UpdateOneByID provides a mock function with given fields: ctx, id, updatedBy, name, description
-func (_m *MockGroupProvider) UpdateOneByID(ctx context.Context, id int64, updatedBy int64, name *ntypes.String, description *ntypes.String) (*GroupEntity, error) {
-	ret := _m.Called(ctx, id, updatedBy, name, description)
+// UpdateOneByID provides a mock function with given fields: _a0, _a1, _a2
+func (_m *MockGroupProvider) UpdateOneByID(_a0 context.Context, _a1 int64, _a2 *GroupPatch) (*GroupEntity, error) {
+	ret := _m.Called(_a0, _a1, _a2)
 
 	var r0 *GroupEntity
-	if rf, ok := ret.Get(0).(func(context.Context, int64, int64, *ntypes.String, *ntypes.String) *GroupEntity); ok {
-		r0 = rf(ctx, id, updatedBy, name, description)
+	if rf, ok := ret.Get(0).(func(context.Context, int64, *GroupPatch) *GroupEntity); ok {
+		r0 = rf(_a0, _a1, _a2)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*GroupEntity)
@@ -143,8 +143,8 @@ func (_m *MockGroupProvider) UpdateOneByID(ctx context.Context, id int64, update
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, int64, int64, *ntypes.String, *ntypes.String) error); ok {
-		r1 = rf(ctx, id, updatedBy, name, description)
+	if rf, ok := ret.Get(1).(func(context.Context, int64, *GroupPatch) error); ok {
+		r1 = rf(_a0, _a1, _a2)
 	} else {
 		r1 = ret.Error(1)
 	}

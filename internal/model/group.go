@@ -3,8 +3,6 @@ package model
 import (
 	"context"
 	"database/sql"
-	"errors"
-	"fmt"
 	"strings"
 
 	"github.com/golang/protobuf/ptypes"
@@ -12,7 +10,6 @@ import (
 	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/charon/charonrpc"
 	"github.com/piotrkowalczuk/ntypes"
-	"github.com/piotrkowalczuk/pqcomp"
 )
 
 // Message maps entity into protobuf message.
@@ -54,7 +51,7 @@ type GroupProvider interface {
 	// Create ...
 	Create(ctx context.Context, createdBy int64, name string, description *ntypes.String) (*GroupEntity, error)
 	// updateOneByID ...
-	UpdateOneByID(ctx context.Context, id, updatedBy int64, name, description *ntypes.String) (*GroupEntity, error)
+	UpdateOneByID(context.Context, int64, *GroupPatch) (*GroupEntity, error)
 	// DeleteByID ...
 	DeleteOneByID(context.Context, int64) (int64, error)
 	// IsGranted ...
@@ -148,55 +145,6 @@ func (gr *GroupRepository) Create(ctx context.Context, createdBy int64, name str
 	}
 
 	return gr.Insert(ctx, ent)
-}
-
-// UpdateOneByID ...
-func (gr *GroupRepository) UpdateOneByID(ctx context.Context, id, updatedBy int64, name, description *ntypes.String) (*GroupEntity, error) {
-	var (
-		err    error
-		query  string
-		entity GroupEntity
-	)
-
-	comp := pqcomp.New(2, 2)
-	comp.AddArg(id)
-	comp.AddArg(updatedBy)
-	comp.AddExpr("g.Name", pqcomp.Equal, name)
-	comp.AddExpr("g.description", pqcomp.Equal, description)
-
-	if comp.Len() == 0 {
-		return nil, errors.New("nothing to update")
-	}
-
-	query = `UPDATE ` + TableGroup + ` SET `
-	for comp.Next() {
-		if !comp.First() {
-			query += ", "
-		}
-
-		query += fmt.Sprintf("%s %s %s", comp.Key(), comp.Oper(), comp.PlaceHolder())
-	}
-
-	query += `
-		, updated_by = $2, updated_at = NOW()
-		WHERE id = $1
-		RETURNING ` + strings.Join(TableGroupColumns, ",") + `
-	`
-
-	err = gr.DB.QueryRowContext(ctx, query, comp.Args()).Scan(
-		&entity.CreatedAt,
-		&entity.CreatedBy,
-		&entity.Description,
-		&entity.ID,
-		&entity.Name,
-		&entity.UpdatedAt,
-		&entity.UpdatedBy,
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	return &entity, nil
 }
 
 // IsGranted ...

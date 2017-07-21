@@ -72,12 +72,12 @@ func databaseTablePermission(user, group *pqt.Table) (*pqt.Table, *pqt.Table, *p
 		permission,
 		pqt.WithBidirectional(),
 		pqt.WithInversedForeignKey(
-			pqt.Columns{subsystem, module, action},
 			pqt.Columns{
 				notNullText("permission_subsystem", "subsystem"),
 				notNullText("permission_module", "module"),
 				notNullText("permission_action", "action"),
 			},
+			pqt.Columns{subsystem, module, action},
 		),
 	), pqt.WithNotNull())
 
@@ -92,12 +92,12 @@ func databaseTablePermission(user, group *pqt.Table) (*pqt.Table, *pqt.Table, *p
 			permission,
 			pqt.WithBidirectional(),
 			pqt.WithInversedForeignKey(
-				pqt.Columns{subsystem, module, action},
 				pqt.Columns{
 					notNullText("permission_subsystem", "subsystem"),
 					notNullText("permission_module", "module"),
 					notNullText("permission_action", "action"),
 				},
+				pqt.Columns{subsystem, module, action},
 			),
 		), pqt.WithNotNull())
 
