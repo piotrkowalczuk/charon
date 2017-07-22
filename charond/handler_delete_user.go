@@ -19,7 +19,7 @@ type deleteUserHandler struct {
 
 func (duh *deleteUserHandler) Delete(ctx context.Context, req *charonrpc.DeleteUserRequest) (*wrappers.BoolValue, error) {
 	if req.Id <= 0 {
-		return nil, grpc.Errorf(codes.InvalidArgument, "user cannot be deleted, invalid ID: %d", req.Id)
+		return nil, grpc.Errorf(codes.InvalidArgument, "user cannot be deleted, invalid id: %d", req.Id)
 	}
 
 	act, err := duh.retrieveActor(ctx)
@@ -28,6 +28,9 @@ func (duh *deleteUserHandler) Delete(ctx context.Context, req *charonrpc.DeleteU
 	}
 	ent, err := duh.repository.user.FindOneByID(ctx, req.Id)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, grpc.Errorf(codes.NotFound, "user does not exists")
+		}
 		return nil, err
 	}
 	if err = duh.firewall(req, act, ent); err != nil {
@@ -36,9 +39,6 @@ func (duh *deleteUserHandler) Delete(ctx context.Context, req *charonrpc.DeleteU
 
 	affected, err := duh.repository.user.DeleteOneByID(ctx, req.Id)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, grpc.Errorf(codes.NotFound, "user does not exists")
-		}
 		return nil, err
 	}
 
@@ -48,8 +48,11 @@ func (duh *deleteUserHandler) Delete(ctx context.Context, req *charonrpc.DeleteU
 }
 
 func (duh *deleteUserHandler) firewall(req *charonrpc.DeleteUserRequest, act *session.Actor, ent *model.UserEntity) error {
+	if act.IsLocal {
+		return errf(codes.PermissionDenied, "user cannot be removed from localhost")
+	}
 	if act.User.ID == ent.ID {
-		return grpc.Errorf(codes.PermissionDenied, "user is not permited to remove himself")
+		return grpc.Errorf(codes.PermissionDenied, "user is not permitted to remove himself")
 	}
 	if act.User.IsSuperuser {
 		return nil

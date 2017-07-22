@@ -1,14 +1,15 @@
 package charond
 
 import (
+	"context"
 	"flag"
 	"os"
 	"testing"
-
-	"context"
 	"time"
 
 	_ "github.com/lib/pq"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 var (
@@ -32,4 +33,22 @@ func getStringEnvOr(env, or string) string {
 func timeout(ctx context.Context) context.Context {
 	ctx, _ = context.WithTimeout(ctx, 5*time.Second)
 	return ctx
+}
+
+func assertErrorCode(t *testing.T, err error, code codes.Code, msg string) {
+	t.Helper()
+
+	if err == nil {
+		t.Fatal("expected error")
+	}
+	if st, ok := status.FromError(err); ok {
+		if st.Code() != code {
+			t.Fatalf("wrong error code, expected '%s' but got '%s' for error: %s", code, st.Code(), err.Error())
+		}
+		if st.Message() != msg {
+			t.Fatalf("wrong error message, expected '%s' but got '%s' for error: %s", msg, st.Message(), err.Error())
+		}
+	} else {
+		t.Fatalf("expected grpc error, got %T", err)
+	}
 }

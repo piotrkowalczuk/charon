@@ -75,6 +75,10 @@ func (h *handler) retrieveActor(ctx context.Context) (act *session.Actor, err er
 	act = &session.Actor{}
 	act.User, err = h.repository.user.FindOneByID(ctx, userID)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			err = errf(codes.PermissionDenied, "actor does not exists")
+			return
+		}
 		return
 	}
 	entities, err = h.repository.permission.FindByUserID(ctx, userID)
