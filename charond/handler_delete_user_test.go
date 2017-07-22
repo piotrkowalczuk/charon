@@ -105,6 +105,52 @@ func TestDeleteUserHandler_Delete(t *testing.T) {
 				t.Fatalf("wrong error, expected '%s' but got '%s'", context.DeadlineExceeded.Error(), err.Error())
 			}
 		},
+		"cannot-remove-delete-query-timeout": func(t *testing.T) {
+			upm.On("FindOneByID", mock.Anything, int64(10)).Return(&model.UserEntity{ID: 10}, nil).
+				Once()
+			upm.On("FindOneByID", mock.Anything, int64(11)).Return(&model.UserEntity{ID: 11}, nil).
+				Once()
+			ppm.On("FindByUserID", mock.Anything, int64(10)).Return([]*model.PermissionEntity{
+				{
+					Subsystem: charon.UserCanDeleteAsStranger.Subsystem(),
+					Module:    charon.UserCanDeleteAsStranger.Module(),
+					Action:    charon.UserCanDeleteAsStranger.Action(),
+				},
+			}, nil).
+				Once()
+			upm.On("DeleteOneByID", mock.Anything, int64(11)).Return(int64(0), context.DeadlineExceeded).
+				Once()
+			sessionOnContext(t, 10)
+			_, err := h.Delete(context.Background(), &charonrpc.DeleteUserRequest{Id: 11})
+			if err == nil {
+				t.Fatal("expected error")
+			}
+			if err != context.DeadlineExceeded {
+				t.Fatalf("wrong error, expected '%s' but got '%s'", context.DeadlineExceeded.Error(), err.Error())
+			}
+		},
+		"cannot-remove-find-user-query-timeout": func(t *testing.T) {
+			upm.On("FindOneByID", mock.Anything, int64(10)).Return(&model.UserEntity{ID: 10}, nil).
+				Once()
+			upm.On("FindOneByID", mock.Anything, int64(11)).Return(nil, context.DeadlineExceeded).
+				Once()
+			ppm.On("FindByUserID", mock.Anything, int64(10)).Return([]*model.PermissionEntity{
+				{
+					Subsystem: charon.UserCanDeleteAsStranger.Subsystem(),
+					Module:    charon.UserCanDeleteAsStranger.Module(),
+					Action:    charon.UserCanDeleteAsStranger.Action(),
+				},
+			}, nil).
+				Once()
+			sessionOnContext(t, 10)
+			_, err := h.Delete(context.Background(), &charonrpc.DeleteUserRequest{Id: 11})
+			if err == nil {
+				t.Fatal("expected error")
+			}
+			if err != context.DeadlineExceeded {
+				t.Fatalf("wrong error, expected '%s' but got '%s'", context.DeadlineExceeded.Error(), err.Error())
+			}
+		},
 		"cannot-remove-itself": func(t *testing.T) {
 			upm.On("FindOneByID", mock.Anything, int64(10)).Return(&model.UserEntity{ID: 10}, nil).
 				Times(2)
@@ -261,6 +307,79 @@ func TestDeleteUserHandler_Delete(t *testing.T) {
 			sessionOnContext(t, 10)
 			_, err := h.Delete(context.Background(), &charonrpc.DeleteUserRequest{Id: 11})
 			assertErrorCode(t, err, codes.PermissionDenied, "staff user cannot be removed by owner, missing permission")
+		},
+		"can-delete-as-owner": func(t *testing.T) {
+			upm.On("FindOneByID", mock.Anything, int64(10)).Return(&model.UserEntity{ID: 10}, nil).
+				Once()
+			upm.On("FindOneByID", mock.Anything, int64(11)).Return(&model.UserEntity{
+				ID:        11,
+				CreatedBy: ntypes.Int64{Int64: 10, Valid: true},
+			}, nil).
+				Once()
+			ppm.On("FindByUserID", mock.Anything, int64(10)).Return([]*model.PermissionEntity{
+				{
+					Subsystem: charon.UserCanDeleteAsOwner.Subsystem(),
+					Module:    charon.UserCanDeleteAsOwner.Module(),
+					Action:    charon.UserCanDeleteAsOwner.Action(),
+				},
+			}, nil).
+				Once()
+			upm.On("DeleteOneByID", mock.Anything, int64(11)).Return(int64(1), nil).
+				Once()
+			sessionOnContext(t, 10)
+			_, err := h.Delete(context.Background(), &charonrpc.DeleteUserRequest{Id: 11})
+			if err != nil {
+				t.Fatalf("unexpected error: %s", err.Error())
+			}
+		},
+		"can-delete-staff-member-as-owner": func(t *testing.T) {
+			upm.On("FindOneByID", mock.Anything, int64(10)).Return(&model.UserEntity{ID: 10}, nil).
+				Once()
+			upm.On("FindOneByID", mock.Anything, int64(11)).Return(&model.UserEntity{
+				ID:        11,
+				IsStaff:   true,
+				CreatedBy: ntypes.Int64{Int64: 10, Valid: true},
+			}, nil).
+				Once()
+			ppm.On("FindByUserID", mock.Anything, int64(10)).Return([]*model.PermissionEntity{
+				{
+					Subsystem: charon.UserCanDeleteStaffAsOwner.Subsystem(),
+					Module:    charon.UserCanDeleteStaffAsOwner.Module(),
+					Action:    charon.UserCanDeleteStaffAsOwner.Action(),
+				},
+			}, nil).
+				Once()
+			upm.On("DeleteOneByID", mock.Anything, int64(11)).Return(int64(1), nil).
+				Once()
+			sessionOnContext(t, 10)
+			_, err := h.Delete(context.Background(), &charonrpc.DeleteUserRequest{Id: 11})
+			if err != nil {
+				t.Fatalf("unexpected error: %s", err.Error())
+			}
+		},
+		"can-delete-staff-member-as-stranger": func(t *testing.T) {
+			upm.On("FindOneByID", mock.Anything, int64(10)).Return(&model.UserEntity{ID: 10}, nil).
+				Once()
+			upm.On("FindOneByID", mock.Anything, int64(11)).Return(&model.UserEntity{
+				ID:      11,
+				IsStaff: true,
+			}, nil).
+				Once()
+			ppm.On("FindByUserID", mock.Anything, int64(10)).Return([]*model.PermissionEntity{
+				{
+					Subsystem: charon.UserCanDeleteStaffAsStranger.Subsystem(),
+					Module:    charon.UserCanDeleteStaffAsStranger.Module(),
+					Action:    charon.UserCanDeleteStaffAsStranger.Action(),
+				},
+			}, nil).
+				Once()
+			upm.On("DeleteOneByID", mock.Anything, int64(11)).Return(int64(1), nil).
+				Once()
+			sessionOnContext(t, 10)
+			_, err := h.Delete(context.Background(), &charonrpc.DeleteUserRequest{Id: 11})
+			if err != nil {
+				t.Fatalf("unexpected error: %s", err.Error())
+			}
 		},
 	}
 
