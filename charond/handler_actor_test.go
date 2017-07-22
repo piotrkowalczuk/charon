@@ -5,6 +5,8 @@ import (
 	"testing"
 
 	"github.com/golang/protobuf/ptypes/wrappers"
+	"github.com/piotrkowalczuk/charon"
+	"github.com/piotrkowalczuk/charon/charonrpc"
 	"github.com/piotrkowalczuk/mnemosyne"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -24,6 +26,7 @@ func TestActorHandler_Actor(t *testing.T) {
 			if !ok {
 				t.Fatal("metadata not present in context")
 			}
+
 			tok := &wrappers.StringValue{Value: md[mnemosyne.AccessTokenMetadataKey][0]}
 
 			res, err := suite.charon.auth.Actor(context.Background(), tok)
@@ -32,6 +35,20 @@ func TestActorHandler_Actor(t *testing.T) {
 			}
 			if res.Username != "test" {
 				t.Errorf("wrong username, expected %s but got %s", "test", res.Username)
+			}
+
+			_, err = suite.charon.user.SetPermissions(ctx, &charonrpc.SetUserPermissionsRequest{
+				UserId: res.Id,
+				Permissions: []string{
+					charon.PermissionCanCreate.String(),
+				},
+			})
+			if err != nil {
+				t.Fatalf("unexpected error: %s", err.Error())
+			}
+			_, err = suite.charon.auth.Actor(context.Background(), tok)
+			if err != nil {
+				t.Fatalf("unexpected error: %s", err.Error())
 			}
 		},
 		"incorrect-token": func(t *testing.T) {

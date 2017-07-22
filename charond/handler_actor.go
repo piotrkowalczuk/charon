@@ -2,7 +2,6 @@ package charond
 
 import (
 	"database/sql"
-	"fmt"
 
 	"github.com/golang/protobuf/ptypes/wrappers"
 	"github.com/piotrkowalczuk/charon/charonrpc"
@@ -40,18 +39,18 @@ func (sh *actorHandler) Actor(ctx context.Context, r *wrappers.StringValue) (*ch
 
 	id, err := session.ActorID(ses.SubjectId).UserID()
 	if err != nil {
-		return nil, fmt.Errorf("invalid Session subject id: %s", ses.SubjectId)
+		return nil, errf(codes.Internal, "invalid session actor id: %s", ses.SubjectId)
 	}
 
 	ent, err := sh.repository.user.FindOneByID(ctx, id)
 	if err != nil {
 		switch err {
 		case sql.ErrNoRows:
-			return nil, grpc.Errorf(codes.NotFound, "subject does not exists with id: %d", id)
+			return nil, grpc.Errorf(codes.NotFound, "actor does not exists with id: %d", id)
 		case context.DeadlineExceeded, context.Canceled:
 			return nil, err
 		default:
-			return nil, grpc.Errorf(codes.Internal, "subject retrieval failure: %s", err.Error())
+			return nil, grpc.Errorf(codes.Internal, "actor retrieval failure: %s", err.Error())
 		}
 	}
 
@@ -62,7 +61,7 @@ func (sh *actorHandler) Actor(ctx context.Context, r *wrappers.StringValue) (*ch
 		case context.DeadlineExceeded, context.Canceled:
 			return nil, err
 		default:
-			return nil, grpc.Errorf(codes.Internal, "subject list of permissions failure: %s", err.Error())
+			return nil, grpc.Errorf(codes.Internal, "actor list of permissions failure: %s", err.Error())
 		}
 	}
 
