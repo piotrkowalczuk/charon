@@ -59,9 +59,9 @@ func teardownDatabase(db *sql.DB) error {
 }
 
 func createDummyTestUser(ctx context.Context, repo model.UserProvider, hasher password.Hasher) (*model.UserEntity, error) {
-	password, err := hasher.Hash([]byte("test"))
+	pass, err := hasher.Hash([]byte("test"))
 	if err != nil {
 		return nil, err
 	}
-	return repo.CreateSuperuser(ctx, "test", password, "Test", "Test")
+	return repo.CreateSuperuser(ctx, "test", pass, "Test", "Test")
 }

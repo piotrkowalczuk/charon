@@ -155,18 +155,16 @@ func (lh *loginHandler) handleLDAP(ctx context.Context, conn *libldap.Conn, r *c
 		if err == sql.ErrNoRows && lh.opts.LDAP {
 			sklog.Debug(lh.logger, "user found in ldap but does not exists in database", "username", username)
 
-			usr, err = lh.repository.user.Create(
-				ctx,
-				username,
-				model.ExternalPassword,
-				res.Entries[0].GetAttributeValue("givenName"),
-				res.Entries[0].GetAttributeValue("sn"),
-				[]byte(model.UserConfirmationTokenUsed),
-				false,
-				mapping.IsStaff,
-				true,
-				true,
-			)
+			usr, err = lh.repository.user.Create(ctx, &model.UserEntity{
+				Username:          username,
+				Password:          model.ExternalPassword,
+				FirstName:         res.Entries[0].GetAttributeValue("givenName"),
+				LastName:          res.Entries[0].GetAttributeValue("sn"),
+				ConfirmationToken: []byte(model.UserConfirmationTokenUsed),
+				IsStaff:           mapping.IsStaff,
+				IsConfirmed:       true,
+				IsActive:          true,
+			})
 			if err != nil {
 				switch model.ErrorConstraint(err) {
 				case model.TableUserConstraintPrimaryKey:

@@ -188,15 +188,13 @@ func TestUserRepository_Create(t *testing.T) {
 	suite.setup(t)
 	defer suite.teardown(t)
 
-	_, err := suite.repository.user.Create(
-		context.TODO(),
-		"username",
-		[]byte("password"),
-		"firstname",
-		"lastname",
-		[]byte("confirmation-token"),
-		false, false, false, false,
-	)
+	_, err := suite.repository.user.Create(context.TODO(), &UserEntity{
+		Username:          "username",
+		Password:          []byte("password"),
+		FirstName:         "firstname",
+		LastName:          "lastname",
+		ConfirmationToken: []byte("confirmation-token"),
+	})
 	if err != nil {
 		t.Errorf("user cannot be deleted, unexpected error: %s", err.Error())
 	}

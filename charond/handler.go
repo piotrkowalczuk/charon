@@ -1,10 +1,8 @@
 package charond
 
 import (
-	"strings"
-
 	"database/sql"
-
+	"strings"
 	"sync"
 
 	"github.com/go-kit/kit/log"

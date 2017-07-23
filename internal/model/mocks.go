@@ -619,13 +619,13 @@ func (_m *MockUserProvider) Exists(_a0 context.Context, _a1 int64) (bool, error)
 	return r0, r1
 }
 
-// Create provides a mock function with given fields: ctx, username, password, FirstName, LastName, confirmationToken, isSuperuser, IsStaff, isActive, isConfirmed
-func (_m *MockUserProvider) Create(ctx context.Context, username string, password []byte, FirstName string, LastName string, confirmationToken []byte, isSuperuser bool, IsStaff bool, isActive bool, isConfirmed bool) (*UserEntity, error) {
-	ret := _m.Called(ctx, username, password, FirstName, LastName, confirmationToken, isSuperuser, IsStaff, isActive, isConfirmed)
+// Create provides a mock function with given fields: _a0, _a1
+func (_m *MockUserProvider) Create(_a0 context.Context, _a1 *UserEntity) (*UserEntity, error) {
+	ret := _m.Called(_a0, _a1)
 
 	var r0 *UserEntity
-	if rf, ok := ret.Get(0).(func(context.Context, string, []byte, string, string, []byte, bool, bool, bool, bool) *UserEntity); ok {
-		r0 = rf(ctx, username, password, FirstName, LastName, confirmationToken, isSuperuser, IsStaff, isActive, isConfirmed)
+	if rf, ok := ret.Get(0).(func(context.Context, *UserEntity) *UserEntity); ok {
+		r0 = rf(_a0, _a1)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*UserEntity)
@@ -633,8 +633,8 @@ func (_m *MockUserProvider) Create(ctx context.Context, username string, passwor
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, string, []byte, string, string, []byte, bool, bool, bool, bool) error); ok {
-		r1 = rf(ctx, username, password, FirstName, LastName, confirmationToken, isSuperuser, IsStaff, isActive, isConfirmed)
+	if rf, ok := ret.Get(1).(func(context.Context, *UserEntity) error); ok {
+		r1 = rf(_a0, _a1)
 	} else {
 		r1 = ret.Error(1)
 	}

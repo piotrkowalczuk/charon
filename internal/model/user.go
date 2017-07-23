@@ -71,7 +71,7 @@ func (ue *UserEntity) Message() (*charonrpc.User, error) {
 // UserProvider wraps UserRepository into interface.
 type UserProvider interface {
 	Exists(context.Context, int64) (bool, error)
-	Create(ctx context.Context, username string, password []byte, FirstName, LastName string, confirmationToken []byte, isSuperuser, IsStaff, isActive, isConfirmed bool) (*UserEntity, error)
+	Create(context.Context, *UserEntity) (*UserEntity, error)
 	Insert(context.Context, *UserEntity) (*UserEntity, error)
 	CreateSuperuser(ctx context.Context, username string, password []byte, FirstName, LastName string) (*UserEntity, error)
 	// Count retrieves number of all users.
@@ -105,30 +105,27 @@ func NewUserRepository(dbPool *sql.DB) *UserRepository {
 }
 
 // Create implements UserProvider interface.
-func (ur *UserRepository) Create(ctx context.Context, username string, password []byte, firstName, lastName string, confirmationToken []byte, isSuperuser, isStaff, isActive, isConfirmed bool) (*UserEntity, error) {
-	if isSuperuser {
-		isStaff = true
-		isActive = true
-		isConfirmed = true
+func (ur *UserRepository) Create(ctx context.Context, ent *UserEntity) (*UserEntity, error) {
+	tmp := *ent
+	if tmp.IsSuperuser {
+		tmp.IsStaff = false
+		tmp.IsActive = true
+		tmp.IsConfirmed = true
 	}
 
-	entity := &UserEntity{
-		Username:          username,
-		Password:          password,
-		FirstName:         firstName,
-		LastName:          lastName,
-		ConfirmationToken: confirmationToken,
-		IsSuperuser:       isSuperuser,
-		IsStaff:           isStaff,
-		IsActive:          isActive,
-		IsConfirmed:       isConfirmed,
-	}
-	return ur.Insert(ctx, entity)
+	return ur.Insert(ctx, &tmp)
 }
 
 // CreateSuperuser implements UserProvider interface.
 func (ur *UserRepository) CreateSuperuser(ctx context.Context, username string, password []byte, firstName, lastName string) (*UserEntity, error) {
-	return ur.Create(ctx, username, password, firstName, lastName, []byte(UserConfirmationTokenUsed), true, false, true, true)
+	return ur.Create(ctx, &UserEntity{
+		Username:          username,
+		Password:          password,
+		FirstName:         firstName,
+		LastName:          lastName,
+		ConfirmationToken: []byte(UserConfirmationTokenUsed),
+		IsSuperuser:       true,
+	})
 }
 
 // Count implements UserProvider interface.
