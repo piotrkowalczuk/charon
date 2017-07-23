@@ -16,6 +16,10 @@ type deleteGroupHandler struct {
 }
 
 func (dgh *deleteGroupHandler) Delete(ctx context.Context, req *charonrpc.DeleteGroupRequest) (*wrappers.BoolValue, error) {
+	if req.Id <= 0 {
+		return nil, grpc.Errorf(codes.InvalidArgument, "group cannot be deleted, invalid id: %d", req.Id)
+	}
+
 	act, err := dgh.retrieveActor(ctx)
 	if err != nil {
 		return nil, err
@@ -28,21 +32,27 @@ func (dgh *deleteGroupHandler) Delete(ctx context.Context, req *charonrpc.Delete
 	if err != nil {
 		switch model.ErrorConstraint(err) {
 		case model.TableUserGroupsConstraintGroupIDForeignKey:
-			return nil, grpc.Errorf(codes.FailedPrecondition, "group cannot be removed, is not empty")
+			return nil, grpc.Errorf(codes.FailedPrecondition, "group cannot be removed, users are assigned to it")
+		case model.TableGroupPermissionsConstraintGroupIDForeignKey:
+			return nil, grpc.Errorf(codes.FailedPrecondition, "group cannot be removed, permissions are assigned to it")
 		default:
 			return nil, err
 		}
 	}
 
 	if aff == 0 {
-		return nil, grpc.Errorf(codes.NotFound, "group does not exists")
+		return nil, errf(codes.NotFound, "group cannot be removed, does not exists")
 	}
+
 	return &wrappers.BoolValue{
 		Value: aff > 0,
 	}, nil
 }
 
 func (dgh *deleteGroupHandler) firewall(req *charonrpc.DeleteGroupRequest, act *session.Actor) error {
+	if act.IsLocal {
+		return errf(codes.PermissionDenied, "group cannot be removed from localhost")
+	}
 	if act.User.IsSuperuser {
 		return nil
 	}
