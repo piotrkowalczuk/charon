@@ -232,7 +232,6 @@ func TestDeleteGroupHandler_Delete_Unit(t *testing.T) {
 			_, err := h.Delete(context.Background(), &charonrpc.DeleteGroupRequest{Id: 5})
 			assertErrorCode(t, err, codes.PermissionDenied, "group cannot be removed, missing permission")
 		},
-
 		"can-remove-as-superuser": func(t *testing.T) {
 			upm.On("FindOneByID", mock.Anything, int64(1)).Return(&model.UserEntity{
 				ID:          1,
