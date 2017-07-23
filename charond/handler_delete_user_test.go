@@ -3,10 +3,13 @@ package charond
 import (
 	"context"
 	"database/sql"
+	"math"
 	"net"
 	"testing"
 
 	"github.com/golang/protobuf/ptypes/empty"
+	"github.com/golang/protobuf/ptypes/wrappers"
+	"github.com/lib/pq"
 	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/charon/charonrpc"
 	"github.com/piotrkowalczuk/charon/internal/model"
@@ -20,7 +23,67 @@ import (
 	"google.golang.org/grpc/peer"
 )
 
-func TestDeleteUserHandler_Delete(t *testing.T) {
+func TestDeleteUserHandler_Delete_E2E(t *testing.T) {
+	suite := &endToEndSuite{}
+	suite.setup(t)
+	defer suite.teardown(t)
+
+	ctx := testRPCServerLogin(t, suite)
+	_, err := suite.charon.auth.Actor(timeout(ctx), &wrappers.StringValue{})
+	if err != nil {
+		t.Fatalf("unexpected error: %s", err.Error())
+	}
+
+	_, users := suite.createUsers(t, timeout(ctx))
+	_, groups := suite.createGroups(t, timeout(ctx))
+
+	_, err = suite.charon.user.SetGroups(timeout(ctx), &charonrpc.SetUserGroupsRequest{
+		UserId: users[1],
+		Groups: groups[:len(groups)/2],
+	})
+	if err != nil {
+		t.Fatalf("unexpected error: %s", err.Error())
+	}
+	cases := map[string]func(t *testing.T){
+		"not-assigned": func(t *testing.T) {
+			done, err := suite.charon.user.Delete(timeout(ctx), &charonrpc.DeleteUserRequest{
+				Id: users[len(users)-1],
+			})
+			if err != nil {
+				t.Fatalf("unexpected error: %s", err.Error())
+			}
+			if !done.Value {
+				t.Error("group expected to be removed")
+			}
+		},
+		"not-existing": func(t *testing.T) {
+			_, err := suite.charon.user.Delete(timeout(ctx), &charonrpc.DeleteUserRequest{
+				Id: math.MaxInt64,
+			})
+			assertErrorCode(t, err, codes.NotFound, "user does not exists")
+		},
+		"groups-assigned": func(t *testing.T) {
+			_, err := suite.charon.user.Delete(timeout(ctx), &charonrpc.DeleteUserRequest{
+				Id: users[1],
+			})
+			assertErrorCode(t, err, codes.FailedPrecondition, "user cannot be removed, groups are assigned to it")
+		},
+		"permissions-assigned": func(t *testing.T) {
+			t.Skip("TODO: implement")
+
+			_, err := suite.charon.user.Delete(timeout(ctx), &charonrpc.DeleteUserRequest{
+				Id: users[1],
+			})
+			assertErrorCode(t, err, codes.FailedPrecondition, "user cannot be removed, permissions are assigned to it")
+		},
+	}
+
+	for hint, fn := range cases {
+		t.Run(hint, fn)
+	}
+}
+
+func TestDeleteUserHandler_Delete_Unit(t *testing.T) {
 	upm := &model.MockUserProvider{}
 	ppm := &model.MockPermissionProvider{}
 	sm := &mnemosynetest.SessionManagerClient{}
@@ -55,7 +118,7 @@ func TestDeleteUserHandler_Delete(t *testing.T) {
 			_, err := h.Delete(context.Background(), &charonrpc.DeleteUserRequest{Id: -1})
 			assertErrorCode(t, err, codes.InvalidArgument, "user cannot be deleted, invalid id: -1")
 		},
-		"cannot-remove-if-does-not-exists": func(t *testing.T) {
+		"cannot-remove-if-actor-does-not-exists": func(t *testing.T) {
 			upm.On("FindOneByID", mock.Anything, int64(10)).Return(nil, sql.ErrNoRows).
 				Times(2)
 			sessionOnContext(t, 10)
@@ -116,8 +179,7 @@ func TestDeleteUserHandler_Delete(t *testing.T) {
 					Module:    charon.UserCanDeleteAsStranger.Module(),
 					Action:    charon.UserCanDeleteAsStranger.Action(),
 				},
-			}, nil).
-				Once()
+			}, nil).Once()
 			upm.On("DeleteOneByID", mock.Anything, int64(11)).Return(int64(0), context.DeadlineExceeded).
 				Once()
 			sessionOnContext(t, 10)
@@ -209,6 +271,29 @@ func TestDeleteUserHandler_Delete(t *testing.T) {
 			sessionOnContext(t, 10)
 			_, err := h.Delete(context.Background(), &charonrpc.DeleteUserRequest{Id: 11})
 			assertErrorCode(t, err, codes.PermissionDenied, "user cannot be removed by owner, missing permission")
+		},
+		"cannot-remove-if-group-have-permissions-assigned": func(t *testing.T) {
+			upm.On("FindOneByID", mock.Anything, int64(10)).Return(&model.UserEntity{ID: 10}, nil).
+				Once()
+			upm.On("FindOneByID", mock.Anything, int64(11)).Return(&model.UserEntity{
+				ID:        11,
+				CreatedBy: ntypes.Int64{Int64: 10, Valid: true},
+			}, nil).
+				Once()
+			ppm.On("FindByUserID", mock.Anything, int64(10)).Return([]*model.PermissionEntity{
+				{
+					Subsystem: charon.UserCanDeleteAsOwner.Subsystem(),
+					Module:    charon.UserCanDeleteAsOwner.Module(),
+					Action:    charon.UserCanDeleteAsOwner.Action(),
+				},
+			}, nil).
+				Once()
+			upm.On("DeleteOneByID", mock.Anything, int64(11)).Return(int64(0), &pq.Error{
+				Constraint: model.TableUserPermissionsConstraintUserIDForeignKey,
+			}).Once()
+			sessionOnContext(t, 10)
+			_, err := h.Delete(context.Background(), &charonrpc.DeleteUserRequest{Id: 11})
+			assertErrorCode(t, err, codes.FailedPrecondition, "user cannot be removed, permissions are assigned to it")
 		},
 		"can-delete-as-stranger-but-does-not-exists": func(t *testing.T) {
 			upm.On("FindOneByID", mock.Anything, int64(10)).Return(&model.UserEntity{ID: 10}, nil).

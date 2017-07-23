@@ -37,13 +37,20 @@ func (duh *deleteUserHandler) Delete(ctx context.Context, req *charonrpc.DeleteU
 		return nil, err
 	}
 
-	affected, err := duh.repository.user.DeleteOneByID(ctx, req.Id)
+	aff, err := duh.repository.user.DeleteOneByID(ctx, req.Id)
 	if err != nil {
-		return nil, err
+		switch model.ErrorConstraint(err) {
+		case model.TableUserGroupsConstraintUserIDForeignKey:
+			return nil, grpc.Errorf(codes.FailedPrecondition, "user cannot be removed, groups are assigned to it")
+		case model.TableUserPermissionsConstraintUserIDForeignKey:
+			return nil, grpc.Errorf(codes.FailedPrecondition, "user cannot be removed, permissions are assigned to it")
+		default:
+			return nil, err
+		}
 	}
 
 	return &wrappers.BoolValue{
-		Value: affected > 0,
+		Value: aff > 0,
 	}, nil
 }
 

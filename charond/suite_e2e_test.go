@@ -1,7 +1,9 @@
 package charond
 
 import (
+	"context"
 	"database/sql"
+	"fmt"
 	"io"
 	"net"
 	"os"
@@ -13,6 +15,7 @@ import (
 	"github.com/piotrkowalczuk/charon/internal/password"
 	"github.com/piotrkowalczuk/mnemosyne/mnemosyned"
 	"github.com/piotrkowalczuk/mnemosyne/mnemosynerpc"
+	"github.com/piotrkowalczuk/ntypes"
 	"github.com/piotrkowalczuk/sklog"
 	"golang.org/x/crypto/bcrypt"
 	"google.golang.org/grpc"
@@ -121,4 +124,46 @@ func (etes *endToEndSuite) teardown(t *testing.T) {
 	if err := etes.db.Close(); err != nil {
 		t.Errorf("e2e suite database conn close error: %s", err.Error())
 	}
+}
+
+func (etes *endToEndSuite) createGroups(t *testing.T, ctx context.Context) ([]*charonrpc.Group, []int64) {
+	var (
+		ids    []int64
+		groups []*charonrpc.Group
+	)
+	for i := 0; i < 10; i++ {
+		res, err := etes.charon.group.Create(ctx, &charonrpc.CreateGroupRequest{
+			Name: fmt.Sprintf("name-%d", i),
+			Description: &ntypes.String{
+				Valid: true,
+				Chars: fmt.Sprintf("description-%d", i),
+			},
+		})
+		if err != nil {
+			t.Fatalf("unexpected error: %s", err.Error())
+		}
+		ids = append(ids, res.Group.Id)
+		groups = append(groups, res.Group)
+	}
+	return groups, ids
+}
+
+func (etes *endToEndSuite) createUsers(t *testing.T, ctx context.Context) ([]*charonrpc.User, []int64) {
+	var (
+		ids   []int64
+		users []*charonrpc.User
+	)
+	for i := 0; i < 10; i++ {
+		res, err := etes.charon.user.Create(ctx, &charonrpc.CreateUserRequest{
+			Username:  fmt.Sprintf("username-%d@example.com", i),
+			FirstName: fmt.Sprintf("first-name-%d", i),
+			LastName:  fmt.Sprintf("last-name-%d", i),
+		})
+		if err != nil {
+			t.Fatalf("unexpected error: %s", err.Error())
+		}
+		ids = append(ids, res.User.Id)
+		users = append(users, res.User)
+	}
+	return users, ids
 }
