@@ -53,7 +53,7 @@ func (cgh *createGroupHandler) firewall(req *charonrpc.CreateGroupRequest, act *
 func (cgh *createGroupHandler) response(ent *model.GroupEntity) (*charonrpc.CreateGroupResponse, error) {
 	msg, err := ent.Message()
 	if err != nil {
-		return nil, err
+		return nil, errf(codes.Internal, "group entity mapping failure: %s", err.Error())
 	}
 	return &charonrpc.CreateGroupResponse{
 		Group: msg,

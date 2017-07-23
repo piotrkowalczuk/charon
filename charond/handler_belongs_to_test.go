@@ -175,8 +175,7 @@ func TestBelongsToHandler_BelongsTo_Unit(t *testing.T) {
 					Module:    charon.UserGroupCanCheckBelongingAsStranger.Module(),
 					Action:    charon.UserGroupCanCheckBelongingAsStranger.Action(),
 				},
-			}, nil).
-				Once()
+			}, nil).Once()
 			ugpm.On("Exists", mock.Anything, int64(2), int64(5)).Return(true, nil).
 				Once()
 			sessionOnContext(t, 1)
