@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package charonrpc;
 
+option go_package = "github.com/piotrkowalczuk/charon/charonrpc";
+
 import "qtypes/qtypes.proto";
 import "ntypes/ntypes.proto";
 

@@ -27,10 +27,7 @@ install:
 	@go install -ldflags "${LDFLAGS}" ${PACKAGE_CMD_CONTROL}
 
 gen:
-	@go generate ./internal/model
-	@ls -al ./internal/model | grep pqt
-	@go generate ./${SERVICE}rpc
-	@ls -al ${SERVICE}rpc | grep pb.go
+	@./scripts/generate.sh
 
 test:
 	@scripts/test.sh
