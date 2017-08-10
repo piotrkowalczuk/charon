@@ -112,6 +112,7 @@ func TestDaemon(t *testing.T, opts TestDaemonOpts) (net.Addr, io.Closer) {
 // Run ...
 func (d *Daemon) Run() (err error) {
 	interceptor := promgrpc.NewInterceptor(promgrpc.InterceptorOpts{
+		SkipPreallocate: d.opts.Test,
 		Registerer: func() prometheus.Registerer {
 			if d.opts.Test {
 				return prometheus.NewRegistry()
