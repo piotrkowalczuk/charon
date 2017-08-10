@@ -169,9 +169,6 @@ func TestCreateGroupHandler_Create_Unit(t *testing.T) {
 				}, nil).Once()
 			sessionOnContext(t, 1)
 
-
-
-
 			_, err := h.Create(context.Background(), &charonrpc.CreateGroupRequest{
 				Name: "name",
 			})

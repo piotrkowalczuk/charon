@@ -22,7 +22,7 @@ import:
   - mnemosynerpc
 - package: github.com/piotrkowalczuk/pqcomp
 - package: github.com/piotrkowalczuk/promgrpc
-  version: ~0.7.0
+  version: ~0.8.0
 - package: github.com/piotrkowalczuk/sklog
 - package: github.com/prometheus/client_golang
   version: ~0.8.0

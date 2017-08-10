@@ -1,5 +1,5 @@
-hash: e8cd38b36eafa518deb77fbb118cd6fd4c533049c37ac42ac9a1e4fb85d4bfea
-updated: 2017-08-10T14:40:21.186155627+02:00
+hash: c918126cd1392574b19f139e465b8b9f46d25d9976611c07affb4160e99efa4c
+updated: 2017-08-10T16:29:36.521608207+02:00
 imports:
 - name: github.com/beorn7/perks
   version: 4c0e84591b9aa9e6dcfdf3e020114cd81f89d5f9
@@ -42,7 +42,7 @@ imports:
 - name: github.com/pborman/uuid
   version: a97ce2ca70fa5a848076093f05e639a89ca34d06
 - name: github.com/piotrkowalczuk/mnemosyne
-  version: f5e9ce889b838b9358ed83639c5cde59bc4235e7
+  version: c668f714d425573c8443c31b0981c84e8a7d0ec3
   subpackages:
   - internal/cluster
   - internal/jump
@@ -56,7 +56,7 @@ imports:
 - name: github.com/piotrkowalczuk/pqcomp
   version: 631b19c36ded8bbe954cf8c15a0044c591033536
 - name: github.com/piotrkowalczuk/promgrpc
-  version: e5b307a59e982be97c256877d17d0302a1c190b1
+  version: e748861bd4ef1da47b1c411947053dca645b4998
 - name: github.com/piotrkowalczuk/qtypes
   version: cfa1f627c009055e907c566011e5c1b9559ae1e8
 - name: github.com/piotrkowalczuk/sklog

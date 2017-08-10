@@ -111,15 +111,7 @@ func TestDaemon(t *testing.T, opts TestDaemonOpts) (net.Addr, io.Closer) {
 
 // Run ...
 func (d *Daemon) Run() (err error) {
-	interceptor := promgrpc.NewInterceptor(promgrpc.InterceptorOpts{
-		SkipPreallocate: d.opts.Test,
-		Registerer: func() prometheus.Registerer {
-			if d.opts.Test {
-				return prometheus.NewRegistry()
-			}
-			return prometheus.DefaultRegisterer
-		}(),
-	})
+	interceptor := promgrpc.NewInterceptor(promgrpc.InterceptorOpts{})
 
 	clientOpts := []grpc.DialOption{
 		grpc.WithBlock(),
@@ -231,7 +223,10 @@ func (d *Daemon) Run() (err error) {
 	charonrpc.RegisterUserManagerServer(gRPCServer, newUserManager(server))
 	charonrpc.RegisterGroupManagerServer(gRPCServer, newGroupManager(server))
 	charonrpc.RegisterPermissionManagerServer(gRPCServer, newPermissionManager(server))
-	promgrpc.RegisterInterceptor(gRPCServer, interceptor)
+	if !d.opts.Test {
+		prometheus.DefaultRegisterer.Register(interceptor)
+		promgrpc.RegisterInterceptor(gRPCServer, interceptor)
+	}
 
 	go func() {
 		sklog.Info(d.logger, "rpc server is running", "address", d.rpcListener.Addr().String())
