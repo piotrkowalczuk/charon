@@ -33,7 +33,7 @@ type Client struct {
 	RPCClient charonrpc.AuthClient
 }
 
-// New allocates new Charon instance with given options.
+// New allocates new Client instance with given options and gRPC connection.
 func New(conn *grpc.ClientConn, options ...Options) *Client {
 	ch := &Client{
 		RPCClient: charonrpc.NewAuthClient(conn),
@@ -46,7 +46,7 @@ func New(conn *grpc.ClientConn, options ...Options) *Client {
 	return ch
 }
 
-// IsGranted implements Charon interface.
+// IsGranted returns true if user has granted given permission.
 func (c *Client) IsGranted(ctx context.Context, userID int64, perm charon.Permission) (bool, error) {
 	req := &charonrpc.IsGrantedRequest{
 		UserId:     userID,
@@ -61,7 +61,7 @@ func (c *Client) IsGranted(ctx context.Context, userID int64, perm charon.Permis
 	return granted.Value, nil
 }
 
-// Actor implements Charon interface.
+// Actor returns Actor for given token if logged in.
 func (c *Client) Actor(ctx context.Context, token string) (*Actor, error) {
 	resp, err := c.RPCClient.Actor(ctx, &wrappers.StringValue{Value: token})
 	if err != nil {
@@ -71,7 +71,7 @@ func (c *Client) Actor(ctx context.Context, token string) (*Actor, error) {
 	return c.mapActor(resp), nil
 }
 
-// FromContext implements Charon interface.
+// FromContext works like Actor but retrieves access token from the context.
 func (c *Client) FromContext(ctx context.Context) (*Actor, error) {
 	resp, err := c.RPCClient.Actor(ctx, &wrappers.StringValue{})
 	if err != nil {
@@ -95,7 +95,7 @@ func (c *Client) mapActor(resp *charonrpc.ActorResponse) *Actor {
 	}
 }
 
-// IsAuthenticated implements Charon interface.
+// IsAuthenticated returns true if given access token exists.
 func (c *Client) IsAuthenticated(ctx context.Context, token string) (bool, error) {
 	ok, err := c.RPCClient.IsAuthenticated(ctx, &charonrpc.IsAuthenticatedRequest{
 		AccessToken: token,
@@ -120,34 +120,10 @@ func (c *Client) Login(ctx context.Context, username, password string) (string, 
 	return token.Value, nil
 }
 
-// Logout implements Charon interface.
+// Logout removes given token making actor logged out.
 func (c *Client) Logout(ctx context.Context, token string) error {
 	_, err := c.RPCClient.Logout(ctx, &charonrpc.LogoutRequest{
 		AccessToken: token,
 	})
 	return err
-}
-
-// Actor is a generic object that represent anything that can be under control of charon.
-type Actor struct {
-	ID          int64              `json:"id"`
-	Username    string             `json:"username"`
-	FirstName   string             `json:"firstName"`
-	LastName    string             `json:"lastName"`
-	IsSuperuser bool               `json:"isSuperuser"`
-	IsActive    bool               `json:"isActive"`
-	IsStaff     bool               `json:"isStaff"`
-	IsConfirmed bool               `json:"isConfirmed"`
-	Permissions charon.Permissions `json:"permissions"`
-}
-
-// NewActorContext returns a new Context that carries Actor value.
-func NewActorContext(ctx context.Context, a Actor) context.Context {
-	return context.WithValue(ctx, contextKeyActor, a)
-}
-
-// ActorFromContext returns the Actor value stored in context, if any.
-func ActorFromContext(ctx context.Context) (Actor, bool) {
-	s, ok := ctx.Value(contextKeyActor).(Actor)
-	return s, ok
 }

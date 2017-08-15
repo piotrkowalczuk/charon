@@ -3,14 +3,13 @@ package charonc
 import (
 	"errors"
 
+	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/mnemosyne"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
 )
 
-const (
-	contextKeyActor = "context_key_charon_actor"
-)
+var contextKeyActor = struct{}{}
 
 // SecurityContext ....
 type SecurityContext interface {
@@ -50,4 +49,28 @@ func (sc *securityContext) Token() (*oauth2.Token, error) {
 	return &oauth2.Token{
 		AccessToken: at,
 	}, nil
+}
+
+// Actor is a generic object that represent anything that can be under control of charon.
+type Actor struct {
+	ID          int64              `json:"id"`
+	Username    string             `json:"username"`
+	FirstName   string             `json:"firstName"`
+	LastName    string             `json:"lastName"`
+	IsSuperuser bool               `json:"isSuperuser"`
+	IsActive    bool               `json:"isActive"`
+	IsStaff     bool               `json:"isStaff"`
+	IsConfirmed bool               `json:"isConfirmed"`
+	Permissions charon.Permissions `json:"permissions"`
+}
+
+// NewActorContext returns a new Context that carries Actor value.
+func NewActorContext(ctx context.Context, act Actor) context.Context {
+	return context.WithValue(ctx, contextKeyActor, act)
+}
+
+// ActorFromContext returns the Actor value stored in context, if any.
+func ActorFromContext(ctx context.Context) (Actor, bool) {
+	act, ok := ctx.Value(contextKeyActor).(Actor)
+	return act, ok
 }
