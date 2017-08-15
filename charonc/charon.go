@@ -28,13 +28,15 @@ func WithMetadata(kv ...string) Options {
 // For more powerful low level API check RPCClient interface.
 type Client struct {
 	options charonOptions
-	auth    charonrpc.AuthClient
+	// RPCClient holds gRPC client from charonrpc package.
+	// It's not safe to change concurrently.
+	RPCClient charonrpc.AuthClient
 }
 
 // New allocates new Charon instance with given options.
 func New(conn *grpc.ClientConn, options ...Options) *Client {
 	ch := &Client{
-		auth: charonrpc.NewAuthClient(conn),
+		RPCClient: charonrpc.NewAuthClient(conn),
 	}
 
 	for _, o := range options {
@@ -51,7 +53,7 @@ func (c *Client) IsGranted(ctx context.Context, userID int64, perm charon.Permis
 		Permission: perm.String(),
 	}
 
-	granted, err := c.auth.IsGranted(ctx, req)
+	granted, err := c.RPCClient.IsGranted(ctx, req)
 	if err != nil {
 		return false, err
 	}
@@ -61,7 +63,7 @@ func (c *Client) IsGranted(ctx context.Context, userID int64, perm charon.Permis
 
 // Actor implements Charon interface.
 func (c *Client) Actor(ctx context.Context, token string) (*Actor, error) {
-	resp, err := c.auth.Actor(ctx, &wrappers.StringValue{Value: token})
+	resp, err := c.RPCClient.Actor(ctx, &wrappers.StringValue{Value: token})
 	if err != nil {
 		return nil, err
 	}
@@ -71,7 +73,7 @@ func (c *Client) Actor(ctx context.Context, token string) (*Actor, error) {
 
 // FromContext implements Charon interface.
 func (c *Client) FromContext(ctx context.Context) (*Actor, error) {
-	resp, err := c.auth.Actor(ctx, &wrappers.StringValue{})
+	resp, err := c.RPCClient.Actor(ctx, &wrappers.StringValue{})
 	if err != nil {
 		return nil, err
 	}
@@ -95,7 +97,7 @@ func (c *Client) mapActor(resp *charonrpc.ActorResponse) *Actor {
 
 // IsAuthenticated implements Charon interface.
 func (c *Client) IsAuthenticated(ctx context.Context, token string) (bool, error) {
-	ok, err := c.auth.IsAuthenticated(ctx, &charonrpc.IsAuthenticatedRequest{
+	ok, err := c.RPCClient.IsAuthenticated(ctx, &charonrpc.IsAuthenticatedRequest{
 		AccessToken: token,
 	})
 	if err != nil {
@@ -107,7 +109,7 @@ func (c *Client) IsAuthenticated(ctx context.Context, token string) (bool, error
 
 // Login is a simple wrapper around rpc Login method.
 func (c *Client) Login(ctx context.Context, username, password string) (string, error) {
-	token, err := c.auth.Login(ctx, &charonrpc.LoginRequest{
+	token, err := c.RPCClient.Login(ctx, &charonrpc.LoginRequest{
 		Username: username,
 		Password: password,
 	})
@@ -120,7 +122,7 @@ func (c *Client) Login(ctx context.Context, username, password string) (string, 
 
 // Logout implements Charon interface.
 func (c *Client) Logout(ctx context.Context, token string) error {
-	_, err := c.auth.Logout(ctx, &charonrpc.LogoutRequest{
+	_, err := c.RPCClient.Logout(ctx, &charonrpc.LogoutRequest{
 		AccessToken: token,
 	})
 	return err
