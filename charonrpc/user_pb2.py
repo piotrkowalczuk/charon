@@ -27,7 +27,6 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   serialized_pb=_b('\n\nuser.proto\x12\tcharonrpc\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1egoogle/protobuf/wrappers.proto\x1a\x13qtypes/qtypes.proto\x1a\x13ntypes/ntypes.proto\x1a\x0bgroup.proto\"\xc2\x02\n\x04User\x12\n\n\x02id\x18\x01 \x01(\x03\x12\x10\n\x08username\x18\x02 \x01(\t\x12\x12\n\nfirst_name\x18\x03 \x01(\t\x12\x11\n\tlast_name\x18\x04 \x01(\t\x12\x14\n\x0cis_superuser\x18\x05 \x01(\x08\x12\x11\n\tis_active\x18\x06 \x01(\x08\x12\x10\n\x08is_staff\x18\x07 \x01(\x08\x12\x14\n\x0cis_confirmed\x18\x08 \x01(\x08\x12.\n\ncreated_at\x18\t \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12!\n\ncreated_by\x18\n \x01(\x0b\x32\r.ntypes.Int64\x12.\n\nupdated_at\x18\x0b \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12!\n\nupdated_by\x18\x0c \x01(\x0b\x32\r.ntypes.Int64\"\x86\x02\n\x11\x43reateUserRequest\x12\x10\n\x08username\x18\x01 \x01(\t\x12\x16\n\x0eplain_password\x18\x02 \x01(\t\x12\x17\n\x0fsecure_password\x18\x03 \x01(\x0c\x12\x12\n\nfirst_name\x18\x04 \x01(\t\x12\x11\n\tlast_name\x18\x05 \x01(\t\x12\"\n\x0cis_superuser\x18\x06 \x01(\x0b\x32\x0c.ntypes.Bool\x12\x1f\n\tis_active\x18\x07 \x01(\x0b\x32\x0c.ntypes.Bool\x12\x1e\n\x08is_staff\x18\x08 \x01(\x0b\x32\x0c.ntypes.Bool\x12\"\n\x0cis_confirmed\x18\t \x01(\x0b\x32\x0c.ntypes.Bool\"3\n\x12\x43reateUserResponse\x12\x1d\n\x04user\x18\x01 \x01(\x0b\x32\x0f.charonrpc.User\"\x1c\n\x0eGetUserRequest\x12\n\n\x02id\x18\x01 \x01(\x03\"0\n\x0fGetUserResponse\x12\x1d\n\x04user\x18\x01 \x01(\x0b\x32\x0f.charonrpc.User\"\x9e\x02\n\x10ListUsersRequest\x12\"\n\x0cis_superuser\x18\x01 \x01(\x0b\x32\x0c.ntypes.Bool\x12\x1e\n\x08is_staff\x18\x02 \x01(\x0b\x32\x0c.ntypes.Bool\x12!\n\ncreated_by\x18\x03 \x01(\x0b\x32\r.qtypes.Int64\x12\x1d\n\x06offset\x18\x64 \x01(\x0b\x32\r.ntypes.Int64\x12\x1c\n\x05limit\x18\x65 \x01(\x0b\x32\r.ntypes.Int64\x12\x33\n\x04sort\x18\x66 \x03(\x0b\x32%.charonrpc.ListUsersRequest.SortEntry\x1a+\n\tSortEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x08:\x02\x38\x01J\x04\x08\x04\x10\x64\"3\n\x11ListUsersResponse\x12\x1e\n\x05users\x18\x01 \x03(\x0b\x32\x0f.charonrpc.User\"\x1f\n\x11\x44\x65leteUserRequest\x12\n\n\x02id\x18\x01 \x01(\x03\"\xd2\x02\n\x11ModifyUserRequest\x12\n\n\x02id\x18\x01 \x01(\x03\x12 \n\x08username\x18\x02 \x01(\x0b\x32\x0e.ntypes.String\x12&\n\x0eplain_password\x18\x03 \x01(\x0b\x32\x0e.ntypes.String\x12\x17\n\x0fsecure_password\x18\x04 \x01(\x0c\x12\"\n\nfirst_name\x18\x05 \x01(\x0b\x32\x0e.ntypes.String\x12!\n\tlast_name\x18\x06 \x01(\x0b\x32\x0e.ntypes.String\x12\"\n\x0cis_superuser\x18\x07 \x01(\x0b\x32\x0c.ntypes.Bool\x12\x1f\n\tis_active\x18\x08 \x01(\x0b\x32\x0c.ntypes.Bool\x12\x1e\n\x08is_staff\x18\t \x01(\x0b\x32\x0c.ntypes.Bool\x12\"\n\x0cis_confirmed\x18\n \x01(\x0b\x32\x0c.ntypes.Bool\"3\n\x12ModifyUserResponse\x12\x1d\n\x04user\x18\x01 \x01(\x0b\x32\x0f.charonrpc.User\"(\n\x1aListUserPermissionsRequest\x12\n\n\x02id\x18\x01 \x01(\x03\"2\n\x1bListUserPermissionsResponse\x12\x13\n\x0bpermissions\x18\x01 \x03(\t\"A\n\x19SetUserPermissionsRequest\x12\x0f\n\x07user_id\x18\x01 \x01(\x03\x12\x13\n\x0bpermissions\x18\x02 \x03(\t\"Q\n\x1aSetUserPermissionsResponse\x12\x0f\n\x07\x63reated\x18\x01 \x01(\x03\x12\x0f\n\x07removed\x18\x02 \x01(\x03\x12\x11\n\tuntouched\x18\x03 \x01(\x03\"#\n\x15ListUserGroupsRequest\x12\n\n\x02id\x18\x01 \x01(\x03\":\n\x16ListUserGroupsResponse\x12 \n\x06groups\x18\x01 \x03(\x0b\x32\x10.charonrpc.Group\"7\n\x14SetUserGroupsRequest\x12\x0f\n\x07user_id\x18\x01 \x01(\x03\x12\x0e\n\x06groups\x18\x02 \x03(\x03\"L\n\x15SetUserGroupsResponse\x12\x0f\n\x07\x63reated\x18\x01 \x01(\x03\x12\x0f\n\x07removed\x18\x02 \x01(\x03\x12\x11\n\tuntouched\x18\x03 \x01(\x03\x32\xd6\x05\n\x0bUserManager\x12G\n\x06\x43reate\x12\x1c.charonrpc.CreateUserRequest\x1a\x1d.charonrpc.CreateUserResponse\"\x00\x12G\n\x06Modify\x12\x1c.charonrpc.ModifyUserRequest\x1a\x1d.charonrpc.ModifyUserResponse\"\x00\x12>\n\x03Get\x12\x19.charonrpc.GetUserRequest\x1a\x1a.charonrpc.GetUserResponse\"\x00\x12\x43\n\x04List\x12\x1b.charonrpc.ListUsersRequest\x1a\x1c.charonrpc.ListUsersResponse\"\x00\x12\x44\n\x06\x44\x65lete\x12\x1c.charonrpc.DeleteUserRequest\x1a\x1a.google.protobuf.BoolValue\"\x00\x12\x62\n\x0fListPermissions\x12%.charonrpc.ListUserPermissionsRequest\x1a&.charonrpc.ListUserPermissionsResponse\"\x00\x12_\n\x0eSetPermissions\x12$.charonrpc.SetUserPermissionsRequest\x1a%.charonrpc.SetUserPermissionsResponse\"\x00\x12S\n\nListGroups\x12 .charonrpc.ListUserGroupsRequest\x1a!.charonrpc.ListUserGroupsResponse\"\x00\x12P\n\tSetGroups\x12\x1f.charonrpc.SetUserGroupsRequest\x1a .charonrpc.SetUserGroupsResponse\"\x00\x42,Z*github.com/piotrkowalczuk/charon/charonrpcb\x06proto3')
   ,
   dependencies=[google_dot_protobuf_dot_timestamp__pb2.DESCRIPTOR,google_dot_protobuf_dot_wrappers__pb2.DESCRIPTOR,qtypes_dot_qtypes__pb2.DESCRIPTOR,ntypes_dot_ntypes__pb2.DESCRIPTOR,group__pb2.DESCRIPTOR,])
-_sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 
 
@@ -945,6 +944,7 @@ DESCRIPTOR.message_types_by_name['ListUserGroupsRequest'] = _LISTUSERGROUPSREQUE
 DESCRIPTOR.message_types_by_name['ListUserGroupsResponse'] = _LISTUSERGROUPSRESPONSE
 DESCRIPTOR.message_types_by_name['SetUserGroupsRequest'] = _SETUSERGROUPSREQUEST
 DESCRIPTOR.message_types_by_name['SetUserGroupsResponse'] = _SETUSERGROUPSRESPONSE
+_sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 User = _reflection.GeneratedProtocolMessageType('User', (_message.Message,), dict(
   DESCRIPTOR = _USER,
@@ -1089,13 +1089,15 @@ try:
   # THESE ELEMENTS WILL BE DEPRECATED.
   # Please use the generated *_pb2_grpc.py files instead.
   import grpc
-  from grpc.framework.common import cardinality
-  from grpc.framework.interfaces.face import utilities as face_utilities
   from grpc.beta import implementations as beta_implementations
   from grpc.beta import interfaces as beta_interfaces
+  from grpc.framework.common import cardinality
+  from grpc.framework.interfaces.face import utilities as face_utilities
 
 
   class UserManagerStub(object):
+    # missing associated documentation comment in .proto file
+    pass
 
     def __init__(self, channel):
       """Constructor.
@@ -1151,48 +1153,68 @@ try:
 
 
   class UserManagerServicer(object):
+    # missing associated documentation comment in .proto file
+    pass
 
     def Create(self, request, context):
+      # missing associated documentation comment in .proto file
+      pass
       context.set_code(grpc.StatusCode.UNIMPLEMENTED)
       context.set_details('Method not implemented!')
       raise NotImplementedError('Method not implemented!')
 
     def Modify(self, request, context):
+      # missing associated documentation comment in .proto file
+      pass
       context.set_code(grpc.StatusCode.UNIMPLEMENTED)
       context.set_details('Method not implemented!')
       raise NotImplementedError('Method not implemented!')
 
     def Get(self, request, context):
+      # missing associated documentation comment in .proto file
+      pass
       context.set_code(grpc.StatusCode.UNIMPLEMENTED)
       context.set_details('Method not implemented!')
       raise NotImplementedError('Method not implemented!')
 
     def List(self, request, context):
+      # missing associated documentation comment in .proto file
+      pass
       context.set_code(grpc.StatusCode.UNIMPLEMENTED)
       context.set_details('Method not implemented!')
       raise NotImplementedError('Method not implemented!')
 
     def Delete(self, request, context):
+      # missing associated documentation comment in .proto file
+      pass
       context.set_code(grpc.StatusCode.UNIMPLEMENTED)
       context.set_details('Method not implemented!')
       raise NotImplementedError('Method not implemented!')
 
     def ListPermissions(self, request, context):
+      # missing associated documentation comment in .proto file
+      pass
       context.set_code(grpc.StatusCode.UNIMPLEMENTED)
       context.set_details('Method not implemented!')
       raise NotImplementedError('Method not implemented!')
 
     def SetPermissions(self, request, context):
+      # missing associated documentation comment in .proto file
+      pass
       context.set_code(grpc.StatusCode.UNIMPLEMENTED)
       context.set_details('Method not implemented!')
       raise NotImplementedError('Method not implemented!')
 
     def ListGroups(self, request, context):
+      # missing associated documentation comment in .proto file
+      pass
       context.set_code(grpc.StatusCode.UNIMPLEMENTED)
       context.set_details('Method not implemented!')
       raise NotImplementedError('Method not implemented!')
 
     def SetGroups(self, request, context):
+      # missing associated documentation comment in .proto file
+      pass
       context.set_code(grpc.StatusCode.UNIMPLEMENTED)
       context.set_details('Method not implemented!')
       raise NotImplementedError('Method not implemented!')
@@ -1257,23 +1279,43 @@ try:
     It is recommended to use the GA API (classes and functions in this
     file not marked beta) for all further purposes. This class was generated
     only to ease transition from grpcio<0.15.0 to grpcio>=0.15.0."""
+    # missing associated documentation comment in .proto file
+    pass
     def Create(self, request, context):
+      # missing associated documentation comment in .proto file
+      pass
       context.code(beta_interfaces.StatusCode.UNIMPLEMENTED)
     def Modify(self, request, context):
+      # missing associated documentation comment in .proto file
+      pass
       context.code(beta_interfaces.StatusCode.UNIMPLEMENTED)
     def Get(self, request, context):
+      # missing associated documentation comment in .proto file
+      pass
       context.code(beta_interfaces.StatusCode.UNIMPLEMENTED)
     def List(self, request, context):
+      # missing associated documentation comment in .proto file
+      pass
       context.code(beta_interfaces.StatusCode.UNIMPLEMENTED)
     def Delete(self, request, context):
+      # missing associated documentation comment in .proto file
+      pass
       context.code(beta_interfaces.StatusCode.UNIMPLEMENTED)
     def ListPermissions(self, request, context):
+      # missing associated documentation comment in .proto file
+      pass
       context.code(beta_interfaces.StatusCode.UNIMPLEMENTED)
     def SetPermissions(self, request, context):
+      # missing associated documentation comment in .proto file
+      pass
       context.code(beta_interfaces.StatusCode.UNIMPLEMENTED)
     def ListGroups(self, request, context):
+      # missing associated documentation comment in .proto file
+      pass
       context.code(beta_interfaces.StatusCode.UNIMPLEMENTED)
     def SetGroups(self, request, context):
+      # missing associated documentation comment in .proto file
+      pass
       context.code(beta_interfaces.StatusCode.UNIMPLEMENTED)
 
 
@@ -1283,31 +1325,51 @@ try:
     It is recommended to use the GA API (classes and functions in this
     file not marked beta) for all further purposes. This class was generated
     only to ease transition from grpcio<0.15.0 to grpcio>=0.15.0."""
+    # missing associated documentation comment in .proto file
+    pass
     def Create(self, request, timeout, metadata=None, with_call=False, protocol_options=None):
+      # missing associated documentation comment in .proto file
+      pass
       raise NotImplementedError()
     Create.future = None
     def Modify(self, request, timeout, metadata=None, with_call=False, protocol_options=None):
+      # missing associated documentation comment in .proto file
+      pass
       raise NotImplementedError()
     Modify.future = None
     def Get(self, request, timeout, metadata=None, with_call=False, protocol_options=None):
+      # missing associated documentation comment in .proto file
+      pass
       raise NotImplementedError()
     Get.future = None
     def List(self, request, timeout, metadata=None, with_call=False, protocol_options=None):
+      # missing associated documentation comment in .proto file
+      pass
       raise NotImplementedError()
     List.future = None
     def Delete(self, request, timeout, metadata=None, with_call=False, protocol_options=None):
+      # missing associated documentation comment in .proto file
+      pass
       raise NotImplementedError()
     Delete.future = None
     def ListPermissions(self, request, timeout, metadata=None, with_call=False, protocol_options=None):
+      # missing associated documentation comment in .proto file
+      pass
       raise NotImplementedError()
     ListPermissions.future = None
     def SetPermissions(self, request, timeout, metadata=None, with_call=False, protocol_options=None):
+      # missing associated documentation comment in .proto file
+      pass
       raise NotImplementedError()
     SetPermissions.future = None
     def ListGroups(self, request, timeout, metadata=None, with_call=False, protocol_options=None):
+      # missing associated documentation comment in .proto file
+      pass
       raise NotImplementedError()
     ListGroups.future = None
     def SetGroups(self, request, timeout, metadata=None, with_call=False, protocol_options=None):
+      # missing associated documentation comment in .proto file
+      pass
       raise NotImplementedError()
     SetGroups.future = None
 

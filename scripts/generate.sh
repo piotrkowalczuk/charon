@@ -6,15 +6,16 @@ PROTO_FILES="${SERVICE}rpc/*.proto"
 
 
 cd ./internal/model && charong && cd -
-mockery -dir=./internal/model -all -inpkg -output_file=./internal/model/mocks.go
-goimports -w ./internal/model/schema.pqt.go ./internal/model/mocks.go
+goimports -w ./internal/model
+mockery -dir=./internal/model -case=underscore -all -inpkg
+goimports -w ./internal/model
 
 
 protoc ${PROTO_INCLUDE} --go_out=plugins=grpc:${GOPATH}/src ${PROTO_FILES}
 python -m grpc_tools.protoc ${PROTO_INCLUDE} --python_out=./${SERVICE}rpc --grpc_python_out=./${SERVICE}rpc ${PROTO_FILES}
 goimports -w ./${SERVICE}rpc
 
-mockery -case=underscore -dir=./${SERVICE}rpc -name=.*Client -output=./${SERVICE}test -output_file=${SERVICE}rpc.mock.go -output_pkg_name=${SERVICE}test
+mockery -case=underscore -dir=./${SERVICE}rpc -all -output=./${SERVICE}test -outpkg=${SERVICE}test
 
 ls -lha ./${SERVICE}rpc | grep pb.go
 ls -lha ./${SERVICE}rpc | grep pb2.py

@@ -15,7 +15,7 @@ import (
 
 	"github.com/golang/protobuf/ptypes"
 	"github.com/lib/pq"
-	"github.com/piotrkowalczuk/ntypes"
+	ntypes "github.com/piotrkowalczuk/ntypes"
 	"github.com/piotrkowalczuk/qtypes"
 )
 
