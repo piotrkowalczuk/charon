@@ -38,9 +38,8 @@ cover: test
 
 get:
 	go get github.com/vektra/mockery/cmd/mockery
-	go get github.com/Masterminds/glide
-	glide install -v
-	cd ./cmd/charong && glide install -v
+	go get -u github.com/golang/dep/cmd/dep
+	dep ensure
 
 publish:
 	docker build \

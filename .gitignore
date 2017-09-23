@@ -5,6 +5,7 @@
 example/client/client
 /temp
 vendor
+_vendor-*
 charon.iml
 run.sh
 coverage.txt
