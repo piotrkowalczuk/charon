@@ -115,6 +115,7 @@ func (d *Daemon) Run() (err error) {
 
 	clientOpts := []grpc.DialOption{
 		grpc.WithBlock(),
+		grpc.WithStatsHandler(interceptor),
 		grpc.WithTimeout(10 * time.Second),
 		grpc.WithUserAgent("charond"),
 		grpc.WithDialer(interceptor.Dialer(func(addr string, timeout time.Duration) (net.Conn, error) {
