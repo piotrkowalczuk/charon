@@ -16,10 +16,8 @@ import (
 	"github.com/piotrkowalczuk/mnemosyne/mnemosyned"
 	"github.com/piotrkowalczuk/mnemosyne/mnemosynerpc"
 	"github.com/piotrkowalczuk/ntypes"
-	"github.com/piotrkowalczuk/sklog"
 	"golang.org/x/crypto/bcrypt"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/grpclog"
 )
 
 type endToEndSuite struct {
@@ -50,9 +48,7 @@ func (etes *endToEndSuite) setup(t *testing.T) {
 		mnemosyneAddr, charonAddr net.Addr
 	)
 
-	logger := sklog.NewTestLogger(t)
 	_ = klog.NewJSONLogger(os.Stdout)
-	grpclog.SetLogger(sklog.NewGRPCLogger(logger))
 
 	mnemosyneAddr, etes.mnemosyneCloser = mnemosyned.TestDaemon(t, mnemosyned.TestDaemonOpts{
 		StoragePostgresAddress: testPostgresAddress,

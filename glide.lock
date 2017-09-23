@@ -1,5 +1,5 @@
-hash: c918126cd1392574b19f139e465b8b9f46d25d9976611c07affb4160e99efa4c
-updated: 2017-08-16T18:16:26.614544602+02:00
+hash: d99fb3f99025b7a14c91af390a2463022cf32b1826a0913468c91a61c76770e7
+updated: 2017-09-23T15:55:08.869392505+02:00
 imports:
 - name: github.com/beorn7/perks
   version: 4c0e84591b9aa9e6dcfdf3e020114cd81f89d5f9
@@ -42,7 +42,7 @@ imports:
 - name: github.com/pborman/uuid
   version: a97ce2ca70fa5a848076093f05e639a89ca34d06
 - name: github.com/piotrkowalczuk/mnemosyne
-  version: c668f714d425573c8443c31b0981c84e8a7d0ec3
+  version: b35f6cda9e5f1b4fd455a83c04a8c42c9c53f9c2
   subpackages:
   - internal/cluster
   - internal/jump
@@ -56,7 +56,7 @@ imports:
 - name: github.com/piotrkowalczuk/pqcomp
   version: 631b19c36ded8bbe954cf8c15a0044c591033536
 - name: github.com/piotrkowalczuk/promgrpc
-  version: e748861bd4ef1da47b1c411947053dca645b4998
+  version: 3c9e73dd7e9e6f12f009b72a63eba2870e37a6e4
 - name: github.com/piotrkowalczuk/qtypes
   version: cfa1f627c009055e907c566011e5c1b9559ae1e8
 - name: github.com/piotrkowalczuk/sklog
@@ -95,7 +95,7 @@ imports:
 - name: go.uber.org/multierr
   version: 3c4937480c32f4c13a875a1829af76c98ca3d40a
 - name: go.uber.org/zap
-  version: 9d9d6135afe89b6fc4a05e9a8552526caba38048
+  version: 7a9ca91fa627ed52c7ff4fcc95cd044dc2c82a51
   subpackages:
   - buffer
   - internal/bufferpool
@@ -145,12 +145,12 @@ imports:
   subpackages:
   - googleapis/rpc/status
 - name: google.golang.org/grpc
-  version: b3ddf786825de56a4178401b7e174ee332173b66
+  version: f92cdcd7dcdc69e81b2d7b338479a19a8723cfa3
   subpackages:
   - codes
   - connectivity
   - credentials
-  - grpclb/grpc_lb_v1
+  - grpclb/grpc_lb_v1/messages
   - grpclog
   - internal
   - keepalive
@@ -165,21 +165,19 @@ imports:
   version: 379148ca0225df7a432012b8df0355c2a2063ac0
 testImports:
 - name: github.com/gopherjs/gopherjs
-  version: 2b1d432c8a82c9bff0b0baffaeb3ec6e92974112
+  version: b40cd48c38f9a18eb3db20d163bad78de12cf0b7
   subpackages:
   - js
 - name: github.com/jtolds/gls
   version: 77f18212c9c7edc9bd6a33d383a7b545ce62f064
 - name: github.com/smartystreets/assertions
-  version: 1540c14c9f1bd1abeba90f29762a4c6e50582303
+  version: 9c0ea8acbc1d8ad689f9e6fe0c1fa5838e0cabc2
   subpackages:
   - internal/go-render/render
   - internal/oglematchers
 - name: github.com/smartystreets/goconvey
-  version: d4c757aa9afd1e2fc1832aaab209b5794eb336e1
+  version: 9e8dc3f972df6c8fcc0375ef492c24d0bb204857
   subpackages:
   - convey
   - convey/gotest
   - convey/reporting
-- name: github.com/smartystreets/logging
-  version: ac3a674540761aa0b4382094ba4795f917e85c7f

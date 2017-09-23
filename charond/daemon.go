@@ -125,6 +125,7 @@ func (d *Daemon) Run() (err error) {
 	}
 	serverOpts := []grpc.ServerOption{
 		grpc.MaxConcurrentStreams(100),
+		grpc.StatsHandler(interceptor),
 		// No stream endpoint available at the moment.
 		grpc.UnaryInterceptor(unaryServerInterceptors(
 			func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {

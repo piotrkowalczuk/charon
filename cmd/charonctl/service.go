@@ -43,7 +43,7 @@ func initClient(addr string) (c *client, ctx context.Context) {
 			os.Exit(1)
 		}
 
-		ctx = metadata.NewContext(ctx, metadata.Pairs(mnemosyne.AccessTokenMetadataKey, resp.Value))
+		ctx = metadata.NewOutgoingContext(ctx, metadata.Pairs(mnemosyne.AccessTokenMetadataKey, resp.Value))
 	}
 
 	return
