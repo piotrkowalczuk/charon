@@ -2,7 +2,7 @@ language: go
 dist: trusty
 sudo: required
 go:
-- tip
+- 1.9.x
 services:
 - docker
 addons:
