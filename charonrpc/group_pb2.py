@@ -22,7 +22,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='group.proto',
   package='charonrpc',
   syntax='proto3',
-  serialized_pb=_b('\n\x0bgroup.proto\x12\tcharonrpc\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1egoogle/protobuf/wrappers.proto\x1a\x13ntypes/ntypes.proto\"\xdc\x01\n\x05Group\x12\n\n\x02id\x18\x01 \x01(\x03\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x03 \x01(\t\x12.\n\ncreated_at\x18\x04 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12!\n\ncreated_by\x18\x05 \x01(\x0b\x32\r.ntypes.Int64\x12.\n\nupdated_at\x18\x06 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12!\n\nupdated_by\x18\x07 \x01(\x0b\x32\r.ntypes.Int64\"G\n\x12\x43reateGroupRequest\x12\x0c\n\x04name\x18\x01 \x01(\t\x12#\n\x0b\x64\x65scription\x18\x02 \x01(\x0b\x32\x0e.ntypes.String\"6\n\x13\x43reateGroupResponse\x12\x1f\n\x05group\x18\x01 \x01(\x0b\x32\x10.charonrpc.Group\"\x1d\n\x0fGetGroupRequest\x12\n\n\x02id\x18\x01 \x01(\x03\"3\n\x10GetGroupResponse\x12\x1f\n\x05group\x18\x01 \x01(\x0b\x32\x10.charonrpc.Group\"V\n\x11ListGroupsRequest\x12\x1d\n\x06offset\x18\x64 \x01(\x0b\x32\r.ntypes.Int64\x12\x1c\n\x05limit\x18\x65 \x01(\x0b\x32\r.ntypes.Int64J\x04\x08\x01\x10\x64\"6\n\x12ListGroupsResponse\x12 \n\x06groups\x18\x01 \x03(\x0b\x32\x10.charonrpc.Group\" \n\x12\x44\x65leteGroupRequest\x12\n\n\x02id\x18\x01 \x01(\x03\"c\n\x12ModifyGroupRequest\x12\n\n\x02id\x18\x01 \x01(\x03\x12\x1c\n\x04name\x18\x02 \x01(\x0b\x32\x0e.ntypes.String\x12#\n\x0b\x64\x65scription\x18\x03 \x01(\x0b\x32\x0e.ntypes.String\"6\n\x13ModifyGroupResponse\x12\x1f\n\x05group\x18\x01 \x01(\x0b\x32\x10.charonrpc.Group\"C\n\x1aSetGroupPermissionsRequest\x12\x10\n\x08group_id\x18\x01 \x01(\x03\x12\x13\n\x0bpermissions\x18\x02 \x03(\t\"R\n\x1bSetGroupPermissionsResponse\x12\x0f\n\x07\x63reated\x18\x01 \x01(\x03\x12\x0f\n\x07removed\x18\x02 \x01(\x03\x12\x11\n\tuntouched\x18\x03 \x01(\x03\")\n\x1bListGroupPermissionsRequest\x12\n\n\x02id\x18\x01 \x01(\x03\"3\n\x1cListGroupPermissionsResponse\x12\x13\n\x0bpermissions\x18\x01 \x03(\t2\xbd\x04\n\x0cGroupManager\x12I\n\x06\x43reate\x12\x1d.charonrpc.CreateGroupRequest\x1a\x1e.charonrpc.CreateGroupResponse\"\x00\x12I\n\x06Modify\x12\x1d.charonrpc.ModifyGroupRequest\x1a\x1e.charonrpc.ModifyGroupResponse\"\x00\x12@\n\x03Get\x12\x1a.charonrpc.GetGroupRequest\x1a\x1b.charonrpc.GetGroupResponse\"\x00\x12\x45\n\x04List\x12\x1c.charonrpc.ListGroupsRequest\x1a\x1d.charonrpc.ListGroupsResponse\"\x00\x12\x45\n\x06\x44\x65lete\x12\x1d.charonrpc.DeleteGroupRequest\x1a\x1a.google.protobuf.BoolValue\"\x00\x12\x64\n\x0fListPermissions\x12&.charonrpc.ListGroupPermissionsRequest\x1a\'.charonrpc.ListGroupPermissionsResponse\"\x00\x12\x61\n\x0eSetPermissions\x12%.charonrpc.SetGroupPermissionsRequest\x1a&.charonrpc.SetGroupPermissionsResponse\"\x00\x42,Z*github.com/piotrkowalczuk/charon/charonrpcb\x06proto3')
+  serialized_pb=_b('\n\x0bgroup.proto\x12\tcharonrpc\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1egoogle/protobuf/wrappers.proto\x1a\x13ntypes/ntypes.proto\"\xdc\x01\n\x05Group\x12\n\n\x02id\x18\x01 \x01(\x03\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x03 \x01(\t\x12.\n\ncreated_at\x18\x04 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12!\n\ncreated_by\x18\x05 \x01(\x0b\x32\r.ntypes.Int64\x12.\n\nupdated_at\x18\x06 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12!\n\nupdated_by\x18\x07 \x01(\x0b\x32\r.ntypes.Int64\"G\n\x12\x43reateGroupRequest\x12\x0c\n\x04name\x18\x01 \x01(\t\x12#\n\x0b\x64\x65scription\x18\x02 \x01(\x0b\x32\x0e.ntypes.String\"6\n\x13\x43reateGroupResponse\x12\x1f\n\x05group\x18\x01 \x01(\x0b\x32\x10.charonrpc.Group\"\x1d\n\x0fGetGroupRequest\x12\n\n\x02id\x18\x01 \x01(\x03\"3\n\x10GetGroupResponse\x12\x1f\n\x05group\x18\x01 \x01(\x0b\x32\x10.charonrpc.Group\"V\n\x11ListGroupsRequest\x12\x1d\n\x06offset\x18\x64 \x01(\x0b\x32\r.ntypes.Int64\x12\x1c\n\x05limit\x18\x65 \x01(\x0b\x32\r.ntypes.Int64J\x04\x08\x01\x10\x64\"6\n\x12ListGroupsResponse\x12 \n\x06groups\x18\x01 \x03(\x0b\x32\x10.charonrpc.Group\" \n\x12\x44\x65leteGroupRequest\x12\n\n\x02id\x18\x01 \x01(\x03\"c\n\x12ModifyGroupRequest\x12\n\n\x02id\x18\x01 \x01(\x03\x12\x1c\n\x04name\x18\x02 \x01(\x0b\x32\x0e.ntypes.String\x12#\n\x0b\x64\x65scription\x18\x03 \x01(\x0b\x32\x0e.ntypes.String\"6\n\x13ModifyGroupResponse\x12\x1f\n\x05group\x18\x01 \x01(\x0b\x32\x10.charonrpc.Group\"R\n\x1aSetGroupPermissionsRequest\x12\x10\n\x08group_id\x18\x01 \x01(\x03\x12\x13\n\x0bpermissions\x18\x02 \x03(\t\x12\r\n\x05\x66orce\x18\x03 \x01(\x08\"R\n\x1bSetGroupPermissionsResponse\x12\x0f\n\x07\x63reated\x18\x01 \x01(\x03\x12\x0f\n\x07removed\x18\x02 \x01(\x03\x12\x11\n\tuntouched\x18\x03 \x01(\x03\")\n\x1bListGroupPermissionsRequest\x12\n\n\x02id\x18\x01 \x01(\x03\"3\n\x1cListGroupPermissionsResponse\x12\x13\n\x0bpermissions\x18\x01 \x03(\t2\xbd\x04\n\x0cGroupManager\x12I\n\x06\x43reate\x12\x1d.charonrpc.CreateGroupRequest\x1a\x1e.charonrpc.CreateGroupResponse\"\x00\x12I\n\x06Modify\x12\x1d.charonrpc.ModifyGroupRequest\x1a\x1e.charonrpc.ModifyGroupResponse\"\x00\x12@\n\x03Get\x12\x1a.charonrpc.GetGroupRequest\x1a\x1b.charonrpc.GetGroupResponse\"\x00\x12\x45\n\x04List\x12\x1c.charonrpc.ListGroupsRequest\x1a\x1d.charonrpc.ListGroupsResponse\"\x00\x12\x45\n\x06\x44\x65lete\x12\x1d.charonrpc.DeleteGroupRequest\x1a\x1a.google.protobuf.BoolValue\"\x00\x12\x64\n\x0fListPermissions\x12&.charonrpc.ListGroupPermissionsRequest\x1a\'.charonrpc.ListGroupPermissionsResponse\"\x00\x12\x61\n\x0eSetPermissions\x12%.charonrpc.SetGroupPermissionsRequest\x1a&.charonrpc.SetGroupPermissionsResponse\"\x00\x42,Z*github.com/piotrkowalczuk/charon/charonrpcb\x06proto3')
   ,
   dependencies=[google_dot_protobuf_dot_timestamp__pb2.DESCRIPTOR,google_dot_protobuf_dot_wrappers__pb2.DESCRIPTOR,ntypes_dot_ntypes__pb2.DESCRIPTOR,])
 
@@ -430,6 +430,13 @@ _SETGROUPPERMISSIONSREQUEST = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
+    _descriptor.FieldDescriptor(
+      name='force', full_name='charonrpc.SetGroupPermissionsRequest.force', index=2,
+      number=3, type=8, cpp_type=7, label=1,
+      has_default_value=False, default_value=False,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
   ],
   extensions=[
   ],
@@ -443,7 +450,7 @@ _SETGROUPPERMISSIONSREQUEST = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=883,
-  serialized_end=950,
+  serialized_end=965,
 )
 
 
@@ -487,8 +494,8 @@ _SETGROUPPERMISSIONSRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=952,
-  serialized_end=1034,
+  serialized_start=967,
+  serialized_end=1049,
 )
 
 
@@ -518,8 +525,8 @@ _LISTGROUPPERMISSIONSREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1036,
-  serialized_end=1077,
+  serialized_start=1051,
+  serialized_end=1092,
 )
 
 
@@ -549,8 +556,8 @@ _LISTGROUPPERMISSIONSRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1079,
-  serialized_end=1130,
+  serialized_start=1094,
+  serialized_end=1145,
 )
 
 _GROUP.fields_by_name['created_at'].message_type = google_dot_protobuf_dot_timestamp__pb2._TIMESTAMP

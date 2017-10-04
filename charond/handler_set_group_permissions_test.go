@@ -82,7 +82,7 @@ func TestSetGroupPermissionsHandler_SetPermissions_nonExistingPermission(t *test
 	_, err = suite.charon.group.SetPermissions(ctx, &charonrpc.SetGroupPermissionsRequest{
 		GroupId: res.Group.Id,
 		Permissions: []string{
-			"fake",
+			"fake:fake:fake",
 		},
 	})
 	if err != nil {
@@ -93,6 +93,17 @@ func TestSetGroupPermissionsHandler_SetPermissions_nonExistingPermission(t *test
 		} else {
 			t.Errorf("wrong error type: %T", err)
 		}
+	}
+
+	_, err = suite.charon.group.SetPermissions(ctx, &charonrpc.SetGroupPermissionsRequest{
+		GroupId: res.Group.Id,
+		Permissions: []string{
+			"fake:fake:fake",
+		},
+		Force: true,
+	})
+	if err != nil {
+		t.Fatalf("unexpected error: %s", err.Error())
 	}
 }
 

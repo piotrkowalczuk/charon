@@ -77,7 +77,7 @@ func TestSetUserPermissionsHandler_SetPermissions_nonExistingPermission(t *testi
 	_, err := suite.charon.user.SetPermissions(ctx, &charonrpc.SetUserPermissionsRequest{
 		UserId: 1,
 		Permissions: []string{
-			"fake",
+			"fake:fake:fake",
 		},
 	})
 	if err != nil {
@@ -89,6 +89,17 @@ func TestSetUserPermissionsHandler_SetPermissions_nonExistingPermission(t *testi
 			t.Errorf("wrong error type: %T", err)
 		}
 	}
+	_, err = suite.charon.user.SetPermissions(ctx, &charonrpc.SetUserPermissionsRequest{
+		UserId: 1,
+		Permissions: []string{
+			"fake:fake:fake",
+		},
+		Force: true,
+	})
+	if err != nil {
+		t.Fatalf("unexpected error: %s", err.Error())
+	}
+
 }
 
 func TestSetUserPermissionsHandler_firewall_success(t *testing.T) {

@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	"github.com/piotrkowalczuk/charon"
+	"github.com/piotrkowalczuk/qtypes"
 )
 
 // Permission returns charon.Permission value that is concatenated
@@ -26,6 +27,7 @@ type PermissionProvider interface {
 	FindByGroupID(ctx context.Context, groupID int64) (entities []*PermissionEntity, err error)
 	Register(ctx context.Context, permissions charon.Permissions) (created, untouched, removed int64, err error)
 	Insert(ctx context.Context, entity *PermissionEntity) (*PermissionEntity, error)
+	InsertMissing(ctx context.Context, permissions charon.Permissions) (int64, error)
 }
 
 // PermissionRepository extends PermissionRepositoryBase
@@ -114,12 +116,34 @@ func (pr *PermissionRepository) FindBy(ctx context.Context, query string, args .
 	return permissions, nil
 }
 
-func (pr *PermissionRepository) findOneStmt() (*sql.Stmt, error) {
-	return pr.DB.Prepare(
-		"SELECT " + strings.Join(TablePermissionColumns, ",") + " " +
-			"FROM " + pr.Table + " AS p " +
-			"WHERE p.subsystem = $1 AND p.module = $2 AND p.action = $3",
-	)
+func (pr *PermissionRepository) InsertMissing(ctx context.Context, permissions charon.Permissions) (int64, error) {
+	var aff int64
+	for _, permission := range permissions {
+		subsystem, module, action := charon.Permission(permission).Split()
+
+		count, err := pr.Count(ctx, &PermissionCountExpr{
+			Where: &PermissionCriteria{
+				Subsystem: qtypes.EqualString(subsystem),
+				Module:    qtypes.EqualString(module),
+				Action:    qtypes.EqualString(action),
+			},
+		})
+		if err != nil {
+			return 0, err
+		}
+		if count < 1 {
+			_, err := pr.Insert(ctx, &PermissionEntity{
+				Subsystem: subsystem,
+				Module:    module,
+				Action:    action,
+			})
+			if err != nil {
+				return 0, err
+			}
+			aff++
+		}
+	}
+	return aff, nil
 }
 
 var (

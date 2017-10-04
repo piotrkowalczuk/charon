@@ -150,8 +150,8 @@ ExistingLoop:
 	return nil
 }
 
-func setPermissions(ctx context.Context, c charonrpc.GroupManagerClient, id int64, name string, permissions []string) error {
-	_, err := c.SetPermissions(ctx, &charonrpc.SetGroupPermissionsRequest{
+func setPermissions(ctx context.Context, group charonrpc.GroupManagerClient, id int64, name string, permissions []string) error {
+	_, err := group.SetPermissions(ctx, &charonrpc.SetGroupPermissionsRequest{
 		GroupId:     id,
 		Permissions: permissions,
 	})

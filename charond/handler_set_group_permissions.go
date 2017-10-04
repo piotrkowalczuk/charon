@@ -25,7 +25,15 @@ func (sgph *setGroupPermissionsHandler) SetPermissions(ctx context.Context, req 
 		return nil, err
 	}
 
-	created, removed, err := sgph.repository.group.SetPermissions(ctx, req.GroupId, charon.NewPermissions(req.Permissions...)...)
+	permissions := charon.NewPermissions(req.Permissions...)
+	if req.Force {
+		_, err := sgph.repository.permission.InsertMissing(ctx, permissions)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	created, removed, err := sgph.repository.group.SetPermissions(ctx, req.GroupId, permissions...)
 	if err != nil {
 		switch model.ErrorConstraint(err) {
 		case model.TableGroupPermissionsConstraintGroupIDForeignKey:

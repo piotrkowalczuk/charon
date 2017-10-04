@@ -25,7 +25,15 @@ func (suph *setUserPermissionsHandler) SetPermissions(ctx context.Context, req *
 		return nil, err
 	}
 
-	created, removed, err := suph.repository.user.SetPermissions(ctx, req.UserId, charon.NewPermissions(req.Permissions...)...)
+	permissions := charon.NewPermissions(req.Permissions...)
+	if req.Force {
+		_, err := suph.repository.permission.InsertMissing(ctx, permissions)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	created, removed, err := suph.repository.user.SetPermissions(ctx, req.UserId, permissions...)
 	if err != nil {
 		switch model.ErrorConstraint(err) {
 		case model.TableUserPermissionsConstraintUserIDForeignKey:

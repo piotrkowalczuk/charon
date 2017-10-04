@@ -73,6 +73,8 @@ message ModifyGroupResponse {
 message SetGroupPermissionsRequest {
     int64 group_id = 1;
     repeated string permissions = 2;
+    // Force tells if permission should be created in case if it does not exists.
+    bool force = 3;
 }
 
 message SetGroupPermissionsResponse {
