@@ -154,6 +154,7 @@ func setPermissions(ctx context.Context, group charonrpc.GroupManagerClient, id 
 	_, err := group.SetPermissions(ctx, &charonrpc.SetGroupPermissionsRequest{
 		GroupId:     id,
 		Permissions: permissions,
+		Force:       true,
 	})
 	if err != nil {
 		return fmt.Errorf("group (%s - %d) permission set failure: %s", name, id, err.Error())
