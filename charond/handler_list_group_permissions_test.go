@@ -53,35 +53,42 @@ func TestListGroupPermissionsHandler_ListPermissions(t *testing.T) {
 		t.Fatalf("unexpected error: %s", err.Error())
 	}
 
-	permissions := append(testPermissionsDataUserService, testPermissionsDataCustomerService...)
-	permissions = append(permissions, testPermissionsDataBigService...)
-	permissions = append(permissions, testPermissionsDataImageService...)
-
-	_, err = suite.charon.group.SetPermissions(ctx, &charonrpc.SetGroupPermissionsRequest{
-		GroupId:     createGroupResp.Group.Id,
-		Permissions: permissions,
-	})
-	if err != nil {
-		t.Fatalf("unexpected error: %s", err.Error())
+	dataset := [][]string{
+		testPermissionsDataUserService,
 	}
+	dataset = append(dataset, append(dataset[0], testPermissionsDataCustomerService...))
+	dataset = append(dataset, append(dataset[1], testPermissionsDataBigService...))
+	dataset = append(dataset, append(dataset[2], testPermissionsDataImageService...))
 
-	res, err := suite.charon.group.ListPermissions(ctx, &charonrpc.ListGroupPermissionsRequest{
-		Id: createGroupResp.Group.Id,
-	})
-	if err != nil {
-		if st, ok := status.FromError(err); ok {
-			if st.Code() != codes.NotFound {
-				t.Fatalf("wrong error code, expected %s but got %s for error: %s", codes.NotFound, st.Code(), err.Error())
-			}
-		} else {
-			t.Errorf("wrong error type: %T", err)
+	for _, permissions := range dataset {
+		_, err = suite.charon.group.SetPermissions(ctx, &charonrpc.SetGroupPermissionsRequest{
+			GroupId:     createGroupResp.Group.Id,
+			Permissions: permissions,
+		})
+		if err != nil {
+			t.Fatalf("unexpected error: %s", err.Error())
 		}
-	}
 
-	sort.Strings(res.Permissions)
-	sort.Strings(permissions)
-	if !reflect.DeepEqual(permissions, res.Permissions) {
-		t.Errorf("wrong permissions returend, expected:\n	%v\nbut got:\n	 %v", permissions, res.Permissions)
+		res, err := suite.charon.group.ListPermissions(ctx, &charonrpc.ListGroupPermissionsRequest{
+			Id: createGroupResp.Group.Id,
+		})
+		if err != nil {
+			if st, ok := status.FromError(err); ok {
+				if st.Code() != codes.NotFound {
+					t.Fatalf("wrong error code, expected %s but got %s for error: %s", codes.NotFound, st.Code(), err.Error())
+				}
+			} else {
+				t.Errorf("wrong error type: %T", err)
+			}
+		}
+
+		sort.Strings(res.Permissions)
+		sort.Strings(permissions)
+		if !reflect.DeepEqual(permissions, res.Permissions) {
+			t.Errorf("wrong permissions returend, expected:\n	%v\nbut got:\n	 %v", permissions, res.Permissions)
+		} else {
+			t.Logf("equal number of permissions: %d", len(res.Permissions))
+		}
 	}
 }
 
