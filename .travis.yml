@@ -38,3 +38,5 @@ deploy:
     secure: hD0y9S8BD0ZhmpOa/Ks/J49lufEwAgW7df1I/vC6RdzbiinqFM4PQLHTF5yjHmRMoqxYfKwco48/A9wduLxoQoZN/0Md7HTQC197XciN/OMyqkKJmqajslXycs55YSRwUWl6eXz40jln7wq/5mlT/dhJGXpLtdB2YI+HGmDvQ2k=
   on:
     tags: true
+  edge:
+    branch: twine-user-install
