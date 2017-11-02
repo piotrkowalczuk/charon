@@ -151,7 +151,7 @@ ExistingLoop:
 }
 
 func setPermissions(ctx context.Context, group charonrpc.GroupManagerClient, id int64, name string, permissions []string) error {
-	_, err := group.SetPermissions(ctx, &charonrpc.SetGroupPermissionsRequest{
+	res, err := group.SetPermissions(ctx, &charonrpc.SetGroupPermissionsRequest{
 		GroupId:     id,
 		Permissions: permissions,
 		Force:       true,
@@ -159,6 +159,22 @@ func setPermissions(ctx context.Context, group charonrpc.GroupManagerClient, id 
 	if err != nil {
 		return fmt.Errorf("group (%s - %d) permission set failure: %s", name, id, err.Error())
 	}
-	fmt.Printf("group (%s) permissions has been set\n", name)
+	fmt.Printf("group (%s) permissions has been set (given=%d,created=%d,removed=%d,untouched=%d)\n", name, len(permissions), res.Created, res.Removed, res.Untouched)
+
+	got, err := group.ListPermissions(ctx, &charonrpc.ListGroupPermissionsRequest{Id: id})
+	if err != nil {
+		return fmt.Errorf("group (%s - %d) permission check failure: %s", name, id, err.Error())
+	}
+	var equal int
+	for _, rp := range got.Permissions {
+		for _, lp := range permissions {
+			if rp == lp {
+				equal++
+			}
+		}
+	}
+	if equal != len(permissions) {
+		return fmt.Errorf("group (%s - %d) permission check failed, expected %d but got %d", name, id, len(permissions), equal)
+	}
 	return nil
 }

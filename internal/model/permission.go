@@ -44,7 +44,7 @@ func NewPermissionRepository(dbPool *sql.DB) *PermissionRepository {
 			Table:   TablePermission,
 			Columns: TablePermissionColumns,
 		},
-		findByUserIDQuery: `SELECT DISTINCT ON (p.ID)
+		findByUserIDQuery: `SELECT DISTINCT ON (p.id)
 			` + columns(TablePermissionColumns, "p") + `
 		FROM ` + TableUserPermissions + ` AS up
 		LEFT JOIN ` + TablePermission + ` AS p
@@ -53,7 +53,7 @@ func NewPermissionRepository(dbPool *sql.DB) *PermissionRepository {
 			AND up.` + TableUserPermissionsColumnPermissionAction + ` = p.` + TablePermissionColumnAction + `
 		WHERE up.` + TableUserPermissionsColumnUserID + ` = $1
 		UNION
-		SELECT DISTINCT ON (p.ID) ` + columns(TablePermissionColumns, "p") + `
+		SELECT DISTINCT ON (p.id) ` + columns(TablePermissionColumns, "p") + `
 		FROM ` + TableUserGroups + ` AS ug
 		INNER JOIN ` + TableGroupPermissions + ` AS gp ON ug.` + TableUserGroupsColumnGroupID + ` = gp.` + TableGroupPermissionsColumnGroupID + `
 		LEFT JOIN ` + TablePermission + ` as p
@@ -73,15 +73,18 @@ func (pr *PermissionRepository) FindByUserID(ctx context.Context, userID int64) 
 }
 
 // FindByGroupID implements PermissionProvider interface.
-func (pr *PermissionRepository) FindByGroupID(ctx context.Context, userID int64) ([]*PermissionEntity, error) {
+func (pr *PermissionRepository) FindByGroupID(ctx context.Context, groupID int64) ([]*PermissionEntity, error) {
 	// TODO: does it work?
 	return pr.FindBy(ctx, `
-		SELECT DISTINCT ON (p.ID)
+		SELECT DISTINCT ON (p.id)
 			`+columns(TablePermissionColumns, "p")+`
 		FROM `+pr.Table+` AS p
-		LEFT JOIN `+TableGroupPermissions+` AS gp ON gp.permission_id = p.ID AND gp.group_id = ug.group_id
-		WHERE up.user_id = $1 OR ug.user_id = $1
-	`, userID)
+		LEFT JOIN `+TableGroupPermissions+` AS gp
+			ON gp.permission_subsystem = p.subsystem
+			AND gp.permission_module = p.module
+			AND gp.permission_action = p.action
+		WHERE gp.group_id = $1
+	`, groupID)
 }
 
 // FindBy ...
@@ -239,7 +242,7 @@ MissingPermissionsLoop:
 		created += affected
 	}
 
-	delete, err = tx.Prepare("DELETE FROM " + pr.Table + " AS p WHERE p.ID = $1")
+	delete, err = tx.Prepare("DELETE FROM " + pr.Table + " AS p WHERE p.id = $1")
 	if err != nil {
 		return
 	}
@@ -324,12 +327,12 @@ func (pr *PermissionReg) Register(ctx context.Context, permissions charon.Permis
 // FindByTag ...
 func (pr *PermissionRepository) FindByTag(ctx context.Context, userID int64) ([]*PermissionEntity, error) {
 	query := `
-		SELECT DISTINCT ON (p.ID)
+		SELECT DISTINCT ON (p.id)
 			` + columns(TablePermissionColumns, "p") + `
 		FROM ` + pr.Table + ` AS p
-		LEFT JOIN ` + TableUserPermissions + ` AS up ON up.permission_id = p.ID AND up.user_id = $1
+		LEFT JOIN ` + TableUserPermissions + ` AS up ON up.permission_id = p.id AND up.user_id = $1
 		LEFT JOIN ` + TableUserGroups + ` AS ug ON ug.user_id = $1
-		LEFT JOIN ` + TableGroupPermissions + ` AS gp ON gp.permission_id = p.ID AND gp.group_id = ug.group_id
+		LEFT JOIN ` + TableGroupPermissions + ` AS gp ON gp.permission_id = p.id AND gp.group_id = ug.group_id
 		WHERE up.user_id = $1 OR ug.user_id = $1
 	`
 

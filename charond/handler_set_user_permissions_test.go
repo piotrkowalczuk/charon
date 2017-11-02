@@ -99,7 +99,6 @@ func TestSetUserPermissionsHandler_SetPermissions_nonExistingPermission(t *testi
 	if err != nil {
 		t.Fatalf("unexpected error: %s", err.Error())
 	}
-
 }
 
 func TestSetUserPermissionsHandler_firewall_success(t *testing.T) {
