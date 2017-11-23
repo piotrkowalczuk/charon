@@ -88,8 +88,8 @@
 [[projects]]
   name = "github.com/piotrkowalczuk/mnemosyne"
   packages = [".","internal/cluster","internal/jump","internal/service/logger","internal/service/postgres","mnemosyned","mnemosynerpc","mnemosynetest"]
-  revision = "3c101ee24d1a849ca01b1ee1206227ae68a44c1f"
-  version = "v0.12.0"
+  revision = "44e61219f435ebc898c0f537215dfe5d7cf0b99a"
+  version = "v0.13.0"
 
 [[projects]]
   name = "github.com/piotrkowalczuk/ntypes"
@@ -118,8 +118,8 @@
 [[projects]]
   name = "github.com/piotrkowalczuk/promgrpc"
   packages = ["."]
-  revision = "49b651430f0d7944eec17b21ab1612932e52218d"
-  version = "v1.0.2"
+  revision = "2cb325708a986e97d3540905a0b589fa4c17eaee"
+  version = "v2.0.0"
 
 [[projects]]
   name = "github.com/piotrkowalczuk/qtypes"
@@ -147,7 +147,7 @@
 
 [[projects]]
   name = "github.com/prometheus/client_golang"
-  packages = ["prometheus"]
+  packages = ["prometheus","prometheus/promhttp"]
   revision = "c5b7fccd204277076155f10851dad72b76a49317"
   version = "v0.8.0"
 
@@ -262,6 +262,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "fe4318acb12e0ef7a285e3a8ab88fcf52f8f8386805dba9614c69e694823a58e"
+  inputs-digest = "1f9949e327cd7d77b527e2bd72f5564b71520c88117f189080cff56a778c18ba"
   solver-name = "gps-cdcl"
   solver-version = 1
