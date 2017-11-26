@@ -74,6 +74,6 @@ func main() {
 		fmt.Println("permissions:")
 	}
 	for _, p := range res.Permissions {
-		fmt.Printf("     - %s \n", p.String())
+		fmt.Printf("     - %s \n", p)
 	}
 }
