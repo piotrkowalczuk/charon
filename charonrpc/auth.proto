@@ -48,6 +48,7 @@ message ActorResponse {
     repeated string permissions = 5;
     bool is_superuser = 6;
     bool is_active = 7;
-    bool is_stuff = 8;
+    bool is_stuff = 8 [deprecated = true];
     bool is_confirmed = 9;
+    bool is_staff = 10;
 }

@@ -22,8 +22,8 @@
 [[projects]]
   name = "github.com/go-ldap/ldap"
   packages = ["."]
-  revision = "8168ee085ee43257585e50c6441aadf54ecb2c9f"
-  version = "v2.5.0"
+  revision = "bb7a9ca6e4fbc2129e3db588a34bc970ffe811a9"
+  version = "v2.5.1"
 
 [[projects]]
   name = "github.com/go-logfmt/logfmt"
@@ -34,20 +34,20 @@
 [[projects]]
   name = "github.com/go-stack/stack"
   packages = ["."]
-  revision = "817915b46b97fd7bb80e8ab6b69f01a53ac3eebf"
-  version = "v1.6.0"
+  revision = "259ab82a6cad3992b4e21ff5cac294ccb06474bc"
+  version = "v1.7.0"
 
 [[projects]]
   branch = "master"
   name = "github.com/golang/protobuf"
   packages = ["proto","ptypes","ptypes/any","ptypes/duration","ptypes/empty","ptypes/timestamp","ptypes/wrappers"]
-  revision = "130e6b02ab059e7b717a096f397c5b60111cae74"
+  revision = "1e59b77b52bf8e4b449a57e6f79f21226d571845"
 
 [[projects]]
   branch = "master"
   name = "github.com/gopherjs/gopherjs"
   packages = ["js"]
-  revision = "b40cd48c38f9a18eb3db20d163bad78de12cf0b7"
+  revision = "444abdf920945de5d4a977b572bcc6c674d1e4eb"
 
 [[projects]]
   branch = "master"
@@ -71,7 +71,7 @@
   branch = "master"
   name = "github.com/lib/pq"
   packages = [".","oid"]
-  revision = "b77235e3890a962fe8a6f8c4c7198679ca7814e7"
+  revision = "83612a56d3dd153a94a629cd64925371c9adad78"
 
 [[projects]]
   name = "github.com/matttproud/golang_protobuf_extensions"
@@ -87,9 +87,9 @@
 
 [[projects]]
   name = "github.com/piotrkowalczuk/mnemosyne"
-  packages = [".","internal/cluster","internal/jump","internal/service/logger","internal/service/postgres","mnemosyned","mnemosynerpc","mnemosynetest"]
-  revision = "44e61219f435ebc898c0f537215dfe5d7cf0b99a"
-  version = "v0.13.0"
+  packages = [".","internal/cache","internal/cluster","internal/jump","internal/model","internal/service/logger","internal/service/postgres","internal/storage","internal/storage/postgres","mnemosyned","mnemosynerpc","mnemosynetest"]
+  revision = "d219eabd252688953c141a1a1b1dd425f179cc2f"
+  version = "v0.14.1"
 
 [[projects]]
   name = "github.com/piotrkowalczuk/ntypes"
@@ -155,25 +155,25 @@
   branch = "master"
   name = "github.com/prometheus/client_model"
   packages = ["go"]
-  revision = "6f3806018612930941127f2a7c6c453ba2c527d2"
+  revision = "99fa1f4be8e564e8a6b613da7fa6f46c9edafc6c"
 
 [[projects]]
   branch = "master"
   name = "github.com/prometheus/common"
   packages = ["expfmt","internal/bitbucket.org/ww/goautoneg","model"]
-  revision = "2f17f4a9d485bf34b4bfaccc273805040e4f86c8"
+  revision = "2e54d0b93cba2fd133edc32211dcc32c06ef72ca"
 
 [[projects]]
   branch = "master"
   name = "github.com/prometheus/procfs"
   packages = [".","xfs"]
-  revision = "e645f4e5aaa8506fc71d6edbc5c4ff02c04c46f2"
+  revision = "a6e9df898b1336106c743392c48ee0b71f5c4efa"
 
 [[projects]]
   name = "github.com/smartystreets/assertions"
   packages = [".","internal/go-render/render","internal/oglematchers"]
-  revision = "9c0ea8acbc1d8ad689f9e6fe0c1fa5838e0cabc2"
-  version = "1.7.0"
+  revision = "ff1918e1e5a13a74014644ae7c1e0ba2f791364d"
+  version = "1.8.0"
 
 [[projects]]
   name = "github.com/smartystreets/goconvey"
@@ -189,15 +189,15 @@
 
 [[projects]]
   name = "github.com/stretchr/testify"
-  packages = ["assert","mock"]
+  packages = ["assert","mock","require"]
   revision = "69483b4bd14f5845b5a1e55bca19e954e827f1d0"
   version = "v1.1.4"
 
 [[projects]]
   name = "go.uber.org/atomic"
   packages = ["."]
-  revision = "4e336646b2ef9fc6e47be8e21594178f98e5ebcf"
-  version = "v1.2.0"
+  revision = "8474b86a5a6f79c443ce4b2992817ff32cf208b8"
+  version = "v1.3.1"
 
 [[projects]]
   name = "go.uber.org/multierr"
@@ -208,32 +208,32 @@
 [[projects]]
   name = "go.uber.org/zap"
   packages = [".","buffer","internal/bufferpool","internal/color","internal/exit","zapcore"]
-  revision = "7a9ca91fa627ed52c7ff4fcc95cd044dc2c82a51"
-  version = "v1.7.0"
+  revision = "35aad584952c3e7020db7b839f6b102de6271f89"
+  version = "v1.7.1"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/crypto"
   packages = ["bcrypt","blowfish","sha3"]
-  revision = "7d9177d70076375b9a59c8fde23d52d9c4a7ecd5"
+  revision = "b080dc9a8c480b08e698fb1219160d598526310f"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/net"
   packages = ["context","context/ctxhttp","http2","http2/hpack","idna","internal/timeseries","lex/httplex","trace"]
-  revision = "0744d001aa8470aaa53df28d32e5ceeb8af9bd70"
+  revision = "c7086645de248775cbf2373cf5ca4d2fa664b8c1"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/oauth2"
   packages = [".","internal"]
-  revision = "13449ad91cb26cb47661c1b080790392170385fd"
+  revision = "f95fa95eaa936d9d87489b15d1d18b97c1ba9c28"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/text"
   packages = ["collate","collate/build","internal/colltab","internal/gen","internal/tag","internal/triegen","internal/ucd","language","secure/bidirule","transform","unicode/bidi","unicode/cldr","unicode/norm","unicode/rangetable"]
-  revision = "1cbadb444a806fd9430d14ad08967ed91da4fa0a"
+  revision = "88f656faf3f37f690df1a32515b479415e1a6769"
 
 [[projects]]
   name = "google.golang.org/appengine"
@@ -245,13 +245,13 @@
   branch = "master"
   name = "google.golang.org/genproto"
   packages = ["googleapis/rpc/status"]
-  revision = "1e559d0a00eef8a9a43151db4665280bd8dd5886"
+  revision = "7f0da29060c682909f650ad8ed4e515bd74fa12a"
 
 [[projects]]
   name = "google.golang.org/grpc"
-  packages = [".","codes","connectivity","credentials","grpclb/grpc_lb_v1/messages","grpclog","internal","keepalive","metadata","naming","peer","stats","status","tap","transport"]
-  revision = "f92cdcd7dcdc69e81b2d7b338479a19a8723cfa3"
-  version = "v1.6.0"
+  packages = [".","balancer","balancer/roundrobin","codes","connectivity","credentials","encoding","grpclb/grpc_lb_v1/messages","grpclog","internal","keepalive","metadata","naming","peer","resolver","resolver/dns","resolver/passthrough","stats","status","tap","transport"]
+  revision = "5a9f7b402fe85096d2e1d0383435ee1876e863d0"
+  version = "v1.8.0"
 
 [[projects]]
   name = "gopkg.in/asn1-ber.v1"
@@ -262,6 +262,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "52a28ed303dc7af29f61ffad30b822af8561411c0c212d0ff912c30d32d33bc3"
+  inputs-digest = "d83e2588d335c8bda07c65af357a47cfcc01eaafbdc7e3e7017f81f8eb6dc2b1"
   solver-name = "gps-cdcl"
   solver-version = 1

@@ -9,8 +9,6 @@ import (
 	"golang.org/x/oauth2"
 )
 
-var contextKeyActor = struct{}{}
-
 // SecurityContext ....
 type SecurityContext interface {
 	context.Context
@@ -63,6 +61,10 @@ type Actor struct {
 	IsConfirmed bool               `json:"isConfirmed"`
 	Permissions charon.Permissions `json:"permissions"`
 }
+
+type key struct{}
+
+var contextKeyActor = key{}
 
 // NewActorContext returns a new Context that carries Actor value.
 func NewActorContext(ctx context.Context, act Actor) context.Context {

@@ -10,27 +10,6 @@ type MockPermissionProvider struct {
 	mock.Mock
 }
 
-// Count provides a mock function with given fields: ctx, criteria
-func (_m *MockPermissionProvider) Count(ctx context.Context, criteria *PermissionCountExpr) (int64, error) {
-	ret := _m.Called(ctx, criteria)
-
-	var r0 int64
-	if rf, ok := ret.Get(0).(func(context.Context, *PermissionCountExpr) int64); ok {
-		r0 = rf(ctx, criteria)
-	} else {
-		r0 = ret.Get(0).(int64)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, *PermissionCountExpr) error); ok {
-		r1 = rf(ctx, criteria)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // Find provides a mock function with given fields: ctx, criteria
 func (_m *MockPermissionProvider) Find(ctx context.Context, criteria *PermissionFindExpr) ([]*PermissionEntity, error) {
 	ret := _m.Called(ctx, criteria)

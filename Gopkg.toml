@@ -42,7 +42,7 @@ ignored = ["github.com/piotrkowalczuk/charon/data"]
 
 [[constraint]]
   name = "github.com/piotrkowalczuk/mnemosyne"
-  version = "~0.13.0"
+  version = "~0.14.0"
 
 [[constraint]]
   name = "github.com/piotrkowalczuk/ntypes"

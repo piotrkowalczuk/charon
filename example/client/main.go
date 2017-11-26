@@ -8,7 +8,9 @@ import (
 
 	"time"
 
+	"github.com/golang/protobuf/ptypes/wrappers"
 	"github.com/piotrkowalczuk/charon"
+	"github.com/piotrkowalczuk/charon/charonrpc"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
@@ -43,8 +45,8 @@ func main() {
 	}
 	defer conn.Close()
 
-	rpc := charon.NewRPCClient(conn)
-	if _, err = rpc.RegisterPermissions(context.Background(), &charon.RegisterPermissionsRequest{
+	rpc := charonrpc.NewPermissionManagerClient(conn)
+	if _, err = rpc.Register(context.Background(), &charonrpc.RegisterPermissionsRequest{
 		Permissions: []string{
 			permissionCommentCanCreate.String(),
 			permissionCommentCanEditAsOwner.String(),
@@ -54,24 +56,24 @@ func main() {
 		log.Fatal(err)
 	}
 
-	ctx := metadata.NewContext(context.Background(), metadata.Pairs("request_id", "123456789"))
-	sub, err := charon.New(conn).Subject(ctx, token)
+	ctx := metadata.NewOutgoingContext(context.Background(), metadata.Pairs("request_id", "123456789"))
+	res, err := charonrpc.NewAuthClient(conn).Actor(ctx, &wrappers.StringValue{Value: token})
 	if err != nil {
 		log.Fatalf("%s: %s", grpc.Code(err).String(), grpc.ErrorDesc(err))
 	}
 
-	fmt.Printf("id: %d \n", sub.ID)
-	fmt.Printf("username: %s \n", sub.Username)
-	fmt.Printf("first name: %s \n", sub.FirstName)
-	fmt.Printf("last name: %s \n", sub.LastName)
-	fmt.Printf("is active: %t \n", sub.IsActive)
-	fmt.Printf("is confirmed: %t \n", sub.IsConfirmed)
-	fmt.Printf("is staff: %t \n", sub.IsStaff)
-	fmt.Printf("is superuser: %t \n", sub.IsSuperuser)
-	if len(sub.Permissions) > 0 {
+	fmt.Printf("id: %d \n", res.Id)
+	fmt.Printf("username: %s \n", res.Username)
+	fmt.Printf("first name: %s \n", res.FirstName)
+	fmt.Printf("last name: %s \n", res.LastName)
+	fmt.Printf("is active: %t \n", res.IsActive)
+	fmt.Printf("is confirmed: %t \n", res.IsConfirmed)
+	fmt.Printf("is staff: %t \n", res.IsStuff)
+	fmt.Printf("is superuser: %t \n", res.IsSuperuser)
+	if len(res.Permissions) > 0 {
 		fmt.Println("permissions:")
 	}
-	for _, p := range sub.Permissions {
+	for _, p := range res.Permissions {
 		fmt.Printf("     - %s \n", p.String())
 	}
 }

@@ -79,6 +79,7 @@ func (sh *actorHandler) Actor(ctx context.Context, r *wrappers.StringValue) (*ch
 		IsActive:    ent.IsActive,
 		IsConfirmed: ent.IsConfirmed,
 		IsStuff:     ent.IsStaff,
+		IsStaff:     ent.IsStaff,
 		IsSuperuser: ent.IsSuperuser,
 	}, nil
 }
