@@ -5,10 +5,6 @@ import (
 	"testing"
 )
 
-var (
-	groupTestFixtures = []*GroupEntity{}
-)
-
 func TestGroupRepository_IsGranted(t *testing.T) {
 	suite := &postgresSuite{}
 	suite.setup(t)

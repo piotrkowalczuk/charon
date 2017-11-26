@@ -53,7 +53,7 @@ func (lh *loginHandler) Login(ctx context.Context, r *charonrpc.LoginRequest) (*
 			if terr, ok := err.(*libldap.Error); ok && terr.ResultCode >= libldap.ErrorNetwork {
 				// on network issue, try once again
 				<-time.After(1 * time.Second)
-				if usr, err = lh.handleLDAP(ctx, conn, r); err != nil {
+				if _, err = lh.handleLDAP(ctx, conn, r); err != nil {
 					conn.Close()
 					return nil, err
 				}

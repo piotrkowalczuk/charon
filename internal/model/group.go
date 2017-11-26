@@ -76,24 +76,6 @@ func NewGroupRepository(dbPool *sql.DB) GroupProvider {
 	}
 }
 
-func (gr *GroupRepository) queryRow(ctx context.Context, query string, args ...interface{}) (*GroupEntity, error) {
-	var entity GroupEntity
-	err := gr.DB.QueryRowContext(ctx, query, args...).Scan(
-		&entity.CreatedAt,
-		&entity.CreatedBy,
-		&entity.Description,
-		&entity.ID,
-		&entity.Name,
-		&entity.UpdatedAt,
-		&entity.UpdatedBy,
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	return &entity, nil
-}
-
 // FindByUserID implements GroupProvider interface.
 func (gr *GroupRepository) FindByUserID(ctx context.Context, userID int64) ([]*GroupEntity, error) {
 	query := `

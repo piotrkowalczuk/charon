@@ -22,9 +22,8 @@ type Mappings struct {
 
 // Mapping ...
 type Mapping struct {
-	From       map[string][]string `json:"from"`
-	To         MappingTo           `json:"to"`
-	attributes []string
+	From map[string][]string `json:"from"`
+	To   MappingTo           `json:"to"`
 }
 
 // MappingTo ...
@@ -48,7 +47,7 @@ func NewMappings(r io.Reader) (*Mappings, error) {
 	}
 
 	removeDuplicates(&m.Attributes)
-	sort.Sort(sort.StringSlice(m.Attributes))
+	sort.Strings(m.Attributes)
 
 	return &m, nil
 }

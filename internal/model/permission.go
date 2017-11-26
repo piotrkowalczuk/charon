@@ -298,7 +298,7 @@ func NewPermissionRegistry(r PermissionProvider) *PermissionReg {
 // Exists ...
 func (pr *PermissionReg) Exists(_ context.Context, permission charon.Permission) (ok bool) {
 	pr.RLock()
-	pr.RUnlock()
+	defer pr.RUnlock()
 
 	_, ok = pr.permissions[permission]
 	return
