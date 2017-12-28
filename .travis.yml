@@ -18,7 +18,6 @@ env:
   - secure: SKpsbHvr6qav31iUk2Pdx0grpaCZaVDsklPZ3GJdGisrI4kt+RfiOEKpEVkXD1X5sZ7AmqAS0weQmRUv/byr1FgoD5Vzjx/WMjnW5xAupjZVeOu+QqrJ4qYDrC4ZOBGb6XQa7aFEjFYet2l/+j145e9uW8XCq7m05wPps1TtyLI=
   - secure: HdBDqrI0p78/tPTC7HC1LBpL3pgzBEZJJC55l6lsNwgttLZqhVvFtHBN5v9+GBYoKmBVIzk4oI3s+IrYMqd2suR5i1EjNQjnLewFX1OM26oy6mr9wNhjNQMHOdN7JCHfPJdpUq9AjVPIcxMRik6AdTjFDs6JnplfGUrlMbbrtaI=
 install:
-- pip install --upgrade setuptools
 - make get
 before_script:
 - psql -c 'create database travis_ci_test;' -U postgres
