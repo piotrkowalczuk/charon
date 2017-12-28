@@ -23,6 +23,7 @@ exclude_patterns:
   - "**/*_pb2.py"
   - "**/*.pb.go"
   - "**/*.pqt.go"
+  - "**/mock_*.go"
   - "charontest/"
   - "charonrpc/"
   - "scripts/"
