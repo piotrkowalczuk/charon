@@ -1,15 +1,28 @@
-engines:
+version: "2"
+plugins:
   golint:
     enabled: true
   gofmt:
     enabled: true
   govet:
     enabled: true
-ratings:
-   paths:
-   - "**.go"
-exclude_paths:
-- "**.pb.go"
-- "**.pqt.go"
-- "**_test.go"
-- vendor/**/*
+checks:
+  complex-logic:
+    enabled: false
+  method-complexity:
+    enabled: false
+  file-lines:
+    enabled: false
+  method-lines:
+    enabled: false
+  return-statements:
+    enabled: false
+exclude_patterns:
+  - "**/*_test.go"
+  - "**/*_pb.py"
+  - "**/*_pb2.py"
+  - "**/*.pb.go"
+  - "charontest/"
+  - "charonrpc/"
+  - "scripts/"
+  - "vendor/**/*"
