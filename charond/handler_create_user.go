@@ -52,12 +52,13 @@ func (cuh *createUserHandler) Create(ctx context.Context, req *charonrpc.CreateU
 		}
 	}
 
+	token := uuid.New()
 	ent, err := cuh.repository.user.Create(ctx, &model.UserEntity{
 		Username:          req.Username,
 		Password:          req.SecurePassword,
 		FirstName:         req.FirstName,
 		LastName:          req.LastName,
-		ConfirmationToken: uuid.New()[:],
+		ConfirmationToken: token[:],
 		IsSuperuser:       req.IsSuperuser.BoolOr(false),
 		IsStaff:           req.IsStaff.BoolOr(false),
 		IsActive:          req.IsActive.BoolOr(false),
