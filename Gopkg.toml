@@ -37,8 +37,8 @@ ignored = ["github.com/piotrkowalczuk/charon/data"]
   name = "github.com/lib/pq"
 
 [[constraint]]
-  name = "github.com/pborman/uuid"
-  version = "~1.0.0"
+  name = "github.com/google/uuid"
+  version = "^1.0.0"
 
 [[constraint]]
   name = "github.com/piotrkowalczuk/mnemosyne"
@@ -51,9 +51,9 @@ ignored = ["github.com/piotrkowalczuk/charon/data"]
 [[constraint]]
   name = "github.com/piotrkowalczuk/pqcomp"
 
-[[constraint]]
+[[override]]
   name = "github.com/piotrkowalczuk/promgrpc"
-  version = "^2.0.0"
+  version = "^3.0.0"
 
 [[constraint]]
   name = "github.com/piotrkowalczuk/qtypes"
@@ -61,6 +61,7 @@ ignored = ["github.com/piotrkowalczuk/charon/data"]
 
 [[constraint]]
   name = "github.com/piotrkowalczuk/sklog"
+  branch = "master"
 
 [[constraint]]
   name = "github.com/prometheus/client_golang"
@@ -80,12 +81,15 @@ ignored = ["github.com/piotrkowalczuk/charon/data"]
 
 [[constraint]]
   name = "golang.org/x/crypto"
+  branch = "master"
 
 [[constraint]]
   name = "golang.org/x/net"
+  branch = "master"
 
 [[constraint]]
   name = "golang.org/x/oauth2"
+  branch = "master"
 
 [[constraint]]
   name = "google.golang.org/grpc"
@@ -105,3 +109,4 @@ ignored = ["github.com/piotrkowalczuk/charon/data"]
 
 [[constraint]]
   name = "github.com/huandu/xstrings"
+  version = "^1.2.0"
