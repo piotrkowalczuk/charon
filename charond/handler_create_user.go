@@ -57,7 +57,7 @@ func (cuh *createUserHandler) Create(ctx context.Context, req *charonrpc.CreateU
 		Password:          req.SecurePassword,
 		FirstName:         req.FirstName,
 		LastName:          req.LastName,
-		ConfirmationToken: uuid.New().String(),
+		ConfirmationToken: uuid.New()[:],
 		IsSuperuser:       req.IsSuperuser.BoolOr(false),
 		IsStaff:           req.IsStaff.BoolOr(false),
 		IsActive:          req.IsActive.BoolOr(false),

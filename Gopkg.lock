@@ -133,23 +133,6 @@
   version = "v1.0"
 
 [[projects]]
-  digest = "1:48bb71d7d5381d1858f996af5c11ecd02d22e6638825a8e8c9caf359a00f8eeb"
-  name = "github.com/piotrkowalczuk/charon"
-  packages = [
-    ".",
-    "charond",
-    "charonrpc",
-    "charontest",
-    "internal/ldap",
-    "internal/model",
-    "internal/password",
-    "internal/session",
-  ]
-  pruneopts = ""
-  revision = "5e638ab559949551387fc0f9f1ebc408e7f7aadd"
-  version = "v0.16.3"
-
-[[projects]]
   digest = "1:ca2a10a2acbd9d7f07f6ab4d45a024e9565811eb96199ac641d25b4df7418769"
   name = "github.com/piotrkowalczuk/mnemosyne"
   packages = [
@@ -501,14 +484,6 @@
     "github.com/golang/protobuf/ptypes/wrappers",
     "github.com/google/uuid",
     "github.com/lib/pq",
-    "github.com/piotrkowalczuk/charon",
-    "github.com/piotrkowalczuk/charon/charond",
-    "github.com/piotrkowalczuk/charon/charonrpc",
-    "github.com/piotrkowalczuk/charon/charontest",
-    "github.com/piotrkowalczuk/charon/internal/ldap",
-    "github.com/piotrkowalczuk/charon/internal/model",
-    "github.com/piotrkowalczuk/charon/internal/password",
-    "github.com/piotrkowalczuk/charon/internal/session",
     "github.com/piotrkowalczuk/mnemosyne",
     "github.com/piotrkowalczuk/mnemosyne/mnemosyned",
     "github.com/piotrkowalczuk/mnemosyne/mnemosynerpc",
