@@ -2,6 +2,10 @@ version: 2.1
 
 commands:
   mkdir_working_directory:
+    parameters:
+      to:
+        type: string
+        default: "Hello World"
     steps:
       - type: shell
         name: Initialize working directory
@@ -156,7 +160,8 @@ jobs:
   generate_java:
     executor: java-executor
     steps:
-    - mkdir_working_directory
+    - mkdir_working_directory:
+        to: "x"
     - checkout
     - restore_cache:
         key: v1-golang-dependency-{{ checksum "Gopkg.lock" }}
@@ -169,7 +174,8 @@ jobs:
   generate_python:
     executor: python-executor
     steps:
-    - mkdir_working_directory
+    - mkdir_working_directory:
+        to: "x"
     - checkout
     - restore_cache:
         key: v1-golang-dependency-{{ checksum "Gopkg.lock" }}
