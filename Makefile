@@ -43,7 +43,7 @@ cover: test
 	go tool cover -html=cover.out
 
 get:
-    go get -u github.com/golang/protobuf/{proto,protoc-gen-go}
+	go get -u github.com/golang/protobuf/{proto,protoc-gen-go}
 	go get -u google.golang.org/grpc
 	go get -u github.com/axw/gocov/gocov
 	go get -u gotest.tools/gotestsum
