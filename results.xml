@@ -1,0 +1,347 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+	<testsuite tests="16" failures="0" time="0.000s" name="github.com/piotrkowalczuk/charon">
+		<properties>
+			<property name="go.version" value="go1.11.1"></property>
+		</properties>
+		<testcase classname="charon" name="TestPermission_String" time="0.000s"></testcase>
+		<testcase classname="charon" name="TestPermission_Split" time="0.000s"></testcase>
+		<testcase classname="charon" name="TestPermission_Subsystem" time="0.000s"></testcase>
+		<testcase classname="charon" name="TestPermission_Module" time="0.000s"></testcase>
+		<testcase classname="charon" name="TestPermission_Action" time="0.000s"></testcase>
+		<testcase classname="charon" name="TestPermission_MarshalJSON" time="0.000s"></testcase>
+		<testcase classname="charon" name="TestPermissions_Contains_true" time="0.000s"></testcase>
+		<testcase classname="charon" name="TestPermissions_Contains_false" time="0.000s"></testcase>
+		<testcase classname="charon" name="TestPermissions_Contains_many" time="0.000s"></testcase>
+		<testcase classname="charon" name="TestPermissions_Strings" time="0.000s"></testcase>
+		<testcase classname="charon" name="TestPermissions_Set" time="0.000s"></testcase>
+		<testcase classname="charon" name="TestPermissions_String/few" time="0.000s"></testcase>
+		<testcase classname="charon" name="TestPermissions_String/nil" time="0.000s"></testcase>
+		<testcase classname="charon" name="TestPermissions_String/empty" time="0.000s"></testcase>
+		<testcase classname="charon" name="TestPermissions_String/single" time="0.000s"></testcase>
+		<testcase classname="charon" name="TestPermissions_String" time="0.000s"></testcase>
+	</testsuite>
+	<testsuite tests="7" failures="0" time="0.000s" name="github.com/piotrkowalczuk/charon/charonc">
+		<properties>
+			<property name="go.version" value="go1.11.1"></property>
+		</properties>
+		<testcase classname="charonc" name="TestNewSecurityContext" time="0.000s"></testcase>
+		<testcase classname="charonc" name="TestSecurityContext_Actor" time="0.000s"></testcase>
+		<testcase classname="charonc" name="TestSecurityContext_Actor_empty" time="0.000s"></testcase>
+		<testcase classname="charonc" name="TestSecurityContext_Token" time="0.000s"></testcase>
+		<testcase classname="charonc" name="TestSecurityContext_Token_empty" time="0.000s"></testcase>
+		<testcase classname="charonc" name="TestUser_Name" time="0.000s"></testcase>
+		<testcase classname="charonc" name="ExampleSecurityContext" time="0.000s"></testcase>
+	</testsuite>
+	<testsuite tests="164" failures="15" time="9.540s" name="github.com/piotrkowalczuk/charon/charond">
+		<properties>
+			<property name="go.version" value="go1.11.1"></property>
+		</properties>
+		<testcase classname="charond" name="TestLoginHandler_Login" time="0.080s">
+			<failure message="Failed" type="">=== RUN   TestLoginHandler_Login&#xA;--- FAIL: TestLoginHandler_Login (0.08s)&#xA;    suite_e2e_test.go:56: mnemosyne deamon running on: 127.0.0.1:49608&#xA;    test_logger.go:45: database has been cleared upfront                           timestamp=2018-11-05T12:06:12+01:00  level=info  &#xA;    daemon.go:107: charon daemon start error: pq: duplicate key value violates unique constraint &#34;pg_namespace_nspname_index&#34;&#xA;</failure>
+		</testcase>
+		<testcase classname="charond" name="TestLogoutHandler_Logout" time="0.220s">
+			<failure message="Failed" type="">=== RUN   TestLogoutHandler_Logout&#xA;--- FAIL: TestLogoutHandler_Logout (0.22s)&#xA;    suite_e2e_test.go:56: mnemosyne deamon running on: 127.0.0.1:49615&#xA;    test_logger.go:45: database has been cleared upfront                           level=info  timestamp=2018-11-05T12:06:12+01:00  &#xA;    test_logger.go:45: postgres connection has been established                    host=localhost  username=  level=info  timestamp=2018-11-05T12:06:12+01:00  &#xA;    test_logger.go:45: rpc connection to mnemosyne has been established            level=info  timestamp=2018-11-05T12:06:12+01:00  address=127.0.0.1:49615  &#xA;    daemon.go:107: charon daemon start error: pq: relation &#34;charon.user&#34; does not exist&#xA;</failure>
+		</testcase>
+		<testcase classname="charond" name="TestLogoutHandler_Logout_missingToken" time="0.070s">
+			<failure message="Failed" type="">=== RUN   TestLogoutHandler_Logout_missingToken&#xA;--- FAIL: TestLogoutHandler_Logout_missingToken (0.07s)&#xA;    suite_e2e_test.go:56: mnemosyne deamon running on: 127.0.0.1:49623&#xA;    test_logger.go:45: database has been cleared upfront                           timestamp=2018-11-05T12:06:13+01:00  level=info  &#xA;    daemon.go:107: charon daemon start error: pq: duplicate key value violates unique constraint &#34;pg_namespace_nspname_index&#34;&#xA;</failure>
+		</testcase>
+		<testcase classname="charond" name="TestModifyGroupHandler_Modify" time="1.150s">
+			<failure message="Failed" type="">=== RUN   TestModifyGroupHandler_Modify&#xA;--- FAIL: TestModifyGroupHandler_Modify (1.15s)&#xA;    suite_e2e_test.go:56: mnemosyne deamon running on: 127.0.0.1:49627&#xA;    daemon.go:107: charon daemon start error: pq: deadlock detected&#xA;</failure>
+		</testcase>
+		<testcase classname="charond" name="TestModifyUserHandler_Modify" time="0.170s">
+			<failure message="Failed" type="">=== RUN   TestModifyUserHandler_Modify&#xA;--- FAIL: TestModifyUserHandler_Modify (0.17s)&#xA;    suite_e2e_test.go:56: mnemosyne deamon running on: 127.0.0.1:49631&#xA;    test_logger.go:45: database has been cleared upfront                           level=info  timestamp=2018-11-05T12:06:14+01:00  &#xA;    test_logger.go:45: postgres connection has been established                    username=  level=info  timestamp=2018-11-05T12:06:14+01:00  host=localhost  &#xA;    test_logger.go:45: rpc connection to mnemosyne has been established            address=127.0.0.1:49631  level=info  timestamp=2018-11-05T12:06:14+01:00  &#xA;    daemon.go:107: charon daemon start error: pq: relation &#34;charon.user&#34; does not exist&#xA;</failure>
+		</testcase>
+		<testcase classname="charond" name="TestModifyUserHandler_Modify_nonExistingUser" time="0.050s">
+			<failure message="Failed" type="">=== RUN   TestModifyUserHandler_Modify_nonExistingUser&#xA;--- FAIL: TestModifyUserHandler_Modify_nonExistingUser (0.05s)&#xA;    suite_e2e_test.go:56: mnemosyne deamon running on: 127.0.0.1:49638&#xA;    test_logger.go:45: database has been cleared upfront                           level=info  timestamp=2018-11-05T12:06:14+01:00  &#xA;    daemon.go:107: charon daemon start error: pq: duplicate key value violates unique constraint &#34;pg_namespace_nspname_index&#34;&#xA;</failure>
+		</testcase>
+		<testcase classname="charond" name="TestModifyUserHandler_Modify_wrongID" time="0.120s">
+			<failure message="Failed" type="">=== RUN   TestModifyUserHandler_Modify_wrongID&#xA;--- FAIL: TestModifyUserHandler_Modify_wrongID (0.12s)&#xA;    suite_e2e_test.go:56: mnemosyne deamon running on: 127.0.0.1:49642&#xA;    test_logger.go:45: database has been cleared upfront                           level=info  timestamp=2018-11-05T12:06:14+01:00  &#xA;    test_logger.go:45: postgres connection has been established                    host=localhost  username=  level=info  timestamp=2018-11-05T12:06:14+01:00  &#xA;    test_logger.go:45: rpc connection to mnemosyne has been established            address=127.0.0.1:49642  level=info  timestamp=2018-11-05T12:06:14+01:00  &#xA;    daemon.go:107: charon daemon start error: pq: relation &#34;charon.user&#34; does not exist&#xA;</failure>
+		</testcase>
+		<testcase classname="charond" name="TestModifyUserHandler_Modify_usernameAlreadyExists" time="0.060s">
+			<failure message="Failed" type="">=== RUN   TestModifyUserHandler_Modify_usernameAlreadyExists&#xA;--- FAIL: TestModifyUserHandler_Modify_usernameAlreadyExists (0.06s)&#xA;    suite_e2e_test.go:56: mnemosyne deamon running on: 127.0.0.1:49650&#xA;    test_logger.go:45: database has been cleared upfront                           level=info  timestamp=2018-11-05T12:06:14+01:00  &#xA;    daemon.go:107: charon daemon start error: pq: duplicate key value violates unique constraint &#34;pg_namespace_nspname_index&#34;&#xA;</failure>
+		</testcase>
+		<testcase classname="charond" name="TestRegisterPermissionsHandler_Register" time="0.260s">
+			<failure message="Failed" type="">=== RUN   TestRegisterPermissionsHandler_Register&#xA;--- FAIL: TestRegisterPermissionsHandler_Register (0.26s)&#xA;    suite_e2e_test.go:56: mnemosyne deamon running on: 127.0.0.1:49654&#xA;    test_logger.go:45: database has been cleared upfront                           level=info  timestamp=2018-11-05T12:06:14+01:00  &#xA;    test_logger.go:45: postgres connection has been established                    timestamp=2018-11-05T12:06:14+01:00  host=localhost  username=  level=info  &#xA;    test_logger.go:45: rpc connection to mnemosyne has been established            address=127.0.0.1:49654  level=info  timestamp=2018-11-05T12:06:14+01:00  &#xA;    daemon.go:107: charon daemon start error: pq: relation &#34;charon.user&#34; does not exist&#xA;</failure>
+		</testcase>
+		<testcase classname="charond" name="TestRegisterPermissionsHandler_Register_inconsistentSubsystem" time="0.060s">
+			<failure message="Failed" type="">=== RUN   TestRegisterPermissionsHandler_Register_inconsistentSubsystem&#xA;--- FAIL: TestRegisterPermissionsHandler_Register_inconsistentSubsystem (0.06s)&#xA;    suite_e2e_test.go:56: mnemosyne deamon running on: 127.0.0.1:49662&#xA;    test_logger.go:45: database has been cleared upfront                           level=info  timestamp=2018-11-05T12:06:14+01:00  &#xA;    daemon.go:107: charon daemon start error: pq: duplicate key value violates unique constraint &#34;pg_namespace_nspname_index&#34;&#xA;</failure>
+		</testcase>
+		<testcase classname="charond" name="TestRegisterPermissionsHandler_Register_emptySubsystem" time="0.080s">
+			<failure message="Failed" type="">=== RUN   TestRegisterPermissionsHandler_Register_emptySubsystem&#xA;--- FAIL: TestRegisterPermissionsHandler_Register_emptySubsystem (0.08s)&#xA;    suite_e2e_test.go:56: mnemosyne deamon running on: 127.0.0.1:49666&#xA;    test_logger.go:45: database has been cleared upfront                           level=info  timestamp=2018-11-05T12:06:14+01:00  &#xA;    daemon.go:107: charon daemon start error: pq: duplicate key value violates unique constraint &#34;pg_namespace_nspname_index&#34;&#xA;</failure>
+		</testcase>
+		<testcase classname="charond" name="TestSetGroupPermissionsHandler_SetPermissions" time="0.110s">
+			<failure message="Failed" type="">=== RUN   TestSetGroupPermissionsHandler_SetPermissions&#xA;--- FAIL: TestSetGroupPermissionsHandler_SetPermissions (0.11s)&#xA;    suite_e2e_test.go:56: mnemosyne deamon running on: 127.0.0.1:49671&#xA;    test_logger.go:45: database has been cleared upfront                           level=info  timestamp=2018-11-05T12:06:15+01:00  &#xA;    test_logger.go:45: postgres connection has been established                    username=  level=info  timestamp=2018-11-05T12:06:15+01:00  host=localhost  &#xA;    test_logger.go:45: rpc connection to mnemosyne has been established            address=127.0.0.1:49671  level=info  timestamp=2018-11-05T12:06:15+01:00  &#xA;    daemon.go:107: charon daemon start error: pq: relation &#34;charon.user&#34; does not exist&#xA;</failure>
+		</testcase>
+		<testcase classname="charond" name="TestSetGroupPermissionsHandler_SetPermissions_nonExistingGroup" time="0.070s">
+			<failure message="Failed" type="">=== RUN   TestSetGroupPermissionsHandler_SetPermissions_nonExistingGroup&#xA;--- FAIL: TestSetGroupPermissionsHandler_SetPermissions_nonExistingGroup (0.07s)&#xA;    suite_e2e_test.go:56: mnemosyne deamon running on: 127.0.0.1:49679&#xA;    test_logger.go:45: database has been cleared upfront                           timestamp=2018-11-05T12:06:15+01:00  level=info  &#xA;    daemon.go:107: charon daemon start error: pq: duplicate key value violates unique constraint &#34;pg_namespace_nspname_index&#34;&#xA;</failure>
+		</testcase>
+		<testcase classname="charond" name="TestSetGroupPermissionsHandler_SetPermissions_nonExistingPermission" time="0.190s">
+			<failure message="Failed" type="">=== RUN   TestSetGroupPermissionsHandler_SetPermissions_nonExistingPermission&#xA;--- FAIL: TestSetGroupPermissionsHandler_SetPermissions_nonExistingPermission (0.19s)&#xA;    suite_e2e_test.go:56: mnemosyne deamon running on: 127.0.0.1:49683&#xA;    test_logger.go:45: database has been cleared upfront                           level=info  timestamp=2018-11-05T12:06:15+01:00  &#xA;    test_logger.go:45: postgres connection has been established                    host=localhost  username=  level=info  timestamp=2018-11-05T12:06:15+01:00  &#xA;    test_logger.go:45: rpc connection to mnemosyne has been established            address=127.0.0.1:49683  level=info  timestamp=2018-11-05T12:06:15+01:00  &#xA;    daemon.go:107: charon daemon start error: pq: relation &#34;charon.user&#34; does not exist&#xA;</failure>
+		</testcase>
+		<testcase classname="charond" name="TestSetUserGroupsHandler_SetGroups" time="0.050s">
+			<failure message="Failed" type="">=== RUN   TestSetUserGroupsHandler_SetGroups&#xA;--- FAIL: TestSetUserGroupsHandler_SetGroups (0.05s)&#xA;    suite_e2e_test.go:56: mnemosyne deamon running on: 127.0.0.1:49691&#xA;    test_logger.go:45: database has been cleared upfront                           level=info  timestamp=2018-11-05T12:06:15+01:00  &#xA;    daemon.go:107: charon daemon start error: pq: duplicate key value violates unique constraint &#34;pg_namespace_nspname_index&#34;&#xA;</failure>
+		</testcase>
+		<testcase classname="charond" name="TestDeleteUserHandler_Delete_E2E/permissions-assigned" time="0.000s">
+			<skipped message="=== RUN   TestDeleteUserHandler_Delete_E2E/permissions-assigned&#xA;    --- SKIP: TestDeleteUserHandler_Delete_E2E/permissions-assigned (0.00s)&#xA;        handler_delete_user_test.go:72: TODO: implement&#xA;    test_logger.go:45: request handled successfully                                handler=/charonrpc.UserManager/Delete  elapsed=10.329085ms  level=debug  timestamp=2018-11-05T12:06:11+01:00  &#xA;"></skipped>
+		</testcase>
+		<testcase classname="charond" name="TestDaemon_Run" time="0.170s"></testcase>
+		<testcase classname="charond" name="TestActorHandler_Actor/incorrect-token" time="0.010s"></testcase>
+		<testcase classname="charond" name="TestActorHandler_Actor/context" time="0.010s"></testcase>
+		<testcase classname="charond" name="TestActorHandler_Actor/nothing" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestActorHandler_Actor/correct-token" time="0.030s"></testcase>
+		<testcase classname="charond" name="TestActorHandler_Actor" time="0.320s"></testcase>
+		<testcase classname="charond" name="TestBelongsToHandler_BelongsTo_E2E/belongs" time="0.020s"></testcase>
+		<testcase classname="charond" name="TestBelongsToHandler_BelongsTo_E2E/not-belongs" time="0.010s"></testcase>
+		<testcase classname="charond" name="TestBelongsToHandler_BelongsTo_E2E/group-does-not-exists" time="0.010s"></testcase>
+		<testcase classname="charond" name="TestBelongsToHandler_BelongsTo_E2E" time="0.620s"></testcase>
+		<testcase classname="charond" name="TestBelongsToHandler_BelongsTo_Unit/can-check-with-permission-as-a-stranger" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestBelongsToHandler_BelongsTo_Unit/cannot-check-without-permission" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestBelongsToHandler_BelongsTo_Unit/cannot-check-if-exists-query-fails" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestBelongsToHandler_BelongsTo_Unit/cannot-check-if-session-does-not-exists" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestBelongsToHandler_BelongsTo_Unit/invalid-user-id" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestBelongsToHandler_BelongsTo_Unit/invalid-group-id" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestBelongsToHandler_BelongsTo_Unit/can-check-as-superuser" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestBelongsToHandler_BelongsTo_Unit/can-check-for-yourself" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestBelongsToHandler_BelongsTo_Unit" time="0.020s"></testcase>
+		<testcase classname="charond" name="TestBelongsToHandler_firewall_success" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestBelongsToHandler_firewall_failure" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestCreateGroupHandler_Create_E2E/full" time="0.010s"></testcase>
+		<testcase classname="charond" name="TestCreateGroupHandler_Create_E2E/only-name" time="0.010s"></testcase>
+		<testcase classname="charond" name="TestCreateGroupHandler_Create_E2E/same-name-twice" time="0.020s"></testcase>
+		<testcase classname="charond" name="TestCreateGroupHandler_Create_E2E/only-description" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestCreateGroupHandler_Create_E2E" time="0.320s"></testcase>
+		<testcase classname="charond" name="TestCreateGroupHandler_Create_Unit/cannot-check-if-session-does-not-exists" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestCreateGroupHandler_Create_Unit/name-to-short" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestCreateGroupHandler_Create_Unit/can-create-with-permission" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestCreateGroupHandler_Create_Unit/can-create-as-superuser" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestCreateGroupHandler_Create_Unit/cannot-reply-if-entity-is-broken" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestCreateGroupHandler_Create_Unit/cannot-create-without-permission" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestCreateGroupHandler_Create_Unit/cannot-check-if-exists-query-fails" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestCreateGroupHandler_Create_Unit" time="0.010s"></testcase>
+		<testcase classname="charond" name="TestCreateGroupHandler_firewall_success" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestCreateGroupHandler_firewall_failure" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestCreateUserHandler_Create/local" time="0.030s"></testcase>
+		<testcase classname="charond" name="TestCreateUserHandler_Create/same-username-twice" time="0.100s"></testcase>
+		<testcase classname="charond" name="TestCreateUserHandler_Create/another-superuser-without-actor" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestCreateUserHandler_Create/full" time="0.040s"></testcase>
+		<testcase classname="charond" name="TestCreateUserHandler_Create" time="0.450s"></testcase>
+		<testcase classname="charond" name="TestCreateUserHandler_firewall_success" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestCreateUserHandler_firewall_failure" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestDeleteGroupHandler_Delete_E2E/not-existing" time="0.010s"></testcase>
+		<testcase classname="charond" name="TestDeleteGroupHandler_Delete_E2E/assigned" time="0.010s"></testcase>
+		<testcase classname="charond" name="TestDeleteGroupHandler_Delete_E2E/not-assigned" time="0.010s"></testcase>
+		<testcase classname="charond" name="TestDeleteGroupHandler_Delete_E2E" time="0.400s"></testcase>
+		<testcase classname="charond" name="TestDeleteGroupHandler_Delete_Unit/invalid-id" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestDeleteGroupHandler_Delete_Unit/cannot-remove-if-group-does-not-exists" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestDeleteGroupHandler_Delete_Unit/cannot-remove-if-session-does-not-exists" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestDeleteGroupHandler_Delete_Unit/cannot-remove-if-missing-permissions" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestDeleteGroupHandler_Delete_Unit/can-remove-as-superuser" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestDeleteGroupHandler_Delete_Unit/cannot-remove-if-group-have-users-assigned" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestDeleteGroupHandler_Delete_Unit/cannot-remove-if-group-have-permissions-assigned" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestDeleteGroupHandler_Delete_Unit/cannot-remove-from-localhost" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestDeleteGroupHandler_Delete_Unit/can-remove-if-query-deadline-exceeded" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestDeleteGroupHandler_Delete_Unit" time="0.010s"></testcase>
+		<testcase classname="charond" name="TestDeleteUserHandler_Delete_E2E/not-assigned" time="0.010s"></testcase>
+		<testcase classname="charond" name="TestDeleteUserHandler_Delete_E2E/not-existing" time="0.010s"></testcase>
+		<testcase classname="charond" name="TestDeleteUserHandler_Delete_E2E/groups-assigned" time="0.020s"></testcase>
+		<testcase classname="charond" name="TestDeleteUserHandler_Delete_E2E" time="0.890s"></testcase>
+		<testcase classname="charond" name="TestDeleteUserHandler_Delete_Unit/cannot-remove-as-owner" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestDeleteUserHandler_Delete_Unit/can-delete-as-stranger-but-not-a-staff-member" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestDeleteUserHandler_Delete_Unit/can-delete-staff-member-but-not-as-a-owner" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestDeleteUserHandler_Delete_Unit/can-delete-as-owner" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestDeleteUserHandler_Delete_Unit/cannot-remove-find-user-query-timeout" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestDeleteUserHandler_Delete_Unit/cannot-remove-as-stranger" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestDeleteUserHandler_Delete_Unit/can-remove-as-superuser" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestDeleteUserHandler_Delete_Unit/cannot-remove-delete-query-timeout" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestDeleteUserHandler_Delete_Unit/cannot-remove-itself" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestDeleteUserHandler_Delete_Unit/can-delete-as-stranger-but-not-a-superuser" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestDeleteUserHandler_Delete_Unit/cannot-remove-permission-query-timeout" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestDeleteUserHandler_Delete_Unit/can-delete-as-stranger-but-does-not-exists" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestDeleteUserHandler_Delete_Unit/cannot-remove-from-localhost" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestDeleteUserHandler_Delete_Unit/cannot-if-session-does-not-exists" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestDeleteUserHandler_Delete_Unit/cannot-remove-if-group-have-permissions-assigned" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestDeleteUserHandler_Delete_Unit/can-delete-staff-member-but-not-as-a-stranger" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestDeleteUserHandler_Delete_Unit/can-delete-staff-member-as-owner" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestDeleteUserHandler_Delete_Unit/can-delete-staff-member-as-stranger" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestDeleteUserHandler_Delete_Unit/invalid-id" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestDeleteUserHandler_Delete_Unit/cannot-remove-if-actor-does-not-exists" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestDeleteUserHandler_Delete_Unit" time="0.040s"></testcase>
+		<testcase classname="charond" name="TestDeleteUserHandler_firewall_success" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestDeleteUserHandler_firewall_failure" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestGetGroupHandler_Get" time="0.240s"></testcase>
+		<testcase classname="charond" name="TestGetGroupHandler_firewall_success" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestGetGroupHandler_firewall_failure" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestGetPermissionHandler_Get" time="0.230s"></testcase>
+		<testcase classname="charond" name="TestGetPermissionHandler_firewall_success" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestGetPermissionHandler_firewall_failure" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestGetUserHandler_firewall_success" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestGetUserHandler_firewall_failure" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestIsAuthenticatedHandler_IsAuthenticated/basic" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestIsAuthenticatedHandler_IsAuthenticated/no-access-token" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestIsAuthenticatedHandler_IsAuthenticated" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestIsGrantedHandler_firewall_success" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestIsGrantedHandler_firewall_failure" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestListGroupPermissionsHandler_ListPermissions" time="0.970s"></testcase>
+		<testcase classname="charond" name="TestListGroupPermissionsHandler_firewall_success" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestListGroupPermissionsHandler_firewall_failure" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestListGroupsHandler_firewall_success" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestListGroupsHandler_firewall_failure" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestListPermissionsHandler_firewall_success" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestListPermissionsHandler_firewall_failure" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestListUserGroupsHandler_firewall_success" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestListUserGroupsHandler_firewall_failure" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestListUserPermissionsHandler_firewall_success" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestListUserPermissionsHandler_firewall_failure" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestListUsersHandler_firewall_success/as-superuser-search-for-superusers" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestListUsersHandler_firewall_success/as-superuser" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestListUsersHandler_firewall_success/as-owner-search-for-staff" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestListUsersHandler_firewall_success/as-stranger-search-for-staff" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestListUsersHandler_firewall_success/all-Permissions" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestListUsersHandler_firewall_success/as-superuser-with-all-Permissions" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestListUsersHandler_firewall_success/as-owner" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestListUsersHandler_firewall_success/as-stranger" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestListUsersHandler_firewall_success" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestListUsersHandler_firewall_failure" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestModifyGroupHandler_firewall_success" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestModifyGroupHandler_firewall_failure" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestModifyUserHandler_Firewall_success/superuser_should_be_able_to_degrade_itself" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestModifyUserHandler_Firewall_success/superuser_should_be_able_to_promote_an_user" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestModifyUserHandler_Firewall_success/superuser_should_be_able_to_promote_a_staff_user" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestModifyUserHandler_Firewall_success/superuser_should_be_able_to_degrade_another_superuser" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestModifyUserHandler_Firewall_success/if_user_has_permission_to_modify_an_user_as_a_stranger,_he_should_be_able_to_do_that" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestModifyUserHandler_Firewall_success/if_user_has_permission_to_modify_an_user_as_an_owner,_he_should_be_able_to_do_that" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestModifyUserHandler_Firewall_success" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestModifyUserHandler_Firewall_failure/only_superuser_can_modify_superuser" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestModifyUserHandler_Firewall_failure/to_modify_staff_account_as_an_owner_permission_is_required" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestModifyUserHandler_Firewall_failure/to_modify_staff_account_as_a_stranger_permission_is_required" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestModifyUserHandler_Firewall_failure/to_modify_staff_account_as_a_stranger_permission_is_required#01" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestModifyUserHandler_Firewall_failure/to_modify_staff_account_as_a_stranger_permission_is_required#02" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestModifyUserHandler_Firewall_failure" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestSetGroupPermissionsHandler_firewall_success" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestSetGroupPermissionsHandler_firewall_failure" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestSetUserGroupsHandler_SetGroups_nonExistingGroup" time="0.230s"></testcase>
+		<testcase classname="charond" name="TestSetUserGroupsHandler_SetGroups_nonExistingUser" time="0.270s"></testcase>
+		<testcase classname="charond" name="TestSetUserGroupsHandler_firewall_success" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestSetUserGroupsHandler_firewall_failure" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestSetUserPermissionsHandler_SetPermissions" time="0.210s"></testcase>
+		<testcase classname="charond" name="TestSetUserPermissionsHandler_SetPermissions_nonExistingUser" time="0.240s"></testcase>
+		<testcase classname="charond" name="TestSetUserPermissionsHandler_SetPermissions_nonExistingPermission" time="0.220s"></testcase>
+		<testcase classname="charond" name="TestSetUserPermissionsHandler_firewall_success" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestSetUserPermissionsHandler_firewall_failure" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestHandler" time="0.020s"></testcase>
+		<testcase classname="charond" name="TestHealthHandler_ServeHTTP" time="0.230s"></testcase>
+		<testcase classname="charond" name="TestUntouched" time="0.000s"></testcase>
+		<testcase classname="charond" name="TestRPCServer_minimal" time="0.320s"></testcase>
+	</testsuite>
+	<testsuite tests="1" failures="0" time="0.000s" name="github.com/piotrkowalczuk/charon/charonrpc">
+		<properties>
+			<property name="go.version" value="go1.11.1"></property>
+		</properties>
+		<testcase classname="charonrpc" name="TestUser_Name" time="0.000s"></testcase>
+	</testsuite>
+	<testsuite tests="4" failures="0" time="0.000s" name="github.com/piotrkowalczuk/charon/charontest">
+		<properties>
+			<property name="go.version" value="go1.11.1"></property>
+		</properties>
+		<testcase classname="charontest" name="TestAuthClient" time="0.000s"></testcase>
+		<testcase classname="charontest" name="TestUserManagerClient" time="0.000s"></testcase>
+		<testcase classname="charontest" name="TestGroupManagerClient" time="0.000s"></testcase>
+		<testcase classname="charontest" name="TestPermissionManagerClient" time="0.000s"></testcase>
+	</testsuite>
+	<testsuite tests="0" failures="0" time="0.000s" name="github.com/piotrkowalczuk/charon/cmd/charonctl">
+		<properties>
+			<property name="go.version" value="go1.11.1"></property>
+		</properties>
+	</testsuite>
+	<testsuite tests="0" failures="0" time="0.000s" name="github.com/piotrkowalczuk/charon/cmd/charond">
+		<properties>
+			<property name="go.version" value="go1.11.1"></property>
+		</properties>
+	</testsuite>
+	<testsuite tests="0" failures="0" time="0.000s" name="github.com/piotrkowalczuk/charon/cmd/charong">
+		<properties>
+			<property name="go.version" value="go1.11.1"></property>
+		</properties>
+	</testsuite>
+	<testsuite tests="0" failures="0" time="0.000s" name="github.com/piotrkowalczuk/charon/example/client">
+		<properties>
+			<property name="go.version" value="go1.11.1"></property>
+		</properties>
+	</testsuite>
+	<testsuite tests="11" failures="0" time="0.000s" name="github.com/piotrkowalczuk/charon/internal/ldap">
+		<properties>
+			<property name="go.version" value="go1.11.1"></property>
+		</properties>
+		<testcase classname="ldap" name="TestNewMappings" time="0.000s"></testcase>
+		<testcase classname="ldap" name="TestMapping_Map/empty" time="0.000s"></testcase>
+		<testcase classname="ldap" name="TestMapping_Map/exact" time="0.000s"></testcase>
+		<testcase classname="ldap" name="TestMapping_Map/compound" time="0.000s"></testcase>
+		<testcase classname="ldap" name="TestMapping_Map/xxx" time="0.000s"></testcase>
+		<testcase classname="ldap" name="TestMapping_Map/less" time="0.000s"></testcase>
+		<testcase classname="ldap" name="TestMapping_Map/exact-joined" time="0.000s"></testcase>
+		<testcase classname="ldap" name="TestMapping_Map/both" time="0.000s"></testcase>
+		<testcase classname="ldap" name="TestMapping_Map/whitespace" time="0.000s"></testcase>
+		<testcase classname="ldap" name="TestMapping_Map/staff" time="0.000s"></testcase>
+		<testcase classname="ldap" name="TestMapping_Map" time="0.000s"></testcase>
+	</testsuite>
+	<testsuite tests="20" failures="7" time="2.830s" name="github.com/piotrkowalczuk/charon/internal/model">
+		<properties>
+			<property name="go.version" value="go1.11.1"></property>
+		</properties>
+		<testcase classname="model" name="TestPermissionRepository_FindOneByID" time="0.080s">
+			<failure message="Failed" type="">=== RUN   TestPermissionRepository_FindOneByID&#xA;--- FAIL: TestPermissionRepository_FindOneByID (0.08s)&#xA;    test_logger.go:45: database has been cleared upfront                           level=info  timestamp=2018-11-05T12:06:12+01:00  &#xA;    suite_postgres_test.go:28: postgres connection (postgres://localhost/test?sslmode=disable) error: pq: duplicate key value violates unique constraint &#34;pg_namespace_nspname_index&#34;&#xA;</failure>
+		</testcase>
+		<testcase classname="model" name="TestUserGroupsRepository_Exists" time="0.060s">
+			<failure message="Failed" type="">=== RUN   TestUserGroupsRepository_Exists&#xA;--- FAIL: TestUserGroupsRepository_Exists (0.06s)&#xA;    test_logger.go:45: database has been cleared upfront                           level=info  timestamp=2018-11-05T12:06:14+01:00  &#xA;    suite_postgres_test.go:28: postgres connection (postgres://localhost/test?sslmode=disable) error: pq: duplicate key value violates unique constraint &#34;pg_namespace_nspname_index&#34;&#xA;</failure>
+		</testcase>
+		<testcase classname="model" name="TestUserRepository_UpdateOneByID" time="0.040s">
+			<failure message="Failed" type="">=== RUN   TestUserRepository_UpdateOneByID&#xA;--- FAIL: TestUserRepository_UpdateOneByID (0.04s)&#xA;    test_logger.go:45: database has been cleared upfront                           timestamp=2018-11-05T12:06:14+01:00  level=info  &#xA;    suite_postgres_test.go:28: postgres connection (postgres://localhost/test?sslmode=disable) error: pq: duplicate key value violates unique constraint &#34;pg_namespace_nspname_index&#34;&#xA;</failure>
+		</testcase>
+		<testcase classname="model" name="TestUserRepository_ChangePassword" time="0.060s">
+			<failure message="Failed" type="">=== RUN   TestUserRepository_ChangePassword&#xA;--- FAIL: TestUserRepository_ChangePassword (0.06s)&#xA;    test_logger.go:45: database has been cleared upfront                           timestamp=2018-11-05T12:06:14+01:00  level=info  &#xA;    suite_postgres_test.go:28: postgres connection (postgres://localhost/test?sslmode=disable) error: pq: duplicate key value violates unique constraint &#34;pg_namespace_nspname_index&#34;&#xA;</failure>
+		</testcase>
+		<testcase classname="model" name="TestUserRepository_FindOneByUsername" time="0.050s">
+			<failure message="Failed" type="">=== RUN   TestUserRepository_FindOneByUsername&#xA;--- FAIL: TestUserRepository_FindOneByUsername (0.05s)&#xA;    test_logger.go:45: database has been cleared upfront                           level=info  timestamp=2018-11-05T12:06:15+01:00  &#xA;    suite_postgres_test.go:28: postgres connection (postgres://localhost/test?sslmode=disable) error: pq: duplicate key value violates unique constraint &#34;pg_namespace_nspname_index&#34;&#xA;</failure>
+		</testcase>
+		<testcase classname="model" name="TestUserRepository_UpdateLastLoginAt" time="0.080s">
+			<failure message="Failed" type="">=== RUN   TestUserRepository_UpdateLastLoginAt&#xA;--- FAIL: TestUserRepository_UpdateLastLoginAt (0.08s)&#xA;    test_logger.go:45: database has been cleared upfront                           level=info  timestamp=2018-11-05T12:06:15+01:00  &#xA;    suite_postgres_test.go:28: postgres connection (postgres://localhost/test?sslmode=disable) error: pq: duplicate key value violates unique constraint &#34;pg_namespace_nspname_index&#34;&#xA;</failure>
+		</testcase>
+		<testcase classname="model" name="TestUserRepository_IsGranted" time="0.050s">
+			<failure message="Failed" type="">=== RUN   TestUserRepository_IsGranted&#xA;--- FAIL: TestUserRepository_IsGranted (0.05s)&#xA;    test_logger.go:45: database has been cleared upfront                           level=info  timestamp=2018-11-05T12:06:15+01:00  &#xA;    suite_postgres_test.go:28: postgres connection (postgres://localhost/test?sslmode=disable) error: pq: duplicate key value violates unique constraint &#34;pg_namespace_nspname_index&#34;&#xA;</failure>
+		</testcase>
+		<testcase classname="model" name="TestUserRepository_SetPermissions" time="0.000s">
+			<skipped message="=== RUN   TestUserRepository_SetPermissions&#xA;--- SKIP: TestUserRepository_SetPermissions (0.00s)&#xA;    user_test.go:370: not implemented&#xA;"></skipped>
+		</testcase>
+		<testcase classname="model" name="TestGroupRepository_IsGranted" time="0.160s"></testcase>
+		<testcase classname="model" name="TestPermissionRepository_Register" time="1.360s"></testcase>
+		<testcase classname="model" name="TestUserGroupsRepository_Set" time="0.120s"></testcase>
+		<testcase classname="model" name="TestUserEntity_String" time="0.000s"></testcase>
+		<testcase classname="model" name="TestUserEntity_Message/empty" time="0.000s"></testcase>
+		<testcase classname="model" name="TestUserEntity_Message/simple" time="0.000s"></testcase>
+		<testcase classname="model" name="TestUserEntity_Message" time="0.000s"></testcase>
+		<testcase classname="model" name="TestUserRepository_DeleteOneByID" time="0.260s"></testcase>
+		<testcase classname="model" name="TestUserRepository_Create" time="0.120s"></testcase>
+		<testcase classname="model" name="TestUserRepository_FindOneByID" time="0.090s"></testcase>
+		<testcase classname="model" name="TestUserRepository_Exists" time="0.160s"></testcase>
+		<testcase classname="model" name="TestUserRepository_Find" time="0.140s"></testcase>
+	</testsuite>
+	<testsuite tests="7" failures="0" time="6.500s" name="github.com/piotrkowalczuk/charon/internal/password">
+		<properties>
+			<property name="go.version" value="go1.11.1"></property>
+		</properties>
+		<testcase classname="password" name="TestNewBCryptHasher_bellowMin" time="0.000s"></testcase>
+		<testcase classname="password" name="TestNewBCryptHasher_min" time="0.000s"></testcase>
+		<testcase classname="password" name="TestNewBCryptHasher_between" time="0.000s"></testcase>
+		<testcase classname="password" name="TestNewBCryptHasher_max" time="0.000s"></testcase>
+		<testcase classname="password" name="TestNewBCryptHasher_aboveMax" time="0.000s"></testcase>
+		<testcase classname="password" name="TestBCryptHasher_Hash" time="2.710s"></testcase>
+		<testcase classname="password" name="TestBCryptHasher_Compare" time="3.790s"></testcase>
+	</testsuite>
+	<testsuite tests="1" failures="0" time="0.000s" name="github.com/piotrkowalczuk/charon/internal/session">
+		<properties>
+			<property name="go.version" value="go1.11.1"></property>
+		</properties>
+		<testcase classname="session" name="TestUserIDFromSessionActorID" time="0.000s"></testcase>
+	</testsuite>
+</testsuites>

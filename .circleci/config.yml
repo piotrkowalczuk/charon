@@ -10,22 +10,6 @@ references:
     - image: circleci/openjdk:8
     working_directory: ~/charon
 jobs:
-  lint_protobuf:
-    docker:
-    - image: circleci/golang
-    working_directory: /go/src/github.com/piotrkowalczuk/charon
-    steps:
-    - checkout
-    - run:
-        name: Install protoc
-        command: bash ./.circleci/scripts/install_protoc.sh
-    - run:
-        name: Install command line tools
-        command: |
-          go get -u github.com/ckaznocha/protoc-gen-lint
-    - run:
-        name: Lint protobuf
-        command: bash ./.circleci/scripts/generate.sh lint
   test_golang:
     docker:
     - image: circleci/golang
@@ -82,6 +66,24 @@ jobs:
         key: v1-golang-dependency-{{ checksum "Gopkg.lock" }}
         paths:
         - "vendor"
+  lint_protobuf:
+    docker:
+    - image: circleci/golang
+    working_directory: /go/src/github.com/piotrkowalczuk/charon
+    steps:
+    - checkout
+    - restore_cache:
+        key: v1-golang-dependency-{{ checksum "Gopkg.lock" }}
+    - run:
+        name: Install protoc
+        command: bash ./.circleci/scripts/install_protoc.sh
+    - run:
+        name: Install command line tools
+        command: |
+          go get -u github.com/ckaznocha/protoc-gen-lint
+    - run:
+        name: Lint protobuf
+        command: bash ./.circleci/scripts/generate.sh lint
   build_golang:
     docker:
     - image: circleci/golang
@@ -200,14 +202,14 @@ workflows:
   version: 2
   generate:
     jobs:
-    - lint_protobuf:
+    - test_golang:
+        context: codeclimate-charon
         filters:
           tags:
             only: /.*/
-    - test_golang:
-        context: codeclimate-charon
+    - lint_protobuf:
         requires:
-        - lint_protobuf
+        - test_golang
         filters:
           tags:
             only: /.*/
