@@ -149,6 +149,8 @@ jobs:
     <<: *container_config_java
     steps:
     - checkout
+    - restore_cache:
+        key: v1-golang-dependency-{{ checksum "Gopkg.lock" }}
     - run:
         name: Install protoc
         command: bash ./.circleci/scripts/install_protoc.sh
@@ -159,6 +161,8 @@ jobs:
     <<: *container_config_python
     steps:
     - checkout
+    - restore_cache:
+        key: v1-golang-dependency-{{ checksum "Gopkg.lock" }}
     - run:
         name: Install python packages
         command: |
