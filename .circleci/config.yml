@@ -4,11 +4,16 @@ references:
   container_config_python: &container_config_python
     docker:
     - image: circleci/python:3
-    working_directory: ~/charon
+    working_directory: /go/src/github.com/piotrkowalczuk/charon
   container_config_java: &container_config_java
     docker:
     - image: circleci/openjdk:8
-    working_directory: ~/charon
+    working_directory: /go/src/github.com/piotrkowalczuk/charon
+#executors:
+#  python-executor:
+#    docker:
+#    - image: circleci/python:3
+#    working_directory: /go
 jobs:
   test_golang:
     docker:
