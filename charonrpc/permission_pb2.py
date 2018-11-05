@@ -41,7 +41,7 @@ _REGISTERPERMISSIONSREQUEST = _descriptor.Descriptor(
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -72,21 +72,21 @@ _REGISTERPERMISSIONSRESPONSE = _descriptor.Descriptor(
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='removed', full_name='charonrpc.RegisterPermissionsResponse.removed', index=1,
       number=2, type=3, cpp_type=2, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='untouched', full_name='charonrpc.RegisterPermissionsResponse.untouched', index=2,
       number=3, type=3, cpp_type=2, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -117,14 +117,14 @@ _LISTPERMISSIONSREQUEST_SORTENTRY = _descriptor.Descriptor(
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='value', full_name='charonrpc.ListPermissionsRequest.SortEntry.value', index=1,
       number=2, type=8, cpp_type=7, label=1,
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -154,56 +154,56 @@ _LISTPERMISSIONSREQUEST = _descriptor.Descriptor(
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='module', full_name='charonrpc.ListPermissionsRequest.module', index=1,
       number=2, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='action', full_name='charonrpc.ListPermissionsRequest.action', index=2,
       number=3, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='created_at', full_name='charonrpc.ListPermissionsRequest.created_at', index=3,
       number=4, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='created_by', full_name='charonrpc.ListPermissionsRequest.created_by', index=4,
       number=5, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='offset', full_name='charonrpc.ListPermissionsRequest.offset', index=5,
       number=100, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='limit', full_name='charonrpc.ListPermissionsRequest.limit', index=6,
       number=101, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='sort', full_name='charonrpc.ListPermissionsRequest.sort', index=7,
       number=102, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -234,7 +234,7 @@ _LISTPERMISSIONSRESPONSE = _descriptor.Descriptor(
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -265,7 +265,7 @@ _GETPERMISSIONREQUEST = _descriptor.Descriptor(
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -296,7 +296,7 @@ _GETPERMISSIONRESPONSE = _descriptor.Descriptor(
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -385,187 +385,46 @@ DESCRIPTOR.has_options = True
 DESCRIPTOR._options = _descriptor._ParseOptions(descriptor_pb2.FileOptions(), _b('Z*github.com/piotrkowalczuk/charon/charonrpc'))
 _LISTPERMISSIONSREQUEST_SORTENTRY.has_options = True
 _LISTPERMISSIONSREQUEST_SORTENTRY._options = _descriptor._ParseOptions(descriptor_pb2.MessageOptions(), _b('8\001'))
-try:
-  # THESE ELEMENTS WILL BE DEPRECATED.
-  # Please use the generated *_pb2_grpc.py files instead.
-  import grpc
-  from grpc.beta import implementations as beta_implementations
-  from grpc.beta import interfaces as beta_interfaces
-  from grpc.framework.common import cardinality
-  from grpc.framework.interfaces.face import utilities as face_utilities
 
+_PERMISSIONMANAGER = _descriptor.ServiceDescriptor(
+  name='PermissionManager',
+  full_name='charonrpc.PermissionManager',
+  file=DESCRIPTOR,
+  index=0,
+  options=None,
+  serialized_start=709,
+  serialized_end=978,
+  methods=[
+  _descriptor.MethodDescriptor(
+    name='Register',
+    full_name='charonrpc.PermissionManager.Register',
+    index=0,
+    containing_service=None,
+    input_type=_REGISTERPERMISSIONSREQUEST,
+    output_type=_REGISTERPERMISSIONSRESPONSE,
+    options=None,
+  ),
+  _descriptor.MethodDescriptor(
+    name='List',
+    full_name='charonrpc.PermissionManager.List',
+    index=1,
+    containing_service=None,
+    input_type=_LISTPERMISSIONSREQUEST,
+    output_type=_LISTPERMISSIONSRESPONSE,
+    options=None,
+  ),
+  _descriptor.MethodDescriptor(
+    name='Get',
+    full_name='charonrpc.PermissionManager.Get',
+    index=2,
+    containing_service=None,
+    input_type=_GETPERMISSIONREQUEST,
+    output_type=_GETPERMISSIONRESPONSE,
+    options=None,
+  ),
+])
+_sym_db.RegisterServiceDescriptor(_PERMISSIONMANAGER)
 
-  class PermissionManagerStub(object):
-    # missing associated documentation comment in .proto file
-    pass
+DESCRIPTOR.services_by_name['PermissionManager'] = _PERMISSIONMANAGER
 
-    def __init__(self, channel):
-      """Constructor.
-
-      Args:
-        channel: A grpc.Channel.
-      """
-      self.Register = channel.unary_unary(
-          '/charonrpc.PermissionManager/Register',
-          request_serializer=RegisterPermissionsRequest.SerializeToString,
-          response_deserializer=RegisterPermissionsResponse.FromString,
-          )
-      self.List = channel.unary_unary(
-          '/charonrpc.PermissionManager/List',
-          request_serializer=ListPermissionsRequest.SerializeToString,
-          response_deserializer=ListPermissionsResponse.FromString,
-          )
-      self.Get = channel.unary_unary(
-          '/charonrpc.PermissionManager/Get',
-          request_serializer=GetPermissionRequest.SerializeToString,
-          response_deserializer=GetPermissionResponse.FromString,
-          )
-
-
-  class PermissionManagerServicer(object):
-    # missing associated documentation comment in .proto file
-    pass
-
-    def Register(self, request, context):
-      # missing associated documentation comment in .proto file
-      pass
-      context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-      context.set_details('Method not implemented!')
-      raise NotImplementedError('Method not implemented!')
-
-    def List(self, request, context):
-      # missing associated documentation comment in .proto file
-      pass
-      context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-      context.set_details('Method not implemented!')
-      raise NotImplementedError('Method not implemented!')
-
-    def Get(self, request, context):
-      # missing associated documentation comment in .proto file
-      pass
-      context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-      context.set_details('Method not implemented!')
-      raise NotImplementedError('Method not implemented!')
-
-
-  def add_PermissionManagerServicer_to_server(servicer, server):
-    rpc_method_handlers = {
-        'Register': grpc.unary_unary_rpc_method_handler(
-            servicer.Register,
-            request_deserializer=RegisterPermissionsRequest.FromString,
-            response_serializer=RegisterPermissionsResponse.SerializeToString,
-        ),
-        'List': grpc.unary_unary_rpc_method_handler(
-            servicer.List,
-            request_deserializer=ListPermissionsRequest.FromString,
-            response_serializer=ListPermissionsResponse.SerializeToString,
-        ),
-        'Get': grpc.unary_unary_rpc_method_handler(
-            servicer.Get,
-            request_deserializer=GetPermissionRequest.FromString,
-            response_serializer=GetPermissionResponse.SerializeToString,
-        ),
-    }
-    generic_handler = grpc.method_handlers_generic_handler(
-        'charonrpc.PermissionManager', rpc_method_handlers)
-    server.add_generic_rpc_handlers((generic_handler,))
-
-
-  class BetaPermissionManagerServicer(object):
-    """The Beta API is deprecated for 0.15.0 and later.
-
-    It is recommended to use the GA API (classes and functions in this
-    file not marked beta) for all further purposes. This class was generated
-    only to ease transition from grpcio<0.15.0 to grpcio>=0.15.0."""
-    # missing associated documentation comment in .proto file
-    pass
-    def Register(self, request, context):
-      # missing associated documentation comment in .proto file
-      pass
-      context.code(beta_interfaces.StatusCode.UNIMPLEMENTED)
-    def List(self, request, context):
-      # missing associated documentation comment in .proto file
-      pass
-      context.code(beta_interfaces.StatusCode.UNIMPLEMENTED)
-    def Get(self, request, context):
-      # missing associated documentation comment in .proto file
-      pass
-      context.code(beta_interfaces.StatusCode.UNIMPLEMENTED)
-
-
-  class BetaPermissionManagerStub(object):
-    """The Beta API is deprecated for 0.15.0 and later.
-
-    It is recommended to use the GA API (classes and functions in this
-    file not marked beta) for all further purposes. This class was generated
-    only to ease transition from grpcio<0.15.0 to grpcio>=0.15.0."""
-    # missing associated documentation comment in .proto file
-    pass
-    def Register(self, request, timeout, metadata=None, with_call=False, protocol_options=None):
-      # missing associated documentation comment in .proto file
-      pass
-      raise NotImplementedError()
-    Register.future = None
-    def List(self, request, timeout, metadata=None, with_call=False, protocol_options=None):
-      # missing associated documentation comment in .proto file
-      pass
-      raise NotImplementedError()
-    List.future = None
-    def Get(self, request, timeout, metadata=None, with_call=False, protocol_options=None):
-      # missing associated documentation comment in .proto file
-      pass
-      raise NotImplementedError()
-    Get.future = None
-
-
-  def beta_create_PermissionManager_server(servicer, pool=None, pool_size=None, default_timeout=None, maximum_timeout=None):
-    """The Beta API is deprecated for 0.15.0 and later.
-
-    It is recommended to use the GA API (classes and functions in this
-    file not marked beta) for all further purposes. This function was
-    generated only to ease transition from grpcio<0.15.0 to grpcio>=0.15.0"""
-    request_deserializers = {
-      ('charonrpc.PermissionManager', 'Get'): GetPermissionRequest.FromString,
-      ('charonrpc.PermissionManager', 'List'): ListPermissionsRequest.FromString,
-      ('charonrpc.PermissionManager', 'Register'): RegisterPermissionsRequest.FromString,
-    }
-    response_serializers = {
-      ('charonrpc.PermissionManager', 'Get'): GetPermissionResponse.SerializeToString,
-      ('charonrpc.PermissionManager', 'List'): ListPermissionsResponse.SerializeToString,
-      ('charonrpc.PermissionManager', 'Register'): RegisterPermissionsResponse.SerializeToString,
-    }
-    method_implementations = {
-      ('charonrpc.PermissionManager', 'Get'): face_utilities.unary_unary_inline(servicer.Get),
-      ('charonrpc.PermissionManager', 'List'): face_utilities.unary_unary_inline(servicer.List),
-      ('charonrpc.PermissionManager', 'Register'): face_utilities.unary_unary_inline(servicer.Register),
-    }
-    server_options = beta_implementations.server_options(request_deserializers=request_deserializers, response_serializers=response_serializers, thread_pool=pool, thread_pool_size=pool_size, default_timeout=default_timeout, maximum_timeout=maximum_timeout)
-    return beta_implementations.server(method_implementations, options=server_options)
-
-
-  def beta_create_PermissionManager_stub(channel, host=None, metadata_transformer=None, pool=None, pool_size=None):
-    """The Beta API is deprecated for 0.15.0 and later.
-
-    It is recommended to use the GA API (classes and functions in this
-    file not marked beta) for all further purposes. This function was
-    generated only to ease transition from grpcio<0.15.0 to grpcio>=0.15.0"""
-    request_serializers = {
-      ('charonrpc.PermissionManager', 'Get'): GetPermissionRequest.SerializeToString,
-      ('charonrpc.PermissionManager', 'List'): ListPermissionsRequest.SerializeToString,
-      ('charonrpc.PermissionManager', 'Register'): RegisterPermissionsRequest.SerializeToString,
-    }
-    response_deserializers = {
-      ('charonrpc.PermissionManager', 'Get'): GetPermissionResponse.FromString,
-      ('charonrpc.PermissionManager', 'List'): ListPermissionsResponse.FromString,
-      ('charonrpc.PermissionManager', 'Register'): RegisterPermissionsResponse.FromString,
-    }
-    cardinalities = {
-      'Get': cardinality.Cardinality.UNARY_UNARY,
-      'List': cardinality.Cardinality.UNARY_UNARY,
-      'Register': cardinality.Cardinality.UNARY_UNARY,
-    }
-    stub_options = beta_implementations.stub_options(host=host, metadata_transformer=metadata_transformer, request_serializers=request_serializers, response_deserializers=response_deserializers, thread_pool=pool, thread_pool_size=pool_size)
-    return beta_implementations.dynamic_stub(channel, 'charonrpc.PermissionManager', cardinalities, options=stub_options)
-except ImportError:
-  pass
 # @@protoc_insertion_point(module_scope)

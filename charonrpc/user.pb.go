@@ -3,15 +3,15 @@
 
 package charonrpc
 
-import proto "github.com/golang/protobuf/proto"
-import fmt "fmt"
-import math "math"
-import google_protobuf2 "github.com/golang/protobuf/ptypes/timestamp"
-import google_protobuf1 "github.com/golang/protobuf/ptypes/wrappers"
-import qtypes "github.com/piotrkowalczuk/qtypes"
-import ntypes "github.com/piotrkowalczuk/ntypes"
-
 import (
+	fmt "fmt"
+	math "math"
+
+	proto "github.com/golang/protobuf/proto"
+	timestamp "github.com/golang/protobuf/ptypes/timestamp"
+	wrappers "github.com/golang/protobuf/ptypes/wrappers"
+	ntypes "github.com/piotrkowalczuk/ntypes"
+	qtypes "github.com/piotrkowalczuk/qtypes"
 	context "golang.org/x/net/context"
 	grpc "google.golang.org/grpc"
 )
@@ -21,25 +21,54 @@ var _ = proto.Marshal
 var _ = fmt.Errorf
 var _ = math.Inf
 
+// This is a compile-time assertion to ensure that this generated file
+// is compatible with the proto package it is being compiled against.
+// A compilation error at this line likely means your copy of the
+// proto package needs to be updated.
+const _ = proto.ProtoPackageIsVersion2 // please upgrade the proto package
+
 type User struct {
-	Id          int64                       `protobuf:"varint,1,opt,name=id" json:"id,omitempty"`
-	Username    string                      `protobuf:"bytes,2,opt,name=username" json:"username,omitempty"`
-	FirstName   string                      `protobuf:"bytes,3,opt,name=first_name,json=firstName" json:"first_name,omitempty"`
-	LastName    string                      `protobuf:"bytes,4,opt,name=last_name,json=lastName" json:"last_name,omitempty"`
-	IsSuperuser bool                        `protobuf:"varint,5,opt,name=is_superuser,json=isSuperuser" json:"is_superuser,omitempty"`
-	IsActive    bool                        `protobuf:"varint,6,opt,name=is_active,json=isActive" json:"is_active,omitempty"`
-	IsStaff     bool                        `protobuf:"varint,7,opt,name=is_staff,json=isStaff" json:"is_staff,omitempty"`
-	IsConfirmed bool                        `protobuf:"varint,8,opt,name=is_confirmed,json=isConfirmed" json:"is_confirmed,omitempty"`
-	CreatedAt   *google_protobuf2.Timestamp `protobuf:"bytes,9,opt,name=created_at,json=createdAt" json:"created_at,omitempty"`
-	CreatedBy   *ntypes.Int64               `protobuf:"bytes,10,opt,name=created_by,json=createdBy" json:"created_by,omitempty"`
-	UpdatedAt   *google_protobuf2.Timestamp `protobuf:"bytes,11,opt,name=updated_at,json=updatedAt" json:"updated_at,omitempty"`
-	UpdatedBy   *ntypes.Int64               `protobuf:"bytes,12,opt,name=updated_by,json=updatedBy" json:"updated_by,omitempty"`
+	Id                   int64                `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Username             string               `protobuf:"bytes,2,opt,name=username,proto3" json:"username,omitempty"`
+	FirstName            string               `protobuf:"bytes,3,opt,name=first_name,json=firstName,proto3" json:"first_name,omitempty"`
+	LastName             string               `protobuf:"bytes,4,opt,name=last_name,json=lastName,proto3" json:"last_name,omitempty"`
+	IsSuperuser          bool                 `protobuf:"varint,5,opt,name=is_superuser,json=isSuperuser,proto3" json:"is_superuser,omitempty"`
+	IsActive             bool                 `protobuf:"varint,6,opt,name=is_active,json=isActive,proto3" json:"is_active,omitempty"`
+	IsStaff              bool                 `protobuf:"varint,7,opt,name=is_staff,json=isStaff,proto3" json:"is_staff,omitempty"`
+	IsConfirmed          bool                 `protobuf:"varint,8,opt,name=is_confirmed,json=isConfirmed,proto3" json:"is_confirmed,omitempty"`
+	CreatedAt            *timestamp.Timestamp `protobuf:"bytes,9,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	CreatedBy            *ntypes.Int64        `protobuf:"bytes,10,opt,name=created_by,json=createdBy,proto3" json:"created_by,omitempty"`
+	UpdatedAt            *timestamp.Timestamp `protobuf:"bytes,11,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	UpdatedBy            *ntypes.Int64        `protobuf:"bytes,12,opt,name=updated_by,json=updatedBy,proto3" json:"updated_by,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}             `json:"-"`
+	XXX_unrecognized     []byte               `json:"-"`
+	XXX_sizecache        int32                `json:"-"`
 }
 
-func (m *User) Reset()                    { *m = User{} }
-func (m *User) String() string            { return proto.CompactTextString(m) }
-func (*User) ProtoMessage()               {}
-func (*User) Descriptor() ([]byte, []int) { return fileDescriptor3, []int{0} }
+func (m *User) Reset()         { *m = User{} }
+func (m *User) String() string { return proto.CompactTextString(m) }
+func (*User) ProtoMessage()    {}
+func (*User) Descriptor() ([]byte, []int) {
+	return fileDescriptor_116e343673f7ffaf, []int{0}
+}
+
+func (m *User) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_User.Unmarshal(m, b)
+}
+func (m *User) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_User.Marshal(b, m, deterministic)
+}
+func (m *User) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_User.Merge(m, src)
+}
+func (m *User) XXX_Size() int {
+	return xxx_messageInfo_User.Size(m)
+}
+func (m *User) XXX_DiscardUnknown() {
+	xxx_messageInfo_User.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_User proto.InternalMessageInfo
 
 func (m *User) GetId() int64 {
 	if m != nil {
@@ -97,7 +126,7 @@ func (m *User) GetIsConfirmed() bool {
 	return false
 }
 
-func (m *User) GetCreatedAt() *google_protobuf2.Timestamp {
+func (m *User) GetCreatedAt() *timestamp.Timestamp {
 	if m != nil {
 		return m.CreatedAt
 	}
@@ -111,7 +140,7 @@ func (m *User) GetCreatedBy() *ntypes.Int64 {
 	return nil
 }
 
-func (m *User) GetUpdatedAt() *google_protobuf2.Timestamp {
+func (m *User) GetUpdatedAt() *timestamp.Timestamp {
 	if m != nil {
 		return m.UpdatedAt
 	}
@@ -126,21 +155,44 @@ func (m *User) GetUpdatedBy() *ntypes.Int64 {
 }
 
 type CreateUserRequest struct {
-	Username       string       `protobuf:"bytes,1,opt,name=username" json:"username,omitempty"`
-	PlainPassword  string       `protobuf:"bytes,2,opt,name=plain_password,json=plainPassword" json:"plain_password,omitempty"`
-	SecurePassword []byte       `protobuf:"bytes,3,opt,name=secure_password,json=securePassword,proto3" json:"secure_password,omitempty"`
-	FirstName      string       `protobuf:"bytes,4,opt,name=first_name,json=firstName" json:"first_name,omitempty"`
-	LastName       string       `protobuf:"bytes,5,opt,name=last_name,json=lastName" json:"last_name,omitempty"`
-	IsSuperuser    *ntypes.Bool `protobuf:"bytes,6,opt,name=is_superuser,json=isSuperuser" json:"is_superuser,omitempty"`
-	IsActive       *ntypes.Bool `protobuf:"bytes,7,opt,name=is_active,json=isActive" json:"is_active,omitempty"`
-	IsStaff        *ntypes.Bool `protobuf:"bytes,8,opt,name=is_staff,json=isStaff" json:"is_staff,omitempty"`
-	IsConfirmed    *ntypes.Bool `protobuf:"bytes,9,opt,name=is_confirmed,json=isConfirmed" json:"is_confirmed,omitempty"`
+	Username             string       `protobuf:"bytes,1,opt,name=username,proto3" json:"username,omitempty"`
+	PlainPassword        string       `protobuf:"bytes,2,opt,name=plain_password,json=plainPassword,proto3" json:"plain_password,omitempty"`
+	SecurePassword       []byte       `protobuf:"bytes,3,opt,name=secure_password,json=securePassword,proto3" json:"secure_password,omitempty"`
+	FirstName            string       `protobuf:"bytes,4,opt,name=first_name,json=firstName,proto3" json:"first_name,omitempty"`
+	LastName             string       `protobuf:"bytes,5,opt,name=last_name,json=lastName,proto3" json:"last_name,omitempty"`
+	IsSuperuser          *ntypes.Bool `protobuf:"bytes,6,opt,name=is_superuser,json=isSuperuser,proto3" json:"is_superuser,omitempty"`
+	IsActive             *ntypes.Bool `protobuf:"bytes,7,opt,name=is_active,json=isActive,proto3" json:"is_active,omitempty"`
+	IsStaff              *ntypes.Bool `protobuf:"bytes,8,opt,name=is_staff,json=isStaff,proto3" json:"is_staff,omitempty"`
+	IsConfirmed          *ntypes.Bool `protobuf:"bytes,9,opt,name=is_confirmed,json=isConfirmed,proto3" json:"is_confirmed,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}     `json:"-"`
+	XXX_unrecognized     []byte       `json:"-"`
+	XXX_sizecache        int32        `json:"-"`
 }
 
-func (m *CreateUserRequest) Reset()                    { *m = CreateUserRequest{} }
-func (m *CreateUserRequest) String() string            { return proto.CompactTextString(m) }
-func (*CreateUserRequest) ProtoMessage()               {}
-func (*CreateUserRequest) Descriptor() ([]byte, []int) { return fileDescriptor3, []int{1} }
+func (m *CreateUserRequest) Reset()         { *m = CreateUserRequest{} }
+func (m *CreateUserRequest) String() string { return proto.CompactTextString(m) }
+func (*CreateUserRequest) ProtoMessage()    {}
+func (*CreateUserRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_116e343673f7ffaf, []int{1}
+}
+
+func (m *CreateUserRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_CreateUserRequest.Unmarshal(m, b)
+}
+func (m *CreateUserRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_CreateUserRequest.Marshal(b, m, deterministic)
+}
+func (m *CreateUserRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_CreateUserRequest.Merge(m, src)
+}
+func (m *CreateUserRequest) XXX_Size() int {
+	return xxx_messageInfo_CreateUserRequest.Size(m)
+}
+func (m *CreateUserRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_CreateUserRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_CreateUserRequest proto.InternalMessageInfo
 
 func (m *CreateUserRequest) GetUsername() string {
 	if m != nil {
@@ -206,13 +258,36 @@ func (m *CreateUserRequest) GetIsConfirmed() *ntypes.Bool {
 }
 
 type CreateUserResponse struct {
-	User *User `protobuf:"bytes,1,opt,name=user" json:"user,omitempty"`
+	User                 *User    `protobuf:"bytes,1,opt,name=user,proto3" json:"user,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *CreateUserResponse) Reset()                    { *m = CreateUserResponse{} }
-func (m *CreateUserResponse) String() string            { return proto.CompactTextString(m) }
-func (*CreateUserResponse) ProtoMessage()               {}
-func (*CreateUserResponse) Descriptor() ([]byte, []int) { return fileDescriptor3, []int{2} }
+func (m *CreateUserResponse) Reset()         { *m = CreateUserResponse{} }
+func (m *CreateUserResponse) String() string { return proto.CompactTextString(m) }
+func (*CreateUserResponse) ProtoMessage()    {}
+func (*CreateUserResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_116e343673f7ffaf, []int{2}
+}
+
+func (m *CreateUserResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_CreateUserResponse.Unmarshal(m, b)
+}
+func (m *CreateUserResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_CreateUserResponse.Marshal(b, m, deterministic)
+}
+func (m *CreateUserResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_CreateUserResponse.Merge(m, src)
+}
+func (m *CreateUserResponse) XXX_Size() int {
+	return xxx_messageInfo_CreateUserResponse.Size(m)
+}
+func (m *CreateUserResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_CreateUserResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_CreateUserResponse proto.InternalMessageInfo
 
 func (m *CreateUserResponse) GetUser() *User {
 	if m != nil {
@@ -222,13 +297,36 @@ func (m *CreateUserResponse) GetUser() *User {
 }
 
 type GetUserRequest struct {
-	Id int64 `protobuf:"varint,1,opt,name=id" json:"id,omitempty"`
+	Id                   int64    `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *GetUserRequest) Reset()                    { *m = GetUserRequest{} }
-func (m *GetUserRequest) String() string            { return proto.CompactTextString(m) }
-func (*GetUserRequest) ProtoMessage()               {}
-func (*GetUserRequest) Descriptor() ([]byte, []int) { return fileDescriptor3, []int{3} }
+func (m *GetUserRequest) Reset()         { *m = GetUserRequest{} }
+func (m *GetUserRequest) String() string { return proto.CompactTextString(m) }
+func (*GetUserRequest) ProtoMessage()    {}
+func (*GetUserRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_116e343673f7ffaf, []int{3}
+}
+
+func (m *GetUserRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetUserRequest.Unmarshal(m, b)
+}
+func (m *GetUserRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetUserRequest.Marshal(b, m, deterministic)
+}
+func (m *GetUserRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetUserRequest.Merge(m, src)
+}
+func (m *GetUserRequest) XXX_Size() int {
+	return xxx_messageInfo_GetUserRequest.Size(m)
+}
+func (m *GetUserRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetUserRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetUserRequest proto.InternalMessageInfo
 
 func (m *GetUserRequest) GetId() int64 {
 	if m != nil {
@@ -238,13 +336,36 @@ func (m *GetUserRequest) GetId() int64 {
 }
 
 type GetUserResponse struct {
-	User *User `protobuf:"bytes,1,opt,name=user" json:"user,omitempty"`
+	User                 *User    `protobuf:"bytes,1,opt,name=user,proto3" json:"user,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *GetUserResponse) Reset()                    { *m = GetUserResponse{} }
-func (m *GetUserResponse) String() string            { return proto.CompactTextString(m) }
-func (*GetUserResponse) ProtoMessage()               {}
-func (*GetUserResponse) Descriptor() ([]byte, []int) { return fileDescriptor3, []int{4} }
+func (m *GetUserResponse) Reset()         { *m = GetUserResponse{} }
+func (m *GetUserResponse) String() string { return proto.CompactTextString(m) }
+func (*GetUserResponse) ProtoMessage()    {}
+func (*GetUserResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_116e343673f7ffaf, []int{4}
+}
+
+func (m *GetUserResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetUserResponse.Unmarshal(m, b)
+}
+func (m *GetUserResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetUserResponse.Marshal(b, m, deterministic)
+}
+func (m *GetUserResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetUserResponse.Merge(m, src)
+}
+func (m *GetUserResponse) XXX_Size() int {
+	return xxx_messageInfo_GetUserResponse.Size(m)
+}
+func (m *GetUserResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetUserResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetUserResponse proto.InternalMessageInfo
 
 func (m *GetUserResponse) GetUser() *User {
 	if m != nil {
@@ -254,18 +375,41 @@ func (m *GetUserResponse) GetUser() *User {
 }
 
 type ListUsersRequest struct {
-	IsSuperuser *ntypes.Bool    `protobuf:"bytes,1,opt,name=is_superuser,json=isSuperuser" json:"is_superuser,omitempty"`
-	IsStaff     *ntypes.Bool    `protobuf:"bytes,2,opt,name=is_staff,json=isStaff" json:"is_staff,omitempty"`
-	CreatedBy   *qtypes.Int64   `protobuf:"bytes,3,opt,name=created_by,json=createdBy" json:"created_by,omitempty"`
-	Offset      *ntypes.Int64   `protobuf:"bytes,100,opt,name=offset" json:"offset,omitempty"`
-	Limit       *ntypes.Int64   `protobuf:"bytes,101,opt,name=limit" json:"limit,omitempty"`
-	Sort        map[string]bool `protobuf:"bytes,102,rep,name=sort" json:"sort,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"varint,2,opt,name=value"`
+	IsSuperuser          *ntypes.Bool    `protobuf:"bytes,1,opt,name=is_superuser,json=isSuperuser,proto3" json:"is_superuser,omitempty"`
+	IsStaff              *ntypes.Bool    `protobuf:"bytes,2,opt,name=is_staff,json=isStaff,proto3" json:"is_staff,omitempty"`
+	CreatedBy            *qtypes.Int64   `protobuf:"bytes,3,opt,name=created_by,json=createdBy,proto3" json:"created_by,omitempty"`
+	Offset               *ntypes.Int64   `protobuf:"bytes,100,opt,name=offset,proto3" json:"offset,omitempty"`
+	Limit                *ntypes.Int64   `protobuf:"bytes,101,opt,name=limit,proto3" json:"limit,omitempty"`
+	Sort                 map[string]bool `protobuf:"bytes,102,rep,name=sort,proto3" json:"sort,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"varint,2,opt,name=value,proto3"`
+	XXX_NoUnkeyedLiteral struct{}        `json:"-"`
+	XXX_unrecognized     []byte          `json:"-"`
+	XXX_sizecache        int32           `json:"-"`
 }
 
-func (m *ListUsersRequest) Reset()                    { *m = ListUsersRequest{} }
-func (m *ListUsersRequest) String() string            { return proto.CompactTextString(m) }
-func (*ListUsersRequest) ProtoMessage()               {}
-func (*ListUsersRequest) Descriptor() ([]byte, []int) { return fileDescriptor3, []int{5} }
+func (m *ListUsersRequest) Reset()         { *m = ListUsersRequest{} }
+func (m *ListUsersRequest) String() string { return proto.CompactTextString(m) }
+func (*ListUsersRequest) ProtoMessage()    {}
+func (*ListUsersRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_116e343673f7ffaf, []int{5}
+}
+
+func (m *ListUsersRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_ListUsersRequest.Unmarshal(m, b)
+}
+func (m *ListUsersRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_ListUsersRequest.Marshal(b, m, deterministic)
+}
+func (m *ListUsersRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ListUsersRequest.Merge(m, src)
+}
+func (m *ListUsersRequest) XXX_Size() int {
+	return xxx_messageInfo_ListUsersRequest.Size(m)
+}
+func (m *ListUsersRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_ListUsersRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ListUsersRequest proto.InternalMessageInfo
 
 func (m *ListUsersRequest) GetIsSuperuser() *ntypes.Bool {
 	if m != nil {
@@ -310,13 +454,36 @@ func (m *ListUsersRequest) GetSort() map[string]bool {
 }
 
 type ListUsersResponse struct {
-	Users []*User `protobuf:"bytes,1,rep,name=users" json:"users,omitempty"`
+	Users                []*User  `protobuf:"bytes,1,rep,name=users,proto3" json:"users,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *ListUsersResponse) Reset()                    { *m = ListUsersResponse{} }
-func (m *ListUsersResponse) String() string            { return proto.CompactTextString(m) }
-func (*ListUsersResponse) ProtoMessage()               {}
-func (*ListUsersResponse) Descriptor() ([]byte, []int) { return fileDescriptor3, []int{6} }
+func (m *ListUsersResponse) Reset()         { *m = ListUsersResponse{} }
+func (m *ListUsersResponse) String() string { return proto.CompactTextString(m) }
+func (*ListUsersResponse) ProtoMessage()    {}
+func (*ListUsersResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_116e343673f7ffaf, []int{6}
+}
+
+func (m *ListUsersResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_ListUsersResponse.Unmarshal(m, b)
+}
+func (m *ListUsersResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_ListUsersResponse.Marshal(b, m, deterministic)
+}
+func (m *ListUsersResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ListUsersResponse.Merge(m, src)
+}
+func (m *ListUsersResponse) XXX_Size() int {
+	return xxx_messageInfo_ListUsersResponse.Size(m)
+}
+func (m *ListUsersResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_ListUsersResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ListUsersResponse proto.InternalMessageInfo
 
 func (m *ListUsersResponse) GetUsers() []*User {
 	if m != nil {
@@ -326,13 +493,36 @@ func (m *ListUsersResponse) GetUsers() []*User {
 }
 
 type DeleteUserRequest struct {
-	Id int64 `protobuf:"varint,1,opt,name=id" json:"id,omitempty"`
+	Id                   int64    `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *DeleteUserRequest) Reset()                    { *m = DeleteUserRequest{} }
-func (m *DeleteUserRequest) String() string            { return proto.CompactTextString(m) }
-func (*DeleteUserRequest) ProtoMessage()               {}
-func (*DeleteUserRequest) Descriptor() ([]byte, []int) { return fileDescriptor3, []int{7} }
+func (m *DeleteUserRequest) Reset()         { *m = DeleteUserRequest{} }
+func (m *DeleteUserRequest) String() string { return proto.CompactTextString(m) }
+func (*DeleteUserRequest) ProtoMessage()    {}
+func (*DeleteUserRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_116e343673f7ffaf, []int{7}
+}
+
+func (m *DeleteUserRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_DeleteUserRequest.Unmarshal(m, b)
+}
+func (m *DeleteUserRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_DeleteUserRequest.Marshal(b, m, deterministic)
+}
+func (m *DeleteUserRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_DeleteUserRequest.Merge(m, src)
+}
+func (m *DeleteUserRequest) XXX_Size() int {
+	return xxx_messageInfo_DeleteUserRequest.Size(m)
+}
+func (m *DeleteUserRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_DeleteUserRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_DeleteUserRequest proto.InternalMessageInfo
 
 func (m *DeleteUserRequest) GetId() int64 {
 	if m != nil {
@@ -342,22 +532,45 @@ func (m *DeleteUserRequest) GetId() int64 {
 }
 
 type ModifyUserRequest struct {
-	Id             int64          `protobuf:"varint,1,opt,name=id" json:"id,omitempty"`
-	Username       *ntypes.String `protobuf:"bytes,2,opt,name=username" json:"username,omitempty"`
-	PlainPassword  *ntypes.String `protobuf:"bytes,3,opt,name=plain_password,json=plainPassword" json:"plain_password,omitempty"`
-	SecurePassword []byte         `protobuf:"bytes,4,opt,name=secure_password,json=securePassword,proto3" json:"secure_password,omitempty"`
-	FirstName      *ntypes.String `protobuf:"bytes,5,opt,name=first_name,json=firstName" json:"first_name,omitempty"`
-	LastName       *ntypes.String `protobuf:"bytes,6,opt,name=last_name,json=lastName" json:"last_name,omitempty"`
-	IsSuperuser    *ntypes.Bool   `protobuf:"bytes,7,opt,name=is_superuser,json=isSuperuser" json:"is_superuser,omitempty"`
-	IsActive       *ntypes.Bool   `protobuf:"bytes,8,opt,name=is_active,json=isActive" json:"is_active,omitempty"`
-	IsStaff        *ntypes.Bool   `protobuf:"bytes,9,opt,name=is_staff,json=isStaff" json:"is_staff,omitempty"`
-	IsConfirmed    *ntypes.Bool   `protobuf:"bytes,10,opt,name=is_confirmed,json=isConfirmed" json:"is_confirmed,omitempty"`
+	Id                   int64          `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Username             *ntypes.String `protobuf:"bytes,2,opt,name=username,proto3" json:"username,omitempty"`
+	PlainPassword        *ntypes.String `protobuf:"bytes,3,opt,name=plain_password,json=plainPassword,proto3" json:"plain_password,omitempty"`
+	SecurePassword       []byte         `protobuf:"bytes,4,opt,name=secure_password,json=securePassword,proto3" json:"secure_password,omitempty"`
+	FirstName            *ntypes.String `protobuf:"bytes,5,opt,name=first_name,json=firstName,proto3" json:"first_name,omitempty"`
+	LastName             *ntypes.String `protobuf:"bytes,6,opt,name=last_name,json=lastName,proto3" json:"last_name,omitempty"`
+	IsSuperuser          *ntypes.Bool   `protobuf:"bytes,7,opt,name=is_superuser,json=isSuperuser,proto3" json:"is_superuser,omitempty"`
+	IsActive             *ntypes.Bool   `protobuf:"bytes,8,opt,name=is_active,json=isActive,proto3" json:"is_active,omitempty"`
+	IsStaff              *ntypes.Bool   `protobuf:"bytes,9,opt,name=is_staff,json=isStaff,proto3" json:"is_staff,omitempty"`
+	IsConfirmed          *ntypes.Bool   `protobuf:"bytes,10,opt,name=is_confirmed,json=isConfirmed,proto3" json:"is_confirmed,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}       `json:"-"`
+	XXX_unrecognized     []byte         `json:"-"`
+	XXX_sizecache        int32          `json:"-"`
 }
 
-func (m *ModifyUserRequest) Reset()                    { *m = ModifyUserRequest{} }
-func (m *ModifyUserRequest) String() string            { return proto.CompactTextString(m) }
-func (*ModifyUserRequest) ProtoMessage()               {}
-func (*ModifyUserRequest) Descriptor() ([]byte, []int) { return fileDescriptor3, []int{8} }
+func (m *ModifyUserRequest) Reset()         { *m = ModifyUserRequest{} }
+func (m *ModifyUserRequest) String() string { return proto.CompactTextString(m) }
+func (*ModifyUserRequest) ProtoMessage()    {}
+func (*ModifyUserRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_116e343673f7ffaf, []int{8}
+}
+
+func (m *ModifyUserRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_ModifyUserRequest.Unmarshal(m, b)
+}
+func (m *ModifyUserRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_ModifyUserRequest.Marshal(b, m, deterministic)
+}
+func (m *ModifyUserRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ModifyUserRequest.Merge(m, src)
+}
+func (m *ModifyUserRequest) XXX_Size() int {
+	return xxx_messageInfo_ModifyUserRequest.Size(m)
+}
+func (m *ModifyUserRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_ModifyUserRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ModifyUserRequest proto.InternalMessageInfo
 
 func (m *ModifyUserRequest) GetId() int64 {
 	if m != nil {
@@ -430,13 +643,36 @@ func (m *ModifyUserRequest) GetIsConfirmed() *ntypes.Bool {
 }
 
 type ModifyUserResponse struct {
-	User *User `protobuf:"bytes,1,opt,name=user" json:"user,omitempty"`
+	User                 *User    `protobuf:"bytes,1,opt,name=user,proto3" json:"user,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *ModifyUserResponse) Reset()                    { *m = ModifyUserResponse{} }
-func (m *ModifyUserResponse) String() string            { return proto.CompactTextString(m) }
-func (*ModifyUserResponse) ProtoMessage()               {}
-func (*ModifyUserResponse) Descriptor() ([]byte, []int) { return fileDescriptor3, []int{9} }
+func (m *ModifyUserResponse) Reset()         { *m = ModifyUserResponse{} }
+func (m *ModifyUserResponse) String() string { return proto.CompactTextString(m) }
+func (*ModifyUserResponse) ProtoMessage()    {}
+func (*ModifyUserResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_116e343673f7ffaf, []int{9}
+}
+
+func (m *ModifyUserResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_ModifyUserResponse.Unmarshal(m, b)
+}
+func (m *ModifyUserResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_ModifyUserResponse.Marshal(b, m, deterministic)
+}
+func (m *ModifyUserResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ModifyUserResponse.Merge(m, src)
+}
+func (m *ModifyUserResponse) XXX_Size() int {
+	return xxx_messageInfo_ModifyUserResponse.Size(m)
+}
+func (m *ModifyUserResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_ModifyUserResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ModifyUserResponse proto.InternalMessageInfo
 
 func (m *ModifyUserResponse) GetUser() *User {
 	if m != nil {
@@ -446,13 +682,36 @@ func (m *ModifyUserResponse) GetUser() *User {
 }
 
 type ListUserPermissionsRequest struct {
-	Id int64 `protobuf:"varint,1,opt,name=id" json:"id,omitempty"`
+	Id                   int64    `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *ListUserPermissionsRequest) Reset()                    { *m = ListUserPermissionsRequest{} }
-func (m *ListUserPermissionsRequest) String() string            { return proto.CompactTextString(m) }
-func (*ListUserPermissionsRequest) ProtoMessage()               {}
-func (*ListUserPermissionsRequest) Descriptor() ([]byte, []int) { return fileDescriptor3, []int{10} }
+func (m *ListUserPermissionsRequest) Reset()         { *m = ListUserPermissionsRequest{} }
+func (m *ListUserPermissionsRequest) String() string { return proto.CompactTextString(m) }
+func (*ListUserPermissionsRequest) ProtoMessage()    {}
+func (*ListUserPermissionsRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_116e343673f7ffaf, []int{10}
+}
+
+func (m *ListUserPermissionsRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_ListUserPermissionsRequest.Unmarshal(m, b)
+}
+func (m *ListUserPermissionsRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_ListUserPermissionsRequest.Marshal(b, m, deterministic)
+}
+func (m *ListUserPermissionsRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ListUserPermissionsRequest.Merge(m, src)
+}
+func (m *ListUserPermissionsRequest) XXX_Size() int {
+	return xxx_messageInfo_ListUserPermissionsRequest.Size(m)
+}
+func (m *ListUserPermissionsRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_ListUserPermissionsRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ListUserPermissionsRequest proto.InternalMessageInfo
 
 func (m *ListUserPermissionsRequest) GetId() int64 {
 	if m != nil {
@@ -462,13 +721,36 @@ func (m *ListUserPermissionsRequest) GetId() int64 {
 }
 
 type ListUserPermissionsResponse struct {
-	Permissions []string `protobuf:"bytes,1,rep,name=permissions" json:"permissions,omitempty"`
+	Permissions          []string `protobuf:"bytes,1,rep,name=permissions,proto3" json:"permissions,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *ListUserPermissionsResponse) Reset()                    { *m = ListUserPermissionsResponse{} }
-func (m *ListUserPermissionsResponse) String() string            { return proto.CompactTextString(m) }
-func (*ListUserPermissionsResponse) ProtoMessage()               {}
-func (*ListUserPermissionsResponse) Descriptor() ([]byte, []int) { return fileDescriptor3, []int{11} }
+func (m *ListUserPermissionsResponse) Reset()         { *m = ListUserPermissionsResponse{} }
+func (m *ListUserPermissionsResponse) String() string { return proto.CompactTextString(m) }
+func (*ListUserPermissionsResponse) ProtoMessage()    {}
+func (*ListUserPermissionsResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_116e343673f7ffaf, []int{11}
+}
+
+func (m *ListUserPermissionsResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_ListUserPermissionsResponse.Unmarshal(m, b)
+}
+func (m *ListUserPermissionsResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_ListUserPermissionsResponse.Marshal(b, m, deterministic)
+}
+func (m *ListUserPermissionsResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ListUserPermissionsResponse.Merge(m, src)
+}
+func (m *ListUserPermissionsResponse) XXX_Size() int {
+	return xxx_messageInfo_ListUserPermissionsResponse.Size(m)
+}
+func (m *ListUserPermissionsResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_ListUserPermissionsResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ListUserPermissionsResponse proto.InternalMessageInfo
 
 func (m *ListUserPermissionsResponse) GetPermissions() []string {
 	if m != nil {
@@ -478,16 +760,39 @@ func (m *ListUserPermissionsResponse) GetPermissions() []string {
 }
 
 type SetUserPermissionsRequest struct {
-	UserId      int64    `protobuf:"varint,1,opt,name=user_id,json=userId" json:"user_id,omitempty"`
-	Permissions []string `protobuf:"bytes,2,rep,name=permissions" json:"permissions,omitempty"`
+	UserId      int64    `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	Permissions []string `protobuf:"bytes,2,rep,name=permissions,proto3" json:"permissions,omitempty"`
 	// Force tells if permission should be created in case if it does not exists.
-	Force bool `protobuf:"varint,3,opt,name=force" json:"force,omitempty"`
+	Force                bool     `protobuf:"varint,3,opt,name=force,proto3" json:"force,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *SetUserPermissionsRequest) Reset()                    { *m = SetUserPermissionsRequest{} }
-func (m *SetUserPermissionsRequest) String() string            { return proto.CompactTextString(m) }
-func (*SetUserPermissionsRequest) ProtoMessage()               {}
-func (*SetUserPermissionsRequest) Descriptor() ([]byte, []int) { return fileDescriptor3, []int{12} }
+func (m *SetUserPermissionsRequest) Reset()         { *m = SetUserPermissionsRequest{} }
+func (m *SetUserPermissionsRequest) String() string { return proto.CompactTextString(m) }
+func (*SetUserPermissionsRequest) ProtoMessage()    {}
+func (*SetUserPermissionsRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_116e343673f7ffaf, []int{12}
+}
+
+func (m *SetUserPermissionsRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_SetUserPermissionsRequest.Unmarshal(m, b)
+}
+func (m *SetUserPermissionsRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_SetUserPermissionsRequest.Marshal(b, m, deterministic)
+}
+func (m *SetUserPermissionsRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_SetUserPermissionsRequest.Merge(m, src)
+}
+func (m *SetUserPermissionsRequest) XXX_Size() int {
+	return xxx_messageInfo_SetUserPermissionsRequest.Size(m)
+}
+func (m *SetUserPermissionsRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_SetUserPermissionsRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_SetUserPermissionsRequest proto.InternalMessageInfo
 
 func (m *SetUserPermissionsRequest) GetUserId() int64 {
 	if m != nil {
@@ -511,15 +816,38 @@ func (m *SetUserPermissionsRequest) GetForce() bool {
 }
 
 type SetUserPermissionsResponse struct {
-	Created   int64 `protobuf:"varint,1,opt,name=created" json:"created,omitempty"`
-	Removed   int64 `protobuf:"varint,2,opt,name=removed" json:"removed,omitempty"`
-	Untouched int64 `protobuf:"varint,3,opt,name=untouched" json:"untouched,omitempty"`
+	Created              int64    `protobuf:"varint,1,opt,name=created,proto3" json:"created,omitempty"`
+	Removed              int64    `protobuf:"varint,2,opt,name=removed,proto3" json:"removed,omitempty"`
+	Untouched            int64    `protobuf:"varint,3,opt,name=untouched,proto3" json:"untouched,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *SetUserPermissionsResponse) Reset()                    { *m = SetUserPermissionsResponse{} }
-func (m *SetUserPermissionsResponse) String() string            { return proto.CompactTextString(m) }
-func (*SetUserPermissionsResponse) ProtoMessage()               {}
-func (*SetUserPermissionsResponse) Descriptor() ([]byte, []int) { return fileDescriptor3, []int{13} }
+func (m *SetUserPermissionsResponse) Reset()         { *m = SetUserPermissionsResponse{} }
+func (m *SetUserPermissionsResponse) String() string { return proto.CompactTextString(m) }
+func (*SetUserPermissionsResponse) ProtoMessage()    {}
+func (*SetUserPermissionsResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_116e343673f7ffaf, []int{13}
+}
+
+func (m *SetUserPermissionsResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_SetUserPermissionsResponse.Unmarshal(m, b)
+}
+func (m *SetUserPermissionsResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_SetUserPermissionsResponse.Marshal(b, m, deterministic)
+}
+func (m *SetUserPermissionsResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_SetUserPermissionsResponse.Merge(m, src)
+}
+func (m *SetUserPermissionsResponse) XXX_Size() int {
+	return xxx_messageInfo_SetUserPermissionsResponse.Size(m)
+}
+func (m *SetUserPermissionsResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_SetUserPermissionsResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_SetUserPermissionsResponse proto.InternalMessageInfo
 
 func (m *SetUserPermissionsResponse) GetCreated() int64 {
 	if m != nil {
@@ -543,13 +871,36 @@ func (m *SetUserPermissionsResponse) GetUntouched() int64 {
 }
 
 type ListUserGroupsRequest struct {
-	Id int64 `protobuf:"varint,1,opt,name=id" json:"id,omitempty"`
+	Id                   int64    `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *ListUserGroupsRequest) Reset()                    { *m = ListUserGroupsRequest{} }
-func (m *ListUserGroupsRequest) String() string            { return proto.CompactTextString(m) }
-func (*ListUserGroupsRequest) ProtoMessage()               {}
-func (*ListUserGroupsRequest) Descriptor() ([]byte, []int) { return fileDescriptor3, []int{14} }
+func (m *ListUserGroupsRequest) Reset()         { *m = ListUserGroupsRequest{} }
+func (m *ListUserGroupsRequest) String() string { return proto.CompactTextString(m) }
+func (*ListUserGroupsRequest) ProtoMessage()    {}
+func (*ListUserGroupsRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_116e343673f7ffaf, []int{14}
+}
+
+func (m *ListUserGroupsRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_ListUserGroupsRequest.Unmarshal(m, b)
+}
+func (m *ListUserGroupsRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_ListUserGroupsRequest.Marshal(b, m, deterministic)
+}
+func (m *ListUserGroupsRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ListUserGroupsRequest.Merge(m, src)
+}
+func (m *ListUserGroupsRequest) XXX_Size() int {
+	return xxx_messageInfo_ListUserGroupsRequest.Size(m)
+}
+func (m *ListUserGroupsRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_ListUserGroupsRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ListUserGroupsRequest proto.InternalMessageInfo
 
 func (m *ListUserGroupsRequest) GetId() int64 {
 	if m != nil {
@@ -559,13 +910,36 @@ func (m *ListUserGroupsRequest) GetId() int64 {
 }
 
 type ListUserGroupsResponse struct {
-	Groups []*Group `protobuf:"bytes,1,rep,name=groups" json:"groups,omitempty"`
+	Groups               []*Group `protobuf:"bytes,1,rep,name=groups,proto3" json:"groups,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *ListUserGroupsResponse) Reset()                    { *m = ListUserGroupsResponse{} }
-func (m *ListUserGroupsResponse) String() string            { return proto.CompactTextString(m) }
-func (*ListUserGroupsResponse) ProtoMessage()               {}
-func (*ListUserGroupsResponse) Descriptor() ([]byte, []int) { return fileDescriptor3, []int{15} }
+func (m *ListUserGroupsResponse) Reset()         { *m = ListUserGroupsResponse{} }
+func (m *ListUserGroupsResponse) String() string { return proto.CompactTextString(m) }
+func (*ListUserGroupsResponse) ProtoMessage()    {}
+func (*ListUserGroupsResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_116e343673f7ffaf, []int{15}
+}
+
+func (m *ListUserGroupsResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_ListUserGroupsResponse.Unmarshal(m, b)
+}
+func (m *ListUserGroupsResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_ListUserGroupsResponse.Marshal(b, m, deterministic)
+}
+func (m *ListUserGroupsResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ListUserGroupsResponse.Merge(m, src)
+}
+func (m *ListUserGroupsResponse) XXX_Size() int {
+	return xxx_messageInfo_ListUserGroupsResponse.Size(m)
+}
+func (m *ListUserGroupsResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_ListUserGroupsResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ListUserGroupsResponse proto.InternalMessageInfo
 
 func (m *ListUserGroupsResponse) GetGroups() []*Group {
 	if m != nil {
@@ -575,14 +949,37 @@ func (m *ListUserGroupsResponse) GetGroups() []*Group {
 }
 
 type SetUserGroupsRequest struct {
-	UserId int64   `protobuf:"varint,1,opt,name=user_id,json=userId" json:"user_id,omitempty"`
-	Groups []int64 `protobuf:"varint,2,rep,packed,name=groups" json:"groups,omitempty"`
+	UserId               int64    `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	Groups               []int64  `protobuf:"varint,2,rep,packed,name=groups,proto3" json:"groups,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *SetUserGroupsRequest) Reset()                    { *m = SetUserGroupsRequest{} }
-func (m *SetUserGroupsRequest) String() string            { return proto.CompactTextString(m) }
-func (*SetUserGroupsRequest) ProtoMessage()               {}
-func (*SetUserGroupsRequest) Descriptor() ([]byte, []int) { return fileDescriptor3, []int{16} }
+func (m *SetUserGroupsRequest) Reset()         { *m = SetUserGroupsRequest{} }
+func (m *SetUserGroupsRequest) String() string { return proto.CompactTextString(m) }
+func (*SetUserGroupsRequest) ProtoMessage()    {}
+func (*SetUserGroupsRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_116e343673f7ffaf, []int{16}
+}
+
+func (m *SetUserGroupsRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_SetUserGroupsRequest.Unmarshal(m, b)
+}
+func (m *SetUserGroupsRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_SetUserGroupsRequest.Marshal(b, m, deterministic)
+}
+func (m *SetUserGroupsRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_SetUserGroupsRequest.Merge(m, src)
+}
+func (m *SetUserGroupsRequest) XXX_Size() int {
+	return xxx_messageInfo_SetUserGroupsRequest.Size(m)
+}
+func (m *SetUserGroupsRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_SetUserGroupsRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_SetUserGroupsRequest proto.InternalMessageInfo
 
 func (m *SetUserGroupsRequest) GetUserId() int64 {
 	if m != nil {
@@ -599,15 +996,38 @@ func (m *SetUserGroupsRequest) GetGroups() []int64 {
 }
 
 type SetUserGroupsResponse struct {
-	Created   int64 `protobuf:"varint,1,opt,name=created" json:"created,omitempty"`
-	Removed   int64 `protobuf:"varint,2,opt,name=removed" json:"removed,omitempty"`
-	Untouched int64 `protobuf:"varint,3,opt,name=untouched" json:"untouched,omitempty"`
+	Created              int64    `protobuf:"varint,1,opt,name=created,proto3" json:"created,omitempty"`
+	Removed              int64    `protobuf:"varint,2,opt,name=removed,proto3" json:"removed,omitempty"`
+	Untouched            int64    `protobuf:"varint,3,opt,name=untouched,proto3" json:"untouched,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *SetUserGroupsResponse) Reset()                    { *m = SetUserGroupsResponse{} }
-func (m *SetUserGroupsResponse) String() string            { return proto.CompactTextString(m) }
-func (*SetUserGroupsResponse) ProtoMessage()               {}
-func (*SetUserGroupsResponse) Descriptor() ([]byte, []int) { return fileDescriptor3, []int{17} }
+func (m *SetUserGroupsResponse) Reset()         { *m = SetUserGroupsResponse{} }
+func (m *SetUserGroupsResponse) String() string { return proto.CompactTextString(m) }
+func (*SetUserGroupsResponse) ProtoMessage()    {}
+func (*SetUserGroupsResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_116e343673f7ffaf, []int{17}
+}
+
+func (m *SetUserGroupsResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_SetUserGroupsResponse.Unmarshal(m, b)
+}
+func (m *SetUserGroupsResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_SetUserGroupsResponse.Marshal(b, m, deterministic)
+}
+func (m *SetUserGroupsResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_SetUserGroupsResponse.Merge(m, src)
+}
+func (m *SetUserGroupsResponse) XXX_Size() int {
+	return xxx_messageInfo_SetUserGroupsResponse.Size(m)
+}
+func (m *SetUserGroupsResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_SetUserGroupsResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_SetUserGroupsResponse proto.InternalMessageInfo
 
 func (m *SetUserGroupsResponse) GetCreated() int64 {
 	if m != nil {
@@ -637,6 +1057,7 @@ func init() {
 	proto.RegisterType((*GetUserRequest)(nil), "charonrpc.GetUserRequest")
 	proto.RegisterType((*GetUserResponse)(nil), "charonrpc.GetUserResponse")
 	proto.RegisterType((*ListUsersRequest)(nil), "charonrpc.ListUsersRequest")
+	proto.RegisterMapType((map[string]bool)(nil), "charonrpc.ListUsersRequest.SortEntry")
 	proto.RegisterType((*ListUsersResponse)(nil), "charonrpc.ListUsersResponse")
 	proto.RegisterType((*DeleteUserRequest)(nil), "charonrpc.DeleteUserRequest")
 	proto.RegisterType((*ModifyUserRequest)(nil), "charonrpc.ModifyUserRequest")
@@ -651,6 +1072,82 @@ func init() {
 	proto.RegisterType((*SetUserGroupsResponse)(nil), "charonrpc.SetUserGroupsResponse")
 }
 
+func init() { proto.RegisterFile("user.proto", fileDescriptor_116e343673f7ffaf) }
+
+var fileDescriptor_116e343673f7ffaf = []byte{
+	// 1117 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xb4, 0x56, 0xdd, 0x72, 0xdb, 0xc4,
+	0x17, 0x8f, 0x2d, 0x7f, 0xe9, 0x38, 0x75, 0x92, 0xfd, 0xb7, 0xfd, 0x2b, 0x4a, 0x4a, 0x5d, 0x85,
+	0x10, 0x53, 0x82, 0x3d, 0x13, 0xa0, 0x90, 0x5e, 0xc0, 0x34, 0x29, 0x93, 0x29, 0x43, 0x99, 0x8c,
+	0x0c, 0x5c, 0x70, 0xe3, 0x91, 0xed, 0xb5, 0xb3, 0x13, 0x5b, 0xab, 0xec, 0xae, 0x92, 0x31, 0x0f,
+	0xc7, 0x0c, 0x2f, 0xc1, 0x35, 0xaf, 0xc0, 0x1b, 0x30, 0xbb, 0x2b, 0x29, 0x92, 0x2c, 0x27, 0xcd,
+	0x05, 0x57, 0xf6, 0x9e, 0xf3, 0x3b, 0xbf, 0x73, 0xf6, 0x7c, 0xad, 0x00, 0x42, 0x8e, 0x59, 0x37,
+	0x60, 0x54, 0x50, 0x64, 0x8e, 0x2e, 0x3c, 0x46, 0x7d, 0x16, 0x8c, 0xec, 0xe7, 0x53, 0x4a, 0xa7,
+	0x33, 0xdc, 0x53, 0x8a, 0x61, 0x38, 0xe9, 0x09, 0x32, 0xc7, 0x5c, 0x78, 0xf3, 0x40, 0x63, 0xed,
+	0x8f, 0xf2, 0x80, 0x1b, 0xe6, 0x05, 0x01, 0x66, 0x3c, 0xd2, 0xff, 0xef, 0x4a, 0x2c, 0x02, 0xcc,
+	0x7b, 0xfa, 0x27, 0x16, 0xfa, 0x5a, 0xe8, 0xa7, 0x85, 0xcd, 0x29, 0xa3, 0x61, 0x44, 0xeb, 0xfc,
+	0x61, 0x40, 0xe5, 0x17, 0x8e, 0x19, 0x6a, 0x41, 0x99, 0x8c, 0xad, 0x52, 0xbb, 0xd4, 0x31, 0xdc,
+	0x32, 0x19, 0x23, 0x1b, 0x1a, 0x32, 0x52, 0xdf, 0x9b, 0x63, 0xab, 0xdc, 0x2e, 0x75, 0x4c, 0x37,
+	0x39, 0xa3, 0x67, 0x00, 0x13, 0xc2, 0xb8, 0x18, 0x28, 0xad, 0xa1, 0xb4, 0xa6, 0x92, 0xfc, 0x24,
+	0xd5, 0x3b, 0x60, 0xce, 0xbc, 0x58, 0x5b, 0xd1, 0xb6, 0x52, 0xa0, 0x94, 0x2f, 0x60, 0x9d, 0xf0,
+	0x01, 0x0f, 0x03, 0xcc, 0x24, 0x9f, 0x55, 0x6d, 0x97, 0x3a, 0x0d, 0xb7, 0x49, 0x78, 0x3f, 0x16,
+	0x49, 0x7b, 0xc2, 0x07, 0xde, 0x48, 0x90, 0x6b, 0x6c, 0xd5, 0x94, 0xbe, 0x41, 0xf8, 0x1b, 0x75,
+	0x46, 0xdb, 0xd0, 0x90, 0xf6, 0xc2, 0x9b, 0x4c, 0xac, 0xba, 0xd2, 0xd5, 0x09, 0xef, 0xcb, 0x63,
+	0x44, 0x3d, 0xa2, 0xfe, 0x84, 0xb0, 0x39, 0x1e, 0x5b, 0x8d, 0x98, 0xfa, 0x34, 0x16, 0xa1, 0x63,
+	0x80, 0x11, 0xc3, 0x9e, 0xc0, 0xe3, 0x81, 0x27, 0x2c, 0xb3, 0x5d, 0xea, 0x34, 0x8f, 0xec, 0xae,
+	0x4e, 0x6d, 0x37, 0x4e, 0x6d, 0xf7, 0xe7, 0x38, 0xf7, 0xae, 0x19, 0xa1, 0xdf, 0x08, 0x74, 0x78,
+	0x6b, 0x3a, 0x5c, 0x58, 0xa0, 0x4c, 0x1f, 0x75, 0xa3, 0xcc, 0xbe, 0xf3, 0xc5, 0xab, 0x2f, 0x13,
+	0xf4, 0xc9, 0x42, 0x3a, 0x0a, 0x83, 0x71, 0xec, 0xa8, 0x79, 0xbf, 0xa3, 0x08, 0xad, 0x1d, 0xc5,
+	0xa6, 0xc3, 0x85, 0xb5, 0x5e, 0xe8, 0x28, 0x02, 0x9c, 0x2c, 0x9c, 0x7f, 0xca, 0xb0, 0x75, 0xaa,
+	0xdc, 0xca, 0x32, 0xba, 0xf8, 0x2a, 0xc4, 0x5c, 0x64, 0xaa, 0x57, 0xca, 0x55, 0x6f, 0x1f, 0x5a,
+	0xc1, 0xcc, 0x23, 0xfe, 0x20, 0xf0, 0x38, 0xbf, 0xa1, 0x6c, 0x1c, 0xd5, 0xf7, 0x91, 0x92, 0x9e,
+	0x47, 0x42, 0x74, 0x00, 0x1b, 0x1c, 0x8f, 0x42, 0x86, 0x6f, 0x71, 0xb2, 0xd2, 0xeb, 0x6e, 0x4b,
+	0x8b, 0x13, 0x60, 0xb6, 0x1b, 0x2a, 0x77, 0x76, 0x43, 0x35, 0xd7, 0x0d, 0xbd, 0x5c, 0x37, 0xd4,
+	0xd4, 0x6d, 0xd7, 0xe3, 0xdb, 0x9e, 0x50, 0x3a, 0xcb, 0xf6, 0xc6, 0xa7, 0xe9, 0xde, 0xa8, 0x17,
+	0xa0, 0x6f, 0x3b, 0xe5, 0x20, 0xd5, 0x29, 0x8d, 0x02, 0x64, 0xd2, 0x37, 0xbd, 0x5c, 0xdf, 0x98,
+	0xc5, 0x41, 0x24, 0x5d, 0xe4, 0x1c, 0x03, 0x4a, 0xa7, 0x9c, 0x07, 0xd4, 0xe7, 0x18, 0xed, 0x41,
+	0x45, 0xdd, 0xa1, 0xa4, 0xcc, 0x37, 0xba, 0xc9, 0x70, 0x77, 0x15, 0x4c, 0x29, 0x9d, 0x36, 0xb4,
+	0xce, 0xb0, 0x48, 0x97, 0x2a, 0x37, 0x78, 0xce, 0x2b, 0xd8, 0x48, 0x10, 0x0f, 0x61, 0xfe, 0xbb,
+	0x0c, 0x9b, 0x3f, 0x12, 0xae, 0x2c, 0x79, 0x4c, 0x9e, 0xcf, 0x6f, 0xe9, 0xbe, 0xfc, 0xa6, 0x93,
+	0x56, 0xbe, 0x2b, 0x69, 0xd9, 0x71, 0x30, 0xa2, 0x2e, 0xbd, 0x5a, 0x31, 0x0e, 0xfb, 0x50, 0xa3,
+	0x93, 0x09, 0xc7, 0xc2, 0x1a, 0x17, 0xf5, 0x73, 0xa4, 0x44, 0x7b, 0x50, 0x9d, 0x91, 0x39, 0x11,
+	0x16, 0x2e, 0x42, 0x69, 0x1d, 0x3a, 0x86, 0x0a, 0xa7, 0x4c, 0x58, 0x93, 0xb6, 0xd1, 0x69, 0x1e,
+	0xed, 0xa7, 0xb2, 0x91, 0xbf, 0x7e, 0xb7, 0x4f, 0x99, 0xf8, 0xde, 0x17, 0x6c, 0xe1, 0x2a, 0x13,
+	0xfb, 0x6b, 0x30, 0x13, 0x11, 0xda, 0x04, 0xe3, 0x12, 0x2f, 0xa2, 0xf1, 0x90, 0x7f, 0xd1, 0x63,
+	0xa8, 0x5e, 0x7b, 0xb3, 0x50, 0x2f, 0xbc, 0x86, 0xab, 0x0f, 0xaf, 0xcb, 0xdf, 0x94, 0x7e, 0xa8,
+	0x34, 0x2a, 0x9b, 0x63, 0xe7, 0x35, 0x6c, 0xa5, 0x5c, 0x44, 0xc5, 0xd9, 0x87, 0xaa, 0xcc, 0x1c,
+	0xb7, 0x4a, 0x2a, 0x9e, 0xa5, 0xea, 0x68, 0xad, 0xb3, 0x07, 0x5b, 0x6f, 0xf1, 0x0c, 0x67, 0xc7,
+	0x34, 0x5f, 0xfb, 0x3f, 0x0d, 0xd8, 0x7a, 0x4f, 0xc7, 0x64, 0xb2, 0xb8, 0x03, 0x85, 0x5e, 0xe6,
+	0x56, 0x73, 0xf3, 0xa8, 0x15, 0x27, 0xaa, 0x2f, 0x18, 0xf1, 0xa7, 0xa9, 0x61, 0xff, 0x6a, 0x69,
+	0xd8, 0x8d, 0x42, 0x8b, 0xfb, 0x87, 0xbf, 0x52, 0x38, 0xfc, 0x9f, 0x67, 0x86, 0xbf, 0x5a, 0xc8,
+	0x9d, 0x5a, 0x06, 0x9f, 0xa5, 0x97, 0x41, 0xad, 0x38, 0xf6, 0x95, 0xcb, 0xa1, 0xfe, 0xa0, 0xe5,
+	0xd0, 0xf8, 0xe0, 0xe5, 0x60, 0x3e, 0x64, 0x39, 0xc0, 0x07, 0x2c, 0x87, 0x74, 0x09, 0x1f, 0x32,
+	0xc2, 0x87, 0x60, 0xc7, 0xfd, 0x75, 0x8e, 0xd9, 0x9c, 0x70, 0x4e, 0xa8, 0xcf, 0x57, 0x35, 0xcb,
+	0x77, 0xb0, 0x53, 0x88, 0x8e, 0x3c, 0xb6, 0xa1, 0x19, 0xdc, 0x8a, 0x55, 0x77, 0x9a, 0x6e, 0x5a,
+	0xe4, 0xcc, 0x60, 0xbb, 0x8f, 0x57, 0x79, 0xfb, 0x3f, 0xd4, 0x65, 0x4c, 0x83, 0xc4, 0x65, 0x4d,
+	0x1e, 0xdf, 0x8d, 0xf3, 0xbc, 0xe5, 0x25, 0x5e, 0x39, 0x46, 0x13, 0xca, 0x46, 0xfa, 0xcb, 0xa0,
+	0xe1, 0xea, 0x83, 0xe3, 0x83, 0x5d, 0xe4, 0x2d, 0x8a, 0xd6, 0x82, 0x7a, 0xb4, 0x2d, 0x22, 0x77,
+	0xf1, 0x51, 0x6a, 0x18, 0x9e, 0xd3, 0x6b, 0xac, 0xdf, 0x29, 0xc3, 0x8d, 0x8f, 0x68, 0x17, 0xcc,
+	0xd0, 0x17, 0x34, 0x1c, 0x5d, 0x60, 0xdd, 0xd6, 0x86, 0x7b, 0x2b, 0x70, 0x0e, 0xe0, 0x49, 0x9c,
+	0x9e, 0x33, 0xf9, 0xc1, 0xb3, 0x32, 0x8f, 0x27, 0xf0, 0x34, 0x0f, 0x8c, 0x82, 0xea, 0x40, 0x4d,
+	0x7d, 0x2b, 0xc5, 0xb3, 0xbd, 0x99, 0x2a, 0x9b, 0x82, 0xba, 0x91, 0xde, 0x39, 0x83, 0xc7, 0xd1,
+	0xe5, 0xb2, 0xbe, 0x56, 0x66, 0xf1, 0x69, 0x42, 0x2d, 0x13, 0x68, 0x24, 0x44, 0x04, 0x9e, 0xe4,
+	0x88, 0xfe, 0xab, 0x04, 0x1d, 0xfd, 0x55, 0x85, 0xa6, 0x74, 0xf4, 0xde, 0xf3, 0xbd, 0x29, 0x66,
+	0xe8, 0x0c, 0x6a, 0xfa, 0x55, 0x43, 0xbb, 0xa9, 0x7b, 0x2e, 0x7d, 0x5b, 0xd8, 0xcf, 0x56, 0x68,
+	0x75, 0xa0, 0xce, 0x9a, 0x24, 0xd2, 0x13, 0x90, 0x21, 0x5a, 0xda, 0x6b, 0x19, 0xa2, 0xe5, 0x91,
+	0x71, 0xd6, 0xd0, 0xb7, 0x60, 0x9c, 0x61, 0x81, 0xb6, 0xd3, 0x69, 0xcf, 0x3c, 0x9e, 0xb6, 0x5d,
+	0xa4, 0x4a, 0xec, 0x4f, 0xa1, 0x22, 0x2b, 0x8b, 0x76, 0xee, 0x78, 0x23, 0xec, 0xdd, 0x62, 0x65,
+	0x42, 0xf2, 0x16, 0x6a, 0x7a, 0x71, 0x67, 0x6e, 0xb3, 0xb4, 0xcb, 0xed, 0xe5, 0xaf, 0x3b, 0xb9,
+	0x1b, 0x7e, 0x95, 0x4f, 0x88, 0xb3, 0x86, 0x86, 0xb0, 0x21, 0xc9, 0x53, 0xad, 0x8f, 0x8a, 0x5e,
+	0xae, 0xe5, 0x41, 0xb4, 0x3f, 0xb9, 0x0f, 0x96, 0x44, 0x3a, 0x80, 0x56, 0x1f, 0x67, 0x5c, 0x7c,
+	0x9c, 0xb2, 0x5d, 0x39, 0xea, 0xf6, 0xfe, 0x3d, 0xa8, 0xc4, 0x41, 0x1f, 0x40, 0x46, 0xa0, 0x3b,
+	0x13, 0xb5, 0x0b, 0x02, 0xcb, 0x74, 0xbf, 0xfd, 0xe2, 0x0e, 0x44, 0x42, 0x7a, 0x0e, 0x66, 0x1f,
+	0xc7, 0x9c, 0xcf, 0x97, 0x43, 0xc9, 0x52, 0xb6, 0x57, 0x03, 0x62, 0xc6, 0x93, 0xc3, 0xdf, 0x5e,
+	0x4e, 0x89, 0xb8, 0x08, 0x87, 0xdd, 0x11, 0x9d, 0xf7, 0x02, 0x42, 0x05, 0xbb, 0xa4, 0x37, 0xde,
+	0x6c, 0xf4, 0x7b, 0x78, 0xd9, 0xd3, 0xe6, 0xbd, 0x84, 0x65, 0x58, 0x53, 0xf5, 0xfa, 0xe2, 0xdf,
+	0x00, 0x00, 0x00, 0xff, 0xff, 0xe7, 0x72, 0x9d, 0xc3, 0x99, 0x0d, 0x00, 0x00,
+}
+
 // Reference imports to suppress errors if they are not otherwise used.
 var _ context.Context
 var _ grpc.ClientConn
@@ -659,14 +1156,15 @@ var _ grpc.ClientConn
 // is compatible with the grpc package it is being compiled against.
 const _ = grpc.SupportPackageIsVersion4
 
-// Client API for UserManager service
-
+// UserManagerClient is the client API for UserManager service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type UserManagerClient interface {
 	Create(ctx context.Context, in *CreateUserRequest, opts ...grpc.CallOption) (*CreateUserResponse, error)
 	Modify(ctx context.Context, in *ModifyUserRequest, opts ...grpc.CallOption) (*ModifyUserResponse, error)
 	Get(ctx context.Context, in *GetUserRequest, opts ...grpc.CallOption) (*GetUserResponse, error)
 	List(ctx context.Context, in *ListUsersRequest, opts ...grpc.CallOption) (*ListUsersResponse, error)
-	Delete(ctx context.Context, in *DeleteUserRequest, opts ...grpc.CallOption) (*google_protobuf1.BoolValue, error)
+	Delete(ctx context.Context, in *DeleteUserRequest, opts ...grpc.CallOption) (*wrappers.BoolValue, error)
 	ListPermissions(ctx context.Context, in *ListUserPermissionsRequest, opts ...grpc.CallOption) (*ListUserPermissionsResponse, error)
 	SetPermissions(ctx context.Context, in *SetUserPermissionsRequest, opts ...grpc.CallOption) (*SetUserPermissionsResponse, error)
 	ListGroups(ctx context.Context, in *ListUserGroupsRequest, opts ...grpc.CallOption) (*ListUserGroupsResponse, error)
@@ -683,7 +1181,7 @@ func NewUserManagerClient(cc *grpc.ClientConn) UserManagerClient {
 
 func (c *userManagerClient) Create(ctx context.Context, in *CreateUserRequest, opts ...grpc.CallOption) (*CreateUserResponse, error) {
 	out := new(CreateUserResponse)
-	err := grpc.Invoke(ctx, "/charonrpc.UserManager/Create", in, out, c.cc, opts...)
+	err := c.cc.Invoke(ctx, "/charonrpc.UserManager/Create", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -692,7 +1190,7 @@ func (c *userManagerClient) Create(ctx context.Context, in *CreateUserRequest, o
 
 func (c *userManagerClient) Modify(ctx context.Context, in *ModifyUserRequest, opts ...grpc.CallOption) (*ModifyUserResponse, error) {
 	out := new(ModifyUserResponse)
-	err := grpc.Invoke(ctx, "/charonrpc.UserManager/Modify", in, out, c.cc, opts...)
+	err := c.cc.Invoke(ctx, "/charonrpc.UserManager/Modify", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -701,7 +1199,7 @@ func (c *userManagerClient) Modify(ctx context.Context, in *ModifyUserRequest, o
 
 func (c *userManagerClient) Get(ctx context.Context, in *GetUserRequest, opts ...grpc.CallOption) (*GetUserResponse, error) {
 	out := new(GetUserResponse)
-	err := grpc.Invoke(ctx, "/charonrpc.UserManager/Get", in, out, c.cc, opts...)
+	err := c.cc.Invoke(ctx, "/charonrpc.UserManager/Get", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -710,16 +1208,16 @@ func (c *userManagerClient) Get(ctx context.Context, in *GetUserRequest, opts ..
 
 func (c *userManagerClient) List(ctx context.Context, in *ListUsersRequest, opts ...grpc.CallOption) (*ListUsersResponse, error) {
 	out := new(ListUsersResponse)
-	err := grpc.Invoke(ctx, "/charonrpc.UserManager/List", in, out, c.cc, opts...)
+	err := c.cc.Invoke(ctx, "/charonrpc.UserManager/List", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *userManagerClient) Delete(ctx context.Context, in *DeleteUserRequest, opts ...grpc.CallOption) (*google_protobuf1.BoolValue, error) {
-	out := new(google_protobuf1.BoolValue)
-	err := grpc.Invoke(ctx, "/charonrpc.UserManager/Delete", in, out, c.cc, opts...)
+func (c *userManagerClient) Delete(ctx context.Context, in *DeleteUserRequest, opts ...grpc.CallOption) (*wrappers.BoolValue, error) {
+	out := new(wrappers.BoolValue)
+	err := c.cc.Invoke(ctx, "/charonrpc.UserManager/Delete", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -728,7 +1226,7 @@ func (c *userManagerClient) Delete(ctx context.Context, in *DeleteUserRequest, o
 
 func (c *userManagerClient) ListPermissions(ctx context.Context, in *ListUserPermissionsRequest, opts ...grpc.CallOption) (*ListUserPermissionsResponse, error) {
 	out := new(ListUserPermissionsResponse)
-	err := grpc.Invoke(ctx, "/charonrpc.UserManager/ListPermissions", in, out, c.cc, opts...)
+	err := c.cc.Invoke(ctx, "/charonrpc.UserManager/ListPermissions", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -737,7 +1235,7 @@ func (c *userManagerClient) ListPermissions(ctx context.Context, in *ListUserPer
 
 func (c *userManagerClient) SetPermissions(ctx context.Context, in *SetUserPermissionsRequest, opts ...grpc.CallOption) (*SetUserPermissionsResponse, error) {
 	out := new(SetUserPermissionsResponse)
-	err := grpc.Invoke(ctx, "/charonrpc.UserManager/SetPermissions", in, out, c.cc, opts...)
+	err := c.cc.Invoke(ctx, "/charonrpc.UserManager/SetPermissions", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -746,7 +1244,7 @@ func (c *userManagerClient) SetPermissions(ctx context.Context, in *SetUserPermi
 
 func (c *userManagerClient) ListGroups(ctx context.Context, in *ListUserGroupsRequest, opts ...grpc.CallOption) (*ListUserGroupsResponse, error) {
 	out := new(ListUserGroupsResponse)
-	err := grpc.Invoke(ctx, "/charonrpc.UserManager/ListGroups", in, out, c.cc, opts...)
+	err := c.cc.Invoke(ctx, "/charonrpc.UserManager/ListGroups", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -755,21 +1253,20 @@ func (c *userManagerClient) ListGroups(ctx context.Context, in *ListUserGroupsRe
 
 func (c *userManagerClient) SetGroups(ctx context.Context, in *SetUserGroupsRequest, opts ...grpc.CallOption) (*SetUserGroupsResponse, error) {
 	out := new(SetUserGroupsResponse)
-	err := grpc.Invoke(ctx, "/charonrpc.UserManager/SetGroups", in, out, c.cc, opts...)
+	err := c.cc.Invoke(ctx, "/charonrpc.UserManager/SetGroups", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// Server API for UserManager service
-
+// UserManagerServer is the server API for UserManager service.
 type UserManagerServer interface {
 	Create(context.Context, *CreateUserRequest) (*CreateUserResponse, error)
 	Modify(context.Context, *ModifyUserRequest) (*ModifyUserResponse, error)
 	Get(context.Context, *GetUserRequest) (*GetUserResponse, error)
 	List(context.Context, *ListUsersRequest) (*ListUsersResponse, error)
-	Delete(context.Context, *DeleteUserRequest) (*google_protobuf1.BoolValue, error)
+	Delete(context.Context, *DeleteUserRequest) (*wrappers.BoolValue, error)
 	ListPermissions(context.Context, *ListUserPermissionsRequest) (*ListUserPermissionsResponse, error)
 	SetPermissions(context.Context, *SetUserPermissionsRequest) (*SetUserPermissionsResponse, error)
 	ListGroups(context.Context, *ListUserGroupsRequest) (*ListUserGroupsResponse, error)
@@ -985,80 +1482,4 @@ var _UserManager_serviceDesc = grpc.ServiceDesc{
 	},
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "user.proto",
-}
-
-func init() { proto.RegisterFile("user.proto", fileDescriptor3) }
-
-var fileDescriptor3 = []byte{
-	// 1117 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xb4, 0x56, 0xdd, 0x72, 0xdb, 0xc4,
-	0x17, 0x8f, 0x2d, 0x7f, 0xe9, 0x38, 0x75, 0x92, 0xfd, 0xb7, 0xfd, 0x2b, 0x4a, 0x4a, 0x5d, 0x85,
-	0x10, 0x53, 0x82, 0x3d, 0x13, 0xa0, 0x90, 0x5e, 0xc0, 0x34, 0x29, 0x93, 0x29, 0x43, 0x99, 0x8c,
-	0x0c, 0x5c, 0x70, 0xe3, 0x91, 0xed, 0xb5, 0xb3, 0x13, 0x5b, 0xab, 0xec, 0xae, 0x92, 0x31, 0x0f,
-	0xc7, 0x0c, 0x2f, 0xc1, 0x35, 0xaf, 0xc0, 0x1b, 0x30, 0xbb, 0x2b, 0x29, 0x92, 0x2c, 0x27, 0xcd,
-	0x05, 0x57, 0xf6, 0x9e, 0xf3, 0x3b, 0xbf, 0x73, 0xf6, 0x7c, 0xad, 0x00, 0x42, 0x8e, 0x59, 0x37,
-	0x60, 0x54, 0x50, 0x64, 0x8e, 0x2e, 0x3c, 0x46, 0x7d, 0x16, 0x8c, 0xec, 0xe7, 0x53, 0x4a, 0xa7,
-	0x33, 0xdc, 0x53, 0x8a, 0x61, 0x38, 0xe9, 0x09, 0x32, 0xc7, 0x5c, 0x78, 0xf3, 0x40, 0x63, 0xed,
-	0x8f, 0xf2, 0x80, 0x1b, 0xe6, 0x05, 0x01, 0x66, 0x3c, 0xd2, 0xff, 0xef, 0x4a, 0x2c, 0x02, 0xcc,
-	0x7b, 0xfa, 0x27, 0x16, 0xfa, 0x5a, 0xe8, 0xa7, 0x85, 0xcd, 0x29, 0xa3, 0x61, 0x44, 0xeb, 0xfc,
-	0x61, 0x40, 0xe5, 0x17, 0x8e, 0x19, 0x6a, 0x41, 0x99, 0x8c, 0xad, 0x52, 0xbb, 0xd4, 0x31, 0xdc,
-	0x32, 0x19, 0x23, 0x1b, 0x1a, 0x32, 0x52, 0xdf, 0x9b, 0x63, 0xab, 0xdc, 0x2e, 0x75, 0x4c, 0x37,
-	0x39, 0xa3, 0x67, 0x00, 0x13, 0xc2, 0xb8, 0x18, 0x28, 0xad, 0xa1, 0xb4, 0xa6, 0x92, 0xfc, 0x24,
-	0xd5, 0x3b, 0x60, 0xce, 0xbc, 0x58, 0x5b, 0xd1, 0xb6, 0x52, 0xa0, 0x94, 0x2f, 0x60, 0x9d, 0xf0,
-	0x01, 0x0f, 0x03, 0xcc, 0x24, 0x9f, 0x55, 0x6d, 0x97, 0x3a, 0x0d, 0xb7, 0x49, 0x78, 0x3f, 0x16,
-	0x49, 0x7b, 0xc2, 0x07, 0xde, 0x48, 0x90, 0x6b, 0x6c, 0xd5, 0x94, 0xbe, 0x41, 0xf8, 0x1b, 0x75,
-	0x46, 0xdb, 0xd0, 0x90, 0xf6, 0xc2, 0x9b, 0x4c, 0xac, 0xba, 0xd2, 0xd5, 0x09, 0xef, 0xcb, 0x63,
-	0x44, 0x3d, 0xa2, 0xfe, 0x84, 0xb0, 0x39, 0x1e, 0x5b, 0x8d, 0x98, 0xfa, 0x34, 0x16, 0xa1, 0x63,
-	0x80, 0x11, 0xc3, 0x9e, 0xc0, 0xe3, 0x81, 0x27, 0x2c, 0xb3, 0x5d, 0xea, 0x34, 0x8f, 0xec, 0xae,
-	0x4e, 0x6d, 0x37, 0x4e, 0x6d, 0xf7, 0xe7, 0x38, 0xf7, 0xae, 0x19, 0xa1, 0xdf, 0x08, 0x74, 0x78,
-	0x6b, 0x3a, 0x5c, 0x58, 0xa0, 0x4c, 0x1f, 0x75, 0xa3, 0xcc, 0xbe, 0xf3, 0xc5, 0xab, 0x2f, 0x13,
-	0xf4, 0xc9, 0x42, 0x3a, 0x0a, 0x83, 0x71, 0xec, 0xa8, 0x79, 0xbf, 0xa3, 0x08, 0xad, 0x1d, 0xc5,
-	0xa6, 0xc3, 0x85, 0xb5, 0x5e, 0xe8, 0x28, 0x02, 0x9c, 0x2c, 0x9c, 0x7f, 0xca, 0xb0, 0x75, 0xaa,
-	0xdc, 0xca, 0x32, 0xba, 0xf8, 0x2a, 0xc4, 0x5c, 0x64, 0xaa, 0x57, 0xca, 0x55, 0x6f, 0x1f, 0x5a,
-	0xc1, 0xcc, 0x23, 0xfe, 0x20, 0xf0, 0x38, 0xbf, 0xa1, 0x6c, 0x1c, 0xd5, 0xf7, 0x91, 0x92, 0x9e,
-	0x47, 0x42, 0x74, 0x00, 0x1b, 0x1c, 0x8f, 0x42, 0x86, 0x6f, 0x71, 0xb2, 0xd2, 0xeb, 0x6e, 0x4b,
-	0x8b, 0x13, 0x60, 0xb6, 0x1b, 0x2a, 0x77, 0x76, 0x43, 0x35, 0xd7, 0x0d, 0xbd, 0x5c, 0x37, 0xd4,
-	0xd4, 0x6d, 0xd7, 0xe3, 0xdb, 0x9e, 0x50, 0x3a, 0xcb, 0xf6, 0xc6, 0xa7, 0xe9, 0xde, 0xa8, 0x17,
-	0xa0, 0x6f, 0x3b, 0xe5, 0x20, 0xd5, 0x29, 0x8d, 0x02, 0x64, 0xd2, 0x37, 0xbd, 0x5c, 0xdf, 0x98,
-	0xc5, 0x41, 0x24, 0x5d, 0xe4, 0x1c, 0x03, 0x4a, 0xa7, 0x9c, 0x07, 0xd4, 0xe7, 0x18, 0xed, 0x41,
-	0x45, 0xdd, 0xa1, 0xa4, 0xcc, 0x37, 0xba, 0xc9, 0x70, 0x77, 0x15, 0x4c, 0x29, 0x9d, 0x36, 0xb4,
-	0xce, 0xb0, 0x48, 0x97, 0x2a, 0x37, 0x78, 0xce, 0x2b, 0xd8, 0x48, 0x10, 0x0f, 0x61, 0xfe, 0xbb,
-	0x0c, 0x9b, 0x3f, 0x12, 0xae, 0x2c, 0x79, 0x4c, 0x9e, 0xcf, 0x6f, 0xe9, 0xbe, 0xfc, 0xa6, 0x93,
-	0x56, 0xbe, 0x2b, 0x69, 0xd9, 0x71, 0x30, 0xa2, 0x2e, 0xbd, 0x5a, 0x31, 0x0e, 0xfb, 0x50, 0xa3,
-	0x93, 0x09, 0xc7, 0xc2, 0x1a, 0x17, 0xf5, 0x73, 0xa4, 0x44, 0x7b, 0x50, 0x9d, 0x91, 0x39, 0x11,
-	0x16, 0x2e, 0x42, 0x69, 0x1d, 0x3a, 0x86, 0x0a, 0xa7, 0x4c, 0x58, 0x93, 0xb6, 0xd1, 0x69, 0x1e,
-	0xed, 0xa7, 0xb2, 0x91, 0xbf, 0x7e, 0xb7, 0x4f, 0x99, 0xf8, 0xde, 0x17, 0x6c, 0xe1, 0x2a, 0x13,
-	0xfb, 0x6b, 0x30, 0x13, 0x11, 0xda, 0x04, 0xe3, 0x12, 0x2f, 0xa2, 0xf1, 0x90, 0x7f, 0xd1, 0x63,
-	0xa8, 0x5e, 0x7b, 0xb3, 0x50, 0x2f, 0xbc, 0x86, 0xab, 0x0f, 0xaf, 0xcb, 0xdf, 0x94, 0x7e, 0xa8,
-	0x34, 0x2a, 0x9b, 0x63, 0xe7, 0x35, 0x6c, 0xa5, 0x5c, 0x44, 0xc5, 0xd9, 0x87, 0xaa, 0xcc, 0x1c,
-	0xb7, 0x4a, 0x2a, 0x9e, 0xa5, 0xea, 0x68, 0xad, 0xb3, 0x07, 0x5b, 0x6f, 0xf1, 0x0c, 0x67, 0xc7,
-	0x34, 0x5f, 0xfb, 0x3f, 0x0d, 0xd8, 0x7a, 0x4f, 0xc7, 0x64, 0xb2, 0xb8, 0x03, 0x85, 0x5e, 0xe6,
-	0x56, 0x73, 0xf3, 0xa8, 0x15, 0x27, 0xaa, 0x2f, 0x18, 0xf1, 0xa7, 0xa9, 0x61, 0xff, 0x6a, 0x69,
-	0xd8, 0x8d, 0x42, 0x8b, 0xfb, 0x87, 0xbf, 0x52, 0x38, 0xfc, 0x9f, 0x67, 0x86, 0xbf, 0x5a, 0xc8,
-	0x9d, 0x5a, 0x06, 0x9f, 0xa5, 0x97, 0x41, 0xad, 0x38, 0xf6, 0x95, 0xcb, 0xa1, 0xfe, 0xa0, 0xe5,
-	0xd0, 0xf8, 0xe0, 0xe5, 0x60, 0x3e, 0x64, 0x39, 0xc0, 0x07, 0x2c, 0x87, 0x74, 0x09, 0x1f, 0x32,
-	0xc2, 0x87, 0x60, 0xc7, 0xfd, 0x75, 0x8e, 0xd9, 0x9c, 0x70, 0x4e, 0xa8, 0xcf, 0x57, 0x35, 0xcb,
-	0x77, 0xb0, 0x53, 0x88, 0x8e, 0x3c, 0xb6, 0xa1, 0x19, 0xdc, 0x8a, 0x55, 0x77, 0x9a, 0x6e, 0x5a,
-	0xe4, 0xcc, 0x60, 0xbb, 0x8f, 0x57, 0x79, 0xfb, 0x3f, 0xd4, 0x65, 0x4c, 0x83, 0xc4, 0x65, 0x4d,
-	0x1e, 0xdf, 0x8d, 0xf3, 0xbc, 0xe5, 0x25, 0x5e, 0x39, 0x46, 0x13, 0xca, 0x46, 0xfa, 0xcb, 0xa0,
-	0xe1, 0xea, 0x83, 0xe3, 0x83, 0x5d, 0xe4, 0x2d, 0x8a, 0xd6, 0x82, 0x7a, 0xb4, 0x2d, 0x22, 0x77,
-	0xf1, 0x51, 0x6a, 0x18, 0x9e, 0xd3, 0x6b, 0xac, 0xdf, 0x29, 0xc3, 0x8d, 0x8f, 0x68, 0x17, 0xcc,
-	0xd0, 0x17, 0x34, 0x1c, 0x5d, 0x60, 0xdd, 0xd6, 0x86, 0x7b, 0x2b, 0x70, 0x0e, 0xe0, 0x49, 0x9c,
-	0x9e, 0x33, 0xf9, 0xc1, 0xb3, 0x32, 0x8f, 0x27, 0xf0, 0x34, 0x0f, 0x8c, 0x82, 0xea, 0x40, 0x4d,
-	0x7d, 0x2b, 0xc5, 0xb3, 0xbd, 0x99, 0x2a, 0x9b, 0x82, 0xba, 0x91, 0xde, 0x39, 0x83, 0xc7, 0xd1,
-	0xe5, 0xb2, 0xbe, 0x56, 0x66, 0xf1, 0x69, 0x42, 0x2d, 0x13, 0x68, 0x24, 0x44, 0x04, 0x9e, 0xe4,
-	0x88, 0xfe, 0xab, 0x04, 0x1d, 0xfd, 0x55, 0x85, 0xa6, 0x74, 0xf4, 0xde, 0xf3, 0xbd, 0x29, 0x66,
-	0xe8, 0x0c, 0x6a, 0xfa, 0x55, 0x43, 0xbb, 0xa9, 0x7b, 0x2e, 0x7d, 0x5b, 0xd8, 0xcf, 0x56, 0x68,
-	0x75, 0xa0, 0xce, 0x9a, 0x24, 0xd2, 0x13, 0x90, 0x21, 0x5a, 0xda, 0x6b, 0x19, 0xa2, 0xe5, 0x91,
-	0x71, 0xd6, 0xd0, 0xb7, 0x60, 0x9c, 0x61, 0x81, 0xb6, 0xd3, 0x69, 0xcf, 0x3c, 0x9e, 0xb6, 0x5d,
-	0xa4, 0x4a, 0xec, 0x4f, 0xa1, 0x22, 0x2b, 0x8b, 0x76, 0xee, 0x78, 0x23, 0xec, 0xdd, 0x62, 0x65,
-	0x42, 0xf2, 0x16, 0x6a, 0x7a, 0x71, 0x67, 0x6e, 0xb3, 0xb4, 0xcb, 0xed, 0xe5, 0xaf, 0x3b, 0xb9,
-	0x1b, 0x7e, 0x95, 0x4f, 0x88, 0xb3, 0x86, 0x86, 0xb0, 0x21, 0xc9, 0x53, 0xad, 0x8f, 0x8a, 0x5e,
-	0xae, 0xe5, 0x41, 0xb4, 0x3f, 0xb9, 0x0f, 0x96, 0x44, 0x3a, 0x80, 0x56, 0x1f, 0x67, 0x5c, 0x7c,
-	0x9c, 0xb2, 0x5d, 0x39, 0xea, 0xf6, 0xfe, 0x3d, 0xa8, 0xc4, 0x41, 0x1f, 0x40, 0x46, 0xa0, 0x3b,
-	0x13, 0xb5, 0x0b, 0x02, 0xcb, 0x74, 0xbf, 0xfd, 0xe2, 0x0e, 0x44, 0x42, 0x7a, 0x0e, 0x66, 0x1f,
-	0xc7, 0x9c, 0xcf, 0x97, 0x43, 0xc9, 0x52, 0xb6, 0x57, 0x03, 0x62, 0xc6, 0x93, 0xc3, 0xdf, 0x5e,
-	0x4e, 0x89, 0xb8, 0x08, 0x87, 0xdd, 0x11, 0x9d, 0xf7, 0x02, 0x42, 0x05, 0xbb, 0xa4, 0x37, 0xde,
-	0x6c, 0xf4, 0x7b, 0x78, 0xd9, 0xd3, 0xe6, 0xbd, 0x84, 0x65, 0x58, 0x53, 0xf5, 0xfa, 0xe2, 0xdf,
-	0x00, 0x00, 0x00, 0xff, 0xff, 0xe7, 0x72, 0x9d, 0xc3, 0x99, 0x0d, 0x00, 0x00,
 }

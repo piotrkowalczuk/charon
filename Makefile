@@ -42,7 +42,7 @@ cover: test
 	go tool cover -html=coverage.txt
 
 get:
-	go get github.com/vektra/mockery/cmd/mockery
+	go get -u github.com/vektra/mockery/cmd/mockery
 	go get -u github.com/golang/dep/cmd/dep
 	dep ensure
 

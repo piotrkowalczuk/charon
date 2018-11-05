@@ -44,7 +44,7 @@ ignored = ["github.com/piotrkowalczuk/charon/data"]
 
 [[constraint]]
   name = "github.com/piotrkowalczuk/mnemosyne"
-  version = "~0.14.0"
+  version = "~0.18.0"
 
 [[constraint]]
   name = "github.com/piotrkowalczuk/ntypes"
@@ -54,9 +54,9 @@ ignored = ["github.com/piotrkowalczuk/charon/data"]
   name = "github.com/piotrkowalczuk/pqcomp"
   branch = "master"
 
-[[override]]
+[[constraint]]
   name = "github.com/piotrkowalczuk/promgrpc"
-  version = "^3.0.0"
+  version = "^3.2.0"
 
 [[constraint]]
   name = "github.com/piotrkowalczuk/qtypes"
@@ -96,7 +96,7 @@ ignored = ["github.com/piotrkowalczuk/charon/data"]
 
 [[constraint]]
   name = "google.golang.org/grpc"
-  version = "^1.8.0"
+  version = "^1.16.0"
 
 [[constraint]]
   name = "github.com/piotrkowalczuk/pqt"

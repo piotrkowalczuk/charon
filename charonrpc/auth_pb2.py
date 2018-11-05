@@ -41,21 +41,21 @@ _LOGINREQUEST = _descriptor.Descriptor(
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='password', full_name='charonrpc.LoginRequest.password', index=1,
       number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='client', full_name='charonrpc.LoginRequest.client', index=2,
       number=3, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -86,7 +86,7 @@ _LOGOUTREQUEST = _descriptor.Descriptor(
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -117,7 +117,7 @@ _ISAUTHENTICATEDREQUEST = _descriptor.Descriptor(
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -148,14 +148,14 @@ _ISGRANTEDREQUEST = _descriptor.Descriptor(
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='permission', full_name='charonrpc.IsGrantedRequest.permission', index=1,
       number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -186,14 +186,14 @@ _BELONGSTOREQUEST = _descriptor.Descriptor(
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='group_id', full_name='charonrpc.BelongsToRequest.group_id', index=1,
       number=2, type=3, cpp_type=2, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -224,70 +224,70 @@ _ACTORRESPONSE = _descriptor.Descriptor(
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='username', full_name='charonrpc.ActorResponse.username', index=1,
       number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='first_name', full_name='charonrpc.ActorResponse.first_name', index=2,
       number=3, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='last_name', full_name='charonrpc.ActorResponse.last_name', index=3,
       number=4, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='permissions', full_name='charonrpc.ActorResponse.permissions', index=4,
       number=5, type=9, cpp_type=9, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='is_superuser', full_name='charonrpc.ActorResponse.is_superuser', index=5,
       number=6, type=8, cpp_type=7, label=1,
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='is_active', full_name='charonrpc.ActorResponse.is_active', index=6,
       number=7, type=8, cpp_type=7, label=1,
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='is_stuff', full_name='charonrpc.ActorResponse.is_stuff', index=7,
       number=8, type=8, cpp_type=7, label=1,
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=_descriptor._ParseOptions(descriptor_pb2.FieldOptions(), _b('\030\001'))),
+      options=_descriptor._ParseOptions(descriptor_pb2.FieldOptions(), _b('\030\001')), file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='is_confirmed', full_name='charonrpc.ActorResponse.is_confirmed', index=8,
       number=9, type=8, cpp_type=7, label=1,
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='is_staff', full_name='charonrpc.ActorResponse.is_staff', index=9,
       number=10, type=8, cpp_type=7, label=1,
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -359,283 +359,73 @@ DESCRIPTOR.has_options = True
 DESCRIPTOR._options = _descriptor._ParseOptions(descriptor_pb2.FileOptions(), _b('Z*github.com/piotrkowalczuk/charon/charonrpc'))
 _ACTORRESPONSE.fields_by_name['is_stuff'].has_options = True
 _ACTORRESPONSE.fields_by_name['is_stuff']._options = _descriptor._ParseOptions(descriptor_pb2.FieldOptions(), _b('\030\001'))
-try:
-  # THESE ELEMENTS WILL BE DEPRECATED.
-  # Please use the generated *_pb2_grpc.py files instead.
-  import grpc
-  from grpc.beta import implementations as beta_implementations
-  from grpc.beta import interfaces as beta_interfaces
-  from grpc.framework.common import cardinality
-  from grpc.framework.interfaces.face import utilities as face_utilities
 
+_AUTH = _descriptor.ServiceDescriptor(
+  name='Auth',
+  full_name='charonrpc.Auth',
+  file=DESCRIPTOR,
+  index=0,
+  options=None,
+  serialized_start=565,
+  serialized_end=982,
+  methods=[
+  _descriptor.MethodDescriptor(
+    name='Login',
+    full_name='charonrpc.Auth.Login',
+    index=0,
+    containing_service=None,
+    input_type=_LOGINREQUEST,
+    output_type=google_dot_protobuf_dot_wrappers__pb2._STRINGVALUE,
+    options=None,
+  ),
+  _descriptor.MethodDescriptor(
+    name='Logout',
+    full_name='charonrpc.Auth.Logout',
+    index=1,
+    containing_service=None,
+    input_type=_LOGOUTREQUEST,
+    output_type=google_dot_protobuf_dot_empty__pb2._EMPTY,
+    options=None,
+  ),
+  _descriptor.MethodDescriptor(
+    name='IsAuthenticated',
+    full_name='charonrpc.Auth.IsAuthenticated',
+    index=2,
+    containing_service=None,
+    input_type=_ISAUTHENTICATEDREQUEST,
+    output_type=google_dot_protobuf_dot_wrappers__pb2._BOOLVALUE,
+    options=None,
+  ),
+  _descriptor.MethodDescriptor(
+    name='Actor',
+    full_name='charonrpc.Auth.Actor',
+    index=3,
+    containing_service=None,
+    input_type=google_dot_protobuf_dot_wrappers__pb2._STRINGVALUE,
+    output_type=_ACTORRESPONSE,
+    options=None,
+  ),
+  _descriptor.MethodDescriptor(
+    name='IsGranted',
+    full_name='charonrpc.Auth.IsGranted',
+    index=4,
+    containing_service=None,
+    input_type=_ISGRANTEDREQUEST,
+    output_type=google_dot_protobuf_dot_wrappers__pb2._BOOLVALUE,
+    options=None,
+  ),
+  _descriptor.MethodDescriptor(
+    name='BelongsTo',
+    full_name='charonrpc.Auth.BelongsTo',
+    index=5,
+    containing_service=None,
+    input_type=_BELONGSTOREQUEST,
+    output_type=google_dot_protobuf_dot_wrappers__pb2._BOOLVALUE,
+    options=None,
+  ),
+])
+_sym_db.RegisterServiceDescriptor(_AUTH)
 
-  class AuthStub(object):
-    # missing associated documentation comment in .proto file
-    pass
+DESCRIPTOR.services_by_name['Auth'] = _AUTH
 
-    def __init__(self, channel):
-      """Constructor.
-
-      Args:
-        channel: A grpc.Channel.
-      """
-      self.Login = channel.unary_unary(
-          '/charonrpc.Auth/Login',
-          request_serializer=LoginRequest.SerializeToString,
-          response_deserializer=google_dot_protobuf_dot_wrappers__pb2.StringValue.FromString,
-          )
-      self.Logout = channel.unary_unary(
-          '/charonrpc.Auth/Logout',
-          request_serializer=LogoutRequest.SerializeToString,
-          response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
-          )
-      self.IsAuthenticated = channel.unary_unary(
-          '/charonrpc.Auth/IsAuthenticated',
-          request_serializer=IsAuthenticatedRequest.SerializeToString,
-          response_deserializer=google_dot_protobuf_dot_wrappers__pb2.BoolValue.FromString,
-          )
-      self.Actor = channel.unary_unary(
-          '/charonrpc.Auth/Actor',
-          request_serializer=google_dot_protobuf_dot_wrappers__pb2.StringValue.SerializeToString,
-          response_deserializer=ActorResponse.FromString,
-          )
-      self.IsGranted = channel.unary_unary(
-          '/charonrpc.Auth/IsGranted',
-          request_serializer=IsGrantedRequest.SerializeToString,
-          response_deserializer=google_dot_protobuf_dot_wrappers__pb2.BoolValue.FromString,
-          )
-      self.BelongsTo = channel.unary_unary(
-          '/charonrpc.Auth/BelongsTo',
-          request_serializer=BelongsToRequest.SerializeToString,
-          response_deserializer=google_dot_protobuf_dot_wrappers__pb2.BoolValue.FromString,
-          )
-
-
-  class AuthServicer(object):
-    # missing associated documentation comment in .proto file
-    pass
-
-    def Login(self, request, context):
-      # missing associated documentation comment in .proto file
-      pass
-      context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-      context.set_details('Method not implemented!')
-      raise NotImplementedError('Method not implemented!')
-
-    def Logout(self, request, context):
-      # missing associated documentation comment in .proto file
-      pass
-      context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-      context.set_details('Method not implemented!')
-      raise NotImplementedError('Method not implemented!')
-
-    def IsAuthenticated(self, request, context):
-      # missing associated documentation comment in .proto file
-      pass
-      context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-      context.set_details('Method not implemented!')
-      raise NotImplementedError('Method not implemented!')
-
-    def Actor(self, request, context):
-      # missing associated documentation comment in .proto file
-      pass
-      context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-      context.set_details('Method not implemented!')
-      raise NotImplementedError('Method not implemented!')
-
-    def IsGranted(self, request, context):
-      # missing associated documentation comment in .proto file
-      pass
-      context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-      context.set_details('Method not implemented!')
-      raise NotImplementedError('Method not implemented!')
-
-    def BelongsTo(self, request, context):
-      # missing associated documentation comment in .proto file
-      pass
-      context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-      context.set_details('Method not implemented!')
-      raise NotImplementedError('Method not implemented!')
-
-
-  def add_AuthServicer_to_server(servicer, server):
-    rpc_method_handlers = {
-        'Login': grpc.unary_unary_rpc_method_handler(
-            servicer.Login,
-            request_deserializer=LoginRequest.FromString,
-            response_serializer=google_dot_protobuf_dot_wrappers__pb2.StringValue.SerializeToString,
-        ),
-        'Logout': grpc.unary_unary_rpc_method_handler(
-            servicer.Logout,
-            request_deserializer=LogoutRequest.FromString,
-            response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
-        ),
-        'IsAuthenticated': grpc.unary_unary_rpc_method_handler(
-            servicer.IsAuthenticated,
-            request_deserializer=IsAuthenticatedRequest.FromString,
-            response_serializer=google_dot_protobuf_dot_wrappers__pb2.BoolValue.SerializeToString,
-        ),
-        'Actor': grpc.unary_unary_rpc_method_handler(
-            servicer.Actor,
-            request_deserializer=google_dot_protobuf_dot_wrappers__pb2.StringValue.FromString,
-            response_serializer=ActorResponse.SerializeToString,
-        ),
-        'IsGranted': grpc.unary_unary_rpc_method_handler(
-            servicer.IsGranted,
-            request_deserializer=IsGrantedRequest.FromString,
-            response_serializer=google_dot_protobuf_dot_wrappers__pb2.BoolValue.SerializeToString,
-        ),
-        'BelongsTo': grpc.unary_unary_rpc_method_handler(
-            servicer.BelongsTo,
-            request_deserializer=BelongsToRequest.FromString,
-            response_serializer=google_dot_protobuf_dot_wrappers__pb2.BoolValue.SerializeToString,
-        ),
-    }
-    generic_handler = grpc.method_handlers_generic_handler(
-        'charonrpc.Auth', rpc_method_handlers)
-    server.add_generic_rpc_handlers((generic_handler,))
-
-
-  class BetaAuthServicer(object):
-    """The Beta API is deprecated for 0.15.0 and later.
-
-    It is recommended to use the GA API (classes and functions in this
-    file not marked beta) for all further purposes. This class was generated
-    only to ease transition from grpcio<0.15.0 to grpcio>=0.15.0."""
-    # missing associated documentation comment in .proto file
-    pass
-    def Login(self, request, context):
-      # missing associated documentation comment in .proto file
-      pass
-      context.code(beta_interfaces.StatusCode.UNIMPLEMENTED)
-    def Logout(self, request, context):
-      # missing associated documentation comment in .proto file
-      pass
-      context.code(beta_interfaces.StatusCode.UNIMPLEMENTED)
-    def IsAuthenticated(self, request, context):
-      # missing associated documentation comment in .proto file
-      pass
-      context.code(beta_interfaces.StatusCode.UNIMPLEMENTED)
-    def Actor(self, request, context):
-      # missing associated documentation comment in .proto file
-      pass
-      context.code(beta_interfaces.StatusCode.UNIMPLEMENTED)
-    def IsGranted(self, request, context):
-      # missing associated documentation comment in .proto file
-      pass
-      context.code(beta_interfaces.StatusCode.UNIMPLEMENTED)
-    def BelongsTo(self, request, context):
-      # missing associated documentation comment in .proto file
-      pass
-      context.code(beta_interfaces.StatusCode.UNIMPLEMENTED)
-
-
-  class BetaAuthStub(object):
-    """The Beta API is deprecated for 0.15.0 and later.
-
-    It is recommended to use the GA API (classes and functions in this
-    file not marked beta) for all further purposes. This class was generated
-    only to ease transition from grpcio<0.15.0 to grpcio>=0.15.0."""
-    # missing associated documentation comment in .proto file
-    pass
-    def Login(self, request, timeout, metadata=None, with_call=False, protocol_options=None):
-      # missing associated documentation comment in .proto file
-      pass
-      raise NotImplementedError()
-    Login.future = None
-    def Logout(self, request, timeout, metadata=None, with_call=False, protocol_options=None):
-      # missing associated documentation comment in .proto file
-      pass
-      raise NotImplementedError()
-    Logout.future = None
-    def IsAuthenticated(self, request, timeout, metadata=None, with_call=False, protocol_options=None):
-      # missing associated documentation comment in .proto file
-      pass
-      raise NotImplementedError()
-    IsAuthenticated.future = None
-    def Actor(self, request, timeout, metadata=None, with_call=False, protocol_options=None):
-      # missing associated documentation comment in .proto file
-      pass
-      raise NotImplementedError()
-    Actor.future = None
-    def IsGranted(self, request, timeout, metadata=None, with_call=False, protocol_options=None):
-      # missing associated documentation comment in .proto file
-      pass
-      raise NotImplementedError()
-    IsGranted.future = None
-    def BelongsTo(self, request, timeout, metadata=None, with_call=False, protocol_options=None):
-      # missing associated documentation comment in .proto file
-      pass
-      raise NotImplementedError()
-    BelongsTo.future = None
-
-
-  def beta_create_Auth_server(servicer, pool=None, pool_size=None, default_timeout=None, maximum_timeout=None):
-    """The Beta API is deprecated for 0.15.0 and later.
-
-    It is recommended to use the GA API (classes and functions in this
-    file not marked beta) for all further purposes. This function was
-    generated only to ease transition from grpcio<0.15.0 to grpcio>=0.15.0"""
-    request_deserializers = {
-      ('charonrpc.Auth', 'Actor'): google_dot_protobuf_dot_wrappers__pb2.StringValue.FromString,
-      ('charonrpc.Auth', 'BelongsTo'): BelongsToRequest.FromString,
-      ('charonrpc.Auth', 'IsAuthenticated'): IsAuthenticatedRequest.FromString,
-      ('charonrpc.Auth', 'IsGranted'): IsGrantedRequest.FromString,
-      ('charonrpc.Auth', 'Login'): LoginRequest.FromString,
-      ('charonrpc.Auth', 'Logout'): LogoutRequest.FromString,
-    }
-    response_serializers = {
-      ('charonrpc.Auth', 'Actor'): ActorResponse.SerializeToString,
-      ('charonrpc.Auth', 'BelongsTo'): google_dot_protobuf_dot_wrappers__pb2.BoolValue.SerializeToString,
-      ('charonrpc.Auth', 'IsAuthenticated'): google_dot_protobuf_dot_wrappers__pb2.BoolValue.SerializeToString,
-      ('charonrpc.Auth', 'IsGranted'): google_dot_protobuf_dot_wrappers__pb2.BoolValue.SerializeToString,
-      ('charonrpc.Auth', 'Login'): google_dot_protobuf_dot_wrappers__pb2.StringValue.SerializeToString,
-      ('charonrpc.Auth', 'Logout'): google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
-    }
-    method_implementations = {
-      ('charonrpc.Auth', 'Actor'): face_utilities.unary_unary_inline(servicer.Actor),
-      ('charonrpc.Auth', 'BelongsTo'): face_utilities.unary_unary_inline(servicer.BelongsTo),
-      ('charonrpc.Auth', 'IsAuthenticated'): face_utilities.unary_unary_inline(servicer.IsAuthenticated),
-      ('charonrpc.Auth', 'IsGranted'): face_utilities.unary_unary_inline(servicer.IsGranted),
-      ('charonrpc.Auth', 'Login'): face_utilities.unary_unary_inline(servicer.Login),
-      ('charonrpc.Auth', 'Logout'): face_utilities.unary_unary_inline(servicer.Logout),
-    }
-    server_options = beta_implementations.server_options(request_deserializers=request_deserializers, response_serializers=response_serializers, thread_pool=pool, thread_pool_size=pool_size, default_timeout=default_timeout, maximum_timeout=maximum_timeout)
-    return beta_implementations.server(method_implementations, options=server_options)
-
-
-  def beta_create_Auth_stub(channel, host=None, metadata_transformer=None, pool=None, pool_size=None):
-    """The Beta API is deprecated for 0.15.0 and later.
-
-    It is recommended to use the GA API (classes and functions in this
-    file not marked beta) for all further purposes. This function was
-    generated only to ease transition from grpcio<0.15.0 to grpcio>=0.15.0"""
-    request_serializers = {
-      ('charonrpc.Auth', 'Actor'): google_dot_protobuf_dot_wrappers__pb2.StringValue.SerializeToString,
-      ('charonrpc.Auth', 'BelongsTo'): BelongsToRequest.SerializeToString,
-      ('charonrpc.Auth', 'IsAuthenticated'): IsAuthenticatedRequest.SerializeToString,
-      ('charonrpc.Auth', 'IsGranted'): IsGrantedRequest.SerializeToString,
-      ('charonrpc.Auth', 'Login'): LoginRequest.SerializeToString,
-      ('charonrpc.Auth', 'Logout'): LogoutRequest.SerializeToString,
-    }
-    response_deserializers = {
-      ('charonrpc.Auth', 'Actor'): ActorResponse.FromString,
-      ('charonrpc.Auth', 'BelongsTo'): google_dot_protobuf_dot_wrappers__pb2.BoolValue.FromString,
-      ('charonrpc.Auth', 'IsAuthenticated'): google_dot_protobuf_dot_wrappers__pb2.BoolValue.FromString,
-      ('charonrpc.Auth', 'IsGranted'): google_dot_protobuf_dot_wrappers__pb2.BoolValue.FromString,
-      ('charonrpc.Auth', 'Login'): google_dot_protobuf_dot_wrappers__pb2.StringValue.FromString,
-      ('charonrpc.Auth', 'Logout'): google_dot_protobuf_dot_empty__pb2.Empty.FromString,
-    }
-    cardinalities = {
-      'Actor': cardinality.Cardinality.UNARY_UNARY,
-      'BelongsTo': cardinality.Cardinality.UNARY_UNARY,
-      'IsAuthenticated': cardinality.Cardinality.UNARY_UNARY,
-      'IsGranted': cardinality.Cardinality.UNARY_UNARY,
-      'Login': cardinality.Cardinality.UNARY_UNARY,
-      'Logout': cardinality.Cardinality.UNARY_UNARY,
-    }
-    stub_options = beta_implementations.stub_options(host=host, metadata_transformer=metadata_transformer, request_serializers=request_serializers, response_deserializers=response_deserializers, thread_pool=pool, thread_pool_size=pool_size)
-    return beta_implementations.dynamic_stub(channel, 'charonrpc.Auth', cardinalities, options=stub_options)
-except ImportError:
-  pass
 # @@protoc_insertion_point(module_scope)

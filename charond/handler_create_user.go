@@ -10,6 +10,7 @@ import (
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type createUserHandler struct {
@@ -52,7 +53,10 @@ func (cuh *createUserHandler) Create(ctx context.Context, req *charonrpc.CreateU
 		}
 	}
 
-	token := uuid.New()
+	token, err := uuid.NewRandom()
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "confirmation token generation failure: %s", err)
+	}
 	ent, err := cuh.repository.user.Create(ctx, &model.UserEntity{
 		Username:          req.Username,
 		Password:          req.SecurePassword,

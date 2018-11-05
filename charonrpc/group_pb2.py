@@ -42,49 +42,49 @@ _GROUP = _descriptor.Descriptor(
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='name', full_name='charonrpc.Group.name', index=1,
       number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='description', full_name='charonrpc.Group.description', index=2,
       number=3, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='created_at', full_name='charonrpc.Group.created_at', index=3,
       number=4, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='created_by', full_name='charonrpc.Group.created_by', index=4,
       number=5, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='updated_at', full_name='charonrpc.Group.updated_at', index=5,
       number=6, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='updated_by', full_name='charonrpc.Group.updated_by', index=6,
       number=7, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -115,14 +115,14 @@ _CREATEGROUPREQUEST = _descriptor.Descriptor(
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='description', full_name='charonrpc.CreateGroupRequest.description', index=1,
       number=2, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -153,7 +153,7 @@ _CREATEGROUPRESPONSE = _descriptor.Descriptor(
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -184,7 +184,7 @@ _GETGROUPREQUEST = _descriptor.Descriptor(
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -215,7 +215,7 @@ _GETGROUPRESPONSE = _descriptor.Descriptor(
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -246,14 +246,14 @@ _LISTGROUPSREQUEST = _descriptor.Descriptor(
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='limit', full_name='charonrpc.ListGroupsRequest.limit', index=1,
       number=101, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -284,7 +284,7 @@ _LISTGROUPSRESPONSE = _descriptor.Descriptor(
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -315,7 +315,7 @@ _DELETEGROUPREQUEST = _descriptor.Descriptor(
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -346,21 +346,21 @@ _MODIFYGROUPREQUEST = _descriptor.Descriptor(
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='name', full_name='charonrpc.ModifyGroupRequest.name', index=1,
       number=2, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='description', full_name='charonrpc.ModifyGroupRequest.description', index=2,
       number=3, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -391,7 +391,7 @@ _MODIFYGROUPRESPONSE = _descriptor.Descriptor(
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -422,21 +422,21 @@ _SETGROUPPERMISSIONSREQUEST = _descriptor.Descriptor(
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='permissions', full_name='charonrpc.SetGroupPermissionsRequest.permissions', index=1,
       number=2, type=9, cpp_type=9, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='force', full_name='charonrpc.SetGroupPermissionsRequest.force', index=2,
       number=3, type=8, cpp_type=7, label=1,
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -467,21 +467,21 @@ _SETGROUPPERMISSIONSRESPONSE = _descriptor.Descriptor(
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='removed', full_name='charonrpc.SetGroupPermissionsResponse.removed', index=1,
       number=2, type=3, cpp_type=2, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='untouched', full_name='charonrpc.SetGroupPermissionsResponse.untouched', index=2,
       number=3, type=3, cpp_type=2, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -512,7 +512,7 @@ _LISTGROUPPERMISSIONSREQUEST = _descriptor.Descriptor(
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -543,7 +543,7 @@ _LISTGROUPPERMISSIONSRESPONSE = _descriptor.Descriptor(
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -690,315 +690,82 @@ _sym_db.RegisterMessage(ListGroupPermissionsResponse)
 
 DESCRIPTOR.has_options = True
 DESCRIPTOR._options = _descriptor._ParseOptions(descriptor_pb2.FileOptions(), _b('Z*github.com/piotrkowalczuk/charon/charonrpc'))
-try:
-  # THESE ELEMENTS WILL BE DEPRECATED.
-  # Please use the generated *_pb2_grpc.py files instead.
-  import grpc
-  from grpc.beta import implementations as beta_implementations
-  from grpc.beta import interfaces as beta_interfaces
-  from grpc.framework.common import cardinality
-  from grpc.framework.interfaces.face import utilities as face_utilities
 
+_GROUPMANAGER = _descriptor.ServiceDescriptor(
+  name='GroupManager',
+  full_name='charonrpc.GroupManager',
+  file=DESCRIPTOR,
+  index=0,
+  options=None,
+  serialized_start=1148,
+  serialized_end=1721,
+  methods=[
+  _descriptor.MethodDescriptor(
+    name='Create',
+    full_name='charonrpc.GroupManager.Create',
+    index=0,
+    containing_service=None,
+    input_type=_CREATEGROUPREQUEST,
+    output_type=_CREATEGROUPRESPONSE,
+    options=None,
+  ),
+  _descriptor.MethodDescriptor(
+    name='Modify',
+    full_name='charonrpc.GroupManager.Modify',
+    index=1,
+    containing_service=None,
+    input_type=_MODIFYGROUPREQUEST,
+    output_type=_MODIFYGROUPRESPONSE,
+    options=None,
+  ),
+  _descriptor.MethodDescriptor(
+    name='Get',
+    full_name='charonrpc.GroupManager.Get',
+    index=2,
+    containing_service=None,
+    input_type=_GETGROUPREQUEST,
+    output_type=_GETGROUPRESPONSE,
+    options=None,
+  ),
+  _descriptor.MethodDescriptor(
+    name='List',
+    full_name='charonrpc.GroupManager.List',
+    index=3,
+    containing_service=None,
+    input_type=_LISTGROUPSREQUEST,
+    output_type=_LISTGROUPSRESPONSE,
+    options=None,
+  ),
+  _descriptor.MethodDescriptor(
+    name='Delete',
+    full_name='charonrpc.GroupManager.Delete',
+    index=4,
+    containing_service=None,
+    input_type=_DELETEGROUPREQUEST,
+    output_type=google_dot_protobuf_dot_wrappers__pb2._BOOLVALUE,
+    options=None,
+  ),
+  _descriptor.MethodDescriptor(
+    name='ListPermissions',
+    full_name='charonrpc.GroupManager.ListPermissions',
+    index=5,
+    containing_service=None,
+    input_type=_LISTGROUPPERMISSIONSREQUEST,
+    output_type=_LISTGROUPPERMISSIONSRESPONSE,
+    options=None,
+  ),
+  _descriptor.MethodDescriptor(
+    name='SetPermissions',
+    full_name='charonrpc.GroupManager.SetPermissions',
+    index=6,
+    containing_service=None,
+    input_type=_SETGROUPPERMISSIONSREQUEST,
+    output_type=_SETGROUPPERMISSIONSRESPONSE,
+    options=None,
+  ),
+])
+_sym_db.RegisterServiceDescriptor(_GROUPMANAGER)
 
-  class GroupManagerStub(object):
-    # missing associated documentation comment in .proto file
-    pass
+DESCRIPTOR.services_by_name['GroupManager'] = _GROUPMANAGER
 
-    def __init__(self, channel):
-      """Constructor.
-
-      Args:
-        channel: A grpc.Channel.
-      """
-      self.Create = channel.unary_unary(
-          '/charonrpc.GroupManager/Create',
-          request_serializer=CreateGroupRequest.SerializeToString,
-          response_deserializer=CreateGroupResponse.FromString,
-          )
-      self.Modify = channel.unary_unary(
-          '/charonrpc.GroupManager/Modify',
-          request_serializer=ModifyGroupRequest.SerializeToString,
-          response_deserializer=ModifyGroupResponse.FromString,
-          )
-      self.Get = channel.unary_unary(
-          '/charonrpc.GroupManager/Get',
-          request_serializer=GetGroupRequest.SerializeToString,
-          response_deserializer=GetGroupResponse.FromString,
-          )
-      self.List = channel.unary_unary(
-          '/charonrpc.GroupManager/List',
-          request_serializer=ListGroupsRequest.SerializeToString,
-          response_deserializer=ListGroupsResponse.FromString,
-          )
-      self.Delete = channel.unary_unary(
-          '/charonrpc.GroupManager/Delete',
-          request_serializer=DeleteGroupRequest.SerializeToString,
-          response_deserializer=google_dot_protobuf_dot_wrappers__pb2.BoolValue.FromString,
-          )
-      self.ListPermissions = channel.unary_unary(
-          '/charonrpc.GroupManager/ListPermissions',
-          request_serializer=ListGroupPermissionsRequest.SerializeToString,
-          response_deserializer=ListGroupPermissionsResponse.FromString,
-          )
-      self.SetPermissions = channel.unary_unary(
-          '/charonrpc.GroupManager/SetPermissions',
-          request_serializer=SetGroupPermissionsRequest.SerializeToString,
-          response_deserializer=SetGroupPermissionsResponse.FromString,
-          )
-
-
-  class GroupManagerServicer(object):
-    # missing associated documentation comment in .proto file
-    pass
-
-    def Create(self, request, context):
-      # missing associated documentation comment in .proto file
-      pass
-      context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-      context.set_details('Method not implemented!')
-      raise NotImplementedError('Method not implemented!')
-
-    def Modify(self, request, context):
-      # missing associated documentation comment in .proto file
-      pass
-      context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-      context.set_details('Method not implemented!')
-      raise NotImplementedError('Method not implemented!')
-
-    def Get(self, request, context):
-      # missing associated documentation comment in .proto file
-      pass
-      context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-      context.set_details('Method not implemented!')
-      raise NotImplementedError('Method not implemented!')
-
-    def List(self, request, context):
-      # missing associated documentation comment in .proto file
-      pass
-      context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-      context.set_details('Method not implemented!')
-      raise NotImplementedError('Method not implemented!')
-
-    def Delete(self, request, context):
-      # missing associated documentation comment in .proto file
-      pass
-      context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-      context.set_details('Method not implemented!')
-      raise NotImplementedError('Method not implemented!')
-
-    def ListPermissions(self, request, context):
-      # missing associated documentation comment in .proto file
-      pass
-      context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-      context.set_details('Method not implemented!')
-      raise NotImplementedError('Method not implemented!')
-
-    def SetPermissions(self, request, context):
-      # missing associated documentation comment in .proto file
-      pass
-      context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-      context.set_details('Method not implemented!')
-      raise NotImplementedError('Method not implemented!')
-
-
-  def add_GroupManagerServicer_to_server(servicer, server):
-    rpc_method_handlers = {
-        'Create': grpc.unary_unary_rpc_method_handler(
-            servicer.Create,
-            request_deserializer=CreateGroupRequest.FromString,
-            response_serializer=CreateGroupResponse.SerializeToString,
-        ),
-        'Modify': grpc.unary_unary_rpc_method_handler(
-            servicer.Modify,
-            request_deserializer=ModifyGroupRequest.FromString,
-            response_serializer=ModifyGroupResponse.SerializeToString,
-        ),
-        'Get': grpc.unary_unary_rpc_method_handler(
-            servicer.Get,
-            request_deserializer=GetGroupRequest.FromString,
-            response_serializer=GetGroupResponse.SerializeToString,
-        ),
-        'List': grpc.unary_unary_rpc_method_handler(
-            servicer.List,
-            request_deserializer=ListGroupsRequest.FromString,
-            response_serializer=ListGroupsResponse.SerializeToString,
-        ),
-        'Delete': grpc.unary_unary_rpc_method_handler(
-            servicer.Delete,
-            request_deserializer=DeleteGroupRequest.FromString,
-            response_serializer=google_dot_protobuf_dot_wrappers__pb2.BoolValue.SerializeToString,
-        ),
-        'ListPermissions': grpc.unary_unary_rpc_method_handler(
-            servicer.ListPermissions,
-            request_deserializer=ListGroupPermissionsRequest.FromString,
-            response_serializer=ListGroupPermissionsResponse.SerializeToString,
-        ),
-        'SetPermissions': grpc.unary_unary_rpc_method_handler(
-            servicer.SetPermissions,
-            request_deserializer=SetGroupPermissionsRequest.FromString,
-            response_serializer=SetGroupPermissionsResponse.SerializeToString,
-        ),
-    }
-    generic_handler = grpc.method_handlers_generic_handler(
-        'charonrpc.GroupManager', rpc_method_handlers)
-    server.add_generic_rpc_handlers((generic_handler,))
-
-
-  class BetaGroupManagerServicer(object):
-    """The Beta API is deprecated for 0.15.0 and later.
-
-    It is recommended to use the GA API (classes and functions in this
-    file not marked beta) for all further purposes. This class was generated
-    only to ease transition from grpcio<0.15.0 to grpcio>=0.15.0."""
-    # missing associated documentation comment in .proto file
-    pass
-    def Create(self, request, context):
-      # missing associated documentation comment in .proto file
-      pass
-      context.code(beta_interfaces.StatusCode.UNIMPLEMENTED)
-    def Modify(self, request, context):
-      # missing associated documentation comment in .proto file
-      pass
-      context.code(beta_interfaces.StatusCode.UNIMPLEMENTED)
-    def Get(self, request, context):
-      # missing associated documentation comment in .proto file
-      pass
-      context.code(beta_interfaces.StatusCode.UNIMPLEMENTED)
-    def List(self, request, context):
-      # missing associated documentation comment in .proto file
-      pass
-      context.code(beta_interfaces.StatusCode.UNIMPLEMENTED)
-    def Delete(self, request, context):
-      # missing associated documentation comment in .proto file
-      pass
-      context.code(beta_interfaces.StatusCode.UNIMPLEMENTED)
-    def ListPermissions(self, request, context):
-      # missing associated documentation comment in .proto file
-      pass
-      context.code(beta_interfaces.StatusCode.UNIMPLEMENTED)
-    def SetPermissions(self, request, context):
-      # missing associated documentation comment in .proto file
-      pass
-      context.code(beta_interfaces.StatusCode.UNIMPLEMENTED)
-
-
-  class BetaGroupManagerStub(object):
-    """The Beta API is deprecated for 0.15.0 and later.
-
-    It is recommended to use the GA API (classes and functions in this
-    file not marked beta) for all further purposes. This class was generated
-    only to ease transition from grpcio<0.15.0 to grpcio>=0.15.0."""
-    # missing associated documentation comment in .proto file
-    pass
-    def Create(self, request, timeout, metadata=None, with_call=False, protocol_options=None):
-      # missing associated documentation comment in .proto file
-      pass
-      raise NotImplementedError()
-    Create.future = None
-    def Modify(self, request, timeout, metadata=None, with_call=False, protocol_options=None):
-      # missing associated documentation comment in .proto file
-      pass
-      raise NotImplementedError()
-    Modify.future = None
-    def Get(self, request, timeout, metadata=None, with_call=False, protocol_options=None):
-      # missing associated documentation comment in .proto file
-      pass
-      raise NotImplementedError()
-    Get.future = None
-    def List(self, request, timeout, metadata=None, with_call=False, protocol_options=None):
-      # missing associated documentation comment in .proto file
-      pass
-      raise NotImplementedError()
-    List.future = None
-    def Delete(self, request, timeout, metadata=None, with_call=False, protocol_options=None):
-      # missing associated documentation comment in .proto file
-      pass
-      raise NotImplementedError()
-    Delete.future = None
-    def ListPermissions(self, request, timeout, metadata=None, with_call=False, protocol_options=None):
-      # missing associated documentation comment in .proto file
-      pass
-      raise NotImplementedError()
-    ListPermissions.future = None
-    def SetPermissions(self, request, timeout, metadata=None, with_call=False, protocol_options=None):
-      # missing associated documentation comment in .proto file
-      pass
-      raise NotImplementedError()
-    SetPermissions.future = None
-
-
-  def beta_create_GroupManager_server(servicer, pool=None, pool_size=None, default_timeout=None, maximum_timeout=None):
-    """The Beta API is deprecated for 0.15.0 and later.
-
-    It is recommended to use the GA API (classes and functions in this
-    file not marked beta) for all further purposes. This function was
-    generated only to ease transition from grpcio<0.15.0 to grpcio>=0.15.0"""
-    request_deserializers = {
-      ('charonrpc.GroupManager', 'Create'): CreateGroupRequest.FromString,
-      ('charonrpc.GroupManager', 'Delete'): DeleteGroupRequest.FromString,
-      ('charonrpc.GroupManager', 'Get'): GetGroupRequest.FromString,
-      ('charonrpc.GroupManager', 'List'): ListGroupsRequest.FromString,
-      ('charonrpc.GroupManager', 'ListPermissions'): ListGroupPermissionsRequest.FromString,
-      ('charonrpc.GroupManager', 'Modify'): ModifyGroupRequest.FromString,
-      ('charonrpc.GroupManager', 'SetPermissions'): SetGroupPermissionsRequest.FromString,
-    }
-    response_serializers = {
-      ('charonrpc.GroupManager', 'Create'): CreateGroupResponse.SerializeToString,
-      ('charonrpc.GroupManager', 'Delete'): google_dot_protobuf_dot_wrappers__pb2.BoolValue.SerializeToString,
-      ('charonrpc.GroupManager', 'Get'): GetGroupResponse.SerializeToString,
-      ('charonrpc.GroupManager', 'List'): ListGroupsResponse.SerializeToString,
-      ('charonrpc.GroupManager', 'ListPermissions'): ListGroupPermissionsResponse.SerializeToString,
-      ('charonrpc.GroupManager', 'Modify'): ModifyGroupResponse.SerializeToString,
-      ('charonrpc.GroupManager', 'SetPermissions'): SetGroupPermissionsResponse.SerializeToString,
-    }
-    method_implementations = {
-      ('charonrpc.GroupManager', 'Create'): face_utilities.unary_unary_inline(servicer.Create),
-      ('charonrpc.GroupManager', 'Delete'): face_utilities.unary_unary_inline(servicer.Delete),
-      ('charonrpc.GroupManager', 'Get'): face_utilities.unary_unary_inline(servicer.Get),
-      ('charonrpc.GroupManager', 'List'): face_utilities.unary_unary_inline(servicer.List),
-      ('charonrpc.GroupManager', 'ListPermissions'): face_utilities.unary_unary_inline(servicer.ListPermissions),
-      ('charonrpc.GroupManager', 'Modify'): face_utilities.unary_unary_inline(servicer.Modify),
-      ('charonrpc.GroupManager', 'SetPermissions'): face_utilities.unary_unary_inline(servicer.SetPermissions),
-    }
-    server_options = beta_implementations.server_options(request_deserializers=request_deserializers, response_serializers=response_serializers, thread_pool=pool, thread_pool_size=pool_size, default_timeout=default_timeout, maximum_timeout=maximum_timeout)
-    return beta_implementations.server(method_implementations, options=server_options)
-
-
-  def beta_create_GroupManager_stub(channel, host=None, metadata_transformer=None, pool=None, pool_size=None):
-    """The Beta API is deprecated for 0.15.0 and later.
-
-    It is recommended to use the GA API (classes and functions in this
-    file not marked beta) for all further purposes. This function was
-    generated only to ease transition from grpcio<0.15.0 to grpcio>=0.15.0"""
-    request_serializers = {
-      ('charonrpc.GroupManager', 'Create'): CreateGroupRequest.SerializeToString,
-      ('charonrpc.GroupManager', 'Delete'): DeleteGroupRequest.SerializeToString,
-      ('charonrpc.GroupManager', 'Get'): GetGroupRequest.SerializeToString,
-      ('charonrpc.GroupManager', 'List'): ListGroupsRequest.SerializeToString,
-      ('charonrpc.GroupManager', 'ListPermissions'): ListGroupPermissionsRequest.SerializeToString,
-      ('charonrpc.GroupManager', 'Modify'): ModifyGroupRequest.SerializeToString,
-      ('charonrpc.GroupManager', 'SetPermissions'): SetGroupPermissionsRequest.SerializeToString,
-    }
-    response_deserializers = {
-      ('charonrpc.GroupManager', 'Create'): CreateGroupResponse.FromString,
-      ('charonrpc.GroupManager', 'Delete'): google_dot_protobuf_dot_wrappers__pb2.BoolValue.FromString,
-      ('charonrpc.GroupManager', 'Get'): GetGroupResponse.FromString,
-      ('charonrpc.GroupManager', 'List'): ListGroupsResponse.FromString,
-      ('charonrpc.GroupManager', 'ListPermissions'): ListGroupPermissionsResponse.FromString,
-      ('charonrpc.GroupManager', 'Modify'): ModifyGroupResponse.FromString,
-      ('charonrpc.GroupManager', 'SetPermissions'): SetGroupPermissionsResponse.FromString,
-    }
-    cardinalities = {
-      'Create': cardinality.Cardinality.UNARY_UNARY,
-      'Delete': cardinality.Cardinality.UNARY_UNARY,
-      'Get': cardinality.Cardinality.UNARY_UNARY,
-      'List': cardinality.Cardinality.UNARY_UNARY,
-      'ListPermissions': cardinality.Cardinality.UNARY_UNARY,
-      'Modify': cardinality.Cardinality.UNARY_UNARY,
-      'SetPermissions': cardinality.Cardinality.UNARY_UNARY,
-    }
-    stub_options = beta_implementations.stub_options(host=host, metadata_transformer=metadata_transformer, request_serializers=request_serializers, response_deserializers=response_deserializers, thread_pool=pool, thread_pool_size=pool_size)
-    return beta_implementations.dynamic_stub(channel, 'charonrpc.GroupManager', cardinalities, options=stub_options)
-except ImportError:
-  pass
 # @@protoc_insertion_point(module_scope)

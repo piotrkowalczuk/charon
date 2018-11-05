@@ -19,7 +19,7 @@ import (
 	"github.com/piotrkowalczuk/charon/internal/password"
 	"github.com/piotrkowalczuk/mnemosyne"
 	"github.com/piotrkowalczuk/mnemosyne/mnemosynerpc"
-	"github.com/piotrkowalczuk/promgrpc"
+	"github.com/piotrkowalczuk/promgrpc/v3"
 	"github.com/piotrkowalczuk/sklog"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"

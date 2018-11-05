@@ -3,13 +3,13 @@
 
 package charonrpc
 
-import proto "github.com/golang/protobuf/proto"
-import fmt "fmt"
-import math "math"
-import qtypes "github.com/piotrkowalczuk/qtypes"
-import ntypes "github.com/piotrkowalczuk/ntypes"
-
 import (
+	fmt "fmt"
+	math "math"
+
+	proto "github.com/golang/protobuf/proto"
+	ntypes "github.com/piotrkowalczuk/ntypes"
+	qtypes "github.com/piotrkowalczuk/qtypes"
 	context "golang.org/x/net/context"
 	grpc "google.golang.org/grpc"
 )
@@ -19,14 +19,43 @@ var _ = proto.Marshal
 var _ = fmt.Errorf
 var _ = math.Inf
 
+// This is a compile-time assertion to ensure that this generated file
+// is compatible with the proto package it is being compiled against.
+// A compilation error at this line likely means your copy of the
+// proto package needs to be updated.
+const _ = proto.ProtoPackageIsVersion2 // please upgrade the proto package
+
 type RegisterPermissionsRequest struct {
-	Permissions []string `protobuf:"bytes,1,rep,name=permissions" json:"permissions,omitempty"`
+	Permissions          []string `protobuf:"bytes,1,rep,name=permissions,proto3" json:"permissions,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *RegisterPermissionsRequest) Reset()                    { *m = RegisterPermissionsRequest{} }
-func (m *RegisterPermissionsRequest) String() string            { return proto.CompactTextString(m) }
-func (*RegisterPermissionsRequest) ProtoMessage()               {}
-func (*RegisterPermissionsRequest) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{0} }
+func (m *RegisterPermissionsRequest) Reset()         { *m = RegisterPermissionsRequest{} }
+func (m *RegisterPermissionsRequest) String() string { return proto.CompactTextString(m) }
+func (*RegisterPermissionsRequest) ProtoMessage()    {}
+func (*RegisterPermissionsRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c837ef01cbda0ad8, []int{0}
+}
+
+func (m *RegisterPermissionsRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_RegisterPermissionsRequest.Unmarshal(m, b)
+}
+func (m *RegisterPermissionsRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_RegisterPermissionsRequest.Marshal(b, m, deterministic)
+}
+func (m *RegisterPermissionsRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_RegisterPermissionsRequest.Merge(m, src)
+}
+func (m *RegisterPermissionsRequest) XXX_Size() int {
+	return xxx_messageInfo_RegisterPermissionsRequest.Size(m)
+}
+func (m *RegisterPermissionsRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_RegisterPermissionsRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_RegisterPermissionsRequest proto.InternalMessageInfo
 
 func (m *RegisterPermissionsRequest) GetPermissions() []string {
 	if m != nil {
@@ -36,15 +65,38 @@ func (m *RegisterPermissionsRequest) GetPermissions() []string {
 }
 
 type RegisterPermissionsResponse struct {
-	Created   int64 `protobuf:"varint,1,opt,name=created" json:"created,omitempty"`
-	Removed   int64 `protobuf:"varint,2,opt,name=removed" json:"removed,omitempty"`
-	Untouched int64 `protobuf:"varint,3,opt,name=untouched" json:"untouched,omitempty"`
+	Created              int64    `protobuf:"varint,1,opt,name=created,proto3" json:"created,omitempty"`
+	Removed              int64    `protobuf:"varint,2,opt,name=removed,proto3" json:"removed,omitempty"`
+	Untouched            int64    `protobuf:"varint,3,opt,name=untouched,proto3" json:"untouched,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *RegisterPermissionsResponse) Reset()                    { *m = RegisterPermissionsResponse{} }
-func (m *RegisterPermissionsResponse) String() string            { return proto.CompactTextString(m) }
-func (*RegisterPermissionsResponse) ProtoMessage()               {}
-func (*RegisterPermissionsResponse) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{1} }
+func (m *RegisterPermissionsResponse) Reset()         { *m = RegisterPermissionsResponse{} }
+func (m *RegisterPermissionsResponse) String() string { return proto.CompactTextString(m) }
+func (*RegisterPermissionsResponse) ProtoMessage()    {}
+func (*RegisterPermissionsResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c837ef01cbda0ad8, []int{1}
+}
+
+func (m *RegisterPermissionsResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_RegisterPermissionsResponse.Unmarshal(m, b)
+}
+func (m *RegisterPermissionsResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_RegisterPermissionsResponse.Marshal(b, m, deterministic)
+}
+func (m *RegisterPermissionsResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_RegisterPermissionsResponse.Merge(m, src)
+}
+func (m *RegisterPermissionsResponse) XXX_Size() int {
+	return xxx_messageInfo_RegisterPermissionsResponse.Size(m)
+}
+func (m *RegisterPermissionsResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_RegisterPermissionsResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_RegisterPermissionsResponse proto.InternalMessageInfo
 
 func (m *RegisterPermissionsResponse) GetCreated() int64 {
 	if m != nil {
@@ -68,20 +120,43 @@ func (m *RegisterPermissionsResponse) GetUntouched() int64 {
 }
 
 type ListPermissionsRequest struct {
-	Subsystem *qtypes.String    `protobuf:"bytes,1,opt,name=subsystem" json:"subsystem,omitempty"`
-	Module    *qtypes.String    `protobuf:"bytes,2,opt,name=module" json:"module,omitempty"`
-	Action    *qtypes.String    `protobuf:"bytes,3,opt,name=action" json:"action,omitempty"`
-	CreatedAt *qtypes.Timestamp `protobuf:"bytes,4,opt,name=created_at,json=createdAt" json:"created_at,omitempty"`
-	CreatedBy *qtypes.Int64     `protobuf:"bytes,5,opt,name=created_by,json=createdBy" json:"created_by,omitempty"`
-	Offset    *ntypes.Int64     `protobuf:"bytes,100,opt,name=offset" json:"offset,omitempty"`
-	Limit     *ntypes.Int64     `protobuf:"bytes,101,opt,name=limit" json:"limit,omitempty"`
-	Sort      map[string]bool   `protobuf:"bytes,102,rep,name=sort" json:"sort,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"varint,2,opt,name=value"`
+	Subsystem            *qtypes.String    `protobuf:"bytes,1,opt,name=subsystem,proto3" json:"subsystem,omitempty"`
+	Module               *qtypes.String    `protobuf:"bytes,2,opt,name=module,proto3" json:"module,omitempty"`
+	Action               *qtypes.String    `protobuf:"bytes,3,opt,name=action,proto3" json:"action,omitempty"`
+	CreatedAt            *qtypes.Timestamp `protobuf:"bytes,4,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	CreatedBy            *qtypes.Int64     `protobuf:"bytes,5,opt,name=created_by,json=createdBy,proto3" json:"created_by,omitempty"`
+	Offset               *ntypes.Int64     `protobuf:"bytes,100,opt,name=offset,proto3" json:"offset,omitempty"`
+	Limit                *ntypes.Int64     `protobuf:"bytes,101,opt,name=limit,proto3" json:"limit,omitempty"`
+	Sort                 map[string]bool   `protobuf:"bytes,102,rep,name=sort,proto3" json:"sort,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"varint,2,opt,name=value,proto3"`
+	XXX_NoUnkeyedLiteral struct{}          `json:"-"`
+	XXX_unrecognized     []byte            `json:"-"`
+	XXX_sizecache        int32             `json:"-"`
 }
 
-func (m *ListPermissionsRequest) Reset()                    { *m = ListPermissionsRequest{} }
-func (m *ListPermissionsRequest) String() string            { return proto.CompactTextString(m) }
-func (*ListPermissionsRequest) ProtoMessage()               {}
-func (*ListPermissionsRequest) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{2} }
+func (m *ListPermissionsRequest) Reset()         { *m = ListPermissionsRequest{} }
+func (m *ListPermissionsRequest) String() string { return proto.CompactTextString(m) }
+func (*ListPermissionsRequest) ProtoMessage()    {}
+func (*ListPermissionsRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c837ef01cbda0ad8, []int{2}
+}
+
+func (m *ListPermissionsRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_ListPermissionsRequest.Unmarshal(m, b)
+}
+func (m *ListPermissionsRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_ListPermissionsRequest.Marshal(b, m, deterministic)
+}
+func (m *ListPermissionsRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ListPermissionsRequest.Merge(m, src)
+}
+func (m *ListPermissionsRequest) XXX_Size() int {
+	return xxx_messageInfo_ListPermissionsRequest.Size(m)
+}
+func (m *ListPermissionsRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_ListPermissionsRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ListPermissionsRequest proto.InternalMessageInfo
 
 func (m *ListPermissionsRequest) GetSubsystem() *qtypes.String {
 	if m != nil {
@@ -140,13 +215,36 @@ func (m *ListPermissionsRequest) GetSort() map[string]bool {
 }
 
 type ListPermissionsResponse struct {
-	Permissions []string `protobuf:"bytes,1,rep,name=permissions" json:"permissions,omitempty"`
+	Permissions          []string `protobuf:"bytes,1,rep,name=permissions,proto3" json:"permissions,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *ListPermissionsResponse) Reset()                    { *m = ListPermissionsResponse{} }
-func (m *ListPermissionsResponse) String() string            { return proto.CompactTextString(m) }
-func (*ListPermissionsResponse) ProtoMessage()               {}
-func (*ListPermissionsResponse) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{3} }
+func (m *ListPermissionsResponse) Reset()         { *m = ListPermissionsResponse{} }
+func (m *ListPermissionsResponse) String() string { return proto.CompactTextString(m) }
+func (*ListPermissionsResponse) ProtoMessage()    {}
+func (*ListPermissionsResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c837ef01cbda0ad8, []int{3}
+}
+
+func (m *ListPermissionsResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_ListPermissionsResponse.Unmarshal(m, b)
+}
+func (m *ListPermissionsResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_ListPermissionsResponse.Marshal(b, m, deterministic)
+}
+func (m *ListPermissionsResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ListPermissionsResponse.Merge(m, src)
+}
+func (m *ListPermissionsResponse) XXX_Size() int {
+	return xxx_messageInfo_ListPermissionsResponse.Size(m)
+}
+func (m *ListPermissionsResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_ListPermissionsResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ListPermissionsResponse proto.InternalMessageInfo
 
 func (m *ListPermissionsResponse) GetPermissions() []string {
 	if m != nil {
@@ -156,13 +254,36 @@ func (m *ListPermissionsResponse) GetPermissions() []string {
 }
 
 type GetPermissionRequest struct {
-	Id int64 `protobuf:"varint,1,opt,name=id" json:"id,omitempty"`
+	Id                   int64    `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *GetPermissionRequest) Reset()                    { *m = GetPermissionRequest{} }
-func (m *GetPermissionRequest) String() string            { return proto.CompactTextString(m) }
-func (*GetPermissionRequest) ProtoMessage()               {}
-func (*GetPermissionRequest) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{4} }
+func (m *GetPermissionRequest) Reset()         { *m = GetPermissionRequest{} }
+func (m *GetPermissionRequest) String() string { return proto.CompactTextString(m) }
+func (*GetPermissionRequest) ProtoMessage()    {}
+func (*GetPermissionRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c837ef01cbda0ad8, []int{4}
+}
+
+func (m *GetPermissionRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetPermissionRequest.Unmarshal(m, b)
+}
+func (m *GetPermissionRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetPermissionRequest.Marshal(b, m, deterministic)
+}
+func (m *GetPermissionRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetPermissionRequest.Merge(m, src)
+}
+func (m *GetPermissionRequest) XXX_Size() int {
+	return xxx_messageInfo_GetPermissionRequest.Size(m)
+}
+func (m *GetPermissionRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetPermissionRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetPermissionRequest proto.InternalMessageInfo
 
 func (m *GetPermissionRequest) GetId() int64 {
 	if m != nil {
@@ -172,13 +293,36 @@ func (m *GetPermissionRequest) GetId() int64 {
 }
 
 type GetPermissionResponse struct {
-	Permission string `protobuf:"bytes,1,opt,name=permission" json:"permission,omitempty"`
+	Permission           string   `protobuf:"bytes,1,opt,name=permission,proto3" json:"permission,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *GetPermissionResponse) Reset()                    { *m = GetPermissionResponse{} }
-func (m *GetPermissionResponse) String() string            { return proto.CompactTextString(m) }
-func (*GetPermissionResponse) ProtoMessage()               {}
-func (*GetPermissionResponse) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{5} }
+func (m *GetPermissionResponse) Reset()         { *m = GetPermissionResponse{} }
+func (m *GetPermissionResponse) String() string { return proto.CompactTextString(m) }
+func (*GetPermissionResponse) ProtoMessage()    {}
+func (*GetPermissionResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c837ef01cbda0ad8, []int{5}
+}
+
+func (m *GetPermissionResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetPermissionResponse.Unmarshal(m, b)
+}
+func (m *GetPermissionResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetPermissionResponse.Marshal(b, m, deterministic)
+}
+func (m *GetPermissionResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetPermissionResponse.Merge(m, src)
+}
+func (m *GetPermissionResponse) XXX_Size() int {
+	return xxx_messageInfo_GetPermissionResponse.Size(m)
+}
+func (m *GetPermissionResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetPermissionResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetPermissionResponse proto.InternalMessageInfo
 
 func (m *GetPermissionResponse) GetPermission() string {
 	if m != nil {
@@ -191,9 +335,50 @@ func init() {
 	proto.RegisterType((*RegisterPermissionsRequest)(nil), "charonrpc.RegisterPermissionsRequest")
 	proto.RegisterType((*RegisterPermissionsResponse)(nil), "charonrpc.RegisterPermissionsResponse")
 	proto.RegisterType((*ListPermissionsRequest)(nil), "charonrpc.ListPermissionsRequest")
+	proto.RegisterMapType((map[string]bool)(nil), "charonrpc.ListPermissionsRequest.SortEntry")
 	proto.RegisterType((*ListPermissionsResponse)(nil), "charonrpc.ListPermissionsResponse")
 	proto.RegisterType((*GetPermissionRequest)(nil), "charonrpc.GetPermissionRequest")
 	proto.RegisterType((*GetPermissionResponse)(nil), "charonrpc.GetPermissionResponse")
+}
+
+func init() { proto.RegisterFile("permission.proto", fileDescriptor_c837ef01cbda0ad8) }
+
+var fileDescriptor_c837ef01cbda0ad8 = []byte{
+	// 532 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x84, 0x94, 0xe1, 0x8a, 0xd3, 0x40,
+	0x10, 0xc7, 0x6d, 0xd3, 0xd6, 0x66, 0x8a, 0x47, 0x6f, 0xef, 0xd4, 0x10, 0x45, 0x6b, 0xe4, 0x4a,
+	0xd1, 0x23, 0x95, 0x2a, 0x9e, 0x28, 0x28, 0x1e, 0xc8, 0xe1, 0xa1, 0x28, 0x39, 0x3f, 0xe9, 0x07,
+	0x49, 0x93, 0x6d, 0xbb, 0xb4, 0xd9, 0xcd, 0xed, 0x4e, 0x4e, 0xe2, 0x3b, 0xf8, 0x52, 0x3e, 0x99,
+	0x34, 0xd9, 0xa4, 0xc1, 0xcb, 0x5d, 0x3f, 0xb5, 0x3b, 0xff, 0xdf, 0x7f, 0x66, 0x32, 0x3b, 0x09,
+	0xf4, 0x63, 0x2a, 0x23, 0xa6, 0x14, 0x13, 0xdc, 0x8d, 0xa5, 0x40, 0x41, 0xcc, 0x60, 0xe1, 0x4b,
+	0xc1, 0x65, 0x1c, 0xd8, 0x7b, 0xe7, 0x98, 0xc6, 0x54, 0x8d, 0xf3, 0x9f, 0x5c, 0xb7, 0xf7, 0x78,
+	0x1e, 0xe4, 0x95, 0xa0, 0xf3, 0x16, 0x6c, 0x8f, 0xce, 0x99, 0x42, 0x2a, 0xbf, 0x96, 0x09, 0x95,
+	0x47, 0xcf, 0x13, 0xaa, 0x90, 0x0c, 0xa0, 0xb7, 0x29, 0xa3, 0xac, 0xc6, 0xc0, 0x18, 0x99, 0x5e,
+	0x35, 0xe4, 0x08, 0xb8, 0x57, 0xeb, 0x57, 0xb1, 0xe0, 0x8a, 0x12, 0x0b, 0x6e, 0x06, 0x92, 0xfa,
+	0x48, 0x43, 0xab, 0x31, 0x68, 0x8c, 0x0c, 0xaf, 0x38, 0xae, 0x15, 0x49, 0x23, 0x71, 0x41, 0x43,
+	0xab, 0x99, 0x2b, 0xfa, 0x48, 0xee, 0x83, 0x99, 0x70, 0x14, 0x49, 0xb0, 0xa0, 0xa1, 0x65, 0x64,
+	0xda, 0x26, 0xe0, 0xfc, 0x35, 0xe0, 0xce, 0x27, 0xa6, 0xb0, 0xa6, 0xdb, 0x43, 0x30, 0x55, 0x32,
+	0x55, 0xa9, 0x42, 0x1a, 0x65, 0xe5, 0x7a, 0x93, 0x1d, 0x57, 0x8f, 0xe0, 0x0c, 0x25, 0xe3, 0x73,
+	0x6f, 0x03, 0x90, 0x21, 0x74, 0x22, 0x11, 0x26, 0x2b, 0x9a, 0xd5, 0xbf, 0x8c, 0x6a, 0x75, 0xcd,
+	0xf9, 0x01, 0x32, 0xc1, 0xb3, 0x5e, 0x6a, 0xb8, 0x5c, 0x25, 0xcf, 0x00, 0xf4, 0xb3, 0xfd, 0xf4,
+	0xd1, 0x6a, 0x65, 0xec, 0x6e, 0xc1, 0x7e, 0x63, 0x11, 0x55, 0xe8, 0x47, 0xb1, 0x67, 0x6a, 0xe8,
+	0xfd, 0xba, 0xdf, 0xd2, 0x31, 0x4d, 0xad, 0x76, 0xe6, 0xb8, 0x55, 0x38, 0x3e, 0x72, 0x7c, 0xf9,
+	0xa2, 0xa4, 0x8f, 0x53, 0x72, 0x00, 0x1d, 0x31, 0x9b, 0x29, 0x8a, 0x56, 0xa8, 0x49, 0x5e, 0x25,
+	0xb5, 0x48, 0x1e, 0x43, 0x7b, 0xc5, 0x22, 0x86, 0x16, 0xad, 0xa3, 0x72, 0x8d, 0xbc, 0x83, 0x96,
+	0x12, 0x12, 0xad, 0xd9, 0xc0, 0x18, 0xf5, 0x26, 0x4f, 0xdd, 0x72, 0x73, 0xdc, 0xfa, 0xd1, 0xba,
+	0x67, 0x42, 0xe2, 0x07, 0x8e, 0x32, 0xf5, 0x32, 0xa3, 0x7d, 0x04, 0x66, 0x19, 0x22, 0x7d, 0x30,
+	0x96, 0x34, 0xcd, 0x26, 0x6e, 0x7a, 0xeb, 0xbf, 0x64, 0x1f, 0xda, 0x17, 0xfe, 0x2a, 0xc9, 0x47,
+	0xdb, 0xf5, 0xf2, 0xc3, 0xeb, 0xe6, 0xab, 0xc6, 0x69, 0xab, 0xdb, 0xe9, 0x87, 0xce, 0x1b, 0xb8,
+	0x7b, 0xa9, 0x90, 0xde, 0x98, 0xed, 0x2b, 0x37, 0x84, 0xfd, 0x13, 0x5a, 0xf1, 0x16, 0xd7, 0xbf,
+	0x03, 0x4d, 0x56, 0xac, 0x59, 0x93, 0x85, 0xce, 0x11, 0xdc, 0xfe, 0x8f, 0xd3, 0x25, 0x1e, 0x00,
+	0x6c, 0xf2, 0xe9, 0xb6, 0x2b, 0x91, 0xc9, 0x9f, 0x26, 0xec, 0x6e, 0x6c, 0x9f, 0x7d, 0xee, 0xcf,
+	0xa9, 0x24, 0x3f, 0xa0, 0x5b, 0x6c, 0x3a, 0x39, 0xa8, 0x4c, 0xec, 0xea, 0xd7, 0xc7, 0x1e, 0x6e,
+	0xc3, 0xf2, 0x86, 0x9c, 0x1b, 0xe4, 0x0b, 0xb4, 0xd6, 0x03, 0x21, 0x8f, 0xb6, 0x5e, 0x85, 0xed,
+	0x5c, 0x87, 0x94, 0x09, 0x4f, 0xc1, 0x38, 0xa1, 0x48, 0x1e, 0x56, 0xe0, 0xba, 0xa1, 0xd9, 0x83,
+	0xab, 0x81, 0x22, 0xd7, 0xf1, 0xe1, 0xf7, 0x27, 0x73, 0x86, 0x8b, 0x64, 0xea, 0x06, 0x22, 0x1a,
+	0xc7, 0x4c, 0xa0, 0x5c, 0x8a, 0x5f, 0xfe, 0x2a, 0xf8, 0x9d, 0x2c, 0xc7, 0xb9, 0x7d, 0x5c, 0x66,
+	0x99, 0x76, 0xb2, 0x0f, 0xcb, 0xf3, 0x7f, 0x01, 0x00, 0x00, 0xff, 0xff, 0x76, 0x96, 0x32, 0x28,
+	0xa1, 0x04, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -204,8 +389,9 @@ var _ grpc.ClientConn
 // is compatible with the grpc package it is being compiled against.
 const _ = grpc.SupportPackageIsVersion4
 
-// Client API for PermissionManager service
-
+// PermissionManagerClient is the client API for PermissionManager service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type PermissionManagerClient interface {
 	Register(ctx context.Context, in *RegisterPermissionsRequest, opts ...grpc.CallOption) (*RegisterPermissionsResponse, error)
 	List(ctx context.Context, in *ListPermissionsRequest, opts ...grpc.CallOption) (*ListPermissionsResponse, error)
@@ -222,7 +408,7 @@ func NewPermissionManagerClient(cc *grpc.ClientConn) PermissionManagerClient {
 
 func (c *permissionManagerClient) Register(ctx context.Context, in *RegisterPermissionsRequest, opts ...grpc.CallOption) (*RegisterPermissionsResponse, error) {
 	out := new(RegisterPermissionsResponse)
-	err := grpc.Invoke(ctx, "/charonrpc.PermissionManager/Register", in, out, c.cc, opts...)
+	err := c.cc.Invoke(ctx, "/charonrpc.PermissionManager/Register", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -231,7 +417,7 @@ func (c *permissionManagerClient) Register(ctx context.Context, in *RegisterPerm
 
 func (c *permissionManagerClient) List(ctx context.Context, in *ListPermissionsRequest, opts ...grpc.CallOption) (*ListPermissionsResponse, error) {
 	out := new(ListPermissionsResponse)
-	err := grpc.Invoke(ctx, "/charonrpc.PermissionManager/List", in, out, c.cc, opts...)
+	err := c.cc.Invoke(ctx, "/charonrpc.PermissionManager/List", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -240,15 +426,14 @@ func (c *permissionManagerClient) List(ctx context.Context, in *ListPermissionsR
 
 func (c *permissionManagerClient) Get(ctx context.Context, in *GetPermissionRequest, opts ...grpc.CallOption) (*GetPermissionResponse, error) {
 	out := new(GetPermissionResponse)
-	err := grpc.Invoke(ctx, "/charonrpc.PermissionManager/Get", in, out, c.cc, opts...)
+	err := c.cc.Invoke(ctx, "/charonrpc.PermissionManager/Get", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// Server API for PermissionManager service
-
+// PermissionManagerServer is the server API for PermissionManager service.
 type PermissionManagerServer interface {
 	Register(context.Context, *RegisterPermissionsRequest) (*RegisterPermissionsResponse, error)
 	List(context.Context, *ListPermissionsRequest) (*ListPermissionsResponse, error)
@@ -332,44 +517,4 @@ var _PermissionManager_serviceDesc = grpc.ServiceDesc{
 	},
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "permission.proto",
-}
-
-func init() { proto.RegisterFile("permission.proto", fileDescriptor2) }
-
-var fileDescriptor2 = []byte{
-	// 532 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x84, 0x94, 0xe1, 0x8a, 0xd3, 0x40,
-	0x10, 0xc7, 0x6d, 0xd3, 0xd6, 0x66, 0x8a, 0x47, 0x6f, 0xef, 0xd4, 0x10, 0x45, 0x6b, 0xe4, 0x4a,
-	0xd1, 0x23, 0x95, 0x2a, 0x9e, 0x28, 0x28, 0x1e, 0xc8, 0xe1, 0xa1, 0x28, 0x39, 0x3f, 0xe9, 0x07,
-	0x49, 0x93, 0x6d, 0xbb, 0xb4, 0xd9, 0xcd, 0xed, 0x4e, 0x4e, 0xe2, 0x3b, 0xf8, 0x52, 0x3e, 0x99,
-	0x34, 0xd9, 0xa4, 0xc1, 0xcb, 0x5d, 0x3f, 0xb5, 0x3b, 0xff, 0xdf, 0x7f, 0x66, 0x32, 0x3b, 0x09,
-	0xf4, 0x63, 0x2a, 0x23, 0xa6, 0x14, 0x13, 0xdc, 0x8d, 0xa5, 0x40, 0x41, 0xcc, 0x60, 0xe1, 0x4b,
-	0xc1, 0x65, 0x1c, 0xd8, 0x7b, 0xe7, 0x98, 0xc6, 0x54, 0x8d, 0xf3, 0x9f, 0x5c, 0xb7, 0xf7, 0x78,
-	0x1e, 0xe4, 0x95, 0xa0, 0xf3, 0x16, 0x6c, 0x8f, 0xce, 0x99, 0x42, 0x2a, 0xbf, 0x96, 0x09, 0x95,
-	0x47, 0xcf, 0x13, 0xaa, 0x90, 0x0c, 0xa0, 0xb7, 0x29, 0xa3, 0xac, 0xc6, 0xc0, 0x18, 0x99, 0x5e,
-	0x35, 0xe4, 0x08, 0xb8, 0x57, 0xeb, 0x57, 0xb1, 0xe0, 0x8a, 0x12, 0x0b, 0x6e, 0x06, 0x92, 0xfa,
-	0x48, 0x43, 0xab, 0x31, 0x68, 0x8c, 0x0c, 0xaf, 0x38, 0xae, 0x15, 0x49, 0x23, 0x71, 0x41, 0x43,
-	0xab, 0x99, 0x2b, 0xfa, 0x48, 0xee, 0x83, 0x99, 0x70, 0x14, 0x49, 0xb0, 0xa0, 0xa1, 0x65, 0x64,
-	0xda, 0x26, 0xe0, 0xfc, 0x35, 0xe0, 0xce, 0x27, 0xa6, 0xb0, 0xa6, 0xdb, 0x43, 0x30, 0x55, 0x32,
-	0x55, 0xa9, 0x42, 0x1a, 0x65, 0xe5, 0x7a, 0x93, 0x1d, 0x57, 0x8f, 0xe0, 0x0c, 0x25, 0xe3, 0x73,
-	0x6f, 0x03, 0x90, 0x21, 0x74, 0x22, 0x11, 0x26, 0x2b, 0x9a, 0xd5, 0xbf, 0x8c, 0x6a, 0x75, 0xcd,
-	0xf9, 0x01, 0x32, 0xc1, 0xb3, 0x5e, 0x6a, 0xb8, 0x5c, 0x25, 0xcf, 0x00, 0xf4, 0xb3, 0xfd, 0xf4,
-	0xd1, 0x6a, 0x65, 0xec, 0x6e, 0xc1, 0x7e, 0x63, 0x11, 0x55, 0xe8, 0x47, 0xb1, 0x67, 0x6a, 0xe8,
-	0xfd, 0xba, 0xdf, 0xd2, 0x31, 0x4d, 0xad, 0x76, 0xe6, 0xb8, 0x55, 0x38, 0x3e, 0x72, 0x7c, 0xf9,
-	0xa2, 0xa4, 0x8f, 0x53, 0x72, 0x00, 0x1d, 0x31, 0x9b, 0x29, 0x8a, 0x56, 0xa8, 0x49, 0x5e, 0x25,
-	0xb5, 0x48, 0x1e, 0x43, 0x7b, 0xc5, 0x22, 0x86, 0x16, 0xad, 0xa3, 0x72, 0x8d, 0xbc, 0x83, 0x96,
-	0x12, 0x12, 0xad, 0xd9, 0xc0, 0x18, 0xf5, 0x26, 0x4f, 0xdd, 0x72, 0x73, 0xdc, 0xfa, 0xd1, 0xba,
-	0x67, 0x42, 0xe2, 0x07, 0x8e, 0x32, 0xf5, 0x32, 0xa3, 0x7d, 0x04, 0x66, 0x19, 0x22, 0x7d, 0x30,
-	0x96, 0x34, 0xcd, 0x26, 0x6e, 0x7a, 0xeb, 0xbf, 0x64, 0x1f, 0xda, 0x17, 0xfe, 0x2a, 0xc9, 0x47,
-	0xdb, 0xf5, 0xf2, 0xc3, 0xeb, 0xe6, 0xab, 0xc6, 0x69, 0xab, 0xdb, 0xe9, 0x87, 0xce, 0x1b, 0xb8,
-	0x7b, 0xa9, 0x90, 0xde, 0x98, 0xed, 0x2b, 0x37, 0x84, 0xfd, 0x13, 0x5a, 0xf1, 0x16, 0xd7, 0xbf,
-	0x03, 0x4d, 0x56, 0xac, 0x59, 0x93, 0x85, 0xce, 0x11, 0xdc, 0xfe, 0x8f, 0xd3, 0x25, 0x1e, 0x00,
-	0x6c, 0xf2, 0xe9, 0xb6, 0x2b, 0x91, 0xc9, 0x9f, 0x26, 0xec, 0x6e, 0x6c, 0x9f, 0x7d, 0xee, 0xcf,
-	0xa9, 0x24, 0x3f, 0xa0, 0x5b, 0x6c, 0x3a, 0x39, 0xa8, 0x4c, 0xec, 0xea, 0xd7, 0xc7, 0x1e, 0x6e,
-	0xc3, 0xf2, 0x86, 0x9c, 0x1b, 0xe4, 0x0b, 0xb4, 0xd6, 0x03, 0x21, 0x8f, 0xb6, 0x5e, 0x85, 0xed,
-	0x5c, 0x87, 0x94, 0x09, 0x4f, 0xc1, 0x38, 0xa1, 0x48, 0x1e, 0x56, 0xe0, 0xba, 0xa1, 0xd9, 0x83,
-	0xab, 0x81, 0x22, 0xd7, 0xf1, 0xe1, 0xf7, 0x27, 0x73, 0x86, 0x8b, 0x64, 0xea, 0x06, 0x22, 0x1a,
-	0xc7, 0x4c, 0xa0, 0x5c, 0x8a, 0x5f, 0xfe, 0x2a, 0xf8, 0x9d, 0x2c, 0xc7, 0xb9, 0x7d, 0x5c, 0x66,
-	0x99, 0x76, 0xb2, 0x0f, 0xcb, 0xf3, 0x7f, 0x01, 0x00, 0x00, 0xff, 0xff, 0x76, 0x96, 0x32, 0x28,
-	0xa1, 0x04, 0x00, 0x00,
 }

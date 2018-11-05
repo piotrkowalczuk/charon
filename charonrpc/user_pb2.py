@@ -44,84 +44,84 @@ _USER = _descriptor.Descriptor(
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='username', full_name='charonrpc.User.username', index=1,
       number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='first_name', full_name='charonrpc.User.first_name', index=2,
       number=3, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='last_name', full_name='charonrpc.User.last_name', index=3,
       number=4, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='is_superuser', full_name='charonrpc.User.is_superuser', index=4,
       number=5, type=8, cpp_type=7, label=1,
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='is_active', full_name='charonrpc.User.is_active', index=5,
       number=6, type=8, cpp_type=7, label=1,
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='is_staff', full_name='charonrpc.User.is_staff', index=6,
       number=7, type=8, cpp_type=7, label=1,
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='is_confirmed', full_name='charonrpc.User.is_confirmed', index=7,
       number=8, type=8, cpp_type=7, label=1,
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='created_at', full_name='charonrpc.User.created_at', index=8,
       number=9, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='created_by', full_name='charonrpc.User.created_by', index=9,
       number=10, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='updated_at', full_name='charonrpc.User.updated_at', index=10,
       number=11, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='updated_by', full_name='charonrpc.User.updated_by', index=11,
       number=12, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -152,63 +152,63 @@ _CREATEUSERREQUEST = _descriptor.Descriptor(
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='plain_password', full_name='charonrpc.CreateUserRequest.plain_password', index=1,
       number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='secure_password', full_name='charonrpc.CreateUserRequest.secure_password', index=2,
       number=3, type=12, cpp_type=9, label=1,
       has_default_value=False, default_value=_b(""),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='first_name', full_name='charonrpc.CreateUserRequest.first_name', index=3,
       number=4, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='last_name', full_name='charonrpc.CreateUserRequest.last_name', index=4,
       number=5, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='is_superuser', full_name='charonrpc.CreateUserRequest.is_superuser', index=5,
       number=6, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='is_active', full_name='charonrpc.CreateUserRequest.is_active', index=6,
       number=7, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='is_staff', full_name='charonrpc.CreateUserRequest.is_staff', index=7,
       number=8, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='is_confirmed', full_name='charonrpc.CreateUserRequest.is_confirmed', index=8,
       number=9, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -239,7 +239,7 @@ _CREATEUSERRESPONSE = _descriptor.Descriptor(
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -270,7 +270,7 @@ _GETUSERREQUEST = _descriptor.Descriptor(
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -301,7 +301,7 @@ _GETUSERRESPONSE = _descriptor.Descriptor(
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -332,14 +332,14 @@ _LISTUSERSREQUEST_SORTENTRY = _descriptor.Descriptor(
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='value', full_name='charonrpc.ListUsersRequest.SortEntry.value', index=1,
       number=2, type=8, cpp_type=7, label=1,
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -369,42 +369,42 @@ _LISTUSERSREQUEST = _descriptor.Descriptor(
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='is_staff', full_name='charonrpc.ListUsersRequest.is_staff', index=1,
       number=2, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='created_by', full_name='charonrpc.ListUsersRequest.created_by', index=2,
       number=3, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='offset', full_name='charonrpc.ListUsersRequest.offset', index=3,
       number=100, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='limit', full_name='charonrpc.ListUsersRequest.limit', index=4,
       number=101, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='sort', full_name='charonrpc.ListUsersRequest.sort', index=5,
       number=102, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -435,7 +435,7 @@ _LISTUSERSRESPONSE = _descriptor.Descriptor(
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -466,7 +466,7 @@ _DELETEUSERREQUEST = _descriptor.Descriptor(
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -497,70 +497,70 @@ _MODIFYUSERREQUEST = _descriptor.Descriptor(
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='username', full_name='charonrpc.ModifyUserRequest.username', index=1,
       number=2, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='plain_password', full_name='charonrpc.ModifyUserRequest.plain_password', index=2,
       number=3, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='secure_password', full_name='charonrpc.ModifyUserRequest.secure_password', index=3,
       number=4, type=12, cpp_type=9, label=1,
       has_default_value=False, default_value=_b(""),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='first_name', full_name='charonrpc.ModifyUserRequest.first_name', index=4,
       number=5, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='last_name', full_name='charonrpc.ModifyUserRequest.last_name', index=5,
       number=6, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='is_superuser', full_name='charonrpc.ModifyUserRequest.is_superuser', index=6,
       number=7, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='is_active', full_name='charonrpc.ModifyUserRequest.is_active', index=7,
       number=8, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='is_staff', full_name='charonrpc.ModifyUserRequest.is_staff', index=8,
       number=9, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='is_confirmed', full_name='charonrpc.ModifyUserRequest.is_confirmed', index=9,
       number=10, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -591,7 +591,7 @@ _MODIFYUSERRESPONSE = _descriptor.Descriptor(
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -622,7 +622,7 @@ _LISTUSERPERMISSIONSREQUEST = _descriptor.Descriptor(
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -653,7 +653,7 @@ _LISTUSERPERMISSIONSRESPONSE = _descriptor.Descriptor(
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -684,21 +684,21 @@ _SETUSERPERMISSIONSREQUEST = _descriptor.Descriptor(
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='permissions', full_name='charonrpc.SetUserPermissionsRequest.permissions', index=1,
       number=2, type=9, cpp_type=9, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='force', full_name='charonrpc.SetUserPermissionsRequest.force', index=2,
       number=3, type=8, cpp_type=7, label=1,
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -729,21 +729,21 @@ _SETUSERPERMISSIONSRESPONSE = _descriptor.Descriptor(
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='removed', full_name='charonrpc.SetUserPermissionsResponse.removed', index=1,
       number=2, type=3, cpp_type=2, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='untouched', full_name='charonrpc.SetUserPermissionsResponse.untouched', index=2,
       number=3, type=3, cpp_type=2, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -774,7 +774,7 @@ _LISTUSERGROUPSREQUEST = _descriptor.Descriptor(
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -805,7 +805,7 @@ _LISTUSERGROUPSRESPONSE = _descriptor.Descriptor(
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -836,14 +836,14 @@ _SETUSERGROUPSREQUEST = _descriptor.Descriptor(
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='groups', full_name='charonrpc.SetUserGroupsRequest.groups', index=1,
       number=2, type=3, cpp_type=2, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -874,21 +874,21 @@ _SETUSERGROUPSRESPONSE = _descriptor.Descriptor(
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='removed', full_name='charonrpc.SetUserGroupsResponse.removed', index=1,
       number=2, type=3, cpp_type=2, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='untouched', full_name='charonrpc.SetUserGroupsResponse.untouched', index=2,
       number=3, type=3, cpp_type=2, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -1092,379 +1092,100 @@ DESCRIPTOR.has_options = True
 DESCRIPTOR._options = _descriptor._ParseOptions(descriptor_pb2.FileOptions(), _b('Z*github.com/piotrkowalczuk/charon/charonrpc'))
 _LISTUSERSREQUEST_SORTENTRY.has_options = True
 _LISTUSERSREQUEST_SORTENTRY._options = _descriptor._ParseOptions(descriptor_pb2.MessageOptions(), _b('8\001'))
-try:
-  # THESE ELEMENTS WILL BE DEPRECATED.
-  # Please use the generated *_pb2_grpc.py files instead.
-  import grpc
-  from grpc.beta import implementations as beta_implementations
-  from grpc.beta import interfaces as beta_interfaces
-  from grpc.framework.common import cardinality
-  from grpc.framework.interfaces.face import utilities as face_utilities
 
+_USERMANAGER = _descriptor.ServiceDescriptor(
+  name='UserManager',
+  full_name='charonrpc.UserManager',
+  file=DESCRIPTOR,
+  index=0,
+  options=None,
+  serialized_start=2129,
+  serialized_end=2855,
+  methods=[
+  _descriptor.MethodDescriptor(
+    name='Create',
+    full_name='charonrpc.UserManager.Create',
+    index=0,
+    containing_service=None,
+    input_type=_CREATEUSERREQUEST,
+    output_type=_CREATEUSERRESPONSE,
+    options=None,
+  ),
+  _descriptor.MethodDescriptor(
+    name='Modify',
+    full_name='charonrpc.UserManager.Modify',
+    index=1,
+    containing_service=None,
+    input_type=_MODIFYUSERREQUEST,
+    output_type=_MODIFYUSERRESPONSE,
+    options=None,
+  ),
+  _descriptor.MethodDescriptor(
+    name='Get',
+    full_name='charonrpc.UserManager.Get',
+    index=2,
+    containing_service=None,
+    input_type=_GETUSERREQUEST,
+    output_type=_GETUSERRESPONSE,
+    options=None,
+  ),
+  _descriptor.MethodDescriptor(
+    name='List',
+    full_name='charonrpc.UserManager.List',
+    index=3,
+    containing_service=None,
+    input_type=_LISTUSERSREQUEST,
+    output_type=_LISTUSERSRESPONSE,
+    options=None,
+  ),
+  _descriptor.MethodDescriptor(
+    name='Delete',
+    full_name='charonrpc.UserManager.Delete',
+    index=4,
+    containing_service=None,
+    input_type=_DELETEUSERREQUEST,
+    output_type=google_dot_protobuf_dot_wrappers__pb2._BOOLVALUE,
+    options=None,
+  ),
+  _descriptor.MethodDescriptor(
+    name='ListPermissions',
+    full_name='charonrpc.UserManager.ListPermissions',
+    index=5,
+    containing_service=None,
+    input_type=_LISTUSERPERMISSIONSREQUEST,
+    output_type=_LISTUSERPERMISSIONSRESPONSE,
+    options=None,
+  ),
+  _descriptor.MethodDescriptor(
+    name='SetPermissions',
+    full_name='charonrpc.UserManager.SetPermissions',
+    index=6,
+    containing_service=None,
+    input_type=_SETUSERPERMISSIONSREQUEST,
+    output_type=_SETUSERPERMISSIONSRESPONSE,
+    options=None,
+  ),
+  _descriptor.MethodDescriptor(
+    name='ListGroups',
+    full_name='charonrpc.UserManager.ListGroups',
+    index=7,
+    containing_service=None,
+    input_type=_LISTUSERGROUPSREQUEST,
+    output_type=_LISTUSERGROUPSRESPONSE,
+    options=None,
+  ),
+  _descriptor.MethodDescriptor(
+    name='SetGroups',
+    full_name='charonrpc.UserManager.SetGroups',
+    index=8,
+    containing_service=None,
+    input_type=_SETUSERGROUPSREQUEST,
+    output_type=_SETUSERGROUPSRESPONSE,
+    options=None,
+  ),
+])
+_sym_db.RegisterServiceDescriptor(_USERMANAGER)
 
-  class UserManagerStub(object):
-    # missing associated documentation comment in .proto file
-    pass
+DESCRIPTOR.services_by_name['UserManager'] = _USERMANAGER
 
-    def __init__(self, channel):
-      """Constructor.
-
-      Args:
-        channel: A grpc.Channel.
-      """
-      self.Create = channel.unary_unary(
-          '/charonrpc.UserManager/Create',
-          request_serializer=CreateUserRequest.SerializeToString,
-          response_deserializer=CreateUserResponse.FromString,
-          )
-      self.Modify = channel.unary_unary(
-          '/charonrpc.UserManager/Modify',
-          request_serializer=ModifyUserRequest.SerializeToString,
-          response_deserializer=ModifyUserResponse.FromString,
-          )
-      self.Get = channel.unary_unary(
-          '/charonrpc.UserManager/Get',
-          request_serializer=GetUserRequest.SerializeToString,
-          response_deserializer=GetUserResponse.FromString,
-          )
-      self.List = channel.unary_unary(
-          '/charonrpc.UserManager/List',
-          request_serializer=ListUsersRequest.SerializeToString,
-          response_deserializer=ListUsersResponse.FromString,
-          )
-      self.Delete = channel.unary_unary(
-          '/charonrpc.UserManager/Delete',
-          request_serializer=DeleteUserRequest.SerializeToString,
-          response_deserializer=google_dot_protobuf_dot_wrappers__pb2.BoolValue.FromString,
-          )
-      self.ListPermissions = channel.unary_unary(
-          '/charonrpc.UserManager/ListPermissions',
-          request_serializer=ListUserPermissionsRequest.SerializeToString,
-          response_deserializer=ListUserPermissionsResponse.FromString,
-          )
-      self.SetPermissions = channel.unary_unary(
-          '/charonrpc.UserManager/SetPermissions',
-          request_serializer=SetUserPermissionsRequest.SerializeToString,
-          response_deserializer=SetUserPermissionsResponse.FromString,
-          )
-      self.ListGroups = channel.unary_unary(
-          '/charonrpc.UserManager/ListGroups',
-          request_serializer=ListUserGroupsRequest.SerializeToString,
-          response_deserializer=ListUserGroupsResponse.FromString,
-          )
-      self.SetGroups = channel.unary_unary(
-          '/charonrpc.UserManager/SetGroups',
-          request_serializer=SetUserGroupsRequest.SerializeToString,
-          response_deserializer=SetUserGroupsResponse.FromString,
-          )
-
-
-  class UserManagerServicer(object):
-    # missing associated documentation comment in .proto file
-    pass
-
-    def Create(self, request, context):
-      # missing associated documentation comment in .proto file
-      pass
-      context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-      context.set_details('Method not implemented!')
-      raise NotImplementedError('Method not implemented!')
-
-    def Modify(self, request, context):
-      # missing associated documentation comment in .proto file
-      pass
-      context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-      context.set_details('Method not implemented!')
-      raise NotImplementedError('Method not implemented!')
-
-    def Get(self, request, context):
-      # missing associated documentation comment in .proto file
-      pass
-      context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-      context.set_details('Method not implemented!')
-      raise NotImplementedError('Method not implemented!')
-
-    def List(self, request, context):
-      # missing associated documentation comment in .proto file
-      pass
-      context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-      context.set_details('Method not implemented!')
-      raise NotImplementedError('Method not implemented!')
-
-    def Delete(self, request, context):
-      # missing associated documentation comment in .proto file
-      pass
-      context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-      context.set_details('Method not implemented!')
-      raise NotImplementedError('Method not implemented!')
-
-    def ListPermissions(self, request, context):
-      # missing associated documentation comment in .proto file
-      pass
-      context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-      context.set_details('Method not implemented!')
-      raise NotImplementedError('Method not implemented!')
-
-    def SetPermissions(self, request, context):
-      # missing associated documentation comment in .proto file
-      pass
-      context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-      context.set_details('Method not implemented!')
-      raise NotImplementedError('Method not implemented!')
-
-    def ListGroups(self, request, context):
-      # missing associated documentation comment in .proto file
-      pass
-      context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-      context.set_details('Method not implemented!')
-      raise NotImplementedError('Method not implemented!')
-
-    def SetGroups(self, request, context):
-      # missing associated documentation comment in .proto file
-      pass
-      context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-      context.set_details('Method not implemented!')
-      raise NotImplementedError('Method not implemented!')
-
-
-  def add_UserManagerServicer_to_server(servicer, server):
-    rpc_method_handlers = {
-        'Create': grpc.unary_unary_rpc_method_handler(
-            servicer.Create,
-            request_deserializer=CreateUserRequest.FromString,
-            response_serializer=CreateUserResponse.SerializeToString,
-        ),
-        'Modify': grpc.unary_unary_rpc_method_handler(
-            servicer.Modify,
-            request_deserializer=ModifyUserRequest.FromString,
-            response_serializer=ModifyUserResponse.SerializeToString,
-        ),
-        'Get': grpc.unary_unary_rpc_method_handler(
-            servicer.Get,
-            request_deserializer=GetUserRequest.FromString,
-            response_serializer=GetUserResponse.SerializeToString,
-        ),
-        'List': grpc.unary_unary_rpc_method_handler(
-            servicer.List,
-            request_deserializer=ListUsersRequest.FromString,
-            response_serializer=ListUsersResponse.SerializeToString,
-        ),
-        'Delete': grpc.unary_unary_rpc_method_handler(
-            servicer.Delete,
-            request_deserializer=DeleteUserRequest.FromString,
-            response_serializer=google_dot_protobuf_dot_wrappers__pb2.BoolValue.SerializeToString,
-        ),
-        'ListPermissions': grpc.unary_unary_rpc_method_handler(
-            servicer.ListPermissions,
-            request_deserializer=ListUserPermissionsRequest.FromString,
-            response_serializer=ListUserPermissionsResponse.SerializeToString,
-        ),
-        'SetPermissions': grpc.unary_unary_rpc_method_handler(
-            servicer.SetPermissions,
-            request_deserializer=SetUserPermissionsRequest.FromString,
-            response_serializer=SetUserPermissionsResponse.SerializeToString,
-        ),
-        'ListGroups': grpc.unary_unary_rpc_method_handler(
-            servicer.ListGroups,
-            request_deserializer=ListUserGroupsRequest.FromString,
-            response_serializer=ListUserGroupsResponse.SerializeToString,
-        ),
-        'SetGroups': grpc.unary_unary_rpc_method_handler(
-            servicer.SetGroups,
-            request_deserializer=SetUserGroupsRequest.FromString,
-            response_serializer=SetUserGroupsResponse.SerializeToString,
-        ),
-    }
-    generic_handler = grpc.method_handlers_generic_handler(
-        'charonrpc.UserManager', rpc_method_handlers)
-    server.add_generic_rpc_handlers((generic_handler,))
-
-
-  class BetaUserManagerServicer(object):
-    """The Beta API is deprecated for 0.15.0 and later.
-
-    It is recommended to use the GA API (classes and functions in this
-    file not marked beta) for all further purposes. This class was generated
-    only to ease transition from grpcio<0.15.0 to grpcio>=0.15.0."""
-    # missing associated documentation comment in .proto file
-    pass
-    def Create(self, request, context):
-      # missing associated documentation comment in .proto file
-      pass
-      context.code(beta_interfaces.StatusCode.UNIMPLEMENTED)
-    def Modify(self, request, context):
-      # missing associated documentation comment in .proto file
-      pass
-      context.code(beta_interfaces.StatusCode.UNIMPLEMENTED)
-    def Get(self, request, context):
-      # missing associated documentation comment in .proto file
-      pass
-      context.code(beta_interfaces.StatusCode.UNIMPLEMENTED)
-    def List(self, request, context):
-      # missing associated documentation comment in .proto file
-      pass
-      context.code(beta_interfaces.StatusCode.UNIMPLEMENTED)
-    def Delete(self, request, context):
-      # missing associated documentation comment in .proto file
-      pass
-      context.code(beta_interfaces.StatusCode.UNIMPLEMENTED)
-    def ListPermissions(self, request, context):
-      # missing associated documentation comment in .proto file
-      pass
-      context.code(beta_interfaces.StatusCode.UNIMPLEMENTED)
-    def SetPermissions(self, request, context):
-      # missing associated documentation comment in .proto file
-      pass
-      context.code(beta_interfaces.StatusCode.UNIMPLEMENTED)
-    def ListGroups(self, request, context):
-      # missing associated documentation comment in .proto file
-      pass
-      context.code(beta_interfaces.StatusCode.UNIMPLEMENTED)
-    def SetGroups(self, request, context):
-      # missing associated documentation comment in .proto file
-      pass
-      context.code(beta_interfaces.StatusCode.UNIMPLEMENTED)
-
-
-  class BetaUserManagerStub(object):
-    """The Beta API is deprecated for 0.15.0 and later.
-
-    It is recommended to use the GA API (classes and functions in this
-    file not marked beta) for all further purposes. This class was generated
-    only to ease transition from grpcio<0.15.0 to grpcio>=0.15.0."""
-    # missing associated documentation comment in .proto file
-    pass
-    def Create(self, request, timeout, metadata=None, with_call=False, protocol_options=None):
-      # missing associated documentation comment in .proto file
-      pass
-      raise NotImplementedError()
-    Create.future = None
-    def Modify(self, request, timeout, metadata=None, with_call=False, protocol_options=None):
-      # missing associated documentation comment in .proto file
-      pass
-      raise NotImplementedError()
-    Modify.future = None
-    def Get(self, request, timeout, metadata=None, with_call=False, protocol_options=None):
-      # missing associated documentation comment in .proto file
-      pass
-      raise NotImplementedError()
-    Get.future = None
-    def List(self, request, timeout, metadata=None, with_call=False, protocol_options=None):
-      # missing associated documentation comment in .proto file
-      pass
-      raise NotImplementedError()
-    List.future = None
-    def Delete(self, request, timeout, metadata=None, with_call=False, protocol_options=None):
-      # missing associated documentation comment in .proto file
-      pass
-      raise NotImplementedError()
-    Delete.future = None
-    def ListPermissions(self, request, timeout, metadata=None, with_call=False, protocol_options=None):
-      # missing associated documentation comment in .proto file
-      pass
-      raise NotImplementedError()
-    ListPermissions.future = None
-    def SetPermissions(self, request, timeout, metadata=None, with_call=False, protocol_options=None):
-      # missing associated documentation comment in .proto file
-      pass
-      raise NotImplementedError()
-    SetPermissions.future = None
-    def ListGroups(self, request, timeout, metadata=None, with_call=False, protocol_options=None):
-      # missing associated documentation comment in .proto file
-      pass
-      raise NotImplementedError()
-    ListGroups.future = None
-    def SetGroups(self, request, timeout, metadata=None, with_call=False, protocol_options=None):
-      # missing associated documentation comment in .proto file
-      pass
-      raise NotImplementedError()
-    SetGroups.future = None
-
-
-  def beta_create_UserManager_server(servicer, pool=None, pool_size=None, default_timeout=None, maximum_timeout=None):
-    """The Beta API is deprecated for 0.15.0 and later.
-
-    It is recommended to use the GA API (classes and functions in this
-    file not marked beta) for all further purposes. This function was
-    generated only to ease transition from grpcio<0.15.0 to grpcio>=0.15.0"""
-    request_deserializers = {
-      ('charonrpc.UserManager', 'Create'): CreateUserRequest.FromString,
-      ('charonrpc.UserManager', 'Delete'): DeleteUserRequest.FromString,
-      ('charonrpc.UserManager', 'Get'): GetUserRequest.FromString,
-      ('charonrpc.UserManager', 'List'): ListUsersRequest.FromString,
-      ('charonrpc.UserManager', 'ListGroups'): ListUserGroupsRequest.FromString,
-      ('charonrpc.UserManager', 'ListPermissions'): ListUserPermissionsRequest.FromString,
-      ('charonrpc.UserManager', 'Modify'): ModifyUserRequest.FromString,
-      ('charonrpc.UserManager', 'SetGroups'): SetUserGroupsRequest.FromString,
-      ('charonrpc.UserManager', 'SetPermissions'): SetUserPermissionsRequest.FromString,
-    }
-    response_serializers = {
-      ('charonrpc.UserManager', 'Create'): CreateUserResponse.SerializeToString,
-      ('charonrpc.UserManager', 'Delete'): google_dot_protobuf_dot_wrappers__pb2.BoolValue.SerializeToString,
-      ('charonrpc.UserManager', 'Get'): GetUserResponse.SerializeToString,
-      ('charonrpc.UserManager', 'List'): ListUsersResponse.SerializeToString,
-      ('charonrpc.UserManager', 'ListGroups'): ListUserGroupsResponse.SerializeToString,
-      ('charonrpc.UserManager', 'ListPermissions'): ListUserPermissionsResponse.SerializeToString,
-      ('charonrpc.UserManager', 'Modify'): ModifyUserResponse.SerializeToString,
-      ('charonrpc.UserManager', 'SetGroups'): SetUserGroupsResponse.SerializeToString,
-      ('charonrpc.UserManager', 'SetPermissions'): SetUserPermissionsResponse.SerializeToString,
-    }
-    method_implementations = {
-      ('charonrpc.UserManager', 'Create'): face_utilities.unary_unary_inline(servicer.Create),
-      ('charonrpc.UserManager', 'Delete'): face_utilities.unary_unary_inline(servicer.Delete),
-      ('charonrpc.UserManager', 'Get'): face_utilities.unary_unary_inline(servicer.Get),
-      ('charonrpc.UserManager', 'List'): face_utilities.unary_unary_inline(servicer.List),
-      ('charonrpc.UserManager', 'ListGroups'): face_utilities.unary_unary_inline(servicer.ListGroups),
-      ('charonrpc.UserManager', 'ListPermissions'): face_utilities.unary_unary_inline(servicer.ListPermissions),
-      ('charonrpc.UserManager', 'Modify'): face_utilities.unary_unary_inline(servicer.Modify),
-      ('charonrpc.UserManager', 'SetGroups'): face_utilities.unary_unary_inline(servicer.SetGroups),
-      ('charonrpc.UserManager', 'SetPermissions'): face_utilities.unary_unary_inline(servicer.SetPermissions),
-    }
-    server_options = beta_implementations.server_options(request_deserializers=request_deserializers, response_serializers=response_serializers, thread_pool=pool, thread_pool_size=pool_size, default_timeout=default_timeout, maximum_timeout=maximum_timeout)
-    return beta_implementations.server(method_implementations, options=server_options)
-
-
-  def beta_create_UserManager_stub(channel, host=None, metadata_transformer=None, pool=None, pool_size=None):
-    """The Beta API is deprecated for 0.15.0 and later.
-
-    It is recommended to use the GA API (classes and functions in this
-    file not marked beta) for all further purposes. This function was
-    generated only to ease transition from grpcio<0.15.0 to grpcio>=0.15.0"""
-    request_serializers = {
-      ('charonrpc.UserManager', 'Create'): CreateUserRequest.SerializeToString,
-      ('charonrpc.UserManager', 'Delete'): DeleteUserRequest.SerializeToString,
-      ('charonrpc.UserManager', 'Get'): GetUserRequest.SerializeToString,
-      ('charonrpc.UserManager', 'List'): ListUsersRequest.SerializeToString,
-      ('charonrpc.UserManager', 'ListGroups'): ListUserGroupsRequest.SerializeToString,
-      ('charonrpc.UserManager', 'ListPermissions'): ListUserPermissionsRequest.SerializeToString,
-      ('charonrpc.UserManager', 'Modify'): ModifyUserRequest.SerializeToString,
-      ('charonrpc.UserManager', 'SetGroups'): SetUserGroupsRequest.SerializeToString,
-      ('charonrpc.UserManager', 'SetPermissions'): SetUserPermissionsRequest.SerializeToString,
-    }
-    response_deserializers = {
-      ('charonrpc.UserManager', 'Create'): CreateUserResponse.FromString,
-      ('charonrpc.UserManager', 'Delete'): google_dot_protobuf_dot_wrappers__pb2.BoolValue.FromString,
-      ('charonrpc.UserManager', 'Get'): GetUserResponse.FromString,
-      ('charonrpc.UserManager', 'List'): ListUsersResponse.FromString,
-      ('charonrpc.UserManager', 'ListGroups'): ListUserGroupsResponse.FromString,
-      ('charonrpc.UserManager', 'ListPermissions'): ListUserPermissionsResponse.FromString,
-      ('charonrpc.UserManager', 'Modify'): ModifyUserResponse.FromString,
-      ('charonrpc.UserManager', 'SetGroups'): SetUserGroupsResponse.FromString,
-      ('charonrpc.UserManager', 'SetPermissions'): SetUserPermissionsResponse.FromString,
-    }
-    cardinalities = {
-      'Create': cardinality.Cardinality.UNARY_UNARY,
-      'Delete': cardinality.Cardinality.UNARY_UNARY,
-      'Get': cardinality.Cardinality.UNARY_UNARY,
-      'List': cardinality.Cardinality.UNARY_UNARY,
-      'ListGroups': cardinality.Cardinality.UNARY_UNARY,
-      'ListPermissions': cardinality.Cardinality.UNARY_UNARY,
-      'Modify': cardinality.Cardinality.UNARY_UNARY,
-      'SetGroups': cardinality.Cardinality.UNARY_UNARY,
-      'SetPermissions': cardinality.Cardinality.UNARY_UNARY,
-    }
-    stub_options = beta_implementations.stub_options(host=host, metadata_transformer=metadata_transformer, request_serializers=request_serializers, response_deserializers=response_deserializers, thread_pool=pool, thread_pool_size=pool_size)
-    return beta_implementations.dynamic_stub(channel, 'charonrpc.UserManager', cardinalities, options=stub_options)
-except ImportError:
-  pass
 # @@protoc_insertion_point(module_scope)
