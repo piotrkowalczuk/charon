@@ -46,7 +46,7 @@ jobs:
     - run:
         name: Run tests
         environment:
-          MNEMOSYNED_POSTGRES_ADDRESS: "postgres://test@localhost/test?sslmode=disable"
+          CHAROND_POSTGRES_ADDRESS: "postgres://test@localhost/test?sslmode=disable"
         command: |
           mkdir -p /tmp/test-results/golang
           make test
