@@ -1,15 +1,11 @@
 version: 2.1
 
 commands:
-  abc:
-    parameters:
-      to:
-        type: string
-        default: "Hello World"
+  mkdir_working_directory:
     steps:
-    - type: shell
+    - run:
       name: Initialize working directory
-      pwd: /
+      working_directory: /
       command: |
         sudo mkdir -p /go/src/github.com/piotrkowalczuk/charon
 executors:
@@ -160,8 +156,7 @@ jobs:
   generate_java:
     executor: java-executor
     steps:
-    - abc:
-        to: "x"
+    - mkdir_working_directory
     - checkout
     - restore_cache:
         key: v1-golang-dependency-{{ checksum "Gopkg.lock" }}
@@ -174,8 +169,7 @@ jobs:
   generate_python:
     executor: python-executor
     steps:
-    - abc:
-        to: "x"
+    - mkdir_working_directory
     - checkout
     - restore_cache:
         key: v1-golang-dependency-{{ checksum "Gopkg.lock" }}
