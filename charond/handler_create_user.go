@@ -1,7 +1,7 @@
 package charond
 
 import (
-	"github.com/pborman/uuid"
+	"github.com/google/uuid"
 	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/charon/charonrpc"
 	"github.com/piotrkowalczuk/charon/internal/model"
@@ -52,12 +52,13 @@ func (cuh *createUserHandler) Create(ctx context.Context, req *charonrpc.CreateU
 		}
 	}
 
+	token := uuid.New()
 	ent, err := cuh.repository.user.Create(ctx, &model.UserEntity{
 		Username:          req.Username,
 		Password:          req.SecurePassword,
 		FirstName:         req.FirstName,
 		LastName:          req.LastName,
-		ConfirmationToken: uuid.NewRandom(),
+		ConfirmationToken: token[:],
 		IsSuperuser:       req.IsSuperuser.BoolOr(false),
 		IsStaff:           req.IsStaff.BoolOr(false),
 		IsActive:          req.IsActive.BoolOr(false),
