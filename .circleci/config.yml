@@ -1,0 +1,255 @@
+version: 2
+
+references:
+  container_config_python: &container_config_python
+    docker:
+    - image: circleci/python:3
+    working_directory: ~/charon
+  container_config_java: &container_config_java
+    docker:
+    - image: circleci/openjdk:8
+    working_directory: ~/charon
+jobs:
+  lint_protobuf:
+    docker:
+    - image: circleci/golang
+    working_directory: /go/src/github.com/piotrkowalczuk/charon
+    steps:
+    - checkout
+    - run:
+        name: Install protoc
+        command: bash ./.circleci/scripts/install_protoc.sh
+    - run:
+        name: Install command line tools
+        command: |
+          go get -u github.com/ckaznocha/protoc-gen-lint
+    - run:
+        name: Lint protobuf
+        command: bash ./.circleci/scripts/generate.sh lint
+  test_golang:
+    docker:
+    - image: circleci/golang
+    - image: circleci/postgres:9.6-alpine
+      environment:
+        POSTGRES_USER: test
+        POSTGRES_DB: test
+    working_directory: /go/src/github.com/piotrkowalczuk/charon
+    steps:
+    - checkout
+    - restore_cache:
+        key: v1-golang-dependency-{{ checksum "Gopkg.lock" }}
+    - run:
+        name: Install tools
+        command: |
+          go get -u github.com/golang/protobuf/{proto,protoc-gen-go}
+          go get -u google.golang.org/grpc
+          go get -u golang.org/x/tools/cmd/goimports
+          go get -u github.com/codeclimate/test-reporter
+          go get -u github.com/golang/dep/cmd/dep
+          bash ./.circleci/scripts/install_protoc.sh
+    - run:
+        name: Install dependencies
+        command: dep ensure -vendor-only
+    - run:
+        name: Generate protobuf
+        command: bash ./.circleci/scripts/generate.sh golang
+    - run:
+        name: Check generated code for mismatch
+        command: git diff --exit-code ./charonrpc
+    - run:
+        name: Code Climate (before build)
+        command: test-reporter before-build
+    - run:
+        name: Run tests
+        environment:
+          MNEMOSYNED_POSTGRES_ADDRESS: "postgres://test@localhost/test?sslmode=disable"
+        command: |
+          mkdir -p /tmp/test-results/golang
+          make test
+          cp results.xml /tmp/test-results/golang/results.xmls
+          test-reporter format-coverage -d -t=gocov cover.out
+          test-reporter upload-coverage
+    - run:
+        name: Code Climate (after build)
+        command: |
+          cp cover.out c.out
+          test-reporter after-build --coverage-input-type=gocov
+    - store_test_results:
+        path: /tmp/test-results
+    - store_artifacts:
+        path: /tmp/test-results
+    - save_cache:
+        key: v1-golang-dependency-{{ checksum "Gopkg.lock" }}
+        paths:
+        - "vendor"
+  build_golang:
+    docker:
+    - image: circleci/golang
+    working_directory: /go/src/github.com/piotrkowalczuk/charon
+    steps:
+    - checkout
+    - restore_cache:
+        key: v1-golang-dependency-{{ checksum "Gopkg.lock" }}
+    - run:
+        name: Build
+        command: |
+          make build
+    - store_artifacts:
+        path: ./bin
+    - persist_to_workspace:
+        root: ./
+        paths:
+        - bin
+  build_docker:
+    docker:
+    - image: docker:18.06.0-ce-git
+    steps:
+    - checkout
+    - attach_workspace:
+        at: ./
+    - setup_remote_docker:
+        docker_layer_caching: true
+        version: 18.06.0-ce
+    - run:
+        name: Docker build
+        command: |
+          docker build --build-arg VCS_REF=${VCS_REF} --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` -t piotrkowalczuk/charon:${CIRCLE_TAG:-latest} .
+    - run:
+        name: Docker save
+        command: |
+          docker save -o ./docker-image.tar piotrkowalczuk/charon:${CIRCLE_TAG:-latest}
+    - persist_to_workspace:
+        root: ./
+        paths:
+        - docker-image.tar
+  publish_docker:
+    docker:
+    - image: docker:18.06.0-ce-git
+    steps:
+    - attach_workspace:
+        at: ./
+    - setup_remote_docker:
+        docker_layer_caching: true
+        version: 18.06.0-ce
+    - run:
+        name: Docker load
+        command: |
+          docker load < ./docker-image.tar
+    - run:
+        name: Docker login
+        command: |
+          docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+    - run:
+        name: Docker push
+        command: |
+          docker push piotrkowalczuk/charon:${CIRCLE_TAG:-latest}
+  generate_java:
+    <<: *container_config_java
+    steps:
+    - checkout
+    - run:
+        name: Install protoc
+        command: bash ./.circleci/scripts/install_protoc.sh
+    - run:
+        name: Generate protobuf
+        command: bash ./.circleci/scripts/generate.sh java
+  generate_python:
+    <<: *container_config_python
+    steps:
+    - checkout
+    - run:
+        name: Install python packages
+        command: |
+          python -m venv ./venv
+          . venv/bin/activate
+          pip install grpcio grpcio-tools twine
+    - run:
+        name: Install protoc
+        command: bash ./.circleci/scripts/install_protoc.sh
+    - run:
+        name: Generate protobuf
+        command: |
+          . venv/bin/activate
+          bash ./.circleci/scripts/generate.sh python
+    - save_cache:
+        key: v1-python-dependency-{{ .Branch }}-{{ .Revision }}
+        paths:
+        - "venv"
+        - "charonrpc"
+  publish_python:
+    <<: *container_config_python
+    steps:
+    - checkout
+    - run:
+        name: Init VERSION.txt file
+        command: make version
+    - restore_cache:
+        keys:
+        - v1-python-dependency-{{ .Branch }}-{{ .Revision }}
+    - run:
+        name: Create package
+        command: |
+          python setup.py sdist
+          python setup.py bdist_wheel
+    - run:
+        name: Upload to pypi
+        command: |
+          . venv/bin/activate
+          twine upload dist/*
+workflows:
+  version: 2
+  generate:
+    jobs:
+    - lint_protobuf:
+        filters:
+          tags:
+            only: /.*/
+    - test_golang:
+        context: codeclimate-charon
+        requires:
+        - lint_protobuf
+        filters:
+          tags:
+            only: /.*/
+    - build_golang:
+        requires:
+        - test_golang
+        filters:
+          tags:
+            only: /.*/
+    - build_docker:
+        requires:
+        - build_golang
+        filters:
+          tags:
+            only: /.*/
+    - publish_docker:
+        context: hub.docker.com
+        requires:
+        - build_docker
+        filters:
+          branches:
+            only: master
+          tags:
+            only: /^(v)?(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(-(0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(\.(0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*)?(\+[0-9a-zA-Z-]+(\.[0-9a-zA-Z-]+)*)?$/
+    - generate_python:
+        requires:
+        - test_golang
+        filters:
+          tags:
+            only: /.*/
+    - generate_java:
+        requires:
+        - test_golang
+        filters:
+          tags:
+            only: /.*/
+    - publish_python:
+        context: twine
+        requires:
+        - generate_python
+        filters:
+          branches:
+            ignore: /.*/
+          tags:
+            only: /^(v)?(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(-(0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(\.(0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*)?(\+[0-9a-zA-Z-]+(\.[0-9a-zA-Z-]+)*)?$/

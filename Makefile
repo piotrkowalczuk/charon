@@ -33,15 +33,21 @@ install:
 
 gen:
 	./scripts/generate.sh
+	./.circleci/scripts/generate.sh golang
 
 test:
-	./scripts/test.sh
-	go tool cover -func=coverage.txt | tail -n 1
+	./.circleci/scripts/test.sh
+	go tool cover -func=cover.out | tail -n 1
 
 cover: test
-	go tool cover -html=coverage.txt
+	go tool cover -html=cover.out
 
 get:
+    go get -u github.com/golang/protobuf/{proto,protoc-gen-go}
+	go get -u google.golang.org/grpc
+	go get -u github.com/axw/gocov/gocov
+	go get -u gotest.tools/gotestsum
+	go get -u github.com/golang/dep/cmd/dep
 	go get -u github.com/vektra/mockery/cmd/mockery
 	go get -u github.com/golang/dep/cmd/dep
 	dep ensure
