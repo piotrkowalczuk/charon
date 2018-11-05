@@ -1,19 +1,26 @@
-version: 2
+version: 2.1
 
-references:
-  container_config_python: &container_config_python
+commands:
+  init_working_directory:
+    steps:
+      - type: shell
+        name: Initialize working directory
+        pwd: /
+        command: |
+          sudo mkdir -p /go/src/github.com/piotrkowalczuk/charon
+executors:
+  python-executor:
     docker:
     - image: circleci/python:3
     working_directory: /go/src/github.com/piotrkowalczuk/charon
-  container_config_java: &container_config_java
+  java-executor:
     docker:
     - image: circleci/openjdk:8
     working_directory: /go/src/github.com/piotrkowalczuk/charon
-#executors:
-#  python-executor:
-#    docker:
-#    - image: circleci/python:3
-#    working_directory: /go
+  golang-executor:
+    docker:
+    - image: circleci/golang
+    working_directory: /go/src/github.com/piotrkowalczuk/charon
 jobs:
   test_golang:
     docker:
@@ -72,9 +79,7 @@ jobs:
         paths:
         - "vendor"
   lint_protobuf:
-    docker:
-    - image: circleci/golang
-    working_directory: /go/src/github.com/piotrkowalczuk/charon
+    executor: golang-executor
     steps:
     - checkout
     - restore_cache:
@@ -90,9 +95,7 @@ jobs:
         name: Lint protobuf
         command: bash ./.circleci/scripts/generate.sh lint
   build_golang:
-    docker:
-    - image: circleci/golang
-    working_directory: /go/src/github.com/piotrkowalczuk/charon
+    executor: golang-executor
     steps:
     - checkout
     - restore_cache:
@@ -151,8 +154,9 @@ jobs:
         command: |
           docker push piotrkowalczuk/charon:${CIRCLE_TAG:-latest}
   generate_java:
-    <<: *container_config_java
+    executor: java-executor
     steps:
+    - init_working_directory
     - checkout
     - restore_cache:
         key: v1-golang-dependency-{{ checksum "Gopkg.lock" }}
@@ -163,8 +167,9 @@ jobs:
         name: Generate protobuf
         command: bash ./.circleci/scripts/generate.sh java
   generate_python:
-    <<: *container_config_python
+    executor: python-executor
     steps:
+    - init_working_directory
     - checkout
     - restore_cache:
         key: v1-golang-dependency-{{ checksum "Gopkg.lock" }}
@@ -188,7 +193,7 @@ jobs:
         - "venv"
         - "charonrpc"
   publish_python:
-    <<: *container_config_python
+    executor: python-executor
     steps:
     - checkout
     - run:
