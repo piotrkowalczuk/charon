@@ -4,10 +4,10 @@ commands:
   mkdir_working_directory:
     steps:
     - run:
-      name: Initialize working directory
-      working_directory: /
-      command: |
-        sudo mkdir -p /go/src/github.com/piotrkowalczuk/charon
+        name: Initialize working directory
+        working_directory: /
+        command: |
+          sudo mkdir -p /go/src/github.com/piotrkowalczuk/charon
 executors:
   python-executor:
     docker:
