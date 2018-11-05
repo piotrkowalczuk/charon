@@ -1,17 +1,17 @@
 version: 2.1
 
 commands:
-  mkdir_working_directory:
+  abc:
     parameters:
       to:
         type: string
         default: "Hello World"
     steps:
-      - type: shell
-        name: Initialize working directory
-        pwd: /
-        command: |
-          sudo mkdir -p /go/src/github.com/piotrkowalczuk/charon
+    - type: shell
+      name: Initialize working directory
+      pwd: /
+      command: |
+        sudo mkdir -p /go/src/github.com/piotrkowalczuk/charon
 executors:
   python-executor:
     docker:
@@ -160,7 +160,7 @@ jobs:
   generate_java:
     executor: java-executor
     steps:
-    - mkdir_working_directory:
+    - abc:
         to: "x"
     - checkout
     - restore_cache:
@@ -174,7 +174,7 @@ jobs:
   generate_python:
     executor: python-executor
     steps:
-    - mkdir_working_directory:
+    - abc:
         to: "x"
     - checkout
     - restore_cache:
