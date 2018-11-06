@@ -30,8 +30,23 @@ func TestLoginHandler_Login(t *testing.T) {
 				t.Fatalf("wrong status code, expected %s but got %s", codes.InvalidArgument.String(), status.Code(err).String())
 			}
 		},
-		"exists": func(t *testing.T) {
+		"username_and_password_deprecated": func(t *testing.T) {
 			token, err := suite.charon.auth.Login(context.Background(), &charonrpc.LoginRequest{Username: "test", Password: "test"})
+			if err != nil {
+				t.Fatalf("unexpected error: %s: with code %s", status.Convert(err).Message(), status.Code(err))
+			}
+			if len(token.Value) == 0 {
+				t.Error("token should not be empty")
+			}
+		},
+		"username_and_password_strategy": func(t *testing.T) {
+			token, err := suite.charon.auth.Login(context.Background(), &charonrpc.LoginRequest{
+				Strategy: &charonrpc.LoginRequest_UsernameAndPassword{
+					UsernameAndPassword: &charonrpc.UsernameAndPasswordStrategy{
+						Username: "test", Password: "test",
+					},
+				},
+			})
 			if err != nil {
 				t.Fatalf("unexpected error: %s: with code %s", status.Convert(err).Message(), status.Code(err))
 			}

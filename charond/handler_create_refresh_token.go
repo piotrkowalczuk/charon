@@ -59,8 +59,8 @@ func (crth *createRefreshTokenHandler) Create(ctx context.Context, req *charonrp
 		switch model.ErrorConstraint(err) {
 		case model.TableRefreshTokenConstraintCreatedByForeignKey:
 			return nil, grpcerr.E(codes.NotFound, "such user does not exist")
-		case model.TableRefreshTokenConstraintTokenUserIDUnique:
-			return nil, grpcerr.E(codes.AlreadyExists, "such refresh token for given user already exists")
+		case model.TableRefreshTokenConstraintTokenUnique:
+			return nil, grpcerr.E(codes.AlreadyExists, "such refresh token already exists")
 		case model.TableRefreshTokenConstraintUserIDForeignKey:
 			return nil, grpcerr.E(codes.NotFound, "such user does not exist")
 		default:

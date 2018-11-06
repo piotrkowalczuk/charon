@@ -17,9 +17,14 @@ service Auth {
 }
 
 message LoginRequest {
-    string username = 1;
-    string password = 2;
+    string username = 1 [deprecated=true];
+    string password = 2 [deprecated=true];
     string client = 3;
+    reserved 13 to 19;
+    oneof strategy {
+        UsernameAndPasswordStrategy username_and_password = 11;
+        RefreshTokenStrategy refresh_token = 12;
+    }
 }
 
 message LogoutRequest {
@@ -51,4 +56,13 @@ message ActorResponse {
     bool is_stuff = 8 [deprecated = true];
     bool is_confirmed = 9;
     bool is_staff = 10;
+}
+
+message UsernameAndPasswordStrategy {
+    string username = 1;
+    string password = 2;
+}
+
+message RefreshTokenStrategy {
+    string refresh_token = 1;
 }

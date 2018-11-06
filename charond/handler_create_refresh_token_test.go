@@ -122,7 +122,7 @@ func TestCreateRefreshTokenHandler_Create_Unit(t *testing.T) {
 					Return(&session.Actor{User: &model.UserEntity{IsSuperuser: true}}, nil).
 					Once()
 				refreshTokenProviderMock.On("Create", mock.Anything, mock.Anything).
-					Return(nil, &pq.Error{Constraint: model.TableRefreshTokenConstraintTokenUserIDUnique}).
+					Return(nil, &pq.Error{Constraint: model.TableRefreshTokenConstraintTokenUnique}).
 					Once()
 			},
 			err: grpcerr.E(codes.AlreadyExists),

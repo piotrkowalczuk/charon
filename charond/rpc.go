@@ -3,6 +3,8 @@ package charond
 import (
 	"context"
 
+	"github.com/piotrkowalczuk/charon/internal/service"
+
 	"github.com/go-kit/kit/log"
 	"github.com/piotrkowalczuk/charon/internal/model"
 	"github.com/piotrkowalczuk/charon/internal/password"
@@ -34,8 +36,15 @@ func newAuth(server *rpcServer) *auth {
 		belongsToHandler:       &belongsToHandler{handler: newHandler(server)},
 		isGrantedHandler:       &isGrantedHandler{handler: newHandler(server)},
 		isAuthenticatedHandler: &isAuthenticatedHandler{handler: newHandler(server)},
-		loginHandler:           &loginHandler{handler: newHandler(server), hasher: server.passwordHasher},
-		logoutHandler:          &logoutHandler{handler: newHandler(server)},
+		loginHandler: &loginHandler{
+			handler: newHandler(server),
+			userFinderFactory: &service.UserFinderFactory{
+				Hasher:                 server.passwordHasher,
+				UserRepository:         server.repository.user,
+				RefreshTokenRepository: server.repository.refreshToken,
+			},
+		},
+		logoutHandler: &logoutHandler{handler: newHandler(server)},
 	}
 }
 

@@ -5,6 +5,7 @@ import (
 	pbts "github.com/golang/protobuf/ptypes/timestamp"
 	"github.com/piotrkowalczuk/charon/charonrpc"
 	"github.com/piotrkowalczuk/charon/internal/model"
+	"github.com/piotrkowalczuk/ntypes"
 )
 
 func ReverseRefreshToken(ent *model.RefreshTokenEntity) (*charonrpc.RefreshToken, error) {
@@ -35,7 +36,7 @@ func ReverseRefreshToken(ent *model.RefreshTokenEntity) (*charonrpc.RefreshToken
 	return &charonrpc.RefreshToken{
 		Token:      ent.Token,
 		Notes:      &ent.Notes,
-		Disabled:   ent.Disabled,
+		Revoked:    ent.Revoked,
 		ExpireAt:   expireAt,
 		LastUsedAt: lastUsedAt,
 		UserId:     ent.UserID,
@@ -60,9 +61,15 @@ func ReverseRefreshTokens(in []*model.RefreshTokenEntity) ([]*charonrpc.RefreshT
 }
 
 func RefreshTokenQuery(q *charonrpc.RefreshTokenQuery) *model.RefreshTokenCriteria {
+	var revoked ntypes.Bool
+	if q.GetRevoked() != nil {
+		revoked = *q.GetRevoked()
+	}
+
 	return &model.RefreshTokenCriteria{
 		UserID:     q.GetUserId(),
 		Notes:      q.GetNotes(),
+		Revoked:    revoked, // TODO: pointer?
 		ExpireAt:   q.GetExpireAt(),
 		LastUsedAt: q.GetLastUsedAt(),
 		CreatedAt:  q.GetCreatedAt(),

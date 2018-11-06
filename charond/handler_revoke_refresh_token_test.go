@@ -47,7 +47,7 @@ func TestRevokeRefreshTokenHandler_Disable_E2E(t *testing.T) {
 			if err != nil {
 				t.Fatalf("unexpected error: %s", err.Error())
 			}
-			if !res2.RefreshToken.Disabled {
+			if !res2.RefreshToken.Revoked {
 				t.Error("refresh token expected to be disabled")
 			}
 		},
@@ -175,10 +175,10 @@ func TestRevokeRefreshTokenHandler_Disable_Unit(t *testing.T) {
 				refreshTokenMock.On("FindOneByTokenAndUserID", mock.Anything, "123", int64(1)).Return(&model.RefreshTokenEntity{
 					UserID: 1,
 				}, nil)
-				refreshTokenMock.On("UpdateOneByTokenAndUserID", mock.Anything, "123", int64(1), mock.Anything).Return(&model.RefreshTokenEntity{
-					UserID:   1,
-					Token:    "123",
-					Disabled: true,
+				refreshTokenMock.On("UpdateOneByToken", mock.Anything, "123", mock.Anything).Return(&model.RefreshTokenEntity{
+					UserID:  1,
+					Token:   "123",
+					Revoked: true,
 				}, nil)
 				sessionMock.On("Delete", mock.Anything, mock.Anything).Return(&wrappers.Int64Value{Value: 1}, nil)
 			},
@@ -195,10 +195,10 @@ func TestRevokeRefreshTokenHandler_Disable_Unit(t *testing.T) {
 				refreshTokenMock.On("FindOneByTokenAndUserID", mock.Anything, "123", int64(1)).Return(&model.RefreshTokenEntity{
 					UserID: 1,
 				}, nil)
-				refreshTokenMock.On("UpdateOneByTokenAndUserID", mock.Anything, "123", int64(1), mock.Anything).Return(&model.RefreshTokenEntity{
-					UserID:   1,
-					Token:    "123",
-					Disabled: true,
+				refreshTokenMock.On("UpdateOneByToken", mock.Anything, "123", mock.Anything).Return(&model.RefreshTokenEntity{
+					UserID:  1,
+					Token:   "123",
+					Revoked: true,
 				}, nil)
 				sessionMock.On("Delete", mock.Anything, mock.Anything).Return(&wrappers.Int64Value{Value: 1}, nil)
 			},
@@ -215,10 +215,10 @@ func TestRevokeRefreshTokenHandler_Disable_Unit(t *testing.T) {
 				refreshTokenMock.On("FindOneByTokenAndUserID", mock.Anything, "123", int64(1)).Return(&model.RefreshTokenEntity{
 					UserID: 1,
 				}, nil)
-				refreshTokenMock.On("UpdateOneByTokenAndUserID", mock.Anything, "123", int64(1), mock.Anything).Return(&model.RefreshTokenEntity{
-					UserID:   1,
-					Token:    "123",
-					Disabled: true,
+				refreshTokenMock.On("UpdateOneByToken", mock.Anything, "123", mock.Anything).Return(&model.RefreshTokenEntity{
+					UserID:  1,
+					Token:   "123",
+					Revoked: true,
 				}, nil)
 				sessionMock.On("Delete", mock.Anything, mock.Anything).Return(&wrappers.Int64Value{Value: 1}, nil)
 			},
@@ -235,10 +235,10 @@ func TestRevokeRefreshTokenHandler_Disable_Unit(t *testing.T) {
 				refreshTokenMock.On("FindOneByTokenAndUserID", mock.Anything, "123", int64(1)).Return(&model.RefreshTokenEntity{
 					UserID: 1,
 				}, nil)
-				refreshTokenMock.On("UpdateOneByTokenAndUserID", mock.Anything, "123", int64(1), mock.Anything).Return(&model.RefreshTokenEntity{
+				refreshTokenMock.On("UpdateOneByToken", mock.Anything, "123", mock.Anything).Return(&model.RefreshTokenEntity{
 					UserID:    1,
 					Token:     "123",
-					Disabled:  true,
+					Revoked:   true,
 					CreatedAt: brokenDate(),
 				}, nil)
 				sessionMock.On("Delete", mock.Anything, mock.Anything).Return(&wrappers.Int64Value{Value: 1}, nil)
@@ -256,7 +256,7 @@ func TestRevokeRefreshTokenHandler_Disable_Unit(t *testing.T) {
 				refreshTokenMock.On("FindOneByTokenAndUserID", mock.Anything, "123", int64(1)).Return(&model.RefreshTokenEntity{
 					UserID: 1,
 				}, nil)
-				refreshTokenMock.On("UpdateOneByTokenAndUserID", mock.Anything, "123", int64(1), mock.Anything).Return(nil, sql.ErrNoRows)
+				refreshTokenMock.On("UpdateOneByToken", mock.Anything, "123", mock.Anything).Return(nil, sql.ErrNoRows)
 			},
 			req: charonrpc.RevokeRefreshTokenRequest{UserId: 1, Token: "123"},
 			err: grpcerr.E(codes.NotFound),
@@ -271,7 +271,7 @@ func TestRevokeRefreshTokenHandler_Disable_Unit(t *testing.T) {
 				refreshTokenMock.On("FindOneByTokenAndUserID", mock.Anything, "123", int64(1)).Return(&model.RefreshTokenEntity{
 					UserID: 1,
 				}, nil)
-				refreshTokenMock.On("UpdateOneByTokenAndUserID", mock.Anything, "123", int64(1), mock.Anything).Return(nil, context.Canceled)
+				refreshTokenMock.On("UpdateOneByToken", mock.Anything, "123", mock.Anything).Return(nil, context.Canceled)
 			},
 			req: charonrpc.RevokeRefreshTokenRequest{UserId: 1, Token: "123"},
 			err: grpcerr.E(codes.Canceled),
@@ -286,10 +286,10 @@ func TestRevokeRefreshTokenHandler_Disable_Unit(t *testing.T) {
 				refreshTokenMock.On("FindOneByTokenAndUserID", mock.Anything, "123", int64(1)).Return(&model.RefreshTokenEntity{
 					UserID: 1,
 				}, nil)
-				refreshTokenMock.On("UpdateOneByTokenAndUserID", mock.Anything, "123", int64(1), mock.Anything).Return(&model.RefreshTokenEntity{
-					UserID:   1,
-					Token:    "123",
-					Disabled: true,
+				refreshTokenMock.On("UpdateOneByToken", mock.Anything, "123", mock.Anything).Return(&model.RefreshTokenEntity{
+					UserID:  1,
+					Token:   "123",
+					Revoked: true,
 				}, nil)
 				sessionMock.On("Delete", mock.Anything, mock.Anything).Return(nil, status.Errorf(codes.Aborted, "something went wrong"))
 			},

@@ -19,7 +19,7 @@ message RefreshToken {
     string token = 1;
     ntypes.String notes = 2;
     int64 user_id = 3;
-    bool disabled = 4;
+    bool revoked = 4;
     google.protobuf.Timestamp expire_at = 5;
     google.protobuf.Timestamp last_used_at = 6;
     google.protobuf.Timestamp created_at = 7;
@@ -31,7 +31,7 @@ message RefreshToken {
 message RefreshTokenQuery {
     qtypes.Int64 user_id = 1;
     qtypes.String notes = 2;
-    ntypes.Bool disabled = 3;
+    ntypes.Bool revoked = 3;
     qtypes.Timestamp expire_at = 4;
     qtypes.Timestamp last_used_at = 5;
     qtypes.Timestamp created_at = 6;

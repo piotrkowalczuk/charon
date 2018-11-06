@@ -69,6 +69,7 @@ func fail(err error) {
 		os.Exit(1)
 	}
 }
+
 func connect(config configuration) *charonctl.Console {
 	conn, err := grpc.Dial(config.address, grpc.WithInsecure(), grpc.WithUserAgent("charonctl"))
 	if err != nil {

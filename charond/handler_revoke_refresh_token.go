@@ -44,8 +44,8 @@ func (h *revokeRefreshTokenHandler) Revoke(ctx context.Context, req *charonrpc.R
 		return nil, err
 	}
 
-	ent, err = h.repository.refreshToken.UpdateOneByTokenAndUserID(ctx, req.Token, req.UserId, &model.RefreshTokenPatch{
-		Disabled: ntypes.Bool{Bool: true, Valid: true},
+	ent, err = h.repository.refreshToken.UpdateOneByToken(ctx, req.Token, &model.RefreshTokenPatch{
+		Revoked: ntypes.Bool{Bool: true, Valid: true},
 	})
 	if err != nil {
 		if err == sql.ErrNoRows {

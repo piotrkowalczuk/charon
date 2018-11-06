@@ -1,14 +1,13 @@
 package charond
 
 import (
-	"bytes"
 	"context"
+
+	"github.com/piotrkowalczuk/charon/internal/service"
 
 	"github.com/golang/protobuf/ptypes/wrappers"
 	"github.com/piotrkowalczuk/charon/charonrpc"
 	"github.com/piotrkowalczuk/charon/internal/grpcerr"
-	"github.com/piotrkowalczuk/charon/internal/model"
-	"github.com/piotrkowalczuk/charon/internal/password"
 	"github.com/piotrkowalczuk/charon/internal/session"
 	"github.com/piotrkowalczuk/mnemosyne/mnemosynerpc"
 	"github.com/piotrkowalczuk/sklog"
@@ -18,32 +17,35 @@ import (
 
 type loginHandler struct {
 	*handler
-	hasher password.Hasher
+	userFinderFactory *service.UserFinderFactory
 }
 
 func (lh *loginHandler) Login(ctx context.Context, r *charonrpc.LoginRequest) (*wrappers.StringValue, error) {
-	if r.Username == "" {
-		return nil, grpcerr.E(codes.InvalidArgument, "empty username")
-	}
-	if len(r.Password) == 0 {
-		return nil, grpcerr.E(codes.InvalidArgument, "empty password")
+	if r.GetUsername() != "" || r.GetPassword() != "" {
+		r.Strategy = &charonrpc.LoginRequest_UsernameAndPassword{
+			UsernameAndPassword: &charonrpc.UsernameAndPasswordStrategy{
+				Username: r.GetUsername(),
+				Password: r.GetPassword(),
+			},
+		}
 	}
 
-	var (
-		err error
-		usr *model.UserEntity
-	)
+	var userFinder service.UserFinder
+	switch str := r.GetStrategy().(type) {
+	case *charonrpc.LoginRequest_UsernameAndPassword:
+		userFinder = lh.userFinderFactory.ByUsernameAndPassword(
+			str.UsernameAndPassword.GetUsername(),
+			str.UsernameAndPassword.GetPassword(),
+		)
+	case *charonrpc.LoginRequest_RefreshToken:
+		userFinder = lh.userFinderFactory.ByRefreshToken(
+			str.RefreshToken.GetRefreshToken(),
+		)
+	}
 
-	usr, err = lh.repository.user.FindOneByUsername(ctx, r.Username)
+	usr, err := userFinder.FindUser(ctx)
 	if err != nil {
-		return nil, grpcerr.E(codes.Unauthenticated, "user does not exists")
-	}
-
-	if bytes.Equal(usr.Password, model.ExternalPassword) {
-		return nil, grpcerr.E(codes.FailedPrecondition, "authentication failure, external password manager not implemented")
-	}
-	if matches := lh.hasher.Compare(usr.Password, []byte(r.Password)); !matches {
-		return nil, grpcerr.E(codes.Unauthenticated, "the username and password do not match")
+		return nil, err
 	}
 
 	if !usr.IsConfirmed {

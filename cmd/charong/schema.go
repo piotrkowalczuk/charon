@@ -121,18 +121,17 @@ func databaseTableUserGroups(user, group *pqt.Table) *pqt.Table {
 }
 
 func databaseTableRefreshToken(refUserID *pqt.Column) *pqt.Table {
-	token := pqt.NewColumn("token", pqt.TypeText(), pqt.WithNotNull())
+	token := pqt.NewColumn("token", pqt.TypeText(), pqt.WithNotNull(), pqt.WithUnique())
 	userID := pqt.NewColumn("user_id", pqt.TypeIntegerBig(), pqt.WithNotNull(), pqt.WithReference(refUserID))
 	expireAt := pqt.NewColumn("expire_at", pqt.TypeTimestampTZ())
 
 	t := pqt.NewTable("refresh_token", pqt.WithTableIfNotExists()).
 		AddColumn(token).
-		AddColumn(pqt.NewColumn("disabled", pqt.TypeBool(), pqt.WithNotNull(), pqt.WithDefault("false"))).
+		AddColumn(pqt.NewColumn("revoked", pqt.TypeBool(), pqt.WithNotNull(), pqt.WithDefault("false"))).
 		AddColumn(expireAt).
 		AddColumn(pqt.NewColumn("last_used_at", pqt.TypeTimestampTZ())).
 		AddColumn(pqt.NewColumn("notes", pqt.TypeText())).
-		AddColumn(userID).
-		AddConstraint(pqt.Unique(pqt.SelfReference(), token, userID))
+		AddColumn(userID)
 
 	ownerable(t, refUserID.Table)
 	timestampable(t)

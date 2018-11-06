@@ -10656,8 +10656,8 @@ func (r *UserPermissionsRepositoryBaseTx) Count(ctx context.Context, exp *UserPe
 }
 
 const (
+	TableRefreshTokenConstraintTokenUnique         = "charon.refresh_token_token_key"
 	TableRefreshTokenConstraintUserIDForeignKey    = "charon.refresh_token_user_id_fkey"
-	TableRefreshTokenConstraintTokenUserIDUnique   = "charon.refresh_token_token_user_id_key"
 	TableRefreshTokenConstraintCreatedByForeignKey = "charon.refresh_token_created_by_fkey"
 	TableRefreshTokenConstraintUpdatedByForeignKey = "charon.refresh_token_updated_by_fkey"
 )
@@ -10666,10 +10666,10 @@ const (
 	TableRefreshToken                 = "charon.refresh_token"
 	TableRefreshTokenColumnCreatedAt  = "created_at"
 	TableRefreshTokenColumnCreatedBy  = "created_by"
-	TableRefreshTokenColumnDisabled   = "disabled"
 	TableRefreshTokenColumnExpireAt   = "expire_at"
 	TableRefreshTokenColumnLastUsedAt = "last_used_at"
 	TableRefreshTokenColumnNotes      = "notes"
+	TableRefreshTokenColumnRevoked    = "revoked"
 	TableRefreshTokenColumnToken      = "token"
 	TableRefreshTokenColumnUpdatedAt  = "updated_at"
 	TableRefreshTokenColumnUpdatedBy  = "updated_by"
@@ -10679,10 +10679,10 @@ const (
 var TableRefreshTokenColumns = []string{
 	TableRefreshTokenColumnCreatedAt,
 	TableRefreshTokenColumnCreatedBy,
-	TableRefreshTokenColumnDisabled,
 	TableRefreshTokenColumnExpireAt,
 	TableRefreshTokenColumnLastUsedAt,
 	TableRefreshTokenColumnNotes,
+	TableRefreshTokenColumnRevoked,
 	TableRefreshTokenColumnToken,
 	TableRefreshTokenColumnUpdatedAt,
 	TableRefreshTokenColumnUpdatedBy,
@@ -10695,14 +10695,14 @@ type RefreshTokenEntity struct {
 	CreatedAt time.Time
 	// CreatedBy ...
 	CreatedBy ntypes.Int64
-	// Disabled ...
-	Disabled bool
 	// ExpireAt ...
 	ExpireAt pq.NullTime
 	// LastUsedAt ...
 	LastUsedAt pq.NullTime
 	// Notes ...
 	Notes ntypes.String
+	// Revoked ...
+	Revoked bool
 	// Token ...
 	Token string
 	// UpdatedAt ...
@@ -10726,14 +10726,14 @@ func (e *RefreshTokenEntity) Prop(cn string) (interface{}, bool) {
 		return &e.CreatedAt, true
 	case TableRefreshTokenColumnCreatedBy:
 		return &e.CreatedBy, true
-	case TableRefreshTokenColumnDisabled:
-		return &e.Disabled, true
 	case TableRefreshTokenColumnExpireAt:
 		return &e.ExpireAt, true
 	case TableRefreshTokenColumnLastUsedAt:
 		return &e.LastUsedAt, true
 	case TableRefreshTokenColumnNotes:
 		return &e.Notes, true
+	case TableRefreshTokenColumnRevoked:
+		return &e.Revoked, true
 	case TableRefreshTokenColumnToken:
 		return &e.Token, true
 	case TableRefreshTokenColumnUpdatedAt:
@@ -10769,10 +10769,10 @@ func ScanRefreshTokenRows(rows Rows) (entities []*RefreshTokenEntity, err error)
 		err = rows.Scan(
 			&ent.CreatedAt,
 			&ent.CreatedBy,
-			&ent.Disabled,
 			&ent.ExpireAt,
 			&ent.LastUsedAt,
 			&ent.Notes,
+			&ent.Revoked,
 			&ent.Token,
 			&ent.UpdatedAt,
 			&ent.UpdatedBy,
@@ -10869,10 +10869,10 @@ func (i *RefreshTokenIterator) RefreshToken() (*RefreshTokenEntity, error) {
 type RefreshTokenCriteria struct {
 	CreatedAt              *qtypes.Timestamp
 	CreatedBy              *qtypes.Int64
-	Disabled               ntypes.Bool
 	ExpireAt               *qtypes.Timestamp
 	LastUsedAt             *qtypes.Timestamp
 	Notes                  *qtypes.String
+	Revoked                ntypes.Bool
 	Token                  *qtypes.String
 	UpdatedAt              *qtypes.Timestamp
 	UpdatedBy              *qtypes.Int64
@@ -10938,10 +10938,10 @@ type RefreshTokenCountExpr struct {
 type RefreshTokenPatch struct {
 	CreatedAt  pq.NullTime
 	CreatedBy  ntypes.Int64
-	Disabled   ntypes.Bool
 	ExpireAt   pq.NullTime
 	LastUsedAt pq.NullTime
 	Notes      ntypes.String
+	Revoked    ntypes.Bool
 	Token      ntypes.String
 	UpdatedAt  pq.NullTime
 	UpdatedBy  ntypes.Int64
@@ -11026,25 +11026,6 @@ func (r *RefreshTokenRepositoryBase) InsertQuery(e *RefreshTokenEntity, read boo
 	insert.Add(e.CreatedBy)
 	insert.Dirty = true
 
-	if columns.Len() > 0 {
-		if _, err := columns.WriteString(", "); err != nil {
-			return "", nil, err
-		}
-	}
-	if _, err := columns.WriteString(TableRefreshTokenColumnDisabled); err != nil {
-		return "", nil, err
-	}
-	if insert.Dirty {
-		if _, err := insert.WriteString(", "); err != nil {
-			return "", nil, err
-		}
-	}
-	if err := insert.WritePlaceholder(); err != nil {
-		return "", nil, err
-	}
-	insert.Add(e.Disabled)
-	insert.Dirty = true
-
 	if e.ExpireAt.Valid {
 		if columns.Len() > 0 {
 			if _, err := columns.WriteString(", "); err != nil {
@@ -11104,6 +11085,25 @@ func (r *RefreshTokenRepositoryBase) InsertQuery(e *RefreshTokenEntity, read boo
 		return "", nil, err
 	}
 	insert.Add(e.Notes)
+	insert.Dirty = true
+
+	if columns.Len() > 0 {
+		if _, err := columns.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if _, err := columns.WriteString(TableRefreshTokenColumnRevoked); err != nil {
+		return "", nil, err
+	}
+	if insert.Dirty {
+		if _, err := insert.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if err := insert.WritePlaceholder(); err != nil {
+		return "", nil, err
+	}
+	insert.Add(e.Revoked)
 	insert.Dirty = true
 
 	if columns.Len() > 0 {
@@ -11195,7 +11195,7 @@ func (r *RefreshTokenRepositoryBase) InsertQuery(e *RefreshTokenEntity, read boo
 			if len(r.Columns) > 0 {
 				buf.WriteString(strings.Join(r.Columns, ", "))
 			} else {
-				buf.WriteString("created_at, created_by, disabled, expire_at, last_used_at, notes, token, updated_at, updated_by, user_id")
+				buf.WriteString("created_at, created_by, expire_at, last_used_at, notes, revoked, token, updated_at, updated_by, user_id")
 			}
 		}
 	}
@@ -11217,10 +11217,10 @@ func (r *RefreshTokenRepositoryBase) insert(ctx context.Context, tx *sql.Tx, e *
 	err = row.Scan(
 		&e.CreatedAt,
 		&e.CreatedBy,
-		&e.Disabled,
 		&e.ExpireAt,
 		&e.LastUsedAt,
 		&e.Notes,
+		&e.Revoked,
 		&e.Token,
 		&e.UpdatedAt,
 		&e.UpdatedBy,
@@ -11293,7 +11293,13 @@ func _RefreshTokenCriteriaWhereClause(comp *Composer, c *RefreshTokenCriteria, i
 
 	QueryInt64WhereClause(c.CreatedBy, id, TableRefreshTokenColumnCreatedBy, comp, And)
 
-	if c.Disabled.Valid {
+	QueryTimestampWhereClause(c.ExpireAt, id, TableRefreshTokenColumnExpireAt, comp, And)
+
+	QueryTimestampWhereClause(c.LastUsedAt, id, TableRefreshTokenColumnLastUsedAt, comp, And)
+
+	QueryStringWhereClause(c.Notes, id, TableRefreshTokenColumnNotes, comp, And)
+
+	if c.Revoked.Valid {
 		if comp.Dirty {
 			if _, err := comp.WriteString(" AND "); err != nil {
 				return err
@@ -11302,7 +11308,7 @@ func _RefreshTokenCriteriaWhereClause(comp *Composer, c *RefreshTokenCriteria, i
 		if err := comp.WriteAlias(id); err != nil {
 			return err
 		}
-		if _, err := comp.WriteString(TableRefreshTokenColumnDisabled); err != nil {
+		if _, err := comp.WriteString(TableRefreshTokenColumnRevoked); err != nil {
 			return err
 		}
 		if _, err := comp.WriteString("="); err != nil {
@@ -11311,15 +11317,9 @@ func _RefreshTokenCriteriaWhereClause(comp *Composer, c *RefreshTokenCriteria, i
 		if err := comp.WritePlaceholder(); err != nil {
 			return err
 		}
-		comp.Add(c.Disabled)
+		comp.Add(c.Revoked)
 		comp.Dirty = true
 	}
-
-	QueryTimestampWhereClause(c.ExpireAt, id, TableRefreshTokenColumnExpireAt, comp, And)
-
-	QueryTimestampWhereClause(c.LastUsedAt, id, TableRefreshTokenColumnLastUsedAt, comp, And)
-
-	QueryStringWhereClause(c.Notes, id, TableRefreshTokenColumnNotes, comp, And)
 
 	QueryStringWhereClause(c.Token, id, TableRefreshTokenColumnToken, comp, And)
 
@@ -11336,7 +11336,7 @@ func (r *RefreshTokenRepositoryBase) FindQuery(fe *RefreshTokenFindExpr) (string
 	comp := NewComposer(10)
 	buf := bytes.NewBufferString("SELECT ")
 	if len(fe.Columns) == 0 {
-		buf.WriteString("t0.created_at, t0.created_by, t0.disabled, t0.expire_at, t0.last_used_at, t0.notes, t0.token, t0.updated_at, t0.updated_by, t0.user_id")
+		buf.WriteString("t0.created_at, t0.created_by, t0.expire_at, t0.last_used_at, t0.notes, t0.revoked, t0.token, t0.updated_at, t0.updated_by, t0.user_id")
 	} else {
 		buf.WriteString(strings.Join(fe.Columns, ", "))
 	}
@@ -11573,11 +11573,11 @@ func (r *RefreshTokenRepositoryBase) FindIter(ctx context.Context, fe *RefreshTo
 	return r.findIter(ctx, nil, fe)
 }
 
-func (r *RefreshTokenRepositoryBase) findOneByTokenAndUserID(ctx context.Context, tx *sql.Tx, refreshTokenToken string, refreshTokenUserID int64) (*RefreshTokenEntity, error) {
+func (r *RefreshTokenRepositoryBase) findOneByToken(ctx context.Context, tx *sql.Tx, refreshTokenToken string) (*RefreshTokenEntity, error) {
 	find := NewComposer(10)
 	find.WriteString("SELECT ")
 	if len(r.Columns) == 0 {
-		find.WriteString("created_at, created_by, disabled, expire_at, last_used_at, notes, token, updated_at, updated_by, user_id")
+		find.WriteString("created_at, created_by, expire_at, last_used_at, notes, revoked, token, updated_at, updated_by, user_id")
 	} else {
 		find.WriteString(strings.Join(r.Columns, ", "))
 	}
@@ -11588,11 +11588,6 @@ func (r *RefreshTokenRepositoryBase) findOneByTokenAndUserID(ctx context.Context
 	find.WriteString("=")
 	find.WritePlaceholder()
 	find.Add(refreshTokenToken)
-	find.WriteString(" AND ")
-	find.WriteString(TableRefreshTokenColumnUserID)
-	find.WriteString("=")
-	find.WritePlaceholder()
-	find.Add(refreshTokenUserID)
 
 	var (
 		ent RefreshTokenEntity
@@ -11613,14 +11608,14 @@ func (r *RefreshTokenRepositoryBase) findOneByTokenAndUserID(ctx context.Context
 	return &ent, nil
 }
 
-func (r *RefreshTokenRepositoryBase) FindOneByTokenAndUserID(ctx context.Context, refreshTokenToken string, refreshTokenUserID int64) (*RefreshTokenEntity, error) {
-	return r.findOneByTokenAndUserID(ctx, nil, refreshTokenToken, refreshTokenUserID)
+func (r *RefreshTokenRepositoryBase) FindOneByToken(ctx context.Context, refreshTokenToken string) (*RefreshTokenEntity, error) {
+	return r.findOneByToken(ctx, nil, refreshTokenToken)
 }
 
-func (r *RefreshTokenRepositoryBase) UpdateOneByTokenAndUserIDQuery(refreshTokenToken string, refreshTokenUserID int64, p *RefreshTokenPatch) (string, []interface{}, error) {
+func (r *RefreshTokenRepositoryBase) UpdateOneByTokenQuery(refreshTokenToken string, p *RefreshTokenPatch) (string, []interface{}, error) {
 	buf := bytes.NewBufferString("UPDATE ")
 	buf.WriteString(r.Table)
-	update := NewComposer(2)
+	update := NewComposer(1)
 	if p.CreatedAt.Valid {
 		if update.Dirty {
 			if _, err := update.WriteString(", "); err != nil {
@@ -11656,25 +11651,6 @@ func (r *RefreshTokenRepositoryBase) UpdateOneByTokenAndUserIDQuery(refreshToken
 			return "", nil, err
 		}
 		update.Add(p.CreatedBy)
-		update.Dirty = true
-	}
-
-	if p.Disabled.Valid {
-		if update.Dirty {
-			if _, err := update.WriteString(", "); err != nil {
-				return "", nil, err
-			}
-		}
-		if _, err := update.WriteString(TableRefreshTokenColumnDisabled); err != nil {
-			return "", nil, err
-		}
-		if _, err := update.WriteString("="); err != nil {
-			return "", nil, err
-		}
-		if err := update.WritePlaceholder(); err != nil {
-			return "", nil, err
-		}
-		update.Add(p.Disabled)
 		update.Dirty = true
 	}
 
@@ -11732,6 +11708,25 @@ func (r *RefreshTokenRepositoryBase) UpdateOneByTokenAndUserIDQuery(refreshToken
 			return "", nil, err
 		}
 		update.Add(p.Notes)
+		update.Dirty = true
+	}
+
+	if p.Revoked.Valid {
+		if update.Dirty {
+			if _, err := update.WriteString(", "); err != nil {
+				return "", nil, err
+			}
+		}
+		if _, err := update.WriteString(TableRefreshTokenColumnRevoked); err != nil {
+			return "", nil, err
+		}
+		if _, err := update.WriteString("="); err != nil {
+			return "", nil, err
+		}
+		if err := update.WritePlaceholder(); err != nil {
+			return "", nil, err
+		}
+		update.Add(p.Revoked)
 		update.Dirty = true
 	}
 
@@ -11834,23 +11829,18 @@ func (r *RefreshTokenRepositoryBase) UpdateOneByTokenAndUserIDQuery(refreshToken
 	update.WriteString("=")
 	update.WritePlaceholder()
 	update.Add(refreshTokenToken)
-	update.WriteString(" AND ")
-	update.WriteString(TableRefreshTokenColumnUserID)
-	update.WriteString("=")
-	update.WritePlaceholder()
-	update.Add(refreshTokenUserID)
 	buf.ReadFrom(update)
 	buf.WriteString(" RETURNING ")
 	if len(r.Columns) > 0 {
 		buf.WriteString(strings.Join(r.Columns, ", "))
 	} else {
-		buf.WriteString("created_at, created_by, disabled, expire_at, last_used_at, notes, token, updated_at, updated_by, user_id")
+		buf.WriteString("created_at, created_by, expire_at, last_used_at, notes, revoked, token, updated_at, updated_by, user_id")
 	}
 	return buf.String(), update.Args(), nil
 }
 
-func (r *RefreshTokenRepositoryBase) updateOneByTokenAndUserID(ctx context.Context, tx *sql.Tx, refreshTokenToken string, refreshTokenUserID int64, p *RefreshTokenPatch) (*RefreshTokenEntity, error) {
-	query, args, err := r.UpdateOneByTokenAndUserIDQuery(refreshTokenToken, refreshTokenUserID, p)
+func (r *RefreshTokenRepositoryBase) updateOneByToken(ctx context.Context, tx *sql.Tx, refreshTokenToken string, p *RefreshTokenPatch) (*RefreshTokenEntity, error) {
+	query, args, err := r.UpdateOneByTokenQuery(refreshTokenToken, p)
 	if err != nil {
 		return nil, err
 	}
@@ -11880,8 +11870,8 @@ func (r *RefreshTokenRepositoryBase) updateOneByTokenAndUserID(ctx context.Conte
 	return &ent, nil
 }
 
-func (r *RefreshTokenRepositoryBase) UpdateOneByTokenAndUserID(ctx context.Context, refreshTokenToken string, refreshTokenUserID int64, p *RefreshTokenPatch) (*RefreshTokenEntity, error) {
-	return r.updateOneByTokenAndUserID(ctx, nil, refreshTokenToken, refreshTokenUserID, p)
+func (r *RefreshTokenRepositoryBase) UpdateOneByToken(ctx context.Context, refreshTokenToken string, p *RefreshTokenPatch) (*RefreshTokenEntity, error) {
+	return r.updateOneByToken(ctx, nil, refreshTokenToken, p)
 }
 
 func (r *RefreshTokenRepositoryBase) UpsertQuery(e *RefreshTokenEntity, p *RefreshTokenPatch, inf ...string) (string, []interface{}, error) {
@@ -11928,25 +11918,6 @@ func (r *RefreshTokenRepositoryBase) UpsertQuery(e *RefreshTokenEntity, p *Refre
 		return "", nil, err
 	}
 	upsert.Add(e.CreatedBy)
-	upsert.Dirty = true
-
-	if columns.Len() > 0 {
-		if _, err := columns.WriteString(", "); err != nil {
-			return "", nil, err
-		}
-	}
-	if _, err := columns.WriteString(TableRefreshTokenColumnDisabled); err != nil {
-		return "", nil, err
-	}
-	if upsert.Dirty {
-		if _, err := upsert.WriteString(", "); err != nil {
-			return "", nil, err
-		}
-	}
-	if err := upsert.WritePlaceholder(); err != nil {
-		return "", nil, err
-	}
-	upsert.Add(e.Disabled)
 	upsert.Dirty = true
 
 	if e.ExpireAt.Valid {
@@ -12008,6 +11979,25 @@ func (r *RefreshTokenRepositoryBase) UpsertQuery(e *RefreshTokenEntity, p *Refre
 		return "", nil, err
 	}
 	upsert.Add(e.Notes)
+	upsert.Dirty = true
+
+	if columns.Len() > 0 {
+		if _, err := columns.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if _, err := columns.WriteString(TableRefreshTokenColumnRevoked); err != nil {
+		return "", nil, err
+	}
+	if upsert.Dirty {
+		if _, err := upsert.WriteString(", "); err != nil {
+			return "", nil, err
+		}
+	}
+	if err := upsert.WritePlaceholder(); err != nil {
+		return "", nil, err
+	}
+	upsert.Add(e.Revoked)
 	upsert.Dirty = true
 
 	if columns.Len() > 0 {
@@ -12136,25 +12126,6 @@ func (r *RefreshTokenRepositoryBase) UpsertQuery(e *RefreshTokenEntity, p *Refre
 			upsert.Dirty = true
 		}
 
-		if p.Disabled.Valid {
-			if upsert.Dirty {
-				if _, err := upsert.WriteString(", "); err != nil {
-					return "", nil, err
-				}
-			}
-			if _, err := upsert.WriteString(TableRefreshTokenColumnDisabled); err != nil {
-				return "", nil, err
-			}
-			if _, err := upsert.WriteString("="); err != nil {
-				return "", nil, err
-			}
-			if err := upsert.WritePlaceholder(); err != nil {
-				return "", nil, err
-			}
-			upsert.Add(p.Disabled)
-			upsert.Dirty = true
-		}
-
 		if p.ExpireAt.Valid {
 			if upsert.Dirty {
 				if _, err := upsert.WriteString(", "); err != nil {
@@ -12209,6 +12180,25 @@ func (r *RefreshTokenRepositoryBase) UpsertQuery(e *RefreshTokenEntity, p *Refre
 				return "", nil, err
 			}
 			upsert.Add(p.Notes)
+			upsert.Dirty = true
+		}
+
+		if p.Revoked.Valid {
+			if upsert.Dirty {
+				if _, err := upsert.WriteString(", "); err != nil {
+					return "", nil, err
+				}
+			}
+			if _, err := upsert.WriteString(TableRefreshTokenColumnRevoked); err != nil {
+				return "", nil, err
+			}
+			if _, err := upsert.WriteString("="); err != nil {
+				return "", nil, err
+			}
+			if err := upsert.WritePlaceholder(); err != nil {
+				return "", nil, err
+			}
+			upsert.Add(p.Revoked)
 			upsert.Dirty = true
 		}
 
@@ -12321,7 +12311,7 @@ func (r *RefreshTokenRepositoryBase) UpsertQuery(e *RefreshTokenEntity, p *Refre
 		if len(r.Columns) > 0 {
 			buf.WriteString(strings.Join(r.Columns, ", "))
 		} else {
-			buf.WriteString("created_at, created_by, disabled, expire_at, last_used_at, notes, token, updated_at, updated_by, user_id")
+			buf.WriteString("created_at, created_by, expire_at, last_used_at, notes, revoked, token, updated_at, updated_by, user_id")
 		}
 	}
 	return buf.String(), upsert.Args(), nil
@@ -12342,10 +12332,10 @@ func (r *RefreshTokenRepositoryBase) upsert(ctx context.Context, tx *sql.Tx, e *
 	err = row.Scan(
 		&e.CreatedAt,
 		&e.CreatedBy,
-		&e.Disabled,
 		&e.ExpireAt,
 		&e.LastUsedAt,
 		&e.Notes,
+		&e.Revoked,
 		&e.Token,
 		&e.UpdatedAt,
 		&e.UpdatedBy,
@@ -12428,8 +12418,8 @@ func (r *RefreshTokenRepositoryBaseTx) FindIter(ctx context.Context, fe *Refresh
 	return r.base.findIter(ctx, r.tx, fe)
 }
 
-func (r *RefreshTokenRepositoryBaseTx) UpdateOneByTokenAndUserID(ctx context.Context, refreshTokenToken string, refreshTokenUserID int64, p *RefreshTokenPatch) (*RefreshTokenEntity, error) {
-	return r.base.updateOneByTokenAndUserID(ctx, r.tx, refreshTokenToken, refreshTokenUserID, p)
+func (r *RefreshTokenRepositoryBaseTx) UpdateOneByToken(ctx context.Context, refreshTokenToken string, p *RefreshTokenPatch) (*RefreshTokenEntity, error) {
+	return r.base.updateOneByToken(ctx, r.tx, refreshTokenToken, p)
 }
 
 func (r *RefreshTokenRepositoryBaseTx) Upsert(ctx context.Context, e *RefreshTokenEntity, p *RefreshTokenPatch, inf ...string) (*RefreshTokenEntity, error) {
@@ -14061,17 +14051,17 @@ CREATE TABLE IF NOT EXISTS charon.user_permissions (
 CREATE TABLE IF NOT EXISTS charon.refresh_token (
 	created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
 	created_by BIGINT,
-	disabled BOOL DEFAULT false NOT NULL,
 	expire_at TIMESTAMPTZ,
 	last_used_at TIMESTAMPTZ,
 	notes TEXT,
+	revoked BOOL DEFAULT false NOT NULL,
 	token TEXT NOT NULL,
 	updated_at TIMESTAMPTZ,
 	updated_by BIGINT,
 	user_id BIGINT NOT NULL,
 
+	CONSTRAINT "charon.refresh_token_token_key" UNIQUE (token),
 	CONSTRAINT "charon.refresh_token_user_id_fkey" FOREIGN KEY (user_id) REFERENCES charon.user (id),
-	CONSTRAINT "charon.refresh_token_token_user_id_key" UNIQUE (token, user_id),
 	CONSTRAINT "charon.refresh_token_created_by_fkey" FOREIGN KEY (created_by) REFERENCES charon.user (id),
 	CONSTRAINT "charon.refresh_token_updated_by_fkey" FOREIGN KEY (updated_by) REFERENCES charon.user (id)
 );
