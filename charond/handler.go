@@ -1,6 +1,7 @@
 package charond
 
 import (
+	"context"
 	"database/sql"
 	"strings"
 	"sync"
@@ -10,7 +11,6 @@ import (
 	"github.com/piotrkowalczuk/charon/internal/model"
 	"github.com/piotrkowalczuk/charon/internal/session"
 	"github.com/piotrkowalczuk/mnemosyne/mnemosynerpc"
-	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/peer"

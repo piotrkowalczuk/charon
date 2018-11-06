@@ -1,11 +1,11 @@
 package charond
 
 import (
+	"context"
 	"testing"
 
 	"github.com/piotrkowalczuk/charon/charonrpc"
 	"github.com/piotrkowalczuk/mnemosyne"
-	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 )

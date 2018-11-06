@@ -1,17 +1,15 @@
 package main
 
 import (
+	"context"
+	"flag"
 	"fmt"
 	"log"
-
-	"flag"
-
 	"time"
 
 	"github.com/golang/protobuf/ptypes/wrappers"
 	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/charon/charonrpc"
-	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 )

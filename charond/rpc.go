@@ -1,13 +1,13 @@
 package charond
 
 import (
+	"context"
 	"sync"
 
 	"github.com/go-kit/kit/log"
 	"github.com/piotrkowalczuk/charon/internal/model"
 	"github.com/piotrkowalczuk/charon/internal/password"
 	"github.com/piotrkowalczuk/mnemosyne/mnemosynerpc"
-	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 )
 

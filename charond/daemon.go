@@ -1,6 +1,7 @@
 package charond
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"io"
@@ -24,7 +25,6 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"golang.org/x/crypto/bcrypt"
-	"golang.org/x/net/context"
 	"golang.org/x/net/trace"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"

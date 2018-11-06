@@ -1,10 +1,11 @@
 package charond
 
 import (
+	"context"
+
 	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/charon/charonrpc"
 	"github.com/piotrkowalczuk/charon/internal/model"
-	"golang.org/x/net/context"
 	"google.golang.org/grpc/codes"
 )
 

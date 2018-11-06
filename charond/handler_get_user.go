@@ -1,13 +1,13 @@
 package charond
 
 import (
+	"context"
 	"database/sql"
 
 	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/charon/charonrpc"
 	"github.com/piotrkowalczuk/charon/internal/model"
 	"github.com/piotrkowalczuk/charon/internal/session"
-	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 )

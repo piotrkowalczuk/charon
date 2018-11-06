@@ -1,8 +1,7 @@
-# Charon [![Build Status](https://travis-ci.org/piotrkowalczuk/charon.svg?branch=master)](https://travis-ci.org/piotrkowalczuk/charon)
+# Charon [![CircleCI](https://circleci.com/gh/piotrkowalczuk/charon.svg?style=svg)](https://circleci.com/gh/piotrkowalczuk/charon)
 
 [![GoDoc](https://godoc.org/github.com/piotrkowalczuk/charon?status.svg)](http://godoc.org/github.com/piotrkowalczuk/charon)
 [![Docker Pulls](https://img.shields.io/docker/pulls/piotrkowalczuk/charon.svg?maxAge=604800)](https://hub.docker.com/r/piotrkowalczuk/charon/)
-[![codecov](https://codecov.io/gh/piotrkowalczuk/charon/branch/master/graph/badge.svg)](https://codecov.io/gh/piotrkowalczuk/charon)
 [![Code Climate](https://codeclimate.com/github/piotrkowalczuk/charon/badges/gpa.svg)](https://codeclimate.com/github/piotrkowalczuk/charon)
 [![Go Report Card](https://goreportcard.com/badge/github.com/piotrkowalczuk/charon)](https://goreportcard.com/report/github.com/piotrkowalczuk/charon)
 [![pypi](https://img.shields.io/pypi/v/charon-client.svg)](https://pypi.python.org/pypi/charon-client)

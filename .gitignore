@@ -14,3 +14,5 @@ bin
 charon_client.egg-info
 VERSION.txt
 *.pyc
+*.xml
+*.test

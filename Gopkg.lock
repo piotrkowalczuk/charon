@@ -426,7 +426,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:af3033f983c5f38e29c0f3c9927d96e938896f4d2e14c333d81d75f93eadd78f"
+  digest = "1:6ce856debb8efe03fa14d8637c6f573df043d2571cacca0266f122b3d4716729"
   name = "golang.org/x/net"
   packages = [
     "context",
@@ -439,26 +439,26 @@
     "trace",
   ]
   pruneopts = ""
-  revision = "c10e9556a7bc0e7c942242b606f0acf024ad5d6a"
+  revision = "10aee181995363b41f712a55844a0dd52ea04646"
 
 [[projects]]
   branch = "master"
-  digest = "1:4b8fdfbf884f656e1c78e99d87d591adc214813c0c56b29b7c871a989646c6cc"
+  digest = "1:d8cee371806b6ee11920b8a496bae67e6ded00367c89f2413fa1668647ba7cf5"
   name = "golang.org/x/oauth2"
   packages = [
     ".",
     "internal",
   ]
   pruneopts = ""
-  revision = "232e45548389bd9357411a6922a07c5fd4068bda"
+  revision = "ca4130e427c7982e64cb9b5e717ff67bdb725037"
 
 [[projects]]
   branch = "master"
-  digest = "1:a5320611dcdfc9d79e459a43442b272d9e03276107e75655d7a199aa271d456a"
+  digest = "1:fe967eeaf65a031c524f4913123d7ce1b79a17376ca1210d1dc1af51a17aa7d6"
   name = "golang.org/x/sys"
   packages = ["unix"]
   pruneopts = ""
-  revision = "9b800f95dbbc54abff0acf7ee32d88ba4e328c89"
+  revision = "3a76605856fddce5718553cbb8bd50ca492a7274"
 
 [[projects]]
   digest = "1:5acd3512b047305d49e8763eef7ba423901e85d5dd2fd1e71778a0ea8de10bd4"
@@ -585,7 +585,6 @@
     "github.com/stretchr/testify/mock",
     "go.uber.org/zap",
     "golang.org/x/crypto/bcrypt",
-    "golang.org/x/net/context",
     "golang.org/x/net/trace",
     "golang.org/x/oauth2",
     "google.golang.org/grpc",

@@ -1,0 +1,135 @@
+#+theme=black
+
+Charon
+Authorization and authentication service.
+20:40 26 Mar 2018
+Tags: authorization, authentication, service, grpc
+
+Piotr Kowalczuk
+p.kowalczuk.priv@gmail.com
+https://gofunc.pl
+@kowalczuk_piotr
+
+* What Charon is?
+
+Charon is authorization and authentication service written in *Go* that expose language agnostic RPC API.
+
+First commit: *Apr* *19,* *2015*
+Latest version: *v0.16.3*
+
+.image data/logo/charon.png _ 300
+
+* Functional requirements
+
+*Authentication*
+
+- authentication based on *access* *token*
+- ability to obtain access token using *username/password* and/or *refresh* *token*
+
+*Authorization*
+
+- *RBAC* - Role based access control
+- *ABAC* - Attribute based access control _(simplified)_
+
+*Other*
+
+- CRUD API
+- Backend for OAuth2 service
+
+* Technical requirements
+
+- Easy to deploy, operate and integrate (self-hosted).
+- Language agnostic API.
+- docker-compose and kubernetes ready.
+- Whitebox monitoring.
+
+* Available solutions
+
+none
+
+* Tech stack
+
+- Language: Go
+- API: RPC (using gRPC, it was not even 1.0.0 at a time)
+- Encoding: Protocol Buffers
+- Database: Postgres 
+- Session management: Mnemosyne 
+
+* Deployment
+
+.image data/deployment.png 550 _
+
+* Model
+
+- `Permission`
+- `RefreshToken`
+
+- `User`
+- `UserGroups` _(transient_ _table)_
+- `UserPermissions` _(transient_ _table)_
+
+- `Group`
+- `GroupPermissions` _(transient_ _table)_
+
+* Permissions
+Simple representation as a string, that can be also used as an OAuth2 scope:
+
+	<SUBSYSTEM>:<MODULE>:<ACTION|PREDICATE>
+
+Examples:
+
+	charon:user:can create
+	news-service:comment:can modify as an owner
+	asset-service:image:can retrieve if smaller than megabyte
+
+Management:
+
+.code charonrpc/permission.pb.go /^type PermissionManagerServer interface/,/^}/
+
+* Security Context
+
+	type SecurityContext interface {
+		context.Context
+		oauth2.TokenSource
+		// Actor ...
+		Actor() (Actor, bool)
+		// AccessToken ...
+		AccessToken() (string, bool)
+	}
+
+* Integration
+
+	func securityContext(auth *charonc.Client, ctx context.Context) (charonc.SecurityContext, error) {
+		if sctx, ok := ctx.(charonc.SecurityContext); ok {
+			return sctx, nil
+		}
+
+		md, ok := metadata.FromIncomingContext(ctx)
+		if !ok {
+			return nil, errors.New("missing metadata in context, session token cannot be retrieved")
+		}
+		if len(md[mnemosyne.AccessTokenMetadataKey]) == 0 {
+			return nil, errors.New("missing session token in metadata")
+		}
+		act, err := auth.Actor(ctx, md[mnemosyne.AccessTokenMetadataKey][0])
+		if err != nil {
+			return nil, err
+		}
+
+		ctx = mnemosyne.NewAccessTokenContext(ctx, md[mnemosyne.AccessTokenMetadataKey][0])
+		ctx = charonc.NewActorContext(ctx, *act)
+
+		return charonc.NewSecurityContext(ctx), nil
+	}
+
+* Towards v1.0.0
+
+- Refresh token functionality is not ready yet (Apps?).
+- `charonc` package needs to be revisited (versioning of RPC API vs public code).
+- Remove experimental LDAP integration.
+- Documentation.
+
+
+
+
+
