@@ -23,6 +23,23 @@ executors:
     - image: circleci/golang
     working_directory: /go/src/github.com/piotrkowalczuk/charon
 jobs:
+  setup_golang:
+    executor: golang-executor
+    steps:
+    - checkout
+    - restore_cache:
+        key: v1-golang-dependency-{{ checksum "Gopkg.lock" }}
+    - run:
+        name: Install dep
+        command: |
+          go get -u github.com/golang/dep/cmd/dep
+    - run:
+        name: Install dependencies
+        command: dep ensure -vendor-only
+    - save_cache:
+        key: v1-golang-dependency-{{ checksum "Gopkg.lock" }}
+        paths:
+        - "vendor"
   test_golang:
     docker:
     - image: circleci/golang
@@ -42,11 +59,7 @@ jobs:
           go get -u google.golang.org/grpc
           go get -u golang.org/x/tools/cmd/goimports
           go get -u github.com/codeclimate/test-reporter
-          go get -u github.com/golang/dep/cmd/dep
           bash ./.circleci/scripts/install_protoc.sh
-    - run:
-        name: Install dependencies
-        command: dep ensure -vendor-only
     - run:
         name: Generate protobuf
         command: bash ./.circleci/scripts/generate.sh golang
@@ -217,14 +230,20 @@ workflows:
   version: 2
   generate:
     jobs:
+    - setup_golang:
+        filters:
+          tags:
+            only: /.*/
     - test_golang:
         context: codeclimate-charon
+        requires:
+        - setup_golang
         filters:
           tags:
             only: /.*/
     - lint_protobuf:
         requires:
-        - test_golang
+        - setup_golang
         filters:
           tags:
             only: /.*/
@@ -251,13 +270,13 @@ workflows:
             only: /^(v)?(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(-(0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(\.(0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*)?(\+[0-9a-zA-Z-]+(\.[0-9a-zA-Z-]+)*)?$/
     - generate_python:
         requires:
-        - test_golang
+        - setup_golang
         filters:
           tags:
             only: /.*/
     - generate_java:
         requires:
-        - test_golang
+        - setup_golang
         filters:
           tags:
             only: /.*/
