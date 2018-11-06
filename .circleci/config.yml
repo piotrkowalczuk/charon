@@ -282,6 +282,7 @@ workflows:
     - publish_python:
         context: twine
         requires:
+        - build_golang
         - generate_python
         filters:
           branches:
