@@ -4,13 +4,13 @@
 package charonrpc
 
 import (
+	context "context"
 	fmt "fmt"
 	math "math"
 
 	proto "github.com/golang/protobuf/proto"
 	ntypes "github.com/piotrkowalczuk/ntypes"
 	qtypes "github.com/piotrkowalczuk/qtypes"
-	context "golang.org/x/net/context"
 	grpc "google.golang.org/grpc"
 )
 

@@ -1,12 +1,12 @@
 package charonc
 
 import (
+	"context"
 	"fmt"
 	"reflect"
 	"testing"
 
 	"github.com/piotrkowalczuk/mnemosyne"
-	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
 )
 

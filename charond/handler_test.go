@@ -1,6 +1,7 @@
 package charond
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"testing"
@@ -13,7 +14,6 @@ import (
 	"github.com/piotrkowalczuk/mnemosyne/mnemosynetest"
 	. "github.com/smartystreets/goconvey/convey"
 	"github.com/stretchr/testify/mock"
-	"golang.org/x/net/context"
 )
 
 func TestHandler(t *testing.T) {

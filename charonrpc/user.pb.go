@@ -4,6 +4,7 @@
 package charonrpc
 
 import (
+	context "context"
 	fmt "fmt"
 	math "math"
 
@@ -12,7 +13,6 @@ import (
 	wrappers "github.com/golang/protobuf/ptypes/wrappers"
 	ntypes "github.com/piotrkowalczuk/ntypes"
 	qtypes "github.com/piotrkowalczuk/qtypes"
-	context "golang.org/x/net/context"
 	grpc "google.golang.org/grpc"
 )
 

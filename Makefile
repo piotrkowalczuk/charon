@@ -33,7 +33,7 @@ install:
 
 gen:
 	./scripts/generate.sh
-	./.circleci/scripts/generate.sh golang
+	bash ./.circleci/scripts/generate.sh golang
 
 test:
 	./.circleci/scripts/test.sh

@@ -585,7 +585,6 @@
     "github.com/stretchr/testify/mock",
     "go.uber.org/zap",
     "golang.org/x/crypto/bcrypt",
-    "golang.org/x/net/context",
     "golang.org/x/net/trace",
     "golang.org/x/oauth2",
     "google.golang.org/grpc",

@@ -1,20 +1,17 @@
 package charond
 
 import (
-	"testing"
-
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
-
-	"golang.org/x/net/context"
-
+	"context"
 	"strconv"
+	"testing"
 
 	"github.com/piotrkowalczuk/charon/charonrpc"
 	"github.com/piotrkowalczuk/charon/internal/model"
 	"github.com/piotrkowalczuk/mnemosyne/mnemosynerpc"
 	"github.com/piotrkowalczuk/mnemosyne/mnemosynetest"
 	"github.com/stretchr/testify/mock"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 )
 
 func TestIsAuthenticatedHandler_IsAuthenticated(t *testing.T) {
