@@ -78,7 +78,6 @@ jobs:
           make test
           cp results.xml /tmp/test-results/golang/results.xmls
           test-reporter format-coverage -d -t=gocov cover.out
-          test-reporter upload-coverage
     - run:
         name: Code Climate (after build)
         command: |
