@@ -270,13 +270,13 @@ workflows:
             only: /^(v)?(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(-(0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(\.(0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*)?(\+[0-9a-zA-Z-]+(\.[0-9a-zA-Z-]+)*)?$/
     - generate_python:
         requires:
-        - setup_golang
+        - lint_protobuf
         filters:
           tags:
             only: /.*/
     - generate_java:
         requires:
-        - setup_golang
+        - lint_protobuf
         filters:
           tags:
             only: /.*/
