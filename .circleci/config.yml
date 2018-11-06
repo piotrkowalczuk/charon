@@ -8,7 +8,7 @@ commands:
         working_directory: /
         command: |
           sudo mkdir -p /go/src/github.com/piotrkowalczuk/charon
-          chmod -R 777 /go/src/github.com/piotrkowalczuk/charon
+          sudo chmod -R 777 /go/src/github.com/piotrkowalczuk/charon
 executors:
   python-executor:
     docker:
