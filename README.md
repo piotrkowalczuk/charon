@@ -1,4 +1,4 @@
-# Charon [![CircleCI](https://circleci.com/gh/piotrkowalczuk/charon.svg?style=svg)](https://circleci.com/gh/piotrkowalczuk/charon)
+# Charon [![CircleCI](https://circleci.com/gh/piotrkowalczuk/charon/tree/master.svg?style=svg)](https://circleci.com/gh/piotrkowalczuk/charon/tree/master)
 
 [![GoDoc](https://godoc.org/github.com/piotrkowalczuk/charon?status.svg)](http://godoc.org/github.com/piotrkowalczuk/charon)
 [![Test Coverage](https://api.codeclimate.com/v1/badges/de987e80be49eba8fb61/test_coverage)](https://codeclimate.com/github/piotrkowalczuk/charon/test_coverage)
