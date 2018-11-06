@@ -9,6 +9,7 @@ import (
 	"github.com/piotrkowalczuk/mnemosyne"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
 )
 
 type client struct {
@@ -21,7 +22,7 @@ type client struct {
 func initClient(addr string) (c *client, ctx context.Context) {
 	conn, err := grpc.Dial(addr, grpc.WithInsecure(), grpc.WithUserAgent("charonctl"))
 	if err != nil {
-		fmt.Printf("charond connection failure to %s with error: %s\n", addr, grpc.ErrorDesc(err))
+		fmt.Printf("charond connection failure to %s with error: %s\n", addr, status.Convert(err).Message())
 		os.Exit(1)
 	}
 
@@ -39,7 +40,7 @@ func initClient(addr string) (c *client, ctx context.Context) {
 			Password: config.auth.password,
 		})
 		if err != nil {
-			fmt.Printf("(initial) login failure: %s\n", grpc.ErrorDesc(err))
+			fmt.Printf("(initial) login failure: %s\n", status.Convert(err).Message())
 			os.Exit(1)
 		}
 

@@ -33,6 +33,7 @@ func getStringEnvOr(env, or string) string {
 }
 
 func timeout(ctx context.Context) context.Context {
+	// TODO: leak
 	ctx, _ = context.WithTimeout(ctx, 5*time.Second)
 	return ctx
 }

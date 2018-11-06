@@ -34,29 +34,6 @@ func (_m *RefreshTokenManagerServer) Create(_a0 context.Context, _a1 *charonrpc.
 	return r0, r1
 }
 
-// Disable provides a mock function with given fields: _a0, _a1
-func (_m *RefreshTokenManagerServer) Disable(_a0 context.Context, _a1 *charonrpc.DisableRefreshTokenRequest) (*charonrpc.DisableRefreshTokenResponse, error) {
-	ret := _m.Called(_a0, _a1)
-
-	var r0 *charonrpc.DisableRefreshTokenResponse
-	if rf, ok := ret.Get(0).(func(context.Context, *charonrpc.DisableRefreshTokenRequest) *charonrpc.DisableRefreshTokenResponse); ok {
-		r0 = rf(_a0, _a1)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*charonrpc.DisableRefreshTokenResponse)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, *charonrpc.DisableRefreshTokenRequest) error); ok {
-		r1 = rf(_a0, _a1)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // List provides a mock function with given fields: _a0, _a1
 func (_m *RefreshTokenManagerServer) List(_a0 context.Context, _a1 *charonrpc.ListRefreshTokensRequest) (*charonrpc.ListRefreshTokensResponse, error) {
 	ret := _m.Called(_a0, _a1)
@@ -72,6 +49,29 @@ func (_m *RefreshTokenManagerServer) List(_a0 context.Context, _a1 *charonrpc.Li
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(context.Context, *charonrpc.ListRefreshTokensRequest) error); ok {
+		r1 = rf(_a0, _a1)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// Revoke provides a mock function with given fields: _a0, _a1
+func (_m *RefreshTokenManagerServer) Revoke(_a0 context.Context, _a1 *charonrpc.RevokeRefreshTokenRequest) (*charonrpc.RevokeRefreshTokenResponse, error) {
+	ret := _m.Called(_a0, _a1)
+
+	var r0 *charonrpc.RevokeRefreshTokenResponse
+	if rf, ok := ret.Get(0).(func(context.Context, *charonrpc.RevokeRefreshTokenRequest) *charonrpc.RevokeRefreshTokenResponse); ok {
+		r0 = rf(_a0, _a1)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*charonrpc.RevokeRefreshTokenResponse)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, *charonrpc.RevokeRefreshTokenRequest) error); ok {
 		r1 = rf(_a0, _a1)
 	} else {
 		r1 = ret.Error(1)

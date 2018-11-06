@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"fmt"
 	"io"
 	"net"
 	"net/http"
@@ -28,6 +27,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
 )
 
 // DaemonOpts ...
@@ -136,8 +136,8 @@ func (d *Daemon) Run() (err error) {
 
 				res, err := handler(ctx, req)
 
-				if err != nil && grpc.Code(err) != codes.OK {
-					sklog.Error(d.logger, errors.New(grpc.ErrorDesc(err)), "handler", info.FullMethod, "code", grpc.Code(err).String(), "elapsed", time.Since(start))
+				if err != nil && status.Code(err) != codes.OK {
+					sklog.Error(d.logger, errors.New(status.Convert(err).Message()), "handler", info.FullMethod, "code", status.Code(err).String(), "elapsed", time.Since(start))
 					return nil, handleError(err)
 				}
 				sklog.Debug(d.logger, "request handled successfully", "handler", info.FullMethod, "elapsed", time.Since(start))
@@ -180,7 +180,6 @@ func (d *Daemon) Run() (err error) {
 	passwordHasher := initHasher(d.opts.PasswordBCryptCost, d.logger)
 	if d.opts.Test {
 		if _, err = createDummyTestUser(context.TODO(), repos.user, passwordHasher); err != nil {
-			fmt.Println("CREATE DUMMY TEST USER", err)
 			return
 		}
 		sklog.Info(d.logger, "test super user has been created")

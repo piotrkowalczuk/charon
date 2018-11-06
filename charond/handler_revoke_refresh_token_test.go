@@ -18,12 +18,11 @@ import (
 	"github.com/piotrkowalczuk/ntypes"
 	"github.com/piotrkowalczuk/sklog"
 	"github.com/stretchr/testify/mock"
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
-func TestDisableRefreshTokenHandler_Disable_E2E(t *testing.T) {
+func TestRevokeRefreshTokenHandler_Disable_E2E(t *testing.T) {
 	suite := &endToEndSuite{}
 	suite.setup(t)
 	defer suite.teardown(t)
@@ -41,7 +40,7 @@ func TestDisableRefreshTokenHandler_Disable_E2E(t *testing.T) {
 			if err != nil {
 				t.Fatalf("unexpected error: %s", err.Error())
 			}
-			res2, err := suite.charon.refreshToken.Disable(timeout(ctx), &charonrpc.DisableRefreshTokenRequest{
+			res2, err := suite.charon.refreshToken.Revoke(timeout(ctx), &charonrpc.RevokeRefreshTokenRequest{
 				Token:  res.RefreshToken.Token,
 				UserId: res.RefreshToken.UserId,
 			})
@@ -58,14 +57,14 @@ func TestDisableRefreshTokenHandler_Disable_E2E(t *testing.T) {
 			if err != nil {
 				t.Fatalf("unexpected error: %s", err.Error())
 			}
-			_, err = suite.charon.refreshToken.Disable(timeout(ctx), &charonrpc.DisableRefreshTokenRequest{
+			_, err = suite.charon.refreshToken.Revoke(timeout(ctx), &charonrpc.RevokeRefreshTokenRequest{
 				Token: res.RefreshToken.Token,
 			})
 			if err == nil {
 				t.Fatal("error expected")
 			}
 
-			got := grpc.ErrorDesc(err)
+			got := status.Convert(err).Message()
 			if got != exp {
 				t.Errorf("wrong error, expected '%s' but got '%s'", exp, got)
 			}
@@ -77,12 +76,12 @@ func TestDisableRefreshTokenHandler_Disable_E2E(t *testing.T) {
 	}
 }
 
-func TestDisableRefreshTokenHandler_Disable_Unit(t *testing.T) {
+func TestRevokeRefreshTokenHandler_Disable_Unit(t *testing.T) {
 	sessionMock := &mnemosynetest.SessionManagerClient{}
 	refreshTokenMock := &modelmock.RefreshTokenProvider{}
 	actorProviderMock := &sessionmock.ActorProvider{}
 
-	h := disableRefreshTokenHandler{
+	h := revokeRefreshTokenHandler{
 		handler: &handler{
 			logger:        sklog.NewTestLogger(t),
 			ActorProvider: actorProviderMock,
@@ -94,18 +93,18 @@ func TestDisableRefreshTokenHandler_Disable_Unit(t *testing.T) {
 	}
 
 	cases := map[string]struct {
-		req  charonrpc.DisableRefreshTokenRequest
+		req  charonrpc.RevokeRefreshTokenRequest
 		init func(*testing.T)
 		err  error
 	}{
 		"missing-token": {
 			init: func(t *testing.T) {},
-			req:  charonrpc.DisableRefreshTokenRequest{UserId: 1},
+			req:  charonrpc.RevokeRefreshTokenRequest{UserId: 1},
 			err:  grpcerr.E(codes.InvalidArgument),
 		},
 		"missing-user-id": {
 			init: func(t *testing.T) {},
-			req:  charonrpc.DisableRefreshTokenRequest{Token: "123"},
+			req:  charonrpc.RevokeRefreshTokenRequest{Token: "123"},
 			err:  grpcerr.E(codes.InvalidArgument),
 		},
 		"session-does-not-exists": {
@@ -114,7 +113,7 @@ func TestDisableRefreshTokenHandler_Disable_Unit(t *testing.T) {
 					Return(nil, grpcerr.E(codes.Unauthenticated, "session does not exists")).
 					Once()
 			},
-			req: charonrpc.DisableRefreshTokenRequest{UserId: 1, Token: "123"},
+			req: charonrpc.RevokeRefreshTokenRequest{UserId: 1, Token: "123"},
 			err: grpcerr.E(codes.Unauthenticated),
 		},
 		"refresh-token-does-not-exists": {
@@ -124,7 +123,7 @@ func TestDisableRefreshTokenHandler_Disable_Unit(t *testing.T) {
 					Once()
 				refreshTokenMock.On("FindOneByTokenAndUserID", mock.Anything, "123", int64(1)).Return(nil, sql.ErrNoRows)
 			},
-			req: charonrpc.DisableRefreshTokenRequest{UserId: 1, Token: "123"},
+			req: charonrpc.RevokeRefreshTokenRequest{UserId: 1, Token: "123"},
 			err: grpcerr.E(codes.NotFound),
 		},
 		"refresh-token-fetch-timeout": {
@@ -134,14 +133,14 @@ func TestDisableRefreshTokenHandler_Disable_Unit(t *testing.T) {
 					Once()
 				refreshTokenMock.On("FindOneByTokenAndUserID", mock.Anything, "123", int64(1)).Return(nil, context.DeadlineExceeded)
 			},
-			req: charonrpc.DisableRefreshTokenRequest{UserId: 1, Token: "123"},
+			req: charonrpc.RevokeRefreshTokenRequest{UserId: 1, Token: "123"},
 			err: grpcerr.E(codes.DeadlineExceeded),
 		},
 		"cannot-disable-as-a-stranger": {
 			init: func(t *testing.T) {
 				actorProviderMock.On("Actor", mock.Anything).
 					Return(&session.Actor{
-						Permissions: charon.Permissions{charon.RefreshTokenCanDisableAsOwner},
+						Permissions: charon.Permissions{charon.RefreshTokenCanRevokeAsOwner},
 						User:        &model.UserEntity{ID: 1},
 					}, nil).
 					Once()
@@ -149,7 +148,7 @@ func TestDisableRefreshTokenHandler_Disable_Unit(t *testing.T) {
 					UserID: 2,
 				}, nil)
 			},
-			req: charonrpc.DisableRefreshTokenRequest{UserId: 2, Token: "123"},
+			req: charonrpc.RevokeRefreshTokenRequest{UserId: 2, Token: "123"},
 			err: grpcerr.E(codes.PermissionDenied),
 		},
 		"cannot-disable-as-an-owner": {
@@ -163,7 +162,7 @@ func TestDisableRefreshTokenHandler_Disable_Unit(t *testing.T) {
 					UserID: 1,
 				}, nil)
 			},
-			req: charonrpc.DisableRefreshTokenRequest{UserId: 1, Token: "123"},
+			req: charonrpc.RevokeRefreshTokenRequest{UserId: 1, Token: "123"},
 			err: grpcerr.E(codes.PermissionDenied),
 		},
 		"can-disable-as-a-superuser": {
@@ -183,13 +182,13 @@ func TestDisableRefreshTokenHandler_Disable_Unit(t *testing.T) {
 				}, nil)
 				sessionMock.On("Delete", mock.Anything, mock.Anything).Return(&wrappers.Int64Value{Value: 1}, nil)
 			},
-			req: charonrpc.DisableRefreshTokenRequest{UserId: 1, Token: "123"},
+			req: charonrpc.RevokeRefreshTokenRequest{UserId: 1, Token: "123"},
 		},
 		"can-disable-as-a-stranger": {
 			init: func(t *testing.T) {
 				actorProviderMock.On("Actor", mock.Anything).
 					Return(&session.Actor{
-						Permissions: charon.Permissions{charon.RefreshTokenCanDisableAsStranger},
+						Permissions: charon.Permissions{charon.RefreshTokenCanRevokeAsStranger},
 						User:        &model.UserEntity{ID: 4},
 					}, nil).
 					Once()
@@ -203,13 +202,13 @@ func TestDisableRefreshTokenHandler_Disable_Unit(t *testing.T) {
 				}, nil)
 				sessionMock.On("Delete", mock.Anything, mock.Anything).Return(&wrappers.Int64Value{Value: 1}, nil)
 			},
-			req: charonrpc.DisableRefreshTokenRequest{UserId: 1, Token: "123"},
+			req: charonrpc.RevokeRefreshTokenRequest{UserId: 1, Token: "123"},
 		},
 		"can-disable-as-an-owner": {
 			init: func(t *testing.T) {
 				actorProviderMock.On("Actor", mock.Anything).
 					Return(&session.Actor{
-						Permissions: charon.Permissions{charon.RefreshTokenCanDisableAsOwner},
+						Permissions: charon.Permissions{charon.RefreshTokenCanRevokeAsOwner},
 						User:        &model.UserEntity{ID: 1},
 					}, nil).
 					Once()
@@ -223,13 +222,13 @@ func TestDisableRefreshTokenHandler_Disable_Unit(t *testing.T) {
 				}, nil)
 				sessionMock.On("Delete", mock.Anything, mock.Anything).Return(&wrappers.Int64Value{Value: 1}, nil)
 			},
-			req: charonrpc.DisableRefreshTokenRequest{UserId: 1, Token: "123"},
+			req: charonrpc.RevokeRefreshTokenRequest{UserId: 1, Token: "123"},
 		},
 		"storage-returns-broken-entity": {
 			init: func(t *testing.T) {
 				actorProviderMock.On("Actor", mock.Anything).
 					Return(&session.Actor{
-						Permissions: charon.Permissions{charon.RefreshTokenCanDisableAsOwner},
+						Permissions: charon.Permissions{charon.RefreshTokenCanRevokeAsOwner},
 						User:        &model.UserEntity{ID: 1},
 					}, nil).
 					Once()
@@ -244,7 +243,7 @@ func TestDisableRefreshTokenHandler_Disable_Unit(t *testing.T) {
 				}, nil)
 				sessionMock.On("Delete", mock.Anything, mock.Anything).Return(&wrappers.Int64Value{Value: 1}, nil)
 			},
-			req: charonrpc.DisableRefreshTokenRequest{UserId: 1, Token: "123"},
+			req: charonrpc.RevokeRefreshTokenRequest{UserId: 1, Token: "123"},
 			err: grpcerr.E(codes.Internal),
 		},
 		"token-was-removed-after-during-execution": {
@@ -259,7 +258,7 @@ func TestDisableRefreshTokenHandler_Disable_Unit(t *testing.T) {
 				}, nil)
 				refreshTokenMock.On("UpdateOneByTokenAndUserID", mock.Anything, "123", int64(1), mock.Anything).Return(nil, sql.ErrNoRows)
 			},
-			req: charonrpc.DisableRefreshTokenRequest{UserId: 1, Token: "123"},
+			req: charonrpc.RevokeRefreshTokenRequest{UserId: 1, Token: "123"},
 			err: grpcerr.E(codes.NotFound),
 		},
 		"request-canceled-during-deletion": {
@@ -274,7 +273,7 @@ func TestDisableRefreshTokenHandler_Disable_Unit(t *testing.T) {
 				}, nil)
 				refreshTokenMock.On("UpdateOneByTokenAndUserID", mock.Anything, "123", int64(1), mock.Anything).Return(nil, context.Canceled)
 			},
-			req: charonrpc.DisableRefreshTokenRequest{UserId: 1, Token: "123"},
+			req: charonrpc.RevokeRefreshTokenRequest{UserId: 1, Token: "123"},
 			err: grpcerr.E(codes.Canceled),
 		},
 		"session-deletion-failure": {
@@ -294,7 +293,7 @@ func TestDisableRefreshTokenHandler_Disable_Unit(t *testing.T) {
 				}, nil)
 				sessionMock.On("Delete", mock.Anything, mock.Anything).Return(nil, status.Errorf(codes.Aborted, "something went wrong"))
 			},
-			req: charonrpc.DisableRefreshTokenRequest{UserId: 1, Token: "123"},
+			req: charonrpc.RevokeRefreshTokenRequest{UserId: 1, Token: "123"},
 			err: grpcerr.E(codes.Aborted),
 		},
 	}
@@ -307,7 +306,7 @@ func TestDisableRefreshTokenHandler_Disable_Unit(t *testing.T) {
 
 			c.init(t)
 
-			_, err := h.Disable(context.TODO(), &c.req)
+			_, err := h.Revoke(context.TODO(), &c.req)
 			assertError(t, c.err, err)
 
 			mock.AssertExpectationsForObjects(t)

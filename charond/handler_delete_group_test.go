@@ -18,9 +18,9 @@ import (
 	"github.com/piotrkowalczuk/charon/internal/session/sessionmock"
 	"github.com/piotrkowalczuk/ntypes"
 	"github.com/stretchr/testify/mock"
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/peer"
+	"google.golang.org/grpc/status"
 )
 
 func TestDeleteGroupHandler_Delete_E2E(t *testing.T) {
@@ -72,16 +72,16 @@ func TestDeleteGroupHandler_Delete_E2E(t *testing.T) {
 			_, err := suite.charon.group.Delete(timeout(ctx), &charonrpc.DeleteGroupRequest{
 				Id: math.MaxInt64,
 			})
-			if grpc.Code(err) != codes.NotFound {
-				t.Errorf("wrong status code, expected %s but got %s", codes.NotFound.String(), grpc.Code(err).String())
+			if status.Code(err) != codes.NotFound {
+				t.Errorf("wrong status code, expected %s but got %s", codes.NotFound.String(), status.Code(err).String())
 			}
 		},
 		"assigned": func(t *testing.T) {
 			_, err := suite.charon.group.Delete(timeout(ctx), &charonrpc.DeleteGroupRequest{
 				Id: groups[0],
 			})
-			if grpc.Code(err) != codes.FailedPrecondition {
-				t.Errorf("wrong status code, expected %s but got %s", codes.FailedPrecondition.String(), grpc.Code(err).String())
+			if status.Code(err) != codes.FailedPrecondition {
+				t.Errorf("wrong status code, expected %s but got %s", codes.FailedPrecondition.String(), status.Code(err).String())
 			}
 		},
 	}

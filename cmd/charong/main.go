@@ -16,16 +16,6 @@ import (
 
 var (
 	schema, output string
-	acronyms       = map[string]string{
-		"id":   "ID",
-		"http": "HTTP",
-		"ip":   "IP",
-		"net":  "NET",
-		"irc":  "IRC",
-		"io":   "IO",
-		"uuid": "UUID",
-		"db":   "DB",
-	}
 )
 
 func init() {

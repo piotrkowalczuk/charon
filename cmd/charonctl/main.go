@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"os"
 
+	"google.golang.org/grpc/status"
+
 	"github.com/piotrkowalczuk/charon/charonctl"
 	"github.com/piotrkowalczuk/charon/charonrpc"
 	"github.com/piotrkowalczuk/ntypes"
@@ -49,7 +51,7 @@ func main() {
 		fail(err)
 	case "load":
 		if err := load(config); err != nil {
-			fmt.Printf("fixtures import failure: %s\n", grpc.ErrorDesc(err))
+			fmt.Printf("fixtures import failure: %s\n", status.Convert(err).Message())
 			os.Exit(1)
 		}
 	default:
@@ -60,9 +62,9 @@ func main() {
 func fail(err error) {
 	if err != nil {
 		if ctlErr, ok := err.(*charonctl.Error); ok {
-			fmt.Printf("%s: %s", ctlErr.Msg, grpc.ErrorDesc(ctlErr.Err))
+			fmt.Printf("%s: %s", ctlErr.Msg, status.Convert(ctlErr.Err).Message())
 		} else {
-			fmt.Printf(grpc.ErrorDesc(err))
+			fmt.Println(status.Convert(err).Message())
 		}
 		os.Exit(1)
 	}
@@ -70,7 +72,7 @@ func fail(err error) {
 func connect(config configuration) *charonctl.Console {
 	conn, err := grpc.Dial(config.address, grpc.WithInsecure(), grpc.WithUserAgent("charonctl"))
 	if err != nil {
-		fmt.Printf("charond connection failure to %s with error: %s\n", config.address, grpc.ErrorDesc(err))
+		fmt.Printf("charond connection failure to %s with error: %s\n", config.address, status.Convert(err).Message())
 		os.Exit(1)
 	}
 
@@ -132,7 +134,7 @@ FixturesLoop:
 			Description: &ntypes.String{Chars: group.Description, Valid: len(group.Description) > 0},
 		})
 		if err != nil {
-			if grpc.Code(err) == codes.AlreadyExists {
+			if status.Code(err) == codes.AlreadyExists {
 				fmt.Printf("group (%s) already exists\n", group.Name)
 				continue FixturesLoop
 			}

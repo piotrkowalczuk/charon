@@ -104,14 +104,14 @@ func newGroupManager(server *rpcServer) *groupManager {
 type refreshTokenManager struct {
 	*createRefreshTokenHandler
 	*listRefreshTokensHandler
-	*disableRefreshTokenHandler
+	*revokeRefreshTokenHandler
 }
 
 func newRefreshTokenManager(server *rpcServer) *refreshTokenManager {
 	return &refreshTokenManager{
-		createRefreshTokenHandler:  &createRefreshTokenHandler{handler: newHandler(server)},
-		listRefreshTokensHandler:   &listRefreshTokensHandler{handler: newHandler(server)},
-		disableRefreshTokenHandler: &disableRefreshTokenHandler{handler: newHandler(server)},
+		createRefreshTokenHandler: &createRefreshTokenHandler{handler: newHandler(server)},
+		listRefreshTokensHandler:  &listRefreshTokensHandler{handler: newHandler(server)},
+		revokeRefreshTokenHandler: &revokeRefreshTokenHandler{handler: newHandler(server)},
 	}
 }
 

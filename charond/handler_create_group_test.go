@@ -15,8 +15,8 @@ import (
 	"github.com/piotrkowalczuk/charon/internal/session/sessionmock"
 	"github.com/piotrkowalczuk/ntypes"
 	"github.com/stretchr/testify/mock"
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 func TestCreateGroupHandler_Create_E2E(t *testing.T) {
@@ -70,8 +70,8 @@ func TestCreateGroupHandler_Create_E2E(t *testing.T) {
 				t.Fatalf("unexpected error: %s", err.Error())
 			}
 			_, err = suite.charon.group.Create(timeout(ctx), req)
-			if grpc.Code(err) != codes.AlreadyExists {
-				t.Fatalf("wrong status code, expected %s but got %s", codes.AlreadyExists.String(), grpc.Code(err).String())
+			if status.Code(err) != codes.AlreadyExists {
+				t.Fatalf("wrong status code, expected %s but got %s", codes.AlreadyExists.String(), status.Code(err).String())
 			}
 		},
 		"only-description": func(t *testing.T) {
@@ -82,8 +82,8 @@ func TestCreateGroupHandler_Create_E2E(t *testing.T) {
 				},
 			}
 			_, err := suite.charon.group.Create(timeout(ctx), req)
-			if grpc.Code(err) != codes.InvalidArgument {
-				t.Fatalf("wrong status code, expected %s but got %s", codes.InvalidArgument.String(), grpc.Code(err).String())
+			if status.Code(err) != codes.InvalidArgument {
+				t.Fatalf("wrong status code, expected %s but got %s", codes.InvalidArgument.String(), status.Code(err).String())
 			}
 		},
 	}

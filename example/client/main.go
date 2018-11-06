@@ -12,6 +12,7 @@ import (
 	"github.com/piotrkowalczuk/charon/charonrpc"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
 )
 
 const (
@@ -34,12 +35,12 @@ func main() {
 	flag.Parse()
 
 	if token == "" {
-		log.Fatal("missing sesion token")
+		log.Fatal("missing session token")
 	}
 
 	conn, err := grpc.Dial(address, grpc.WithBlock(), grpc.WithInsecure(), grpc.WithTimeout(2*time.Second))
 	if err != nil {
-		log.Fatal(grpc.ErrorDesc(err))
+		log.Fatal(status.Convert(err).Message())
 	}
 	defer conn.Close()
 
@@ -57,7 +58,7 @@ func main() {
 	ctx := metadata.NewOutgoingContext(context.Background(), metadata.Pairs("request_id", "123456789"))
 	res, err := charonrpc.NewAuthClient(conn).Actor(ctx, &wrappers.StringValue{Value: token})
 	if err != nil {
-		log.Fatalf("%s: %s", grpc.Code(err).String(), grpc.ErrorDesc(err))
+		log.Fatalf("%s: %s", status.Code(err).String(), status.Convert(err).Message())
 	}
 
 	fmt.Printf("id: %d \n", res.Id)

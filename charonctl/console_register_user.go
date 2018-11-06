@@ -8,8 +8,8 @@ import (
 	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/charon/charonrpc"
 	"github.com/piotrkowalczuk/ntypes"
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type RegisterUserArg struct {
@@ -41,7 +41,7 @@ func (cru *consoleRegisterUser) RegisterUser(ctx context.Context, arg *RegisterU
 		IsActive:      &ntypes.Bool{Bool: arg.Active, Valid: true},
 	})
 	if err != nil {
-		if arg.IfNotExists && grpc.Code(err) == codes.AlreadyExists {
+		if arg.IfNotExists && status.Code(err) == codes.AlreadyExists {
 			return &Error{
 				Msg: fmt.Sprintf("user already exists: %s\n", arg.Username),
 				Err: err,

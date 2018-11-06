@@ -13,15 +13,15 @@ import (
 	"github.com/piotrkowalczuk/ntypes"
 	"github.com/piotrkowalczuk/sklog"
 	"golang.org/x/net/context"
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
-type disableRefreshTokenHandler struct {
+type revokeRefreshTokenHandler struct {
 	*handler
 }
 
-func (drth *disableRefreshTokenHandler) Disable(ctx context.Context, req *charonrpc.DisableRefreshTokenRequest) (*charonrpc.DisableRefreshTokenResponse, error) {
+func (h *revokeRefreshTokenHandler) Revoke(ctx context.Context, req *charonrpc.RevokeRefreshTokenRequest) (*charonrpc.RevokeRefreshTokenResponse, error) {
 	if len(req.Token) == 0 {
 		return nil, grpcerr.E(codes.InvalidArgument, "refresh token cannot be disabled, invalid token: %s", req.Token)
 	}
@@ -29,22 +29,22 @@ func (drth *disableRefreshTokenHandler) Disable(ctx context.Context, req *charon
 		return nil, grpcerr.E(codes.InvalidArgument, "refresh token cannot be disabled, missing user id")
 	}
 
-	act, err := drth.Actor(ctx)
+	act, err := h.Actor(ctx)
 	if err != nil {
 		return nil, err
 	}
-	ent, err := drth.repository.refreshToken.FindOneByTokenAndUserID(ctx, req.Token, req.UserId)
+	ent, err := h.repository.refreshToken.FindOneByTokenAndUserID(ctx, req.Token, req.UserId)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, grpcerr.E(codes.NotFound, "refresh token does not exists")
 		}
 		return nil, grpcerr.E(codes.Internal, "refresh token could not be retrieved", err)
 	}
-	if err = drth.firewall(req, act, ent); err != nil {
+	if err = h.firewall(req, act, ent); err != nil {
 		return nil, err
 	}
 
-	ent, err = drth.repository.refreshToken.UpdateOneByTokenAndUserID(ctx, req.Token, req.UserId, &model.RefreshTokenPatch{
+	ent, err = h.repository.refreshToken.UpdateOneByTokenAndUserID(ctx, req.Token, req.UserId, &model.RefreshTokenPatch{
 		Disabled: ntypes.Bool{Bool: true, Valid: true},
 	})
 	if err != nil {
@@ -54,38 +54,38 @@ func (drth *disableRefreshTokenHandler) Disable(ctx context.Context, req *charon
 		return nil, grpcerr.E(codes.Internal, "refresh token could not be disabled", err)
 	}
 
-	res, err := drth.session.Delete(ctx, &mnemosynerpc.DeleteRequest{
+	res, err := h.session.Delete(ctx, &mnemosynerpc.DeleteRequest{
 		SubjectId:    session.ActorIDFromInt64(ent.UserID).String(),
 		RefreshToken: req.Token,
 	})
 	if err != nil {
-		if grpc.Code(err) != codes.NotFound {
+		if status.Code(err) != codes.NotFound {
 			return nil, grpcerr.E(codes.Internal, "session could not be removed", err)
 		}
 	}
-	sklog.Debug(drth.logger, "refresh token corresponding sessions removed", "count", res.Value)
+	sklog.Debug(h.logger, "refresh token corresponding sessions removed", "count", res.Value)
 
 	msg, err := mapping.ReverseRefreshToken(ent)
 	if err != nil {
 		return nil, grpcerr.E(codes.Internal, "refresh token mapping failure", err)
 	}
-	return &charonrpc.DisableRefreshTokenResponse{
+	return &charonrpc.RevokeRefreshTokenResponse{
 		RefreshToken: msg,
 	}, nil
 }
 
-func (drth *disableRefreshTokenHandler) firewall(req *charonrpc.DisableRefreshTokenRequest, act *session.Actor, ent *model.RefreshTokenEntity) error {
+func (h *revokeRefreshTokenHandler) firewall(req *charonrpc.RevokeRefreshTokenRequest, act *session.Actor, ent *model.RefreshTokenEntity) error {
 	if act.User.IsSuperuser {
 		return nil
 	}
-	if act.Permissions.Contains(charon.RefreshTokenCanDisableAsStranger) {
+	if act.Permissions.Contains(charon.RefreshTokenCanRevokeAsStranger) {
 		return nil
 	}
-	if act.Permissions.Contains(charon.RefreshTokenCanDisableAsOwner) {
+	if act.Permissions.Contains(charon.RefreshTokenCanRevokeAsOwner) {
 		if act.User.ID == ent.UserID {
 			return nil
 		}
-		return grpcerr.E(codes.PermissionDenied, "refresh token cannot be disabled by stranger, missing permission")
+		return grpcerr.E(codes.PermissionDenied, "refresh token cannot be revoked by stranger, missing permission")
 	}
-	return grpcerr.E(codes.PermissionDenied, "refresh token cannot be disabled, missing permission")
+	return grpcerr.E(codes.PermissionDenied, "refresh token cannot be revoked, missing permission")
 }

@@ -20,8 +20,8 @@ import (
 	"github.com/piotrkowalczuk/charon/internal/session/sessionmock"
 	"github.com/piotrkowalczuk/ntypes"
 	"github.com/stretchr/testify/mock"
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 func TestCreateUserHandler_Create_Unit(t *testing.T) {
@@ -453,8 +453,8 @@ func TestCreateUserHandler_Create_E2E(t *testing.T) {
 				t.Fatalf("unexpected error: %s", err.Error())
 			}
 			_, err = suite.charon.user.Create(timeout(ctx), req)
-			if grpc.Code(err) != codes.AlreadyExists {
-				t.Errorf("wrong status code, expected %s but got %s", codes.AlreadyExists.String(), grpc.Code(err).String())
+			if status.Code(err) != codes.AlreadyExists {
+				t.Errorf("wrong status code, expected %s but got %s", codes.AlreadyExists.String(), status.Code(err).String())
 			}
 		},
 	}

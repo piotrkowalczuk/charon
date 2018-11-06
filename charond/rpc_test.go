@@ -6,11 +6,11 @@ import (
 
 	"github.com/piotrkowalczuk/charon/charonrpc"
 	"github.com/piotrkowalczuk/mnemosyne"
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
 )
 
-func óTestRPCServer_minimal(t *testing.T) {
+func TestRPCServer_minimal(t *testing.T) {
 	suite := &endToEndSuite{}
 	suite.setup(t)
 	defer suite.teardown(t)
@@ -52,7 +52,7 @@ func testRPCServerLogin(t *testing.T, suite *endToEndSuite) context.Context {
 		Password: "test",
 	})
 	if err != nil {
-		t.Fatalf("unexpected login error: %s: with code %s", grpc.ErrorDesc(err), grpc.Code(err))
+		t.Fatalf("unexpected login error: %s: with code %s", status.Convert(err).Message(), status.Code(err))
 	}
 
 	return metadata.NewOutgoingContext(
