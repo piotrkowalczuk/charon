@@ -15,6 +15,7 @@ type repositories struct {
 	permission       model.PermissionProvider
 	group            model.GroupProvider
 	groupPermissions model.GroupPermissionsProvider
+	refreshToken     model.RefreshTokenProvider
 }
 
 func newRepositories(db *sql.DB) repositories {
@@ -25,6 +26,7 @@ func newRepositories(db *sql.DB) repositories {
 		permission:       model.NewPermissionRepository(db),
 		group:            model.NewGroupRepository(db),
 		groupPermissions: model.NewGroupPermissionsRepository(db),
+		refreshToken:     model.NewRefreshTokenRepository(db),
 	}
 }
 

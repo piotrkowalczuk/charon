@@ -6,8 +6,9 @@ import (
 
 	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/charon/charonrpc"
+	"github.com/piotrkowalczuk/charon/internal/grpcerr"
 	"github.com/piotrkowalczuk/charon/internal/session"
-	"google.golang.org/grpc"
+
 	"google.golang.org/grpc/codes"
 )
 
@@ -17,10 +18,10 @@ type getPermissionHandler struct {
 
 func (gph *getPermissionHandler) Get(ctx context.Context, req *charonrpc.GetPermissionRequest) (*charonrpc.GetPermissionResponse, error) {
 	if req.Id < 1 {
-		return nil, grpc.Errorf(codes.InvalidArgument, "permission id needs to be greater than zero")
+		return nil, grpcerr.E(codes.InvalidArgument, "permission id needs to be greater than zero")
 	}
 
-	act, err := gph.retrieveActor(ctx)
+	act, err := gph.Actor(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -31,9 +32,9 @@ func (gph *getPermissionHandler) Get(ctx context.Context, req *charonrpc.GetPerm
 	permission, err := gph.repository.permission.FindOneByID(ctx, req.Id)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, grpc.Errorf(codes.NotFound, "permission does not exists")
+			return nil, grpcerr.E(codes.NotFound, "permission does not exists")
 		}
-		return nil, err
+		return nil, grpcerr.E(codes.Internal, "permission cannot be fetched", err)
 	}
 
 	return &charonrpc.GetPermissionResponse{
@@ -49,5 +50,5 @@ func (gph *getPermissionHandler) firewall(req *charonrpc.GetPermissionRequest, a
 		return nil
 	}
 
-	return grpc.Errorf(codes.PermissionDenied, "permission cannot be retrieved, missing permission")
+	return grpcerr.E(codes.PermissionDenied, "permission cannot be retrieved, missing permission")
 }

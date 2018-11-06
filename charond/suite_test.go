@@ -4,10 +4,12 @@ import (
 	"context"
 	"flag"
 	"os"
+	"runtime/debug"
 	"testing"
 	"time"
 
 	_ "github.com/lib/pq"
+	"github.com/piotrkowalczuk/charon/internal/grpcerr"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -51,4 +53,26 @@ func assertErrorCode(t *testing.T, err error, code codes.Code, msg string) {
 	} else {
 		t.Fatalf("expected grpc error, got %T", err)
 	}
+}
+
+func assertError(t *testing.T, e1, e2 error) {
+	if e1 != nil {
+		if !grpcerr.Match(e1, e2) {
+			t.Fatalf("error do not match, got %v", e2)
+		}
+	} else if e2 != nil {
+		t.Fatal(e2)
+	}
+}
+
+func recoverTest(t *testing.T) {
+	t.Helper()
+
+	if err := recover(); err != nil {
+		t.Error(err, string(debug.Stack()))
+	}
+}
+
+func brokenDate() time.Time {
+	return time.Date(1, 1, 0, 0, 0, 0, 0, time.UTC)
 }

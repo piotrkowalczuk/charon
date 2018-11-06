@@ -2,7 +2,6 @@ package charond
 
 import (
 	"context"
-	"sync"
 
 	"github.com/go-kit/kit/log"
 	"github.com/piotrkowalczuk/charon/internal/model"
@@ -14,7 +13,6 @@ import (
 type rpcServer struct {
 	opts               DaemonOpts
 	logger             log.Logger
-	ldap               *sync.Pool
 	session            mnemosynerpc.SessionManagerClient
 	passwordHasher     password.Hasher
 	permissionRegistry model.PermissionRegistry
@@ -36,7 +34,7 @@ func newAuth(server *rpcServer) *auth {
 		belongsToHandler:       &belongsToHandler{handler: newHandler(server)},
 		isGrantedHandler:       &isGrantedHandler{handler: newHandler(server)},
 		isAuthenticatedHandler: &isAuthenticatedHandler{handler: newHandler(server)},
-		loginHandler:           &loginHandler{handler: newHandler(server), hasher: server.passwordHasher, mappings: server.opts.LDAPMappings},
+		loginHandler:           &loginHandler{handler: newHandler(server), hasher: server.passwordHasher},
 		logoutHandler:          &logoutHandler{handler: newHandler(server)},
 	}
 }
@@ -100,6 +98,20 @@ func newGroupManager(server *rpcServer) *groupManager {
 		setGroupPermissionsHandler:  &setGroupPermissionsHandler{handler: newHandler(server)},
 		createGroupHandler:          &createGroupHandler{handler: newHandler(server)},
 		listGroupPermissionsHandler: &listGroupPermissionsHandler{handler: newHandler(server)},
+	}
+}
+
+type refreshTokenManager struct {
+	*createRefreshTokenHandler
+	*listRefreshTokensHandler
+	*disableRefreshTokenHandler
+}
+
+func newRefreshTokenManager(server *rpcServer) *refreshTokenManager {
+	return &refreshTokenManager{
+		createRefreshTokenHandler:  &createRefreshTokenHandler{handler: newHandler(server)},
+		listRefreshTokensHandler:   &listRefreshTokensHandler{handler: newHandler(server)},
+		disableRefreshTokenHandler: &disableRefreshTokenHandler{handler: newHandler(server)},
 	}
 }
 

@@ -50,6 +50,14 @@ const (
 	GroupPermissionCanDelete   Permission = "charon:group_permission:can delete"
 	GroupPermissionCanModify   Permission = "charon:group_permission:can modify"
 	GroupPermissionCanRetrieve Permission = "charon:group_permission:can retrieve"
+
+	RefreshTokenCanCreate             Permission = "charon:refresh-token:can create"
+	RefreshTokenCanDisableAsStranger  Permission = "charon:refresh-token:can disable as stranger"
+	RefreshTokenCanDisableAsOwner     Permission = "charon:refresh-token:can disable as owner"
+	RefreshTokenCanModifyAsStranger   Permission = "charon:refresh-token:can modify as stranger"
+	RefreshTokenCanModifyAsOwner      Permission = "charon:refresh-token:can modify as owner"
+	RefreshTokenCanRetrieveAsOwner    Permission = "charon:refresh-token:can retrieve as owner"
+	RefreshTokenCanRetrieveAsStranger Permission = "charon:refresh-token:can retrieve as stranger"
 )
 
 var (
@@ -73,6 +81,11 @@ var (
 		UserPermissionCanDelete,
 		UserPermissionCanModify,
 		UserPermissionCanRetrieve,
+		UserGroupCanCreate,
+		UserGroupCanDelete,
+		UserGroupCanModify,
+		UserGroupCanRetrieve,
+		UserGroupCanCheckBelongingAsStranger,
 		PermissionCanCreate,
 		PermissionCanDelete,
 		PermissionCanModify,
@@ -85,6 +98,14 @@ var (
 		GroupPermissionCanDelete,
 		GroupPermissionCanModify,
 		GroupPermissionCanRetrieve,
+		// RefreshToken
+		RefreshTokenCanCreate,
+		RefreshTokenCanDisableAsStranger,
+		RefreshTokenCanDisableAsOwner,
+		RefreshTokenCanModifyAsStranger,
+		RefreshTokenCanModifyAsOwner,
+		RefreshTokenCanRetrieveAsOwner,
+		RefreshTokenCanRetrieveAsStranger,
 	}
 )
 
@@ -233,4 +254,31 @@ func (p *Permissions) Set(s string) error {
 		*p = append(*p, Permission(perm))
 	}
 	return nil
+}
+
+// Len implements sort Interface.
+func (p Permissions) Len() int {
+	return len(p)
+}
+
+// Less implements sort Interface.
+func (p Permissions) Less(i, j int) bool {
+	s1, m1, a1 := p[i].Split()
+	s2, m2, a2 := p[j].Split()
+
+	switch {
+	case s1 < s2:
+		return true
+	case m1 < m2:
+		return true
+	case a1 < a2:
+		return true
+	default:
+		return false
+	}
+}
+
+// Swap implements sort Interface.
+func (p Permissions) Swap(i, j int) {
+	p[i], p[j] = p[j], p[i]
 }

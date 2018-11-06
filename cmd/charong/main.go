@@ -7,8 +7,9 @@ import (
 	"log"
 	"os"
 
+	"github.com/piotrkowalczuk/pqt/pqtgo/pqtgogen"
+
 	"github.com/piotrkowalczuk/ntypespqt"
-	"github.com/piotrkowalczuk/pqt/pqtgo"
 	"github.com/piotrkowalczuk/pqt/pqtsql"
 	"github.com/piotrkowalczuk/qtypespqt"
 )
@@ -39,25 +40,18 @@ func main() {
 	}
 	defer file.Close()
 
-	form := &pqtgo.Formatter{
-		Acronyms:   acronyms,
-		Visibility: pqtgo.Public,
-	}
 	sch := databaseSchema()
-	genGo := &pqtgo.Generator{
-		Formatter: form,
-		Pkg:       "model",
-		Version:   9.5,
-		Plugins: []pqtgo.Plugin{
-			&qtypespqt.Plugin{
-				Formatter:  form,
-				Visibility: pqtgo.Public,
-			},
+	genGo := &pqtgogen.Generator{
+		Pkg:        "model",
+		Version:    9.5,
+		Components: pqtgogen.ComponentAll,
+		Plugins: []pqtgogen.Plugin{
+			&qtypespqt.Plugin{},
 			&ntypespqt.Plugin{},
 		},
 	}
 	genSQL := &pqtsql.Generator{}
-	if err := genGo.GenerateTo(file, sch); err != nil {
+	if err := genGo.GenerateTo(sch, file); err != nil {
 		log.Fatal(err)
 	}
 	fmt.Fprint(file, "const SQL = `\n")

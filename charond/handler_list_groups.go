@@ -5,9 +5,11 @@ import (
 
 	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/charon/charonrpc"
+	"github.com/piotrkowalczuk/charon/internal/grpcerr"
+	"github.com/piotrkowalczuk/charon/internal/mapping"
 	"github.com/piotrkowalczuk/charon/internal/model"
 	"github.com/piotrkowalczuk/charon/internal/session"
-	"google.golang.org/grpc"
+
 	"google.golang.org/grpc/codes"
 )
 
@@ -16,7 +18,7 @@ type listGroupsHandler struct {
 }
 
 func (lgh *listGroupsHandler) List(ctx context.Context, req *charonrpc.ListGroupsRequest) (*charonrpc.ListGroupsResponse, error) {
-	act, err := lgh.retrieveActor(ctx)
+	act, err := lgh.Actor(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -25,11 +27,12 @@ func (lgh *listGroupsHandler) List(ctx context.Context, req *charonrpc.ListGroup
 	}
 
 	ents, err := lgh.repository.group.Find(ctx, &model.GroupFindExpr{
-		Limit:  req.Limit.Int64Or(10),
-		Offset: req.Offset.Int64Or(0),
+		Limit:   req.GetLimit().Int64Or(10),
+		Offset:  req.GetOffset().Int64Or(0),
+		OrderBy: mapping.OrderBy(req.GetOrderBy()),
 	})
 	if err != nil {
-		return nil, err
+		return nil, grpcerr.E(codes.Internal, "find group query failed", err)
 	}
 
 	return lgh.response(ents)
@@ -43,23 +46,15 @@ func (lgh *listGroupsHandler) firewall(req *charonrpc.ListGroupsRequest, act *se
 		return nil
 	}
 
-	return grpc.Errorf(codes.PermissionDenied, "list of groups cannot be retrieved, missing permission")
+	return grpcerr.E(codes.PermissionDenied, "list of groups cannot be retrieved, missing permission")
 }
 
 func (lgh *listGroupsHandler) response(ents []*model.GroupEntity) (*charonrpc.ListGroupsResponse, error) {
-	resp := &charonrpc.ListGroupsResponse{
-		Groups: make([]*charonrpc.Group, 0, len(ents)),
-	}
-	var (
-		err error
-		msg *charonrpc.Group
-	)
-	for _, e := range ents {
-		if msg, err = e.Message(); err != nil {
-			return nil, err
-		}
-		resp.Groups = append(resp.Groups, msg)
+	msg, err := mapping.ReverseGroups(ents)
+	if err != nil {
+		return nil, grpcerr.E(codes.Internal, "group entities mapping failure", err)
+
 	}
 
-	return resp, nil
+	return &charonrpc.ListGroupsResponse{Groups: msg}, nil
 }

@@ -5,6 +5,7 @@ import (
 
 	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/charon/charonrpc"
+	"github.com/piotrkowalczuk/charon/internal/grpcerr"
 	"github.com/piotrkowalczuk/charon/internal/model"
 	"google.golang.org/grpc/codes"
 )
@@ -20,9 +21,9 @@ func (rph *registerPermissionsHandler) Register(ctx context.Context, req *charon
 	if err != nil {
 		switch err {
 		case model.ErrEmptySliceOfPermissions, model.ErrEmptySubsystem, model.ErrorInconsistentSubsystem:
-			return nil, errf(codes.InvalidArgument, err.Error())
+			return nil, grpcerr.E(codes.InvalidArgument, err)
 		default:
-			return nil, err
+			return nil, grpcerr.E(codes.Internal, "permission registration failure", err)
 		}
 	}
 

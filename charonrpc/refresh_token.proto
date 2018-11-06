@@ -1,0 +1,70 @@
+syntax = "proto3";
+
+package charonrpc;
+
+option go_package = "github.com/piotrkowalczuk/charon/charonrpc";
+
+import "google/protobuf/timestamp.proto";
+import "charonrpc/common.proto";
+import "qtypes/qtypes.proto";
+import "ntypes/ntypes.proto";
+
+service RefreshTokenManager {
+    rpc Create(CreateRefreshTokenRequest) returns (CreateRefreshTokenResponse) {};
+    rpc Disable(DisableRefreshTokenRequest) returns (DisableRefreshTokenResponse) {};
+    rpc List(ListRefreshTokensRequest) returns (ListRefreshTokensResponse) {};
+}
+
+message RefreshToken {
+    string token = 1;
+    ntypes.String notes = 2;
+    int64 user_id = 3;
+    bool disabled = 4;
+    google.protobuf.Timestamp expire_at = 5;
+    google.protobuf.Timestamp last_used_at = 6;
+    google.protobuf.Timestamp created_at = 7;
+    ntypes.Int64 created_by = 8;
+    google.protobuf.Timestamp updated_at = 9;
+    ntypes.Int64 updated_by = 10;
+}
+
+message RefreshTokenQuery {
+    qtypes.Int64 user_id = 1;
+    qtypes.String notes = 2;
+    ntypes.Bool disabled = 3;
+    qtypes.Timestamp expire_at = 4;
+    qtypes.Timestamp last_used_at = 5;
+    qtypes.Timestamp created_at = 6;
+    qtypes.Timestamp updated_at = 7;
+}
+
+message CreateRefreshTokenRequest {
+    ntypes.String notes = 1;
+    google.protobuf.Timestamp expire_at = 2;
+}
+
+message CreateRefreshTokenResponse {
+    RefreshToken refresh_token = 1;
+}
+
+message ListRefreshTokensRequest {
+    ntypes.Int64 offset = 1;
+    ntypes.Int64 limit = 2;
+    repeated Order order_by = 3;
+    reserved 4 to 10;
+
+    RefreshTokenQuery query = 11;
+}
+
+message ListRefreshTokensResponse {
+    repeated RefreshToken refresh_tokens = 1;
+}
+
+message DisableRefreshTokenRequest {
+    string token = 1;
+    int64 user_id = 2;
+}
+
+message DisableRefreshTokenResponse {
+    RefreshToken refresh_token = 1;
+}

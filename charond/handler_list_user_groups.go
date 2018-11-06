@@ -5,9 +5,10 @@ import (
 
 	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/charon/charonrpc"
-	"github.com/piotrkowalczuk/charon/internal/model"
+	"github.com/piotrkowalczuk/charon/internal/grpcerr"
+	"github.com/piotrkowalczuk/charon/internal/mapping"
 	"github.com/piotrkowalczuk/charon/internal/session"
-	"google.golang.org/grpc"
+
 	"google.golang.org/grpc/codes"
 )
 
@@ -15,41 +16,40 @@ type listUserGroupsHandler struct {
 	*handler
 }
 
-// TODO: missing firewall
 func (lugh *listUserGroupsHandler) ListGroups(ctx context.Context, req *charonrpc.ListUserGroupsRequest) (*charonrpc.ListUserGroupsResponse, error) {
-	ents, err := lugh.repository.group.FindByUserID(ctx, req.Id)
+	if req.Id <= 0 {
+		return nil, grpcerr.E(codes.InvalidArgument, "missing user id")
+	}
+	act, err := lugh.Actor(ctx)
 	if err != nil {
 		return nil, err
 	}
+	if err = lugh.firewall(req, act); err != nil {
+		return nil, err
+	}
 
-	return lugh.response(ents)
+	ents, err := lugh.repository.group.FindByUserID(ctx, req.Id)
+	if err != nil {
+		return nil, grpcerr.E(codes.Internal, "find groups by user id query failed", err)
+	}
+
+	msg, err := mapping.ReverseGroups(ents)
+	if err != nil {
+		return nil, grpcerr.E(codes.Internal, "user group entities mapping failure", err)
+	}
+
+	return &charonrpc.ListUserGroupsResponse{Groups: msg}, nil
 }
 
 func (lugh *listUserGroupsHandler) firewall(req *charonrpc.ListUserGroupsRequest, act *session.Actor) error {
-	if act.User.IsSuperuser {
+	switch {
+	case act.User.IsSuperuser:
+		return nil
+	case act.User.ID == req.Id:
+		return nil
+	case act.Permissions.Contains(charon.UserGroupCanRetrieve):
 		return nil
 	}
-	if act.Permissions.Contains(charon.UserGroupCanRetrieve) {
-		return nil
-	}
 
-	return grpc.Errorf(codes.PermissionDenied, "list of user groups cannot be retrieved, missing permission")
-}
-
-func (lugh *listUserGroupsHandler) response(ents []*model.GroupEntity) (*charonrpc.ListUserGroupsResponse, error) {
-	resp := &charonrpc.ListUserGroupsResponse{
-		Groups: make([]*charonrpc.Group, 0, len(ents)),
-	}
-	var (
-		err error
-		msg *charonrpc.Group
-	)
-	for _, e := range ents {
-		if msg, err = e.Message(); err != nil {
-			return nil, err
-		}
-		resp.Groups = append(resp.Groups, msg)
-	}
-
-	return resp, nil
+	return grpcerr.E(codes.PermissionDenied, "list of user groups cannot be retrieved, missing permission")
 }

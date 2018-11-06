@@ -10,7 +10,7 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
-func TestRPCServer_minimal(t *testing.T) {
+func óTestRPCServer_minimal(t *testing.T) {
 	suite := &endToEndSuite{}
 	suite.setup(t)
 	defer suite.teardown(t)

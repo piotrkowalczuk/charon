@@ -5,10 +5,12 @@ import (
 )
 
 func databaseSchema() *pqt.Schema {
-	user := databaseTableUser()
+	userID := id()
+	user := databaseTableUser(userID)
 	group := databaseTableGroup(user)
 	permission, groupPermissions, userPermissions := databaseTablePermission(user, group)
 	userGroups := databaseTableUserGroups(user, group)
+	refreshToken := databaseTableRefreshToken(userID)
 
 	return pqt.NewSchema("charon", pqt.WithSchemaIfNotExists()).
 		AddTable(user).
@@ -16,11 +18,13 @@ func databaseSchema() *pqt.Schema {
 		AddTable(permission).
 		AddTable(userGroups).
 		AddTable(groupPermissions).
-		AddTable(userPermissions)
+		AddTable(userPermissions).
+		AddTable(refreshToken)
 }
 
-func databaseTableUser() *pqt.Table {
+func databaseTableUser(id *pqt.Column) *pqt.Table {
 	t := pqt.NewTable("user", pqt.WithTableIfNotExists()).
+		AddColumn(id).
 		AddColumn(pqt.NewColumn("password", pqt.TypeBytea(), pqt.WithNotNull())).
 		AddColumn(pqt.NewColumn("username", pqt.TypeText(), pqt.WithNotNull(), pqt.WithUnique())).
 		AddColumn(pqt.NewColumn("first_name", pqt.TypeText(), pqt.WithNotNull())).
@@ -32,7 +36,6 @@ func databaseTableUser() *pqt.Table {
 		AddColumn(pqt.NewColumn("confirmation_token", pqt.TypeBytea())).
 		AddColumn(pqt.NewColumn("last_login_at", pqt.TypeTimestampTZ()))
 
-	identifierable(t)
 	ownerable(t, pqt.SelfReference())
 	timestampable(t)
 
@@ -117,8 +120,32 @@ func databaseTableUserGroups(user, group *pqt.Table) *pqt.Table {
 	return t
 }
 
+func databaseTableRefreshToken(refUserID *pqt.Column) *pqt.Table {
+	token := pqt.NewColumn("token", pqt.TypeText(), pqt.WithNotNull())
+	userID := pqt.NewColumn("user_id", pqt.TypeIntegerBig(), pqt.WithNotNull(), pqt.WithReference(refUserID))
+	expireAt := pqt.NewColumn("expire_at", pqt.TypeTimestampTZ())
+
+	t := pqt.NewTable("refresh_token", pqt.WithTableIfNotExists()).
+		AddColumn(token).
+		AddColumn(pqt.NewColumn("disabled", pqt.TypeBool(), pqt.WithNotNull(), pqt.WithDefault("false"))).
+		AddColumn(expireAt).
+		AddColumn(pqt.NewColumn("last_used_at", pqt.TypeTimestampTZ())).
+		AddColumn(pqt.NewColumn("notes", pqt.TypeText())).
+		AddColumn(userID).
+		AddConstraint(pqt.Unique(pqt.SelfReference(), token, userID))
+
+	ownerable(t, refUserID.Table)
+	timestampable(t)
+
+	return t
+}
+
+func id() *pqt.Column {
+	return pqt.NewColumn("id", pqt.TypeSerialBig(), pqt.WithPrimaryKey())
+}
+
 func identifierable(t *pqt.Table) {
-	t.AddColumn(pqt.NewColumn("id", pqt.TypeSerialBig(), pqt.WithPrimaryKey()))
+	t.AddColumn(id())
 }
 
 func ownerable(owner, inversed *pqt.Table) {

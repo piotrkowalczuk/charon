@@ -6,9 +6,10 @@ import (
 	"github.com/lib/pq"
 	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/charon/charonrpc"
+	"github.com/piotrkowalczuk/charon/internal/grpcerr"
 	"github.com/piotrkowalczuk/charon/internal/model"
 	"github.com/piotrkowalczuk/charon/internal/session"
-	"google.golang.org/grpc"
+
 	"google.golang.org/grpc/codes"
 )
 
@@ -17,7 +18,7 @@ type setUserGroupsHandler struct {
 }
 
 func (sugh *setUserGroupsHandler) SetGroups(ctx context.Context, req *charonrpc.SetUserGroupsRequest) (*charonrpc.SetUserGroupsResponse, error) {
-	act, err := sugh.retrieveActor(ctx)
+	act, err := sugh.Actor(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -30,9 +31,9 @@ func (sugh *setUserGroupsHandler) SetGroups(ctx context.Context, req *charonrpc.
 	if err != nil {
 		switch model.ErrorConstraint(err) {
 		case model.TableUserGroupsConstraintGroupIDForeignKey:
-			return nil, errf(codes.NotFound, "%s: group does not exist", err.(*pq.Error).Detail)
+			return nil, grpcerr.E(codes.NotFound, "%s: group does not exist", err.(*pq.Error).Detail)
 		case model.TableUserGroupsConstraintUserIDForeignKey:
-			return nil, errf(codes.NotFound, "%s: user does not exist", err.(*pq.Error).Detail)
+			return nil, grpcerr.E(codes.NotFound, "%s: user does not exist", err.(*pq.Error).Detail)
 		default:
 			return nil, err
 		}
@@ -53,5 +54,5 @@ func (sugh *setUserGroupsHandler) firewall(req *charonrpc.SetUserGroupsRequest, 
 		return nil
 	}
 
-	return grpc.Errorf(codes.PermissionDenied, "user groups cannot be set, missing permission")
+	return grpcerr.E(codes.PermissionDenied, "user groups cannot be set, missing permission")
 }

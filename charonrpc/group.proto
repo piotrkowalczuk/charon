@@ -6,6 +6,7 @@ option go_package = "github.com/piotrkowalczuk/charon/charonrpc";
 
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/wrappers.proto";
+import "charonrpc/common.proto";
 import "ntypes/ntypes.proto";
 
 service GroupManager {
@@ -50,6 +51,7 @@ message ListGroupsRequest {
     reserved 1 to 99;
     ntypes.Int64 offset = 100;
     ntypes.Int64 limit = 101;
+    repeated Order order_by = 102;
 }
 
 message ListGroupsResponse {

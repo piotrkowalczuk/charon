@@ -6,9 +6,9 @@ import (
 
 	"github.com/golang/protobuf/ptypes/wrappers"
 	"github.com/piotrkowalczuk/charon/charonrpc"
+	"github.com/piotrkowalczuk/charon/internal/grpcerr"
 	"github.com/piotrkowalczuk/charon/internal/session"
 	"github.com/piotrkowalczuk/mnemosyne/mnemosynerpc"
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 )
 
@@ -17,10 +17,8 @@ type actorHandler struct {
 }
 
 func (sh *actorHandler) Actor(ctx context.Context, r *wrappers.StringValue) (*charonrpc.ActorResponse, error) {
-	var (
-		ses *mnemosynerpc.Session
-		err error
-	)
+	var ses *mnemosynerpc.Session
+
 	if r.Value == "" {
 		res, err := sh.session.Context(ctx, none())
 		if err != nil {
@@ -39,30 +37,23 @@ func (sh *actorHandler) Actor(ctx context.Context, r *wrappers.StringValue) (*ch
 
 	id, err := session.ActorID(ses.SubjectId).UserID()
 	if err != nil {
-		return nil, errf(codes.Internal, "invalid session actor id: %s", ses.SubjectId)
+		return nil, grpcerr.E(codes.Internal, "invalid session actor id")
 	}
 
 	ent, err := sh.repository.user.FindOneByID(ctx, id)
-	if err != nil {
-		switch err {
-		case sql.ErrNoRows:
-			return nil, grpc.Errorf(codes.NotFound, "actor does not exists with id: %d", id)
-		case context.DeadlineExceeded, context.Canceled:
-			return nil, err
-		default:
-			return nil, grpc.Errorf(codes.Internal, "actor retrieval failure: %s", err.Error())
-		}
+	switch err {
+	case nil:
+	case sql.ErrNoRows:
+		return nil, grpcerr.E(codes.NotFound, "actor does not exists for given id")
+	default:
+		return nil, grpcerr.E(codes.Internal, "actor retrieval failure", err)
 	}
 
 	permissionEntities, err := sh.repository.permission.FindByUserID(ctx, id)
-	if err != nil && err != sql.ErrNoRows {
-		switch err {
-		case sql.ErrNoRows:
-		case context.DeadlineExceeded, context.Canceled:
-			return nil, err
-		default:
-			return nil, grpc.Errorf(codes.Internal, "actor list of permissions failure: %s", err.Error())
-		}
+	switch err {
+	case nil, sql.ErrNoRows:
+	default:
+		return nil, grpcerr.E(codes.Internal, "actor list of permissions failure", err)
 	}
 
 	permissions := make([]string, 0, len(permissionEntities))

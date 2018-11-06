@@ -1,18 +1,27 @@
 package charond
 
 import (
+	"database/sql"
 	"testing"
+	"time"
+
+	"context"
 
 	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/charon/charonrpc"
+	"github.com/piotrkowalczuk/charon/internal/grpcerr"
 	"github.com/piotrkowalczuk/charon/internal/model"
+	"github.com/piotrkowalczuk/charon/internal/model/modelmock"
 	"github.com/piotrkowalczuk/charon/internal/session"
+	"github.com/piotrkowalczuk/charon/internal/session/sessionmock"
 	"github.com/piotrkowalczuk/ntypes"
+	"github.com/piotrkowalczuk/sklog"
+	"github.com/stretchr/testify/mock"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
-func TestGetGroupHandler_Get(t *testing.T) {
+func TestGetGroupHandler_Get_E2E(t *testing.T) {
 	suite := &endToEndSuite{}
 	suite.setup(t)
 	defer suite.teardown(t)
@@ -49,62 +58,106 @@ func TestGetGroupHandler_Get(t *testing.T) {
 	}
 }
 
-func TestGetGroupHandler_firewall_success(t *testing.T) {
-	data := []struct {
-		req charonrpc.GetGroupRequest
-		act session.Actor
+func TestGetGroupHandler_Get_Unit(t *testing.T) {
+	actorProviderMock := &sessionmock.ActorProvider{}
+	groupProviderMock := &modelmock.GroupProvider{}
+
+	cases := map[string]struct {
+		init func(*testing.T)
+		req  charonrpc.GetGroupRequest
+		err  error
 	}{
-		{
-			req: charonrpc.GetGroupRequest{Id: 1},
-			act: session.Actor{
-				User: &model.UserEntity{ID: 2},
-				Permissions: charon.Permissions{
-					charon.GroupCanRetrieve,
-				},
-			},
+		"missing-group-id": {
+			init: func(_ *testing.T) {},
+			req:  charonrpc.GetGroupRequest{},
+			err:  grpcerr.E(codes.InvalidArgument),
 		},
-		{
+		"session-does-not-exists": {
+			init: func(t *testing.T) {
+				actorProviderMock.On("Actor", mock.Anything).
+					Return(nil, grpcerr.E(codes.Unauthenticated, "session does not exists")).
+					Once()
+			},
 			req: charonrpc.GetGroupRequest{Id: 1},
-			act: session.Actor{
-				User: &model.UserEntity{ID: 2, IsSuperuser: true},
+			err: grpcerr.E(codes.Unauthenticated),
+		},
+		"group-does-not-exists": {
+			init: func(t *testing.T) {
+				actorProviderMock.On("Actor", mock.Anything).
+					Return(&session.Actor{User: &model.UserEntity{IsSuperuser: true}}, nil).
+					Once()
+				groupProviderMock.On("FindOneByID", mock.Anything, int64(1)).Return(nil, sql.ErrNoRows)
+			},
+			req: charonrpc.GetGroupRequest{Id: 1},
+			err: grpcerr.E(codes.NotFound),
+		},
+		"group-fetch-canceled": {
+			init: func(t *testing.T) {
+				actorProviderMock.On("Actor", mock.Anything).
+					Return(&session.Actor{User: &model.UserEntity{IsSuperuser: true}}, nil).
+					Once()
+				groupProviderMock.On("FindOneByID", mock.Anything, int64(1)).Return(nil, context.Canceled)
+			},
+			req: charonrpc.GetGroupRequest{Id: 1},
+			err: grpcerr.E(codes.Canceled),
+		},
+		"reverse-mapping-issue": {
+			init: func(t *testing.T) {
+				actorProviderMock.On("Actor", mock.Anything).
+					Return(&session.Actor{User: &model.UserEntity{IsSuperuser: true}}, nil).
+					Once()
+				groupProviderMock.On("FindOneByID", mock.Anything, int64(1)).Return(&model.GroupEntity{
+					ID:        1,
+					CreatedAt: time.Date(1, 1, 0, 0, 0, 0, 0, time.UTC),
+				}, nil)
+			},
+			req: charonrpc.GetGroupRequest{Id: 1},
+			err: grpcerr.E(codes.Internal),
+		},
+		"can-retrieve": {
+			init: func(t *testing.T) {
+				actorProviderMock.On("Actor", mock.Anything).
+					Return(&session.Actor{
+						Permissions: charon.Permissions{charon.GroupCanRetrieve},
+						User:        &model.UserEntity{},
+					}, nil).
+					Once()
+				groupProviderMock.On("FindOneByID", mock.Anything, int64(1)).Return(&model.GroupEntity{ID: 1}, nil)
+			},
+			req: charonrpc.GetGroupRequest{Id: 1},
+		},
+		"cannot-retrieve-without-permission": {
+			init: func(t *testing.T) {
+				actorProviderMock.On("Actor", mock.Anything).
+					Return(&session.Actor{User: &model.UserEntity{IsStaff: true}}, nil).
+					Once()
+			},
+			req: charonrpc.GetGroupRequest{Id: 1},
+			err: grpcerr.E(codes.PermissionDenied),
+		},
+	}
+
+	h := getGroupHandler{
+		handler: &handler{
+			logger:        sklog.NewTestLogger(t),
+			ActorProvider: actorProviderMock,
+			repository: repositories{
+				group: groupProviderMock,
 			},
 		},
 	}
 
-	h := &getGroupHandler{}
-	for _, d := range data {
-		if err := h.firewall(&d.req, &d.act); err != nil {
-			t.Errorf("unexpected error: %s", err.Error())
-		}
-	}
-}
+	for hint, c := range cases {
+		t.Run(hint, func(t *testing.T) {
+			actorProviderMock.ExpectedCalls = nil
+			groupProviderMock.ExpectedCalls = nil
 
-func TestGetGroupHandler_firewall_failure(t *testing.T) {
-	data := []struct {
-		req charonrpc.GetGroupRequest
-		act session.Actor
-	}{
-		{
-			req: charonrpc.GetGroupRequest{Id: 1},
-			act: session.Actor{
-				User: &model.UserEntity{ID: 1},
-			},
-		},
-		{
-			req: charonrpc.GetGroupRequest{Id: 1},
-			act: session.Actor{
-				User: &model.UserEntity{
-					ID:      2,
-					IsStaff: true,
-				},
-			},
-		},
-	}
+			c.init(t)
 
-	h := &getGroupHandler{}
-	for _, d := range data {
-		if err := h.firewall(&d.req, &d.act); err == nil {
-			t.Error("expected error, got nil")
-		}
+			_, err := h.Get(context.TODO(), &c.req)
+			assertError(t, c.err, err)
+
+			mock.AssertExpectationsForObjects(t, actorProviderMock, groupProviderMock)
+		})
 	}
 }

@@ -1,0 +1,37 @@
+version: '2'
+
+services:
+  postgres:
+    image: postgres:9.5
+    container_name: postgres
+    ports:
+      - 5434:5432
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+  mnemosyned:
+    image: piotrkowalczuk/mnemosyne:v0.8.0
+    container_name: mnemosyned
+    environment:
+      MNEMOSYNED_POSTGRES_SCHEMA: mnemosyne
+    links:
+      - postgres
+    ports:
+      - 10000:8080
+      - 10001:8081
+  charond:
+      image: charon
+      container_name: charond
+      environment:
+        MNEMOSYNED_POSTGRES_SCHEMA: mnemosyne
+      links:
+        - postgres
+      ports:
+      - 10010:8080
+      - 10011:8081
+      depends_on:
+        - mnemosyned
+volumes:
+  postgres-data:
+    external: false
+  prometheus-data:
+    external: false

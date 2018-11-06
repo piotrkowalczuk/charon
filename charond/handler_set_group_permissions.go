@@ -6,9 +6,10 @@ import (
 	"github.com/lib/pq"
 	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/charon/charonrpc"
+	"github.com/piotrkowalczuk/charon/internal/grpcerr"
 	"github.com/piotrkowalczuk/charon/internal/model"
 	"github.com/piotrkowalczuk/charon/internal/session"
-	"google.golang.org/grpc"
+
 	"google.golang.org/grpc/codes"
 )
 
@@ -17,7 +18,7 @@ type setGroupPermissionsHandler struct {
 }
 
 func (sgph *setGroupPermissionsHandler) SetPermissions(ctx context.Context, req *charonrpc.SetGroupPermissionsRequest) (*charonrpc.SetGroupPermissionsResponse, error) {
-	act, err := sgph.retrieveActor(ctx)
+	act, err := sgph.Actor(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -38,9 +39,9 @@ func (sgph *setGroupPermissionsHandler) SetPermissions(ctx context.Context, req 
 	if err != nil {
 		switch model.ErrorConstraint(err) {
 		case model.TableGroupPermissionsConstraintGroupIDForeignKey:
-			return nil, errf(codes.NotFound, "%s: group does not exist", err.(*pq.Error).Detail)
+			return nil, grpcerr.E(codes.NotFound, "%s: group does not exist", err.(*pq.Error).Detail)
 		case model.TableGroupPermissionsConstraintPermissionSubsystemPermissionModulePermissionActionForeignKey:
-			return nil, errf(codes.NotFound, "%s: permission does not exist", err.(*pq.Error).Detail)
+			return nil, grpcerr.E(codes.NotFound, "%s: permission does not exist", err.(*pq.Error).Detail)
 		default:
 			return nil, err
 		}
@@ -61,5 +62,5 @@ func (sgph *setGroupPermissionsHandler) firewall(req *charonrpc.SetGroupPermissi
 		return nil
 	}
 
-	return grpc.Errorf(codes.PermissionDenied, "group permissions cannot be set, missing permission")
+	return grpcerr.E(codes.PermissionDenied, "group permissions cannot be set, missing permission")
 }

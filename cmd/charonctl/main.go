@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/piotrkowalczuk/charon/charonctl"
 	"github.com/piotrkowalczuk/charon/charonrpc"
 	"github.com/piotrkowalczuk/ntypes"
 	"google.golang.org/grpc"
@@ -25,7 +26,27 @@ func main() {
 	case "help":
 		config.cl.Usage()
 	case "register":
-		registerUser(config)
+		ctl := connect(config)
+		err := ctl.RegisterUser(ctl.Ctx, &charonctl.RegisterUserArg{
+			Username:    config.register.username,
+			Password:    config.register.password,
+			IfNotExists: config.register.ifNotExists,
+			Active:      config.register.active,
+			Staff:       config.register.staff,
+			Confirmed:   config.register.confirmed,
+			Superuser:   config.register.superuser,
+			FirstName:   config.register.firstName,
+			LastName:    config.register.lastName,
+			Permissions: config.register.permissions,
+		})
+		fail(err)
+	case "refresh-token":
+		ctl := connect(config)
+		err := ctl.ObtainRefreshToken(ctl.Ctx, &charonctl.ObtainRefreshTokenArg{
+			ExpireAfter: config.refreshToken.expireAfter,
+			Notes:       config.refreshToken.notes,
+		})
+		fail(err)
 	case "load":
 		if err := load(config); err != nil {
 			fmt.Printf("fixtures import failure: %s\n", grpc.ErrorDesc(err))
@@ -36,49 +57,36 @@ func main() {
 	}
 }
 
-func registerUser(config configuration) {
-	c, ctx := initClient(config.address)
-	res, err := c.user.Create(ctx, &charonrpc.CreateUserRequest{
-		Username:      config.register.username,
-		PlainPassword: config.register.password,
-		FirstName:     config.register.firstName,
-		LastName:      config.register.lastName,
-		IsSuperuser:   &ntypes.Bool{Bool: config.register.superuser, Valid: true},
-		IsConfirmed:   &ntypes.Bool{Bool: config.register.confirmed, Valid: true},
-		IsStaff:       &ntypes.Bool{Bool: config.register.staff, Valid: true},
-		IsActive:      &ntypes.Bool{Bool: config.register.active, Valid: true},
-	})
+func fail(err error) {
 	if err != nil {
-		if config.register.ifNotExists && grpc.Code(err) == codes.AlreadyExists {
-			fmt.Printf("user already exists: %s\n", config.register.username)
-			return
+		if ctlErr, ok := err.(*charonctl.Error); ok {
+			fmt.Printf("%s: %s", ctlErr.Msg, grpc.ErrorDesc(ctlErr.Err))
+		} else {
+			fmt.Printf(grpc.ErrorDesc(err))
 		}
-		fmt.Printf("registration failure: %s\n", grpc.ErrorDesc(err))
+		os.Exit(1)
+	}
+}
+func connect(config configuration) *charonctl.Console {
+	conn, err := grpc.Dial(config.address, grpc.WithInsecure(), grpc.WithUserAgent("charonctl"))
+	if err != nil {
+		fmt.Printf("charond connection failure to %s with error: %s\n", config.address, grpc.ErrorDesc(err))
 		os.Exit(1)
 	}
 
-	if config.register.superuser {
-		fmt.Printf("superuser has been created: %s\n", res.User.Username)
-	} else {
-		fmt.Printf("user has been created: %s\n", res.User.Username)
+	var username, password string
+	if config.auth.enabled {
+		username = config.auth.username
+		password = config.auth.password
 	}
 
-	if len(config.register.permissions) > 0 {
-		if config.register.superuser {
-			// superuser does not need permissions
-			os.Exit(0)
-		}
-
-		if _, err = c.user.SetPermissions(ctx, &charonrpc.SetUserPermissionsRequest{
-			UserId:      res.User.Id,
-			Permissions: config.register.permissions.Strings(),
-		}); err != nil {
-			fmt.Printf("permission assigment failure: %s\n", grpc.ErrorDesc(err))
-			os.Exit(1)
-		}
-
-		fmt.Println("users permissions has been set")
-	}
+	c, err := charonctl.NewConsole(charonctl.ConsoleOpts{
+		Conn:     conn,
+		Username: username,
+		Password: password,
+	})
+	fail(err)
+	return c
 }
 
 type fixtures struct {

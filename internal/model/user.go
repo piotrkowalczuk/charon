@@ -5,10 +5,7 @@ import (
 	"database/sql"
 	"strings"
 
-	"github.com/golang/protobuf/ptypes"
-	pbts "github.com/golang/protobuf/ptypes/timestamp"
 	"github.com/piotrkowalczuk/charon"
-	"github.com/piotrkowalczuk/charon/charonrpc"
 )
 
 const (
@@ -32,40 +29,6 @@ func (ue *UserEntity) String() string {
 	default:
 		return ue.FirstName + " " + ue.LastName
 	}
-}
-
-// Message maps entity into protobuf message.
-func (ue *UserEntity) Message() (*charonrpc.User, error) {
-	var (
-		err                  error
-		createdAt, updatedAt *pbts.Timestamp
-	)
-
-	if !ue.CreatedAt.IsZero() {
-		if createdAt, err = ptypes.TimestampProto(ue.CreatedAt); err != nil {
-			return nil, err
-		}
-	}
-	if ue.UpdatedAt.Valid {
-		if updatedAt, err = ptypes.TimestampProto(ue.UpdatedAt.Time); err != nil {
-			return nil, err
-		}
-	}
-
-	return &charonrpc.User{
-		Id:          ue.ID,
-		Username:    ue.Username,
-		FirstName:   ue.FirstName,
-		LastName:    ue.LastName,
-		IsSuperuser: ue.IsSuperuser,
-		IsActive:    ue.IsActive,
-		IsStaff:     ue.IsStaff,
-		IsConfirmed: ue.IsConfirmed,
-		CreatedAt:   createdAt,
-		CreatedBy:   &ue.CreatedBy,
-		UpdatedAt:   updatedAt,
-		UpdatedBy:   &ue.UpdatedBy,
-	}, nil
 }
 
 // UserProvider wraps UserRepository into interface.

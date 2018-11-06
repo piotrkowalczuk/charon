@@ -4,20 +4,18 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"io"
 	"net"
 	"net/http"
 	"net/http/pprof"
-	"sync"
 	"testing"
 	"time"
 
 	"github.com/go-kit/kit/log"
-	libldap "github.com/go-ldap/ldap"
 	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/charon/charonrpc"
-	"github.com/piotrkowalczuk/charon/internal/ldap"
-	"github.com/piotrkowalczuk/charon/internal/password"
+	"github.com/piotrkowalczuk/charon/internal/grpcerr"
 	"github.com/piotrkowalczuk/mnemosyne"
 	"github.com/piotrkowalczuk/mnemosyne/mnemosynerpc"
 	"github.com/piotrkowalczuk/promgrpc/v3"
@@ -45,12 +43,6 @@ type DaemonOpts struct {
 	MnemosyneAddress     string
 	MnemosyneTLS         bool
 	MnemosyneTLSCertFile string
-	LDAP                 bool
-	LDAPAddress          string
-	LDAPBaseDN           string
-	LDAPSearchDN         string
-	LDAPBasePassword     string
-	LDAPMappings         *ldap.Mappings
 	Logger               log.Logger
 	RPCListener          net.Listener
 	DebugListener        net.Listener
@@ -60,12 +52,12 @@ type DaemonOpts struct {
 type TestDaemonOpts struct {
 	MnemosyneAddress string
 	PostgresAddress  string
+	PostgresDebug    bool
 }
 
 // Daemon ...
 type Daemon struct {
 	opts          DaemonOpts
-	ldap          *libldap.Conn
 	logger        log.Logger
 	rpcListener   net.Listener
 	debugListener net.Listener
@@ -100,6 +92,7 @@ func TestDaemon(t *testing.T, opts TestDaemonOpts) (net.Addr, io.Closer) {
 		MnemosyneAddress:   opts.MnemosyneAddress,
 		Logger:             logger,
 		PostgresAddress:    opts.PostgresAddress,
+		PostgresDebug:      opts.PostgresDebug,
 		RPCListener:        l,
 		PasswordBCryptCost: bcrypt.MinCost,
 	})
@@ -130,6 +123,7 @@ func (d *Daemon) Run() (err error) {
 		grpc.StatsHandler(interceptor),
 		// No stream endpoint available at the moment.
 		grpc.UnaryInterceptor(unaryServerInterceptors(
+			grpcerr.UnaryServerInterceptor(),
 			func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 				start := time.Now()
 
@@ -183,20 +177,10 @@ func (d *Daemon) Run() (err error) {
 
 	d.mnemosyne, d.mnemosyneConn = initMnemosyne(d.opts.MnemosyneAddress, d.logger, clientOpts)
 
-	var passwordHasher password.Hasher
-	if d.opts.LDAP {
-		// dial timeout
-		libldap.DefaultTimeout = 5 * time.Second
-		// open connection to check if it is reachable
-		if d.ldap, err = initLDAP(d.opts.LDAPAddress, d.opts.LDAPBaseDN, d.opts.LDAPBasePassword, d.logger); err != nil {
-			return
-		}
-		d.ldap.Close()
-	}
-
-	passwordHasher = initHasher(d.opts.PasswordBCryptCost, d.logger)
+	passwordHasher := initHasher(d.opts.PasswordBCryptCost, d.logger)
 	if d.opts.Test {
 		if _, err = createDummyTestUser(context.TODO(), repos.user, passwordHasher); err != nil {
+			fmt.Println("CREATE DUMMY TEST USER", err)
 			return
 		}
 		sklog.Info(d.logger, "test super user has been created")
@@ -212,20 +196,14 @@ func (d *Daemon) Run() (err error) {
 		passwordHasher:     passwordHasher,
 		permissionRegistry: permissionReg,
 		repository:         repos,
-		ldap: &sync.Pool{
-			New: func() interface{} {
-				conn, err := initLDAP(d.opts.LDAPAddress, d.opts.LDAPBaseDN, d.opts.LDAPBasePassword, d.logger)
-				if err != nil {
-					return err
-				}
-				return conn
-			},
-		},
 	}
+
 	charonrpc.RegisterAuthServer(gRPCServer, newAuth(server))
 	charonrpc.RegisterUserManagerServer(gRPCServer, newUserManager(server))
 	charonrpc.RegisterGroupManagerServer(gRPCServer, newGroupManager(server))
 	charonrpc.RegisterPermissionManagerServer(gRPCServer, newPermissionManager(server))
+	charonrpc.RegisterRefreshTokenManagerServer(gRPCServer, newRefreshTokenManager(server))
+
 	if !d.opts.Test {
 		prometheus.DefaultRegisterer.Register(interceptor)
 		promgrpc.RegisterInterceptor(gRPCServer, interceptor)
@@ -287,9 +265,6 @@ func (d *Daemon) Run() (err error) {
 
 // Close implements io.Closer interface.
 func (d *Daemon) Close() (err error) {
-	if d.ldap != nil {
-		d.ldap.Close()
-	}
 	if err = d.mnemosyneConn.Close(); err != nil {
 		return
 	}

@@ -14,8 +14,6 @@ set -e
 : ${CHAROND_POSTGRES_ADDRESS:=postgres://postgres:postgres@postgres/postgres?sslmode=disable}
 : ${CHAROND_POSTGRES_DEBUG:=false}
 : ${CHAROND_TLS_ENABLED:=false}
-: ${CHAROND_LDAP_ENABLED:=false}
-: ${CHAROND_LDAP_MAPPINGS:=/data/ldap.json}
 
 if [ "$1" = 'charond' ]; then
 	exec charond \
@@ -34,13 +32,7 @@ if [ "$1" = 'charond' ]; then
 		-postgres.debug=${CHAROND_POSTGRES_DEBUG} \
 		-tls=${CHAROND_TLS_ENABLED} \
 		-tls.crt=${CHAROND_TLS_CRT} \
-		-tls.key=${CHAROND_TLS_KEY} \
-		-ldap=${CHAROND_LDAP_ENABLED} \
-		-ldap.address=${CHAROND_LDAP_ADDRESS} \
-		-ldap.base.dn=${CHAROND_LDAP_BASE_DN} \
-		-ldap.base.password=${CHAROND_LDAP_BASE_PASSWORD} \
-		-ldap.search=${CHAROND_LDAP_SEARCH} \
-		-ldap.mappings=${CHAROND_LDAP_MAPPINGS}
+		-tls.key=${CHAROND_TLS_KEY}
 fi
 
 : ${CHARONCTL_CHAROND_HOST:=charond}
