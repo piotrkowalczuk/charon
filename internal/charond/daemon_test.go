@@ -12,6 +12,9 @@ import (
 )
 
 func TestDaemon_Run(t *testing.T) {
+	certPath := "../../data/test-selfsigned.crt"
+	keyPath := "../../data/test-selfsigned.key"
+
 	mnemosyneRPCListener, err := net.Listen("tcp", "localhost:0") // any available address
 	if err != nil {
 		t.Fatalf("mnemosyne daemon tcp listener setup error: %s", err.Error())
@@ -25,8 +28,8 @@ func TestDaemon_Run(t *testing.T) {
 		PostgresSchema:    "mnemosyne",
 		RPCListener:       mnemosyneRPCListener,
 		TLS:               true,
-		TLSKeyFile:        "../data/test-selfsigned.key",
-		TLSCertFile:       "../data/test-selfsigned.crt",
+		TLSKeyFile:        keyPath,
+		TLSCertFile:       certPath,
 	})
 	if err != nil {
 		t.Fatalf("mnemosyne daemon cannot be instantiated: %s", err.Error())
@@ -51,15 +54,15 @@ func TestDaemon_Run(t *testing.T) {
 		Monitoring:           false,
 		MnemosyneAddress:     mnemosyneDaemon.Addr().String(),
 		MnemosyneTLS:         true,
-		MnemosyneTLSCertFile: "../data/test-selfsigned.crt",
+		MnemosyneTLSCertFile: certPath,
 		Logger:               logger,
 		PostgresAddress:      testPostgresAddress,
 		RPCListener:          charonRPCListener,
 		DebugListener:        debugRPCListener,
 		PasswordBCryptCost:   bcrypt.MinCost,
 		TLS:                  true,
-		TLSKeyFile:           "../data/test-selfsigned.key",
-		TLSCertFile:          "../data/test-selfsigned.crt",
+		TLSKeyFile:           keyPath,
+		TLSCertFile:          certPath,
 	})
 	if err := d.Run(); err != nil {
 		t.Fatalf("charon daemon start error: %s", err.Error())

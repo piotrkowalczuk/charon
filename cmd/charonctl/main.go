@@ -8,8 +8,8 @@ import (
 
 	"google.golang.org/grpc/status"
 
-	"github.com/piotrkowalczuk/charon/charonctl"
 	"github.com/piotrkowalczuk/charon/charonrpc"
+	"github.com/piotrkowalczuk/charon/internal/charonctl"
 	"github.com/piotrkowalczuk/ntypes"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"

@@ -1,4 +1,4 @@
-package charonc
+package securitycontext
 
 import (
 	"context"
@@ -45,8 +45,8 @@ func ExampleSecurityContext() {
 func TestNewSecurityContext(t *testing.T) {
 	sctx := NewSecurityContext(context.Background())
 
-	if _, ok := sctx.(SecurityContext); !ok {
-		t.Error("result should imeplement SecurityContext interface")
+	if _, ok := sctx.(Context); !ok {
+		t.Error("result should imeplement Context interface")
 	}
 }
 

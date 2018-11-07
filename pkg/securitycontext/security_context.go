@@ -1,4 +1,4 @@
-package charonc
+package securitycontext
 
 import (
 	"context"
@@ -9,8 +9,8 @@ import (
 	"golang.org/x/oauth2"
 )
 
-// SecurityContext ....
-type SecurityContext interface {
+// Context ....
+type Context interface {
 	context.Context
 	oauth2.TokenSource
 	// Actor ...
@@ -24,16 +24,16 @@ type securityContext struct {
 }
 
 // NewSecurityContext allocates new context.
-func NewSecurityContext(ctx context.Context) SecurityContext {
+func NewSecurityContext(ctx context.Context) Context {
 	return &securityContext{Context: ctx}
 }
 
-// Actor implements SecurityContext interface.
+// Actor implements Context interface.
 func (sc *securityContext) Actor() (Actor, bool) {
 	return ActorFromContext(sc)
 }
 
-// AccessToken implements SecurityContext interface.
+// AccessToken implements Context interface.
 func (sc *securityContext) AccessToken() (string, bool) {
 	return mnemosyne.AccessTokenFromContext(sc.Context)
 }
@@ -42,7 +42,7 @@ func (sc *securityContext) AccessToken() (string, bool) {
 func (sc *securityContext) Token() (*oauth2.Token, error) {
 	at, ok := sc.AccessToken()
 	if !ok {
-		return nil, errors.New("charonc: missing access token, oauth2 token cannot be returned")
+		return nil, errors.New("securitycontext: missing access token, oauth2 token cannot be returned")
 	}
 	return &oauth2.Token{
 		AccessToken: at,
