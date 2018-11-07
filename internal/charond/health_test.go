@@ -5,11 +5,11 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/piotrkowalczuk/sklog"
+	"go.uber.org/zap"
 )
 
 func TestHealthHandler_ServeHTTP(t *testing.T) {
-	l := sklog.NewTestLogger(t)
+	l := zap.L()
 	s := postgresSuite{
 		logger: l,
 	}

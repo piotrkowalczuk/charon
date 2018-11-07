@@ -16,8 +16,8 @@ import (
 	"github.com/piotrkowalczuk/charon/internal/session/sessionmock"
 	"github.com/piotrkowalczuk/ntypes"
 	"github.com/piotrkowalczuk/qtypes"
-	"github.com/piotrkowalczuk/sklog"
 	"github.com/stretchr/testify/mock"
+	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/peer"
 )
@@ -306,7 +306,7 @@ func TestListUsersHandler_List_Unit(t *testing.T) {
 
 	h := listUsersHandler{
 		handler: &handler{
-			logger:        sklog.NewTestLogger(t),
+			logger:        zap.L(),
 			ActorProvider: actorProviderMock,
 			repository: repositories{
 				user: userProviderMock,

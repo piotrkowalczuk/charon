@@ -13,9 +13,8 @@ type configuration struct {
 	port   int
 	test   bool
 	logger struct {
-		adapter string
-		format  string
-		level   int
+		environment string
+		level       string
 	}
 	mnemosyned struct {
 		address string
@@ -52,9 +51,9 @@ func (c *configuration) init() {
 	flag.StringVar(&c.host, "host", "127.0.0.1", "host")
 	flag.IntVar(&c.port, "port", 8080, "port")
 	flag.BoolVar(&c.test, "test", false, "determines in what mode application starts")
-	flag.StringVar(&c.logger.adapter, "log.adapter", loggerAdapterStdOut, "logger adapter")
-	flag.StringVar(&c.logger.format, "log.format", loggerFormatJSON, "logger format")
-	flag.IntVar(&c.logger.level, "log.level", 6, "logger level")
+	// LOGGER
+	flag.StringVar(&c.logger.environment, "log.environment", "production", "Logger environment config (production, stackdriver or development).")
+	flag.StringVar(&c.logger.level, "log.level", "info", "Logger level (debug, info, warn, error, dpanic, panic, fatal)")
 	// MNEMOSYNE
 	flag.StringVar(&c.mnemosyned.address, "mnemosyned.address", "mnemosyned:8080", "mnemosyne daemon session store connection address")
 	flag.BoolVar(&c.mnemosyned.tls.enabled, "mnemosyned.tls", false, "tls enable flag for mnemosyned client connection")

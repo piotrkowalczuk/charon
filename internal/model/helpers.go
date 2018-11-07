@@ -3,8 +3,7 @@ package model
 import (
 	"database/sql"
 
-	"github.com/go-kit/kit/log"
-	"github.com/piotrkowalczuk/sklog"
+	"go.uber.org/zap"
 )
 
 func untouched(given, created, removed int64) int64 {
@@ -20,7 +19,7 @@ func untouched(given, created, removed int64) int64 {
 	}
 }
 
-func initPostgres(address string, test bool, logger log.Logger) (*sql.DB, error) {
+func initPostgres(address string, test bool, logger *zap.Logger) (*sql.DB, error) {
 	postgres, err := sql.Open("postgres", address)
 	if err != nil {
 		return nil, err
@@ -30,14 +29,14 @@ func initPostgres(address string, test bool, logger log.Logger) (*sql.DB, error)
 		if err = teardownDatabase(postgres); err != nil {
 			return nil, err
 		}
-		sklog.Info(logger, "database has been cleared upfront")
+		logger.Info("database has been cleared upfront")
 	}
 	err = setupDatabase(postgres)
 	if err != nil {
 		return nil, err
 	}
 
-	sklog.Info(logger, "postgres connection has been established", "address", address)
+	logger.Info("postgres connection has been established", zap.String("address", address))
 
 	return postgres, nil
 }

@@ -5,13 +5,13 @@ import (
 	"fmt"
 
 	"github.com/piotrkowalczuk/charon/internal/service"
+	"go.uber.org/zap"
 
 	"github.com/golang/protobuf/ptypes/wrappers"
 	"github.com/piotrkowalczuk/charon/charonrpc"
 	"github.com/piotrkowalczuk/charon/internal/grpcerr"
 	"github.com/piotrkowalczuk/charon/internal/session"
 	"github.com/piotrkowalczuk/mnemosyne/mnemosynerpc"
-	"github.com/piotrkowalczuk/sklog"
 
 	"google.golang.org/grpc/codes"
 )
@@ -77,14 +77,14 @@ func (lh *loginHandler) Login(ctx context.Context, r *charonrpc.LoginRequest) (*
 		return nil, grpcerr.E("session start on login failure", err)
 	}
 
-	sklog.Debug(lh.logger, "user session has been started", "user_id", usr.ID)
+	lh.logger.Debug("user session has been started", zap.Int64("user_id", usr.ID))
 
 	_, err = lh.repository.user.UpdateLastLoginAt(ctx, usr.ID)
 	if err != nil {
 		return nil, grpcerr.E(codes.Internal, "last login update failure: %s", err)
 	}
 
-	sklog.Debug(lh.logger, "user last login at field has been updated", "user_id", usr.ID)
+	lh.logger.Debug("user last login at field has been updated", zap.Int64("user_id", usr.ID))
 
 	return &wrappers.StringValue{Value: res.Session.AccessToken}, nil
 }

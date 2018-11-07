@@ -16,8 +16,8 @@ import (
 	"github.com/piotrkowalczuk/charon/internal/session"
 	"github.com/piotrkowalczuk/charon/internal/session/sessionmock"
 	"github.com/piotrkowalczuk/ntypes"
-	"github.com/piotrkowalczuk/sklog"
 	"github.com/stretchr/testify/mock"
+	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 )
 
@@ -167,7 +167,7 @@ func TestModifyGroupHandler_Modify_Unit(t *testing.T) {
 
 	h := modifyGroupHandler{
 		handler: &handler{
-			logger:        sklog.NewTestLogger(t),
+			logger:        zap.L(),
 			ActorProvider: actorProviderMock,
 			repository: repositories{
 				group: groupProviderMock,

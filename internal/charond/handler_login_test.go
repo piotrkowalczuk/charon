@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/piotrkowalczuk/mnemosyne/mnemosynerpc"
+	"go.uber.org/zap"
 
 	"github.com/piotrkowalczuk/charon/internal/model"
 
@@ -16,7 +17,6 @@ import (
 	"github.com/piotrkowalczuk/charon/internal/service"
 	"github.com/piotrkowalczuk/mnemosyne/mnemosynetest"
 	"github.com/piotrkowalczuk/ntypes"
-	"github.com/piotrkowalczuk/sklog"
 	"github.com/stretchr/testify/mock"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -79,7 +79,7 @@ func TestLoginHandler_Login_Unit(t *testing.T) {
 
 	h := loginHandler{
 		handler: &handler{
-			logger:  sklog.NewTestLogger(t),
+			logger:  zap.L(),
 			session: sessionMock,
 			repository: repositories{
 				user: userProviderMock,

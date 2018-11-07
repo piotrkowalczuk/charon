@@ -1,13 +1,19 @@
 package main
 
 import (
+	"fmt"
+	"os"
+
 	_ "github.com/lib/pq"
 	"github.com/piotrkowalczuk/charon/internal/charond"
-	"github.com/piotrkowalczuk/sklog"
-	"google.golang.org/grpc/grpclog"
+	"github.com/piotrkowalczuk/charon/internal/service/logger"
+	"go.uber.org/zap"
 )
 
-var config configuration
+var (
+	config  configuration
+	service = "charond"
+)
 
 func init() {
 	config.init()
@@ -16,11 +22,19 @@ func init() {
 func main() {
 	config.parse()
 
-	logger := initLogger(config.logger.adapter, config.logger.format, config.logger.level)
-	rpcListener := initListener(logger, config.host, config.port)
-	debugListener := initListener(logger, config.host, config.port+1)
+	log, err := logger.Init(service, version, logger.Opts{
+		Environment: config.logger.environment,
+		Level:       config.logger.level,
+	})
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	rpcListener := initListener(log, config.host, config.port)
+	debugListener := initListener(log, config.host, config.port+1)
 
-	grpclog.SetLogger(sklog.NewGRPCLogger(logger))
+	// TODO: update and make it optional
+	//grpclog.SetLogger(sklog.NewGRPCLogger(logger))
 
 	daemon := charond.NewDaemon(charond.DaemonOpts{
 		Test:                 config.test,
@@ -34,13 +48,13 @@ func main() {
 		MnemosyneAddress:     config.mnemosyned.address,
 		MnemosyneTLS:         config.mnemosyned.tls.enabled,
 		MnemosyneTLSCertFile: config.mnemosyned.tls.certFile,
-		Logger:               logger,
+		Logger:               log.Named("daemon"),
 		RPCListener:          rpcListener,
 		DebugListener:        debugListener,
 	})
 
 	if err := daemon.Run(); err != nil {
-		sklog.Fatal(logger, err)
+		log.Fatal("daemon returned an error", zap.Error(err))
 	}
 	defer daemon.Close()
 

@@ -23,10 +23,6 @@
 ignored = ["github.com/piotrkowalczuk/charon/data"]
 
 [[constraint]]
-  name = "github.com/go-kit/kit"
-  version = "~0.2.0"
-
-[[constraint]]
   name = "github.com/golang/protobuf"
   version = "^1.2.0"
 
@@ -36,6 +32,10 @@ ignored = ["github.com/piotrkowalczuk/charon/data"]
 
 [[constraint]]
   name = "github.com/google/uuid"
+  version = "^1.0.0"
+
+[[constraint]]
+  name = "github.com/piotrkowalczuk/zapstackdriver"
   version = "^1.0.0"
 
 [[constraint]]
@@ -53,10 +53,6 @@ ignored = ["github.com/piotrkowalczuk/charon/data"]
 [[constraint]]
   name = "github.com/piotrkowalczuk/qtypes"
   version = "~0.3.6"
-
-[[constraint]]
-  name = "github.com/piotrkowalczuk/sklog"
-  branch = "master"
 
 [[constraint]]
   name = "github.com/prometheus/client_golang"

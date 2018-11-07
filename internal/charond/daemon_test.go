@@ -7,7 +7,6 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/piotrkowalczuk/mnemosyne/mnemosyned"
-	"github.com/piotrkowalczuk/sklog"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -47,7 +46,7 @@ func TestDaemon_Run(t *testing.T) {
 		t.Fatalf("charon daemon tcp listener setup error: %s", err.Error())
 	}
 
-	logger := sklog.NewTestLogger(t)
+	logger := zap.L()
 
 	d := NewDaemon(DaemonOpts{
 		Test:                 true,

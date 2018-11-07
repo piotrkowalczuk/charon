@@ -26,30 +26,6 @@
   version = "v1.1.1"
 
 [[projects]]
-  digest = "1:e72ee3c442cff40595422373d48cf58940d48b55bc61002686ffa8f3336a073c"
-  name = "github.com/go-kit/kit"
-  packages = ["log"]
-  pruneopts = ""
-  revision = "6fb874ce59bb45b2f60ee3d289829db02142ecc6"
-  version = "v0.2.0"
-
-[[projects]]
-  digest = "1:6a4a01d58b227c4b6b11111b9f172ec5c17682b82724e58e6daf3f19f4faccd8"
-  name = "github.com/go-logfmt/logfmt"
-  packages = ["."]
-  pruneopts = ""
-  revision = "390ab7935ee28ec6b286364bba9b4dd6410cb3d5"
-  version = "v0.3.0"
-
-[[projects]]
-  digest = "1:a01080d20c45c031c13f3828c56e58f4f51d926a482ad10cc0316225097eb7ea"
-  name = "github.com/go-stack/stack"
-  packages = ["."]
-  pruneopts = ""
-  revision = "2fee6af1a9795aafbe0253a0cfbdf668e1fb8a9a"
-  version = "v1.8.0"
-
-[[projects]]
   digest = "1:3dd078fda7500c341bc26cfbc6c6a34614f295a2457149fc1045cab767cbcf18"
   name = "github.com/golang/protobuf"
   packages = [
@@ -96,14 +72,6 @@
   pruneopts = ""
   revision = "77f18212c9c7edc9bd6a33d383a7b545ce62f064"
   version = "v4.2.1"
-
-[[projects]]
-  branch = "master"
-  digest = "1:1ed9eeebdf24aadfbca57eb50e6455bd1d2474525e0f0d4454de8c8e9bc7ee9a"
-  name = "github.com/kr/logfmt"
-  packages = ["."]
-  pruneopts = ""
-  revision = "b84e30acd515aadc4b783ad4ff83aff3299bdfe0"
 
 [[projects]]
   digest = "1:29145d7af4adafd72a79df5e41456ac9e232d5a28c1cd4dacf3ff008a217fc10"
@@ -223,12 +191,16 @@
   version = "v0.4.0"
 
 [[projects]]
-  branch = "master"
-  digest = "1:3234b9ef3b5dffdbb9f80ca78558439864a9c84500904731b9e9f1b9e7e4bb36"
-  name = "github.com/piotrkowalczuk/sklog"
-  packages = ["."]
+  digest = "1:de49d8f82a881322bd021077a64eac76d6cfefc45cdd3694e063e8174f3de367"
+  name = "github.com/piotrkowalczuk/zapstackdriver"
+  packages = [
+    ".",
+    "operation",
+    "zapstackdrivergrpc",
+  ]
   pruneopts = ""
-  revision = "ec5c8660c571ff906c65341ba96de449706d63fa"
+  revision = "761761b4c952d03351dee5b2ffcd3a13071b6861"
+  version = "v1.0.0"
 
 [[projects]]
   digest = "1:7365acd48986e205ccb8652cc746f09c8b7876030d53710ea6ef7d0bd0dcd7ca"
@@ -539,7 +511,6 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
-    "github.com/go-kit/kit/log",
     "github.com/golang/protobuf/proto",
     "github.com/golang/protobuf/ptypes",
     "github.com/golang/protobuf/ptypes/empty",
@@ -554,13 +525,13 @@
     "github.com/piotrkowalczuk/ntypes",
     "github.com/piotrkowalczuk/ntypespqt",
     "github.com/piotrkowalczuk/pqt",
-    "github.com/piotrkowalczuk/pqt/pqtgo",
     "github.com/piotrkowalczuk/pqt/pqtgo/pqtgogen",
     "github.com/piotrkowalczuk/pqt/pqtsql",
     "github.com/piotrkowalczuk/promgrpc/v3",
     "github.com/piotrkowalczuk/qtypes",
     "github.com/piotrkowalczuk/qtypespqt",
-    "github.com/piotrkowalczuk/sklog",
+    "github.com/piotrkowalczuk/zapstackdriver",
+    "github.com/piotrkowalczuk/zapstackdriver/zapstackdrivergrpc",
     "github.com/prometheus/client_golang/prometheus",
     "github.com/prometheus/client_golang/prometheus/promhttp",
     "github.com/smartystreets/goconvey/convey",
@@ -576,7 +547,6 @@
     "google.golang.org/grpc",
     "google.golang.org/grpc/codes",
     "google.golang.org/grpc/credentials",
-    "google.golang.org/grpc/grpclog",
     "google.golang.org/grpc/metadata",
     "google.golang.org/grpc/peer",
     "google.golang.org/grpc/status",

@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"github.com/piotrkowalczuk/charon/internal/service"
+	"go.uber.org/zap"
 
-	"github.com/go-kit/kit/log"
 	"github.com/piotrkowalczuk/charon/internal/model"
 	"github.com/piotrkowalczuk/charon/internal/password"
 	"github.com/piotrkowalczuk/mnemosyne/mnemosynerpc"
@@ -14,7 +14,7 @@ import (
 
 type rpcServer struct {
 	opts               DaemonOpts
-	logger             log.Logger
+	logger             *zap.Logger
 	session            mnemosynerpc.SessionManagerClient
 	passwordHasher     password.Hasher
 	permissionRegistry model.PermissionRegistry

@@ -3,7 +3,6 @@ package charond
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"io"
 	"net"
 	"net/http"
@@ -11,23 +10,21 @@ import (
 	"testing"
 	"time"
 
-	"github.com/go-kit/kit/log"
 	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/charon/charonrpc"
 	"github.com/piotrkowalczuk/charon/internal/grpcerr"
 	"github.com/piotrkowalczuk/mnemosyne"
 	"github.com/piotrkowalczuk/mnemosyne/mnemosynerpc"
 	"github.com/piotrkowalczuk/promgrpc/v3"
-	"github.com/piotrkowalczuk/sklog"
+	"github.com/piotrkowalczuk/zapstackdriver/zapstackdrivergrpc"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"go.uber.org/zap"
 	"golang.org/x/crypto/bcrypt"
 	"golang.org/x/net/trace"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/metadata"
-	"google.golang.org/grpc/status"
 )
 
 // DaemonOpts ...
@@ -43,7 +40,7 @@ type DaemonOpts struct {
 	MnemosyneAddress     string
 	MnemosyneTLS         bool
 	MnemosyneTLSCertFile string
-	Logger               log.Logger
+	Logger               *zap.Logger
 	RPCListener          net.Listener
 	DebugListener        net.Listener
 }
@@ -58,7 +55,7 @@ type TestDaemonOpts struct {
 // Daemon ...
 type Daemon struct {
 	opts          DaemonOpts
-	logger        log.Logger
+	logger        *zap.Logger
 	rpcListener   net.Listener
 	debugListener net.Listener
 	mnemosyneConn *grpc.ClientConn
@@ -84,13 +81,11 @@ func TestDaemon(t *testing.T, opts TestDaemonOpts) (net.Addr, io.Closer) {
 		t.Fatalf("charon daemon tcp listener setup error: %s", err.Error())
 	}
 
-	logger := sklog.NewTestLogger(t)
-
 	d := NewDaemon(DaemonOpts{
 		Test:               true,
 		Monitoring:         false,
 		MnemosyneAddress:   opts.MnemosyneAddress,
-		Logger:             logger,
+		Logger:             zap.L(), // TODO: implement properly
 		PostgresAddress:    opts.PostgresAddress,
 		PostgresDebug:      opts.PostgresDebug,
 		RPCListener:        l,
@@ -125,8 +120,6 @@ func (d *Daemon) Run() (err error) {
 		grpc.UnaryInterceptor(unaryServerInterceptors(
 			grpcerr.UnaryServerInterceptor(),
 			func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
-				start := time.Now()
-
 				if md, ok := metadata.FromIncomingContext(ctx); ok {
 					ctx = metadata.NewOutgoingContext(ctx, metadata.MD{
 						mnemosyne.AccessTokenMetadataKey: md[mnemosyne.AccessTokenMetadataKey],
@@ -134,15 +127,9 @@ func (d *Daemon) Run() (err error) {
 					})
 				}
 
-				res, err := handler(ctx, req)
-
-				if err != nil && status.Code(err) != codes.OK {
-					sklog.Error(d.logger, errors.New(status.Convert(err).Message()), "handler", info.FullMethod, "code", status.Code(err).String(), "elapsed", time.Since(start))
-					return nil, handleError(err)
-				}
-				sklog.Debug(d.logger, "request handled successfully", "handler", info.FullMethod, "elapsed", time.Since(start))
-				return res, err
+				return handler(ctx, req)
 			},
+			zapstackdrivergrpc.UnaryServerInterceptor(d.logger),
 			interceptor.UnaryServer(),
 		)),
 	}
@@ -187,7 +174,7 @@ func (d *Daemon) Run() (err error) {
 		); err != nil {
 			return
 		}
-		sklog.Info(d.logger, "test super user has been created")
+		d.logger.Info("test super user has been created")
 	}
 
 	permissionReg := initPermissionRegistry(repos.permission, charon.AllPermissions, d.logger)
@@ -195,7 +182,7 @@ func (d *Daemon) Run() (err error) {
 	gRPCServer := grpc.NewServer(serverOpts...)
 	server := &rpcServer{
 		opts:               d.opts,
-		logger:             d.logger,
+		logger:             d.logger.Named("rpc_server"),
 		session:            d.mnemosyne,
 		passwordHasher:     passwordHasher,
 		permissionRegistry: permissionReg,
@@ -214,21 +201,21 @@ func (d *Daemon) Run() (err error) {
 	}
 
 	go func() {
-		sklog.Info(d.logger, "rpc server is running", "address", d.rpcListener.Addr().String())
+		d.logger.Info("rpc server is running", zap.Stringer("address", d.rpcListener.Addr()))
 
 		if err := gRPCServer.Serve(d.rpcListener); err != nil {
 			if err == grpc.ErrServerStopped {
-				sklog.Info(d.logger, "grpc server has been stoped")
+				d.logger.Info("grpc server has been stopped")
 				return
 			}
 
-			sklog.Error(d.logger, err)
+			d.logger.Error("grpc server stopped with an error", zap.Error(err))
 		}
 	}()
 
 	if d.debugListener != nil {
 		go func() {
-			sklog.Info(d.logger, "debug server is running", "address", d.debugListener.Addr().String())
+			d.logger.Info("debug server is running", zap.Stringer("address", d.debugListener.Addr()))
 			// TODO: implement keep alive
 
 			mux := http.NewServeMux()
@@ -260,7 +247,9 @@ func (d *Daemon) Run() (err error) {
 				w.Header().Set("Content-Type", "text/html; charset=utf-8")
 				trace.RenderEvents(w, req, true)
 			}))
-			sklog.Error(d.logger, http.Serve(d.debugListener, mux))
+			if err := http.Serve(d.debugListener, mux); err != nil {
+				d.logger.Error("debug server stopped with an error", zap.Error(err))
+			}
 		}()
 	}
 

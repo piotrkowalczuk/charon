@@ -6,11 +6,9 @@ import (
 	"fmt"
 	"io"
 	"net"
-	"os"
 	"testing"
 	"time"
 
-	klog "github.com/go-kit/kit/log"
 	"github.com/piotrkowalczuk/charon/charonrpc"
 	"github.com/piotrkowalczuk/charon/internal/password"
 	"github.com/piotrkowalczuk/mnemosyne/mnemosyned"
@@ -49,8 +47,6 @@ func (etes *endToEndSuite) setup(t *testing.T) {
 		err                       error
 		mnemosyneAddr, charonAddr net.Addr
 	)
-
-	_ = klog.NewJSONLogger(os.Stdout)
 
 	mnemosyneAddr, etes.mnemosyneCloser = mnemosyned.TestDaemon(t, mnemosyned.TestDaemonOpts{
 		StoragePostgresAddress: testPostgresAddress,

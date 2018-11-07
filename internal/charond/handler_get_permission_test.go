@@ -12,8 +12,8 @@ import (
 	"github.com/piotrkowalczuk/charon/internal/model/modelmock"
 	"github.com/piotrkowalczuk/charon/internal/session"
 	"github.com/piotrkowalczuk/charon/internal/session/sessionmock"
-	"github.com/piotrkowalczuk/sklog"
 	"github.com/stretchr/testify/mock"
+	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -130,7 +130,7 @@ func TestGetPermissionHandler_Get_Unit(t *testing.T) {
 
 	h := getPermissionHandler{
 		handler: &handler{
-			logger:        sklog.NewTestLogger(t),
+			logger:        zap.L(),
 			ActorProvider: actorProviderMock,
 			repository: repositories{
 				permission: permissionProviderMock,

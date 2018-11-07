@@ -8,7 +8,7 @@ import (
 	"github.com/piotrkowalczuk/charon/charonrpc"
 	"github.com/piotrkowalczuk/charon/internal/grpcerr"
 	"github.com/piotrkowalczuk/charon/internal/session"
-	"github.com/piotrkowalczuk/sklog"
+	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 )
 
@@ -32,7 +32,7 @@ func (lgph *listGroupPermissionsHandler) ListPermissions(ctx context.Context, re
 	permissions, err := lgph.repository.permission.FindByGroupID(ctx, req.Id)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			sklog.Debug(lgph.logger, "group permissions retrieved", "group_id", req.Id, "count", len(permissions))
+			lgph.logger.Error("group permissions retrieved", zap.Int64("group_id", req.Id), zap.Int("count", len(permissions)))
 
 			return &charonrpc.ListGroupPermissionsResponse{}, nil
 		}

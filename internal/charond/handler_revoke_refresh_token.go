@@ -11,7 +11,7 @@ import (
 	"github.com/piotrkowalczuk/charon/internal/session"
 	"github.com/piotrkowalczuk/mnemosyne/mnemosynerpc"
 	"github.com/piotrkowalczuk/ntypes"
-	"github.com/piotrkowalczuk/sklog"
+	"go.uber.org/zap"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -63,7 +63,7 @@ func (h *revokeRefreshTokenHandler) Revoke(ctx context.Context, req *charonrpc.R
 			return nil, grpcerr.E(codes.Internal, "session could not be removed", err)
 		}
 	}
-	sklog.Debug(h.logger, "refresh token corresponding sessions removed", "count", res.Value)
+	h.logger.Debug("refresh token corresponding sessions removed", zap.Int64("count", res.Value))
 
 	msg, err := mapping.ReverseRefreshToken(ent)
 	if err != nil {

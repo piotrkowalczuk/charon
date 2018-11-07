@@ -1,16 +1,16 @@
 package charond
 
 import (
-	"github.com/go-kit/kit/log"
 	"github.com/piotrkowalczuk/charon/internal/session"
 	"github.com/piotrkowalczuk/mnemosyne/mnemosynerpc"
+	"go.uber.org/zap"
 )
 
 type handler struct {
 	session.ActorProvider
 
 	opts       DaemonOpts
-	logger     log.Logger
+	logger     *zap.Logger
 	repository repositories
 	session    mnemosynerpc.SessionManagerClient
 }

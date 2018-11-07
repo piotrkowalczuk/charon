@@ -4,13 +4,12 @@ import (
 	"database/sql"
 	"testing"
 
-	"github.com/go-kit/kit/log"
 	"github.com/lib/pq"
-	"github.com/piotrkowalczuk/sklog"
+	"go.uber.org/zap"
 )
 
 type postgresSuite struct {
-	logger     log.Logger
+	logger     *zap.Logger
 	db         *sql.DB
 	repository repositories
 }
@@ -22,7 +21,7 @@ func (ps *postgresSuite) setup(t *testing.T) {
 
 	var err error
 
-	ps.logger = sklog.NewTestLogger(t)
+	ps.logger = zap.L()
 	ps.db, err = initPostgres(testPostgresAddress, true, ps.logger)
 	if err != nil {
 		t.Fatalf("postgres connection (%s) error: %s", testPostgresAddress, err.Error())
