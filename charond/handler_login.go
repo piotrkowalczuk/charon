@@ -2,6 +2,7 @@ package charond
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/piotrkowalczuk/charon/internal/service"
 
@@ -20,6 +21,7 @@ type loginHandler struct {
 	userFinderFactory *service.UserFinderFactory
 }
 
+// Login implements charonrpc AuthClient interface.
 func (lh *loginHandler) Login(ctx context.Context, r *charonrpc.LoginRequest) (*wrappers.StringValue, error) {
 	if r.GetUsername() != "" || r.GetPassword() != "" {
 		r.Strategy = &charonrpc.LoginRequest_UsernameAndPassword{
@@ -30,7 +32,10 @@ func (lh *loginHandler) Login(ctx context.Context, r *charonrpc.LoginRequest) (*
 		}
 	}
 
-	var userFinder service.UserFinder
+	var (
+		userFinder   service.UserFinder
+		refreshToken string
+	)
 	switch str := r.GetStrategy().(type) {
 	case *charonrpc.LoginRequest_UsernameAndPassword:
 		userFinder = lh.userFinderFactory.ByUsernameAndPassword(
@@ -38,13 +43,13 @@ func (lh *loginHandler) Login(ctx context.Context, r *charonrpc.LoginRequest) (*
 			str.UsernameAndPassword.GetPassword(),
 		)
 	case *charonrpc.LoginRequest_RefreshToken:
-		userFinder = lh.userFinderFactory.ByRefreshToken(
-			str.RefreshToken.GetRefreshToken(),
-		)
+		refreshToken = str.RefreshToken.GetRefreshToken()
+		userFinder = lh.userFinderFactory.ByRefreshToken(refreshToken)
 	}
 
 	usr, err := userFinder.FindUser(ctx)
 	if err != nil {
+		fmt.Println("error", err)
 		return nil, err
 	}
 
@@ -60,6 +65,7 @@ func (lh *loginHandler) Login(ctx context.Context, r *charonrpc.LoginRequest) (*
 		Session: &mnemosynerpc.Session{
 			SubjectId:     session.ActorIDFromInt64(usr.ID).String(),
 			SubjectClient: r.Client,
+			RefreshToken:  refreshToken,
 			Bag: map[string]string{
 				"username":   usr.Username,
 				"first_name": usr.FirstName,

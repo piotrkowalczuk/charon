@@ -57,6 +57,8 @@ func assertErrorCode(t *testing.T, err error, code codes.Code, msg string) {
 }
 
 func assertError(t *testing.T, e1, e2 error) {
+	t.Helper()
+
 	if e1 != nil {
 		if !grpcerr.Match(e1, e2) {
 			t.Fatalf("error do not match, got %v", e2)

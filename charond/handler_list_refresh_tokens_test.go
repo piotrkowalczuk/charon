@@ -3,6 +3,7 @@ package charond
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/golang/protobuf/ptypes"
 	"github.com/piotrkowalczuk/charon"
@@ -35,7 +36,8 @@ func TestListRefreshTokensHandler_List_E2E(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if len(res.RefreshTokens) != 1 {
+	// If daemon runs in test mode, it creates one test refresh token.
+	if len(res.RefreshTokens) != 2 {
 		t.Errorf("wrong number of refresh tokens, expected 1 got %d", len(res.RefreshTokens))
 	}
 }
@@ -130,16 +132,10 @@ func TestListRefreshTokensHandler_List_Unit(t *testing.T) {
 			},
 			req: charonrpc.ListRefreshTokensRequest{},
 		},
-		"as-noone": {
+		"as-no-one": {
 			init: func(*testing.T) {
 				actorProviderMock.On("Actor", mock.Anything).Return(&session.Actor{
 					User: &model.UserEntity{ID: 1},
-				}, nil)
-				refreshTokenMock.On("Find", mock.Anything, mock.Anything).Return([]*model.RefreshTokenEntity{
-					{
-						UserID: 1,
-						Token:  "abc",
-					},
 				}, nil)
 			},
 			req: charonrpc.ListRefreshTokensRequest{},
@@ -175,10 +171,16 @@ func TestListRefreshTokensHandler_List_Unit(t *testing.T) {
 
 			c.init(t)
 
-			_, err := h.List(context.TODO(), &c.req)
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
+
+			_, err := h.List(ctx, &c.req)
 			assertError(t, c.err, err)
 
-			mock.AssertExpectationsForObjects(t, actorProviderMock, refreshTokenMock)
+			mock.AssertExpectationsForObjects(t,
+				actorProviderMock,
+				refreshTokenMock,
+			)
 		})
 	}
 }

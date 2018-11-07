@@ -60,10 +60,16 @@ func teardownDatabase(db *sql.DB) error {
 	)
 }
 
-func createDummyTestUser(ctx context.Context, repo model.UserProvider, hasher password.Hasher) (*model.UserEntity, error) {
+func createDummyTestUser(ctx context.Context, usrProvider model.UserProvider, rftProvider model.RefreshTokenProvider, hasher password.Hasher) error {
 	pass, err := hasher.Hash([]byte("test"))
 	if err != nil {
-		return nil, err
+		return err
 	}
-	return repo.CreateSuperuser(ctx, "test", pass, "Test", "Test")
+	usr, err := usrProvider.CreateSuperuser(ctx, "test", pass, "Test", "Test")
+	if err != nil {
+		return err
+	}
+
+	_, err = rftProvider.Create(ctx, &model.RefreshTokenEntity{Token: "test", UserID: usr.ID})
+	return err
 }
