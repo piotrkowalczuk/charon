@@ -45,9 +45,7 @@ cover: test
 get:
 	go get -u github.com/golang/protobuf/{proto,protoc-gen-go}
 	go get -u google.golang.org/grpc
-	go get -u github.com/axw/gocov/gocov
 	go get -u gotest.tools/gotestsum
-	go get -u github.com/golang/dep/cmd/dep
 	go get -u github.com/vektra/mockery/cmd/mockery
 	go get -u github.com/golang/dep/cmd/dep
 	dep ensure
