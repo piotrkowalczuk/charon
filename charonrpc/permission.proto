@@ -4,6 +4,7 @@ package charonrpc;
 
 option go_package = "github.com/piotrkowalczuk/charon/charonrpc";
 
+import "charonrpc/common.proto";
 import "qtypes/qtypes.proto";
 import "ntypes/ntypes.proto";
 
@@ -34,7 +35,8 @@ message ListPermissionsRequest {
 
     ntypes.Int64 offset = 100;
     ntypes.Int64 limit = 101;
-    map<string, bool> sort = 102;
+    map<string, bool> sort = 102 [deprecated=true];
+    repeated Order order_by = 103;
 }
 
 message ListPermissionsResponse {

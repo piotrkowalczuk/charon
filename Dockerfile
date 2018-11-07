@@ -18,7 +18,6 @@ COPY ./scripts/docker-entrypoint.sh /
 COPY ./scripts/docker-healthcheck.sh /
 
 RUN apk --no-cache add curl
-RUN mkdir /data && echo '[]' > /data/ldap.json
 
 VOLUME /data
 EXPOSE 8080 8081

@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"os"
 
+	"time"
+
 	"github.com/piotrkowalczuk/charon"
 )
 
@@ -27,6 +29,10 @@ type configuration struct {
 		staff       bool
 		active      bool
 		permissions charon.Permissions
+	}
+	refreshToken struct {
+		expireAfter time.Duration
+		notes       string
 	}
 	fixtures struct {
 		path string
@@ -57,6 +63,9 @@ func (c *configuration) init() {
 	c.cl.BoolVar(&c.register.confirmed, "register.confirmed", false, "is user account confirmed")
 	c.cl.BoolVar(&c.register.staff, "register.staff", false, "is user part of the staff")
 	c.cl.BoolVar(&c.register.active, "register.active", false, "is user account active")
+	// refresh token
+	c.cl.DurationVar(&c.refreshToken.expireAfter, "refreshtoken.expireafter", 0, "duration after which token expires")
+	c.cl.StringVar(&c.refreshToken.notes, "refreshtoken.notes", "", "extra notes")
 	// fixtures
 	c.cl.StringVar(&c.fixtures.path, "fixtures.path", "", "path to the fixtures path")
 

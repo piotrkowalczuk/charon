@@ -21,14 +21,16 @@ import (
 )
 
 type endToEndSuite struct {
-	db     *sql.DB
-	hasher password.Hasher
+	db        *sql.DB
+	hasher    password.Hasher
+	userAgent string
 
 	charon struct {
-		auth       charonrpc.AuthClient
-		user       charonrpc.UserManagerClient
-		group      charonrpc.GroupManagerClient
-		permission charonrpc.PermissionManagerClient
+		auth         charonrpc.AuthClient
+		user         charonrpc.UserManagerClient
+		group        charonrpc.GroupManagerClient
+		permission   charonrpc.PermissionManagerClient
+		refreshToken charonrpc.RefreshTokenManagerClient
 	}
 	charonCloser io.Closer
 	charonConn   *grpc.ClientConn
@@ -56,6 +58,7 @@ func (etes *endToEndSuite) setup(t *testing.T) {
 	t.Logf("mnemosyne deamon running on: %s", mnemosyneAddr.String())
 
 	charonAddr, etes.charonCloser = TestDaemon(t, TestDaemonOpts{
+		PostgresDebug:    true,
 		PostgresAddress:  testPostgresAddress,
 		MnemosyneAddress: mnemosyneAddr.String(),
 	})
@@ -66,6 +69,7 @@ func (etes *endToEndSuite) setup(t *testing.T) {
 		grpc.WithInsecure(),
 		grpc.WithBlock(),
 		grpc.WithTimeout(2*time.Second),
+		grpc.WithUserAgent(etes.userAgent),
 	); err != nil {
 		t.Fatalf("mnemosyne grpc connection error: %s", err.Error())
 	}
@@ -74,6 +78,7 @@ func (etes *endToEndSuite) setup(t *testing.T) {
 		grpc.WithInsecure(),
 		grpc.WithBlock(),
 		grpc.WithTimeout(2*time.Second),
+		grpc.WithUserAgent(etes.userAgent),
 	); err != nil {
 		t.Fatalf("charon grpc connection error: %s", err.Error())
 	}
@@ -88,15 +93,17 @@ func (etes *endToEndSuite) setup(t *testing.T) {
 	}
 
 	etes.charon = struct {
-		auth       charonrpc.AuthClient
-		user       charonrpc.UserManagerClient
-		group      charonrpc.GroupManagerClient
-		permission charonrpc.PermissionManagerClient
+		auth         charonrpc.AuthClient
+		user         charonrpc.UserManagerClient
+		group        charonrpc.GroupManagerClient
+		permission   charonrpc.PermissionManagerClient
+		refreshToken charonrpc.RefreshTokenManagerClient
 	}{
-		auth:       charonrpc.NewAuthClient(etes.charonConn),
-		user:       charonrpc.NewUserManagerClient(etes.charonConn),
-		group:      charonrpc.NewGroupManagerClient(etes.charonConn),
-		permission: charonrpc.NewPermissionManagerClient(etes.charonConn),
+		auth:         charonrpc.NewAuthClient(etes.charonConn),
+		user:         charonrpc.NewUserManagerClient(etes.charonConn),
+		group:        charonrpc.NewGroupManagerClient(etes.charonConn),
+		permission:   charonrpc.NewPermissionManagerClient(etes.charonConn),
+		refreshToken: charonrpc.NewRefreshTokenManagerClient(etes.charonConn),
 	}
 	etes.mnemosyne = mnemosynerpc.NewSessionManagerClient(etes.mnemosyneConn)
 }
@@ -151,9 +158,10 @@ func (etes *endToEndSuite) createUsers(t *testing.T, ctx context.Context) ([]*ch
 	)
 	for i := 0; i < 10; i++ {
 		res, err := etes.charon.user.Create(ctx, &charonrpc.CreateUserRequest{
-			Username:  fmt.Sprintf("username-%d@example.com", i),
-			FirstName: fmt.Sprintf("first-name-%d", i),
-			LastName:  fmt.Sprintf("last-name-%d", i),
+			Username:      fmt.Sprintf("username-%d@example.com", i),
+			FirstName:     fmt.Sprintf("first-name-%d", i),
+			LastName:      fmt.Sprintf("last-name-%d", i),
+			PlainPassword: fmt.Sprintf("password-%d", i),
 		})
 		if err != nil {
 			t.Fatalf("unexpected error: %s", err.Error())

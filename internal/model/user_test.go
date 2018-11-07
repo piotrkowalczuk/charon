@@ -5,12 +5,7 @@ import (
 	"fmt"
 	"reflect"
 	"testing"
-	"time"
 
-	"github.com/golang/protobuf/ptypes"
-	"github.com/golang/protobuf/ptypes/timestamp"
-	"github.com/lib/pq"
-	"github.com/piotrkowalczuk/charon/charonrpc"
 	"github.com/piotrkowalczuk/ntypes"
 	"github.com/piotrkowalczuk/qtypes"
 )
@@ -52,63 +47,6 @@ func TestUserEntity_String(t *testing.T) {
 		if c.String() != expected {
 			t.Errorf("wrong output, expected %s but got %s", expected, c.String())
 		}
-	}
-}
-
-func TestUserEntity_Message(t *testing.T) {
-	now := time.Now()
-	cases := map[string]struct {
-		given    UserEntity
-		expected charonrpc.User
-	}{
-		"empty": {
-			given: UserEntity{},
-			expected: charonrpc.User{
-				UpdatedBy: &ntypes.Int64{},
-				CreatedBy: &ntypes.Int64{},
-			},
-		},
-		"simple": {
-			given: UserEntity{
-				ConfirmationToken: []byte("confirmation-token"),
-				CreatedAt:         now,
-				CreatedBy:         ntypes.Int64{Int64: 1, Valid: true},
-				UpdatedBy:         ntypes.Int64{Int64: 2, Valid: true},
-				FirstName:         "firstname",
-				ID:                1,
-				LastLoginAt:       pq.NullTime{Time: now, Valid: true},
-				LastName:          "lastname",
-				Password:          []byte("password"),
-				UpdatedAt:         pq.NullTime{Time: now.Add(1 * time.Hour), Valid: true},
-			},
-			expected: charonrpc.User{
-				Id:        1,
-				FirstName: "firstname",
-				LastName:  "lastname",
-				UpdatedBy: &ntypes.Int64{Int64: 2, Valid: true},
-				CreatedBy: &ntypes.Int64{Int64: 1, Valid: true},
-				CreatedAt: func() *timestamp.Timestamp {
-					ts, _ := ptypes.TimestampProto(now)
-					return ts
-				}(),
-				UpdatedAt: func() *timestamp.Timestamp {
-					ts, _ := ptypes.TimestampProto(now.Add(1 * time.Hour))
-					return ts
-				}(),
-			},
-		},
-	}
-
-	for hint, c := range cases {
-		t.Run(hint, func(t *testing.T) {
-			got, err := c.given.Message()
-			if err != nil {
-				t.Fatalf("unexpected error: %s", err.Error())
-			}
-			if !reflect.DeepEqual(*got, c.expected) {
-				t.Errorf("wrong output, expected:\n	%v\nbut got:\n	%v", c.expected, *got)
-			}
-		})
 	}
 }
 

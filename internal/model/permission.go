@@ -342,7 +342,7 @@ func (pr *PermissionRepository) FindByTag(ctx context.Context, userID int64) ([]
 	}
 	defer rows.Close()
 
-	permissions := []*PermissionEntity{}
+	var permissions []*PermissionEntity
 	for rows.Next() {
 		var p PermissionEntity
 		err = rows.Scan(

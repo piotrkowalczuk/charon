@@ -6,10 +6,11 @@ import (
 
 	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/charon/charonrpc"
+	"github.com/piotrkowalczuk/charon/internal/grpcerr"
+	"github.com/piotrkowalczuk/charon/internal/mapping"
 	"github.com/piotrkowalczuk/charon/internal/model"
 	"github.com/piotrkowalczuk/charon/internal/session"
 	"github.com/piotrkowalczuk/ntypes"
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 )
 
@@ -18,7 +19,13 @@ type modifyGroupHandler struct {
 }
 
 func (mgh *modifyGroupHandler) Modify(ctx context.Context, req *charonrpc.ModifyGroupRequest) (*charonrpc.ModifyGroupResponse, error) {
-	act, err := mgh.retrieveActor(ctx)
+	if req.Id <= 0 {
+		return nil, grpcerr.E(codes.InvalidArgument, "group id is missing")
+	}
+	if !req.GetName().GetValid() && !req.GetDescription().GetValid() {
+		return nil, grpcerr.E(codes.InvalidArgument, "nothing to be modified")
+	}
+	act, err := mgh.Actor(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -34,9 +41,9 @@ func (mgh *modifyGroupHandler) Modify(ctx context.Context, req *charonrpc.Modify
 	})
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, grpc.Errorf(codes.NotFound, "group does not exists")
+			return nil, grpcerr.E(codes.NotFound, "group does not exists")
 		}
-		return nil, err
+		return nil, grpcerr.E(codes.Internal, "update group by id query failed", err)
 	}
 
 	return mgh.response(group)
@@ -50,15 +57,13 @@ func (mgh *modifyGroupHandler) firewall(req *charonrpc.ModifyGroupRequest, act *
 		return nil
 	}
 
-	return grpc.Errorf(codes.PermissionDenied, "group cannot be modified, missing permission")
+	return grpcerr.E(codes.PermissionDenied, "group cannot be modified, missing permission")
 }
 
-func (mgh *modifyGroupHandler) response(g *model.GroupEntity) (*charonrpc.ModifyGroupResponse, error) {
-	msg, err := g.Message()
+func (mgh *modifyGroupHandler) response(ent *model.GroupEntity) (*charonrpc.ModifyGroupResponse, error) {
+	msg, err := mapping.ReverseGroup(ent)
 	if err != nil {
-		return nil, err
+		return nil, grpcerr.E(codes.Internal, "group reverse mapping failure")
 	}
-	return &charonrpc.ModifyGroupResponse{
-		Group: msg,
-	}, nil
+	return &charonrpc.ModifyGroupResponse{Group: msg}, nil
 }

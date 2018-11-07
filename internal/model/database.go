@@ -9,7 +9,6 @@ import (
 
 	"github.com/lib/pq"
 	"github.com/piotrkowalczuk/charon"
-	"github.com/piotrkowalczuk/pqcomp"
 )
 
 type repositories struct {
@@ -158,27 +157,38 @@ func setManyToMany(db *sql.DB, ctx context.Context, table, column1, column2 stri
 		}
 	}
 
-	delete := pqcomp.New(1, len(in))
-	delete.AddArg(id)
-	for _, id := range in {
-		delete.AddExpr(column2, "IN", id)
+	delete := NewComposer(1)
+	delete.WriteString("DELETE FROM ")
+	delete.WriteString(table)
+	delete.WriteString(" WHERE ")
+	delete.WriteString(column1)
+	delete.WriteString(" = ")
+	if err = delete.WritePlaceholder(); err != nil {
+		return 0, 0, err
 	}
-
-	query := bytes.NewBufferString(`DELETE FROM ` + table + ` WHERE ` + column1 + ` = $1`)
-	for delete.Next() {
-		if delete.First() {
-			fmt.Fprint(query, " AND "+column2+" NOT IN (")
-		} else {
-			fmt.Fprint(query, ", ")
-
-		}
-		fmt.Fprintf(query, "%s", delete.PlaceHolder())
-	}
+	delete.Add(id)
 	if len(in) > 0 {
-		fmt.Fprint(query, ")")
+		delete.WriteString(" AND ")
+		delete.WriteString(column2)
+		delete.WriteString(" NOT IN (")
+		for i, v := range in {
+			if i != 0 {
+				if _, err = delete.WriteString(","); err != nil {
+					return 0, 0, err
+				}
+			}
+			if err = delete.WritePlaceholder(); err != nil {
+				return 0, 0, err
+			}
+
+			delete.Add(v)
+		}
+		if _, err = delete.WriteString(")"); err != nil {
+			return 0, 0, err
+		}
 	}
 
-	res, err = tx.ExecContext(ctx, query.String(), delete.Args()...)
+	res, err = tx.ExecContext(ctx, delete.String(), delete.Args()...)
 	if err != nil {
 		return 0, 0, err
 	}
@@ -259,33 +269,66 @@ func setPermissions(db *sql.DB, ctx context.Context, table, columnID, columnSubs
 		}
 	}
 
-	del := pqcomp.New(1, len(in)*3)
-	del.AddArg(id)
-	for _, p := range in {
-		subsystem, module, action = p.Split()
-		del.AddExpr(columnSubsystem, "IN", subsystem)
-		del.AddExpr(columnModule, "IN", module)
-		del.AddExpr(columnAction, "IN", action)
+	delete := NewComposer(1)
+	delete.WriteString("DELETE FROM ")
+	delete.WriteString(table)
+	delete.WriteString(" WHERE ")
+	delete.WriteString(columnID)
+	delete.WriteString(" = ")
+	if err = delete.WritePlaceholder(); err != nil {
+		return 0, 0, err
 	}
-
-	query := bytes.NewBufferString(`DELETE FROM ` + table + ` WHERE ` + columnID + ` = $1`)
+	delete.Add(id)
 	if len(in) > 0 {
-		fmt.Fprint(query, ` AND (`+columnSubsystem+`, `+columnModule+`, `+columnAction+`) NOT IN (`)
-		for i := range in {
+		delete.WriteString(" AND (")
+		delete.WriteString(columnSubsystem)
+		delete.WriteString(",")
+		delete.WriteString(columnModule)
+		delete.WriteString(",")
+		delete.WriteString(columnAction)
+		delete.WriteString(") NOT IN (")
+		for i, v := range in {
 			if i != 0 {
-				fmt.Fprint(query, ", ")
+				if _, err = delete.WriteString(","); err != nil {
+					return 0, 0, err
+				}
 			}
-			del.Next()
-			fmt.Fprintf(query, "(%s", del.PlaceHolder())
-			del.Next()
-			fmt.Fprintf(query, ",%s,", del.PlaceHolder())
-			del.Next()
-			fmt.Fprintf(query, "%s)", del.PlaceHolder())
+
+			subsystem, module, action = v.Split()
+			if _, err = delete.WriteString("("); err != nil {
+				return 0, 0, err
+			}
+			if err = delete.WritePlaceholder(); err != nil {
+				return 0, 0, err
+			}
+			delete.Add(subsystem)
+			if _, err = delete.WriteString(","); err != nil {
+				return 0, 0, err
+			}
+
+			if err = delete.WritePlaceholder(); err != nil {
+				return 0, 0, err
+			}
+			delete.Add(module)
+			if _, err = delete.WriteString(","); err != nil {
+				return 0, 0, err
+			}
+			if err = delete.WritePlaceholder(); err != nil {
+				return 0, 0, err
+			}
+			delete.Add(action)
+
+			if _, err = delete.WriteString(")"); err != nil {
+				return 0, 0, err
+			}
 		}
-		fmt.Fprint(query, ")")
+		if _, err = delete.WriteString(")"); err != nil {
+			return 0, 0, err
+		}
 	}
 
-	res, err = tx.Exec(query.String(), del.Args()...)
+	fmt.Println(delete.String())
+	res, err = tx.Exec(delete.String(), delete.Args()...)
 	if err != nil {
 		return 0, 0, pqErrorPrefix(err, "error on redundant permission removal")
 	}

@@ -6,9 +6,10 @@ import (
 	"github.com/lib/pq"
 	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/charon/charonrpc"
+	"github.com/piotrkowalczuk/charon/internal/grpcerr"
 	"github.com/piotrkowalczuk/charon/internal/model"
 	"github.com/piotrkowalczuk/charon/internal/session"
-	"google.golang.org/grpc"
+
 	"google.golang.org/grpc/codes"
 )
 
@@ -17,7 +18,7 @@ type setUserPermissionsHandler struct {
 }
 
 func (suph *setUserPermissionsHandler) SetPermissions(ctx context.Context, req *charonrpc.SetUserPermissionsRequest) (*charonrpc.SetUserPermissionsResponse, error) {
-	act, err := suph.retrieveActor(ctx)
+	act, err := suph.Actor(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -38,9 +39,9 @@ func (suph *setUserPermissionsHandler) SetPermissions(ctx context.Context, req *
 	if err != nil {
 		switch model.ErrorConstraint(err) {
 		case model.TableUserPermissionsConstraintUserIDForeignKey:
-			return nil, errf(codes.NotFound, "%s: user does not exist", err.(*pq.Error).Detail)
+			return nil, grpcerr.E(codes.NotFound, "%s: user does not exist", err.(*pq.Error).Detail)
 		case model.TableUserPermissionsConstraintPermissionSubsystemPermissionModulePermissionActionForeignKey:
-			return nil, errf(codes.NotFound, "%s: permission does not exist", err.(*pq.Error).Detail)
+			return nil, grpcerr.E(codes.NotFound, "%s: permission does not exist", err.(*pq.Error).Detail)
 		default:
 			return nil, err
 		}
@@ -62,5 +63,5 @@ func (suph *setUserPermissionsHandler) firewall(req *charonrpc.SetUserPermission
 		return nil
 	}
 
-	return grpc.Errorf(codes.PermissionDenied, "user permissions cannot be set, missing permission")
+	return grpcerr.E(codes.PermissionDenied, "user permissions cannot be set, missing permission")
 }

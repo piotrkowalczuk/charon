@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/piotrkowalczuk/charon/charonrpc"
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -20,7 +19,7 @@ func TestLogoutHandler_Logout(t *testing.T) {
 		Password: "test",
 	})
 	if err != nil {
-		t.Fatalf("unexpected login error: %s: with code %s", grpc.ErrorDesc(err), grpc.Code(err))
+		t.Fatalf("unexpected login error: %s: with code %s", status.Convert(err).Message(), status.Code(err))
 	}
 
 	if _, err := suite.charon.auth.Logout(context.TODO(), &charonrpc.LogoutRequest{
@@ -32,7 +31,7 @@ func TestLogoutHandler_Logout(t *testing.T) {
 		AccessToken: tkn.Value,
 	})
 	if err != nil {
-		t.Fatalf("unexpected is authenticated error: %s: with code %s", grpc.ErrorDesc(err), grpc.Code(err))
+		t.Fatalf("unexpected is authenticated error: %s: with code %s", status.Convert(err).Message(), status.Code(err))
 	}
 	if ok.Value {
 		t.Errorf("user should not be authenticated")

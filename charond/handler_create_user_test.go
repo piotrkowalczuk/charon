@@ -2,19 +2,384 @@ package charond
 
 import (
 	"context"
+	"errors"
 	"testing"
 
+	"database/sql"
+
+	"time"
+
+	"github.com/lib/pq"
 	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/charon/charonrpc"
+	"github.com/piotrkowalczuk/charon/internal/grpcerr"
 	"github.com/piotrkowalczuk/charon/internal/model"
+	"github.com/piotrkowalczuk/charon/internal/model/modelmock"
+	"github.com/piotrkowalczuk/charon/internal/password/passwordmock"
 	"github.com/piotrkowalczuk/charon/internal/session"
+	"github.com/piotrkowalczuk/charon/internal/session/sessionmock"
 	"github.com/piotrkowalczuk/ntypes"
-	"google.golang.org/grpc"
+	"github.com/stretchr/testify/mock"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
-func TestCreateUserHandler_Create(t *testing.T) {
-	suite := &endToEndSuite{}
+func TestCreateUserHandler_Create_Unit(t *testing.T) {
+	actorProviderMock := &sessionmock.ActorProvider{}
+	userProviderMock := &modelmock.UserProvider{}
+	hasherMock := &passwordmock.Hasher{}
+
+	h := createUserHandler{
+		hasher: hasherMock,
+		handler: &handler{
+			ActorProvider: actorProviderMock,
+			repository: repositories{
+				user: userProviderMock,
+			},
+		},
+	}
+
+	successInit := func(act session.Actor) func(*testing.T, *charonrpc.CreateUserRequest) {
+		return func(t *testing.T, r *charonrpc.CreateUserRequest) {
+			actorProviderMock.On("Actor", mock.Anything).
+				Return(&act, nil).
+				Once()
+			hasherMock.On("Hash", []byte(r.PlainPassword)).
+				Return([]byte{1, 2, 3}, nil).
+				Once()
+			userProviderMock.On("Create", mock.Anything, mock.Anything, mock.Anything).
+				Return(&model.UserEntity{}, nil).
+				Once()
+		}
+	}
+
+	cases := map[string]struct {
+		req  charonrpc.CreateUserRequest
+		init func(*testing.T, *charonrpc.CreateUserRequest)
+		err  error
+	}{
+		"missing-username": {
+			req: charonrpc.CreateUserRequest{
+				Username:      "12",
+				PlainPassword: "password",
+			},
+			init: func(_ *testing.T, _ *charonrpc.CreateUserRequest) {},
+			err:  grpcerr.E(codes.InvalidArgument),
+		},
+		"missing-password": {
+			req: charonrpc.CreateUserRequest{
+				Username: "username",
+			},
+			init: func(_ *testing.T, _ *charonrpc.CreateUserRequest) {},
+			err:  grpcerr.E(codes.InvalidArgument),
+		},
+		"missing-permission": {
+			req: charonrpc.CreateUserRequest{
+				Username:      "username",
+				PlainPassword: "password",
+			},
+			init: func(t *testing.T, r *charonrpc.CreateUserRequest) {
+				actorProviderMock.On("Actor", mock.Anything).
+					Return(&session.Actor{User: &model.UserEntity{}}, nil).
+					Once()
+			},
+			err: grpcerr.E(codes.PermissionDenied),
+		},
+		"password-hashing-failure": {
+			req: charonrpc.CreateUserRequest{
+				Username:      "username",
+				PlainPassword: "password",
+			},
+			init: func(t *testing.T, r *charonrpc.CreateUserRequest) {
+				actorProviderMock.On("Actor", mock.Anything).
+					Return(&session.Actor{User: &model.UserEntity{IsSuperuser: true}}, nil).
+					Once()
+				hasherMock.On("Hash", []byte(r.PlainPassword)).
+					Return(nil, errors.New("example error")).
+					Once()
+			},
+			err: grpcerr.E(codes.Internal),
+		},
+		"actor-cannot-be-retrieved": {
+			req: charonrpc.CreateUserRequest{
+				Username:      "username",
+				PlainPassword: "password",
+			},
+			init: func(t *testing.T, r *charonrpc.CreateUserRequest) {
+				actorProviderMock.On("Actor", mock.Anything).
+					Return(nil, grpcerr.E(codes.Internal, "example error")).
+					Once()
+			},
+			err: grpcerr.E(codes.Internal),
+		},
+		"actor-cannot-be-retrieved-and-superuser-already-exists": {
+			req: charonrpc.CreateUserRequest{
+				Username:      "username",
+				PlainPassword: "password",
+				IsSuperuser:   ntypes.True(),
+			},
+			init: func(t *testing.T, r *charonrpc.CreateUserRequest) {
+				actorProviderMock.On("Actor", mock.Anything).
+					Return(nil, grpcerr.E(codes.Internal, "example error")).
+					Once()
+				userProviderMock.On("Count", mock.Anything).
+					Return(int64(1), nil).
+					Once()
+			},
+			err: grpcerr.E(codes.AlreadyExists),
+		},
+		"actor-cannot-be-retrieved-and-number-of-users-cannot-be-checked": {
+			req: charonrpc.CreateUserRequest{
+				Username:      "username",
+				PlainPassword: "password",
+				IsSuperuser:   ntypes.True(),
+			},
+			init: func(t *testing.T, r *charonrpc.CreateUserRequest) {
+				actorProviderMock.On("Actor", mock.Anything).
+					Return(nil, grpcerr.E(codes.Internal, "example error")).
+					Once()
+				userProviderMock.On("Count", mock.Anything).
+					Return(int64(0), sql.ErrConnDone).
+					Once()
+			},
+			err: grpcerr.E(codes.Internal),
+		},
+		"secure-password-as-regular-user": {
+			req: charonrpc.CreateUserRequest{
+				Username:       "username",
+				SecurePassword: []byte("password"),
+			},
+			init: func(t *testing.T, r *charonrpc.CreateUserRequest) {
+				actorProviderMock.On("Actor", mock.Anything).
+					Return(&session.Actor{
+						Permissions: charon.Permissions{charon.UserCanCreate},
+						User:        &model.UserEntity{},
+					}, nil).
+					Once()
+			},
+			err: grpcerr.E(codes.PermissionDenied),
+		},
+		"only-superuser-can-create-another-superuser": {
+			req: charonrpc.CreateUserRequest{
+				Username:      "username",
+				PlainPassword: "password",
+				IsSuperuser:   ntypes.True(),
+			},
+			init: func(t *testing.T, r *charonrpc.CreateUserRequest) {
+				actorProviderMock.On("Actor", mock.Anything).
+					Return(&session.Actor{User: &model.UserEntity{}}, nil).
+					Once()
+			},
+			err: grpcerr.E(codes.PermissionDenied),
+		},
+		"having-staff-member-creation-permission-is-not-enough-to-create-superuser": {
+			req: charonrpc.CreateUserRequest{
+				Username:      "username",
+				PlainPassword: "password",
+				IsSuperuser:   ntypes.True(),
+			},
+			init: func(t *testing.T, r *charonrpc.CreateUserRequest) {
+				actorProviderMock.On("Actor", mock.Anything).
+					Return(&session.Actor{
+						Permissions: charon.Permissions{
+							charon.UserCanCreateStaff,
+						},
+						User: &model.UserEntity{},
+					}, nil).
+					Once()
+			},
+			err: grpcerr.E(codes.PermissionDenied),
+		},
+		"staff-member-requires-permission": {
+			req: charonrpc.CreateUserRequest{
+				Username:      "username",
+				PlainPassword: "password",
+				IsStaff:       ntypes.True(),
+			},
+			init: func(t *testing.T, r *charonrpc.CreateUserRequest) {
+				actorProviderMock.On("Actor", mock.Anything).
+					Return(&session.Actor{
+						User: &model.UserEntity{},
+						Permissions: charon.Permissions{
+							charon.UserCanCreate,
+						},
+					}, nil).
+					Once()
+			},
+			err: grpcerr.E(codes.PermissionDenied),
+		},
+		"being-staff-member-is-not-enough-to-create-another-staff-member": {
+			req: charonrpc.CreateUserRequest{
+				Username:      "username",
+				PlainPassword: "password",
+				IsStaff:       ntypes.True(),
+			},
+			init: func(t *testing.T, r *charonrpc.CreateUserRequest) {
+				actorProviderMock.On("Actor", mock.Anything).
+					Return(&session.Actor{
+						User: &model.UserEntity{IsStaff: true},
+					}, nil).
+					Once()
+			},
+			err: grpcerr.E(codes.PermissionDenied),
+		},
+		"success-as-superuser": {
+			req: charonrpc.CreateUserRequest{
+				Username:      "username",
+				PlainPassword: "password",
+			},
+			init: successInit(session.Actor{User: &model.UserEntity{IsSuperuser: true}}),
+		},
+		"success-superuser-as-superuser": {
+			req: charonrpc.CreateUserRequest{
+				Username:      "username",
+				PlainPassword: "password",
+				IsSuperuser:   ntypes.True(),
+			},
+			init: successInit(session.Actor{User: &model.UserEntity{IsSuperuser: true}}),
+		},
+		"success-superuser-as-local": {
+			req: charonrpc.CreateUserRequest{
+				Username:      "username",
+				PlainPassword: "password",
+				IsSuperuser:   ntypes.True(),
+			},
+			init: successInit(session.Actor{IsLocal: true, User: &model.UserEntity{}}),
+		},
+		"success-as-user": {
+			req: charonrpc.CreateUserRequest{
+				Username:      "username",
+				PlainPassword: "password",
+			},
+			init: successInit(session.Actor{
+				User: &model.UserEntity{ID: 2},
+				Permissions: charon.Permissions{
+					charon.UserCanCreate,
+				},
+			}),
+		},
+		"success-staff-as-user": {
+			req: charonrpc.CreateUserRequest{
+				Username:      "username",
+				PlainPassword: "password",
+				IsStaff:       ntypes.True(),
+			},
+			init: successInit(session.Actor{
+				User: &model.UserEntity{ID: 2},
+				Permissions: charon.Permissions{
+					charon.UserCanCreateStaff,
+				},
+			}),
+		},
+		"storage-returns-broken-entity": {
+			req: charonrpc.CreateUserRequest{
+				Username:      "username",
+				PlainPassword: "password",
+				IsStaff:       ntypes.True(),
+			},
+			init: func(t *testing.T, r *charonrpc.CreateUserRequest) {
+				actorProviderMock.On("Actor", mock.Anything).
+					Return(&session.Actor{
+						User: &model.UserEntity{ID: 2},
+						Permissions: charon.Permissions{
+							charon.UserCanCreateStaff,
+						},
+					}, nil).
+					Once()
+				hasherMock.On("Hash", []byte(r.PlainPassword)).
+					Return([]byte{1, 2, 3}, nil).
+					Once()
+				userProviderMock.On("Create", mock.Anything, mock.Anything, mock.Anything).
+					Return(&model.UserEntity{
+						CreatedAt: time.Date(1, 1, 0, 0, 0, 0, 0, time.UTC),
+					}, nil).
+					Once()
+			},
+			err: grpcerr.E(codes.Internal),
+		},
+		"user-with-such-username-already-exists": {
+			req: charonrpc.CreateUserRequest{
+				Username:      "username",
+				PlainPassword: "password",
+				IsStaff:       ntypes.True(),
+			},
+			init: func(t *testing.T, r *charonrpc.CreateUserRequest) {
+				actorProviderMock.On("Actor", mock.Anything).
+					Return(&session.Actor{
+						User: &model.UserEntity{ID: 2},
+						Permissions: charon.Permissions{
+							charon.UserCanCreateStaff,
+						},
+					}, nil).
+					Once()
+				hasherMock.On("Hash", []byte(r.PlainPassword)).
+					Return([]byte{1, 2, 3}, nil).
+					Once()
+				userProviderMock.On("Create", mock.Anything, mock.Anything, mock.Anything).
+					Return(nil, &pq.Error{Constraint: model.TableUserConstraintUsernameUnique}).
+					Once()
+			},
+			err: grpcerr.E(codes.AlreadyExists),
+		},
+		"storage-returns-random-error-on-failure": {
+			req: charonrpc.CreateUserRequest{
+				Username:      "username",
+				PlainPassword: "password",
+				IsStaff:       ntypes.True(),
+			},
+			init: func(t *testing.T, r *charonrpc.CreateUserRequest) {
+				actorProviderMock.On("Actor", mock.Anything).
+					Return(&session.Actor{
+						User: &model.UserEntity{ID: 2},
+						Permissions: charon.Permissions{
+							charon.UserCanCreateStaff,
+						},
+					}, nil).
+					Once()
+				hasherMock.On("Hash", []byte(r.PlainPassword)).
+					Return([]byte{1, 2, 3}, nil).
+					Once()
+				userProviderMock.On("Create", mock.Anything, mock.Anything, mock.Anything).
+					Return(nil, errors.New("example error")).
+					Once()
+			},
+			err: grpcerr.E(codes.Internal),
+		},
+	}
+
+	for hint, c := range cases {
+		t.Run(hint, func(t *testing.T) {
+			defer recoverTest(t)
+
+			//sessionMock.ExpectedCalls = nil
+			//permissionProviderMock.ExpectedCalls = nil
+			hasherMock.ExpectedCalls = nil
+			userProviderMock.ExpectedCalls = nil
+			actorProviderMock.ExpectedCalls = nil
+
+			c.init(t, &c.req)
+
+			_, err := h.Create(context.TODO(), &c.req)
+			if c.err != nil {
+				if !grpcerr.Match(c.err, err) {
+					t.Fatalf("error do not match, got %v", err)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatal(err)
+			}
+			if !mock.AssertExpectationsForObjects(t, hasherMock, userProviderMock, actorProviderMock) {
+				return
+			}
+		})
+	}
+}
+
+func TestCreateUserHandler_Create_E2E(t *testing.T) {
+	suite := &endToEndSuite{
+		userAgent: "charonctl",
+	}
 	suite.setup(t)
 	defer suite.teardown(t)
 
@@ -42,6 +407,28 @@ func TestCreateUserHandler_Create(t *testing.T) {
 				t.Errorf("wrong last name, expected %#v but got %#v", req.LastName, res.User.LastName)
 			}
 		},
+		"superuser-twice": func(t *testing.T) {
+			_, err := suite.charon.user.Create(timeout(ctx), &charonrpc.CreateUserRequest{
+				Username:      "superuser-1",
+				FirstName:     "first-name-1",
+				LastName:      "last-name-1",
+				PlainPassword: "plain-password-1",
+				IsSuperuser:   ntypes.True(),
+			})
+			if err != nil {
+				t.Fatalf("unexpected error: %s", err.Error())
+			}
+			_, err = suite.charon.user.Create(timeout(ctx), &charonrpc.CreateUserRequest{
+				Username:      "superuser-2",
+				FirstName:     "first-name-2",
+				LastName:      "last-name-2",
+				PlainPassword: "plain-password-2",
+				IsSuperuser:   ntypes.True(),
+			})
+			if err != nil {
+				t.Fatalf("unexpected error: %s", err.Error())
+			}
+		},
 		"local": func(t *testing.T) {
 			req := &charonrpc.CreateUserRequest{
 				Username:      "username-local",
@@ -66,158 +453,13 @@ func TestCreateUserHandler_Create(t *testing.T) {
 				t.Fatalf("unexpected error: %s", err.Error())
 			}
 			_, err = suite.charon.user.Create(timeout(ctx), req)
-			if grpc.Code(err) != codes.AlreadyExists {
-				t.Errorf("wrong status code, expected %s but got %s", codes.AlreadyExists.String(), grpc.Code(err).String())
+			if status.Code(err) != codes.AlreadyExists {
+				t.Errorf("wrong status code, expected %s but got %s", codes.AlreadyExists.String(), status.Code(err).String())
 			}
-		},
-		"another-superuser-without-actor": func(t *testing.T) {
-			// TODO: change logic so local IP do not break it
-			//req := &charonrpc.CreateUserRequest{
-			//	Username:      "username-another-superuser",
-			//	FirstName:     "first-name-another-superuser",
-			//	LastName:      "last-name-another-superuser",
-			//	PlainPassword: "plain-password-another-superuser",
-			//	IsSuperuser:   ntypes.True(),
-			//}
-			//_, err := suite.charon.user.Create(context.Background(), req)
-			//if grpc.Code(err) != codes.AlreadyExists {
-			//	t.Errorf("wrong status code, expected %s but got %s", codes.AlreadyExists.String(), grpc.Code(err).String())
-			//}
-			//if grpc.ErrorDesc(err) != "initial superuser account already exists" {
-			//	t.Errorf("wrong error message, expected '%s' but got '%s'", "initial superuser account already exists", grpc.ErrorDesc(err))
-			//}
 		},
 	}
 
 	for hint, fn := range cases {
 		t.Run(hint, fn)
-	}
-}
-
-func TestCreateUserHandler_firewall_success(t *testing.T) {
-	data := []struct {
-		req charonrpc.CreateUserRequest
-		act session.Actor
-	}{
-		{
-			req: charonrpc.CreateUserRequest{},
-			act: session.Actor{
-				User: &model.UserEntity{ID: 2},
-				Permissions: charon.Permissions{
-					charon.UserCanCreate,
-				},
-			},
-		},
-		{
-
-			req: charonrpc.CreateUserRequest{
-				IsStaff: &ntypes.Bool{Bool: true, Valid: true},
-			},
-			act: session.Actor{
-				User: &model.UserEntity{ID: 2},
-				Permissions: charon.Permissions{
-					charon.UserCanCreateStaff,
-				},
-			},
-		},
-		{
-			req: charonrpc.CreateUserRequest{
-				IsSuperuser: &ntypes.Bool{Bool: true, Valid: true},
-			},
-			act: session.Actor{
-				User: &model.UserEntity{ID: 2, IsSuperuser: true},
-			},
-		},
-		{
-			req: charonrpc.CreateUserRequest{},
-			act: session.Actor{
-				User: &model.UserEntity{ID: 2, IsSuperuser: true},
-			},
-		},
-		{
-			req: charonrpc.CreateUserRequest{},
-			act: session.Actor{
-				User:    &model.UserEntity{},
-				IsLocal: true,
-			},
-		},
-	}
-
-	h := &createUserHandler{}
-	for _, d := range data {
-		if err := h.firewall(&d.req, &d.act); err != nil {
-			t.Errorf("unexpected error: %s", err.Error())
-		}
-	}
-}
-
-func TestCreateUserHandler_firewall_failure(t *testing.T) {
-	data := []struct {
-		req charonrpc.CreateUserRequest
-		act session.Actor
-	}{
-		{
-			req: charonrpc.CreateUserRequest{},
-			act: session.Actor{
-				User: &model.UserEntity{},
-			},
-		},
-		{
-			req: charonrpc.CreateUserRequest{},
-			act: session.Actor{
-				User: &model.UserEntity{ID: 2},
-			},
-		},
-		{
-			req: charonrpc.CreateUserRequest{},
-			act: session.Actor{
-				User: &model.UserEntity{
-					ID:      2,
-					IsStaff: true,
-				},
-			},
-		},
-		{
-			req: charonrpc.CreateUserRequest{
-				IsStaff: &ntypes.Bool{Bool: true, Valid: true},
-			},
-			act: session.Actor{
-				User: &model.UserEntity{
-					ID:      2,
-					IsStaff: true,
-				},
-			},
-		},
-		{
-			req: charonrpc.CreateUserRequest{
-				IsSuperuser: &ntypes.Bool{Bool: true, Valid: true},
-			},
-			act: session.Actor{
-				User: &model.UserEntity{ID: 1},
-				Permissions: charon.Permissions{
-					charon.UserCanCreateStaff,
-				},
-			},
-		},
-		{
-			req: charonrpc.CreateUserRequest{
-				IsStaff: &ntypes.Bool{Bool: true, Valid: true},
-			},
-			act: session.Actor{
-				User: &model.UserEntity{
-					ID: 2,
-				},
-				Permissions: charon.Permissions{
-					charon.UserCanCreate,
-				},
-			},
-		},
-	}
-
-	h := &createUserHandler{}
-	for _, d := range data {
-		if err := h.firewall(&d.req, &d.act); err == nil {
-			t.Error("expected error, got nil")
-		}
 	}
 }

@@ -42,15 +42,6 @@ type configuration struct {
 		certFile string
 		keyFile  string
 	}
-	ldap struct {
-		enabled bool
-		address string
-		search  string
-		base    struct {
-			dn, password string
-		}
-		mappings string
-	}
 }
 
 func (c *configuration) init() {
@@ -79,13 +70,6 @@ func (c *configuration) init() {
 	flag.BoolVar(&c.tls.enabled, "tls", false, "tls enable flag")
 	flag.StringVar(&c.tls.certFile, "tls.crt", "", "path to tls cert file")
 	flag.StringVar(&c.tls.keyFile, "tls.key", "", "path to tls key file")
-	// LDAP
-	flag.BoolVar(&c.ldap.enabled, "ldap", false, "ldap enable flag")
-	flag.StringVar(&c.ldap.address, "ldap.address", "", "ldap server address")
-	flag.StringVar(&c.ldap.base.dn, "ldap.base.dn", "", "ldap base distinguished name")
-	flag.StringVar(&c.ldap.base.password, "ldap.base.password", "", "ldap password")
-	flag.StringVar(&c.ldap.search, "ldap.search", "", "ldap search distinguished name")
-	flag.StringVar(&c.ldap.mappings, "ldap.mappings", "", "path to the ldap mappings")
 }
 
 func (c *configuration) parse() {

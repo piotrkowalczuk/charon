@@ -3,7 +3,6 @@ package main
 import (
 	_ "github.com/lib/pq"
 	"github.com/piotrkowalczuk/charon/charond"
-	"github.com/piotrkowalczuk/charon/internal/ldap"
 	"github.com/piotrkowalczuk/sklog"
 	"google.golang.org/grpc/grpclog"
 )
@@ -20,17 +19,6 @@ func main() {
 	logger := initLogger(config.logger.adapter, config.logger.format, config.logger.level)
 	rpcListener := initListener(logger, config.host, config.port)
 	debugListener := initListener(logger, config.host, config.port+1)
-
-	var (
-		mappings *ldap.Mappings
-		err      error
-	)
-	if config.ldap.enabled && config.ldap.mappings != "" {
-		if mappings, err = ldap.NewMappingsFromFile(config.ldap.mappings); err != nil {
-			sklog.Fatal(logger, err)
-		}
-		sklog.Info(logger, "ldap mappings has been loaded")
-	}
 
 	grpclog.SetLogger(sklog.NewGRPCLogger(logger))
 
@@ -49,12 +37,6 @@ func main() {
 		Logger:               logger,
 		RPCListener:          rpcListener,
 		DebugListener:        debugListener,
-		LDAP:                 config.ldap.enabled,
-		LDAPAddress:          config.ldap.address,
-		LDAPBaseDN:           config.ldap.base.dn,
-		LDAPSearchDN:         config.ldap.search,
-		LDAPBasePassword:     config.ldap.base.password,
-		LDAPMappings:         mappings,
 	})
 
 	if err := daemon.Run(); err != nil {

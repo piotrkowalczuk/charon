@@ -34,14 +34,6 @@
   version = "v0.2.0"
 
 [[projects]]
-  digest = "1:367baf06b7dbd0ef0bbdd785f6a79f929c96b0c18e9d3b29c0eed1ac3f5db133"
-  name = "github.com/go-ldap/ldap"
-  packages = ["."]
-  pruneopts = ""
-  revision = "bb7a9ca6e4fbc2129e3db588a34bc970ffe811a9"
-  version = "v2.5.1"
-
-[[projects]]
   digest = "1:6a4a01d58b227c4b6b11111b9f172ec5c17682b82724e58e6daf3f19f4faccd8"
   name = "github.com/go-logfmt/logfmt"
   packages = ["."]
@@ -191,24 +183,20 @@
   version = "v0.2.6"
 
 [[projects]]
-  branch = "master"
-  digest = "1:4b334c8bf6971cdad792a05cb0ccf0aebcbdac7b02bc1314b9e81895e340a396"
-  name = "github.com/piotrkowalczuk/pqcomp"
-  packages = ["."]
-  pruneopts = ""
-  revision = "631b19c36ded8bbe954cf8c15a0044c591033536"
-
-[[projects]]
-  digest = "1:7f937abe63dbfd6479c7da83c20a52fa7f6fcd5ed1a4893a7548dfeacbe8ce5e"
+  digest = "1:17a27a510503365bbdb40a1a680395c896f2b6adb067684c71766ee43f9f6018"
   name = "github.com/piotrkowalczuk/pqt"
   packages = [
     ".",
+    "internal/gogen",
+    "internal/print",
+    "pqtfmt",
     "pqtgo",
+    "pqtgo/pqtgogen",
     "pqtsql",
   ]
   pruneopts = ""
-  revision = "3647e5ba2b64deb699a09ea4c78736af65c3931e"
-  version = "v0.19.0"
+  revision = "df97f086a6d32773e0414abf085183a44acbd91a"
+  version = "v0.27.0"
 
 [[projects]]
   digest = "1:258013a3e255ae47ca2c336c0e2590b16bafd7cd108f2f6594a1fe4a24aa9faf"
@@ -227,12 +215,12 @@
   version = "v0.3.7"
 
 [[projects]]
-  digest = "1:237192e68f642f3de1881a545b2b0f55e26b6c60cd4f879f97aaaebe19ca6541"
+  digest = "1:f92d8ab35a58faf788f7c1f7321054d28957cd5a6dd176f58d062b88fb10eee2"
   name = "github.com/piotrkowalczuk/qtypespqt"
   packages = ["."]
   pruneopts = ""
-  revision = "eb49bca7d22cb00b04894def991d271074a1b889"
-  version = "v0.3.3"
+  revision = "cc0d096e27f8b495e659820fdba652f706d24c97"
+  version = "v0.4.0"
 
 [[projects]]
   branch = "master"
@@ -414,7 +402,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:efb97ebbd73c3a7068579327f5d98a17c09f6d8caf1fa3212c506e8bb78126b5"
+  digest = "1:a242f23ceb22423c0a2111d9488a2ab19a2e817111a4f3e2385f5f89a53e619f"
   name = "golang.org/x/crypto"
   packages = [
     "bcrypt",
@@ -422,7 +410,7 @@
     "sha3",
   ]
   pruneopts = ""
-  revision = "4d3f4d9ffa16a13f451c3b2999e9c49e9750bf06"
+  revision = "e4dc69e5b2fd71dcaf8bd5d054eb936deb78d1fa"
 
 [[projects]]
   branch = "master"
@@ -503,7 +491,10 @@
   branch = "master"
   digest = "1:80aae82eb03dd30038e2002cdbf3dc269bc17bfd170ef5c5a816b224ae29776f"
   name = "google.golang.org/genproto"
-  packages = ["googleapis/rpc/status"]
+  packages = [
+    "googleapis/rpc/errdetails",
+    "googleapis/rpc/status",
+  ]
   pruneopts = ""
   revision = "c830210a61dfaa790e1920f8d0470fc27bc2efbe"
 
@@ -544,20 +535,11 @@
   revision = "2e463a05d100327ca47ac218281906921038fd95"
   version = "v1.16.0"
 
-[[projects]]
-  digest = "1:3cad99e0d1f94b8c162787c12e59d0a0b9df1ef75590eb145cdd625479091efe"
-  name = "gopkg.in/asn1-ber.v1"
-  packages = ["."]
-  pruneopts = ""
-  revision = "379148ca0225df7a432012b8df0355c2a2063ac0"
-  version = "v1.2"
-
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
     "github.com/go-kit/kit/log",
-    "github.com/go-ldap/ldap",
     "github.com/golang/protobuf/proto",
     "github.com/golang/protobuf/ptypes",
     "github.com/golang/protobuf/ptypes/empty",
@@ -571,9 +553,9 @@
     "github.com/piotrkowalczuk/mnemosyne/mnemosynetest",
     "github.com/piotrkowalczuk/ntypes",
     "github.com/piotrkowalczuk/ntypespqt",
-    "github.com/piotrkowalczuk/pqcomp",
     "github.com/piotrkowalczuk/pqt",
     "github.com/piotrkowalczuk/pqt/pqtgo",
+    "github.com/piotrkowalczuk/pqt/pqtgo/pqtgogen",
     "github.com/piotrkowalczuk/pqt/pqtsql",
     "github.com/piotrkowalczuk/promgrpc/v3",
     "github.com/piotrkowalczuk/qtypes",
@@ -584,9 +566,13 @@
     "github.com/smartystreets/goconvey/convey",
     "github.com/stretchr/testify/mock",
     "go.uber.org/zap",
+    "go.uber.org/zap/zapcore",
     "golang.org/x/crypto/bcrypt",
+    "golang.org/x/crypto/sha3",
+    "golang.org/x/net/context",
     "golang.org/x/net/trace",
     "golang.org/x/oauth2",
+    "google.golang.org/genproto/googleapis/rpc/errdetails",
     "google.golang.org/grpc",
     "google.golang.org/grpc/codes",
     "google.golang.org/grpc/credentials",

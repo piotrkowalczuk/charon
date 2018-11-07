@@ -3,41 +3,11 @@ package model
 import (
 	"context"
 	"database/sql"
-	"strings"
 
-	"github.com/golang/protobuf/ptypes"
-	pbts "github.com/golang/protobuf/ptypes/timestamp"
 	"github.com/piotrkowalczuk/charon"
-	"github.com/piotrkowalczuk/charon/charonrpc"
 	"github.com/piotrkowalczuk/ntypes"
+	"github.com/piotrkowalczuk/qtypes"
 )
-
-// Message maps entity into protobuf message.
-func (ge *GroupEntity) Message() (*charonrpc.Group, error) {
-	var (
-		err                  error
-		createdAt, updatedAt *pbts.Timestamp
-	)
-
-	if createdAt, err = ptypes.TimestampProto(ge.CreatedAt); err != nil {
-		return nil, err
-	}
-	if ge.UpdatedAt.Valid {
-		if updatedAt, err = ptypes.TimestampProto(ge.UpdatedAt.Time); err != nil {
-			return nil, err
-		}
-	}
-
-	return &charonrpc.Group{
-		Id:          ge.ID,
-		Name:        ge.Name,
-		Description: ge.Description.Chars,
-		CreatedAt:   createdAt,
-		CreatedBy:   &ge.CreatedBy,
-		UpdatedAt:   updatedAt,
-		UpdatedBy:   &ge.UpdatedBy,
-	}, nil
-}
 
 // GroupProvider ...
 type GroupProvider interface {
@@ -63,6 +33,7 @@ type GroupProvider interface {
 // GroupRepository extends GroupRepositoryBase
 type GroupRepository struct {
 	GroupRepositoryBase
+	UserGroups UserGroupsRepositoryBase
 }
 
 // NewGroupRepository ...
@@ -73,43 +44,33 @@ func NewGroupRepository(dbPool *sql.DB) GroupProvider {
 			Table:   TableGroup,
 			Columns: TableGroupColumns,
 		},
+		UserGroups: UserGroupsRepositoryBase{
+			DB:      dbPool,
+			Table:   TableUserGroups,
+			Columns: TableUserGroupsColumns,
+		},
 	}
 }
 
 // FindByUserID implements GroupProvider interface.
 func (gr *GroupRepository) FindByUserID(ctx context.Context, userID int64) ([]*GroupEntity, error) {
-	query := `
-		SELECT  ` + strings.Join(TableGroupColumns, ",") + `
-		FROM ` + TableGroup + ` AS g
-		JOIN ` + TableUserGroups + ` AS ug ON ug.group_id = g.ID AND ug.user_id = $1
-	`
-
-	rows, err := gr.DB.QueryContext(ctx, query, userID)
+	userGroups, err := gr.UserGroups.Find(ctx, &UserGroupsFindExpr{
+		//Columns: TableGroupColumns,
+		Where: &UserGroupsCriteria{
+			UserID: qtypes.EqualInt64(userID),
+		},
+		JoinGroup: &GroupJoin{
+			Fetch: true,
+			Kind:  JoinRight,
+		},
+	})
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
 
-	groups := []*GroupEntity{}
-	for rows.Next() {
-		var g GroupEntity
-		err = rows.Scan(
-			&g.CreatedAt,
-			&g.CreatedBy,
-			&g.Description,
-			&g.ID,
-			&g.Name,
-			&g.UpdatedAt,
-			&g.UpdatedBy,
-		)
-		if err != nil {
-			return nil, err
-		}
-
-		groups = append(groups, &g)
-	}
-	if rows.Err() != nil {
-		return nil, rows.Err()
+	groups := make([]*GroupEntity, 0, len(userGroups))
+	for _, userGroup := range userGroups {
+		groups = append(groups, userGroup.Group)
 	}
 
 	return groups, nil

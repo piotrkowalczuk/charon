@@ -1,7 +1,7 @@
 #@IgnoreInspection BashAddShebang
 : ${PROTOC:="/usr/local/bin/protoc"}
 SERVICE="charon"
-PROTO_INCLUDE="-I=./${SERVICE}rpc -I=/usr/include -I=./vendor/github.com/piotrkowalczuk"
+PROTO_INCLUDE="-I=. -I=/usr/include -I=./vendor/github.com/piotrkowalczuk"
 
 case $1 in
     lint)

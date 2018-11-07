@@ -6,9 +6,10 @@ option go_package = "github.com/piotrkowalczuk/charon/charonrpc";
 
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/wrappers.proto";
+import "charonrpc/common.proto";
+import "charonrpc/group.proto";
 import "qtypes/qtypes.proto";
 import "ntypes/ntypes.proto";
-import "group.proto";
 
 service UserManager {
     rpc Create(CreateUserRequest) returns (CreateUserResponse) {};
@@ -71,7 +72,8 @@ message ListUsersRequest {
     qtypes.Int64 created_by = 3;
     ntypes.Int64 offset = 100;
     ntypes.Int64 limit = 101;
-    map<string, bool> sort = 102;
+    map<string, bool> sort = 102 [deprecated=true];
+    repeated Order order_by = 103;
 }
 
 message ListUsersResponse {

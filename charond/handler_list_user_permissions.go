@@ -2,13 +2,11 @@ package charond
 
 import (
 	"context"
-	"database/sql"
 
 	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/charon/charonrpc"
+	"github.com/piotrkowalczuk/charon/internal/grpcerr"
 	"github.com/piotrkowalczuk/charon/internal/session"
-	"github.com/piotrkowalczuk/sklog"
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 )
 
@@ -17,14 +15,20 @@ type listUserPermissionsHandler struct {
 }
 
 func (luph *listUserPermissionsHandler) ListPermissions(ctx context.Context, req *charonrpc.ListUserPermissionsRequest) (*charonrpc.ListUserPermissionsResponse, error) {
+	if req.Id <= 0 {
+		return nil, grpcerr.E(codes.InvalidArgument, "missing user id")
+	}
+	act, err := luph.Actor(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if err = luph.firewall(req, act); err != nil {
+		return nil, err
+	}
+
 	permissions, err := luph.repository.permission.FindByUserID(ctx, req.Id)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			sklog.Debug(luph.logger, "user permissions retrieved", "user_id", req.Id, "count", len(permissions))
-
-			return &charonrpc.ListUserPermissionsResponse{}, nil
-		}
-		return nil, err
+		return nil, grpcerr.E(codes.Internal, "find permissions by user id query failed", err)
 	}
 
 	perms := make([]string, 0, len(permissions))
@@ -41,9 +45,12 @@ func (luph *listUserPermissionsHandler) firewall(req *charonrpc.ListUserPermissi
 	if act.User.IsSuperuser {
 		return nil
 	}
+	if act.User.ID == req.Id {
+		return nil
+	}
 	if act.Permissions.Contains(charon.UserPermissionCanRetrieve) {
 		return nil
 	}
 
-	return grpc.Errorf(codes.PermissionDenied, "list of user permissions cannot be retrieved, missing permission")
+	return grpcerr.E(codes.PermissionDenied, "list of user permissions cannot be retrieved, missing permission")
 }

@@ -103,9 +103,9 @@ func TestPermission_Action(t *testing.T) {
 
 func TestPermission_MarshalJSON(t *testing.T) {
 	data := map[string]Permission{
-		`""`:                                                        Permission(""),
-		`"some action"`:                                             Permission("some action"),
-		`"module:some action"`:                                      Permission("module:some action"),
+		`""`:                   Permission(""),
+		`"some action"`:        Permission("some action"),
+		`"module:some action"`: Permission("module:some action"),
 		`"charon:user_permission:can check granting as a stranger"`: UserPermissionCanCheckGrantingAsStranger,
 	}
 
@@ -159,9 +159,7 @@ func TestPermissions_Contains_false(t *testing.T) {
 }
 
 func TestPermissions_Contains_many(t *testing.T) {
-	var permissions Permissions
-
-	permissions = Permissions{UserCanCreate, UserCanDeleteAsOwner}
+	permissions := Permissions{UserCanCreate, UserCanDeleteAsOwner}
 	if c := permissions.Contains(UserCanCreate, UserCanDeleteAsOwner); !c {
 		t.Errorf("both permission can be found, but ware not")
 	}

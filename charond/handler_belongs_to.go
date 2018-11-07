@@ -6,8 +6,8 @@ import (
 	"github.com/golang/protobuf/ptypes/wrappers"
 	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/charon/charonrpc"
+	"github.com/piotrkowalczuk/charon/internal/grpcerr"
 	"github.com/piotrkowalczuk/charon/internal/session"
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 )
 
@@ -17,13 +17,13 @@ type belongsToHandler struct {
 
 func (bth *belongsToHandler) BelongsTo(ctx context.Context, req *charonrpc.BelongsToRequest) (*wrappers.BoolValue, error) {
 	if req.GroupId < 1 {
-		return nil, grpc.Errorf(codes.InvalidArgument, "group id needs to be greater than zero")
+		return nil, grpcerr.E(codes.InvalidArgument, "group id needs to be greater than zero")
 	}
 	if req.UserId < 1 {
-		return nil, grpc.Errorf(codes.InvalidArgument, "user id needs to be greater than zero")
+		return nil, grpcerr.E(codes.InvalidArgument, "user id needs to be greater than zero")
 	}
 
-	act, err := bth.retrieveActor(ctx)
+	act, err := bth.Actor(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -33,7 +33,7 @@ func (bth *belongsToHandler) BelongsTo(ctx context.Context, req *charonrpc.Belon
 
 	belongs, err := bth.repository.userGroups.Exists(ctx, req.UserId, req.GroupId)
 	if err != nil {
-		return nil, err
+		return nil, grpcerr.E(codes.Internal, "user group fetch failure", err)
 	}
 
 	return &wrappers.BoolValue{Value: belongs}, nil
@@ -50,5 +50,5 @@ func (bth *belongsToHandler) firewall(req *charonrpc.BelongsToRequest, act *sess
 		return nil
 	}
 
-	return grpc.Errorf(codes.PermissionDenied, "group belonging cannot be checked, missing permission")
+	return grpcerr.E(codes.PermissionDenied, "group belonging cannot be checked, missing permission")
 }

@@ -5,11 +5,13 @@ import (
 
 	"github.com/piotrkowalczuk/charon"
 	"github.com/piotrkowalczuk/charon/charonrpc"
+	"github.com/piotrkowalczuk/charon/internal/grpcerr"
+	"github.com/piotrkowalczuk/charon/internal/mapping"
 	"github.com/piotrkowalczuk/charon/internal/model"
 	"github.com/piotrkowalczuk/charon/internal/session"
 	"github.com/piotrkowalczuk/ntypes"
 	"github.com/piotrkowalczuk/qtypes"
-	"google.golang.org/grpc"
+
 	"google.golang.org/grpc/codes"
 )
 
@@ -18,7 +20,7 @@ type listUsersHandler struct {
 }
 
 func (luh *listUsersHandler) List(ctx context.Context, req *charonrpc.ListUsersRequest) (*charonrpc.ListUsersResponse, error) {
-	act, err := luh.retrieveActor(ctx)
+	act, err := luh.Actor(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -43,13 +45,13 @@ func (luh *listUsersHandler) List(ctx context.Context, req *charonrpc.ListUsersR
 	}
 
 	ents, err := luh.repository.user.Find(ctx, &model.UserFindExpr{
-		OrderBy: req.Sort,
+		OrderBy: mapping.OrderBy(req.OrderBy),
 		Offset:  req.Offset.Int64Or(0),
 		Limit:   req.Limit.Int64Or(10),
 		Where:   cri,
 	})
 	if err != nil {
-		return nil, err
+		return nil, grpcerr.E(codes.Internal, "find users query failed", err)
 	}
 	return luh.response(ents)
 }
@@ -59,53 +61,40 @@ func (luh *listUsersHandler) firewall(req *charonrpc.ListUsersRequest, act *sess
 		return nil
 	}
 	if req.IsSuperuser.BoolOr(false) {
-		return grpc.Errorf(codes.PermissionDenied, "only superuser is permited to retrieve other superusers")
+		return grpcerr.E(codes.PermissionDenied, "only superuser is permitted to retrieve other superusers")
 	}
-	if req.CreatedBy == nil {
-		if !act.Permissions.Contains(charon.UserCanRetrieveAsStranger) {
-			return grpc.Errorf(codes.PermissionDenied, "list of users cannot be retrieved as a stranger, missing permission")
-		}
-		return nil
-	}
+	// STAFF USERS
 	if req.IsStaff.BoolOr(false) {
-		if req.CreatedBy.Value() == act.User.ID {
-			if !act.Permissions.Contains(charon.UserCanRetrieveStaffAsOwner) {
-				return grpc.Errorf(codes.PermissionDenied, "list of staff users cannot be retrieved as an owner, missing permission")
+		if req.CreatedBy != nil && req.CreatedBy.Value() == act.User.ID {
+			if !act.Permissions.Contains(charon.UserCanRetrieveStaffAsStranger, charon.UserCanRetrieveStaffAsOwner) {
+				return grpcerr.E(codes.PermissionDenied, "list of staff users cannot be retrieved as an owner, missing permission")
 			}
 			return nil
 		}
 		if !act.Permissions.Contains(charon.UserCanRetrieveStaffAsStranger) {
-			return grpc.Errorf(codes.PermissionDenied, "list of staff users cannot be retrieved as a stranger, missing permission")
+			return grpcerr.E(codes.PermissionDenied, "list of staff users cannot be retrieved as a stranger, missing permission")
 		}
 		return nil
 	}
-	if req.CreatedBy.Value() == act.User.ID {
+	// NON STAFF USERS
+	if req.CreatedBy != nil && req.CreatedBy.Value() == act.User.ID {
 		if !act.Permissions.Contains(charon.UserCanRetrieveAsStranger, charon.UserCanRetrieveAsOwner) {
-			return grpc.Errorf(codes.PermissionDenied, "list of users cannot be retrieved as an owner, missing permission")
+			return grpcerr.E(codes.PermissionDenied, "list of users cannot be retrieved as an owner, missing permission")
 		}
 		return nil
 	}
 	if !act.Permissions.Contains(charon.UserCanRetrieveAsStranger) {
-		return nil
+		return grpcerr.E(codes.PermissionDenied, "list of users cannot be retrieved as a stranger, missing permission")
 	}
-
 	return nil
 }
 
 func (luh *listUsersHandler) response(ents []*model.UserEntity) (*charonrpc.ListUsersResponse, error) {
-	resp := &charonrpc.ListUsersResponse{
-		Users: make([]*charonrpc.User, 0, len(ents)),
+	msg, err := mapping.ReverseUsers(ents)
+	if err != nil {
+		return nil, grpcerr.E(codes.Internal, "user reverse mapping failure")
 	}
-	var (
-		err error
-		msg *charonrpc.User
-	)
-	for _, e := range ents {
-		if msg, err = e.Message(); err != nil {
-			return nil, err
-		}
-		resp.Users = append(resp.Users, msg)
-	}
-
-	return resp, nil
+	return &charonrpc.ListUsersResponse{
+		Users: msg,
+	}, nil
 }
