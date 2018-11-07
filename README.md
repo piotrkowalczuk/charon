@@ -86,3 +86,7 @@ except Exception as e:
     - [x] set groups
     - [x] list permissions
     - [x] list groups
+- [x] Refresh Token
+    - [x] Create
+    - [x] Revoke
+    - [x] List

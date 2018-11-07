@@ -3,9 +3,8 @@ set -e
 
 : ${CHAROND_PORT:=8080}
 : ${CHAROND_HOST:=0.0.0.0}
-: ${CHAROND_LOG_ADAPTER:=stdout}
-: ${CHAROND_LOG_FORMAT:=json}
-: ${CHAROND_LOG_LEVEL:=6}
+: ${MNEMOSYNED_LOG_ENVIRONMENT:=production}
+: ${MNEMOSYNED_LOG_LEVEL:=info}
 : ${CHAROND_STORAGE:=postgres}
 : ${CHAROND_MONITORING:=false}
 : ${CHAROND_PASSWORD_BCRYPT_COST:=10}
@@ -19,8 +18,7 @@ if [ "$1" = 'charond' ]; then
 	exec charond \
 		-host=${CHAROND_HOST} \
 		-port=${CHAROND_PORT} \
-		-log.adapter=${CHAROND_LOG_ADAPTER} \
-		-log.format=${CHAROND_LOG_FORMAT} \
+		-log.environment=${CHAROND_LOG_ENVIRONMENT} \
 		-log.level=${CHAROND_LOG_LEVEL} \
 		-mnemosyned.address=${CHAROND_MNEMOSYNED_ADDRESS} \
 		-mnemosyned.tls=${CHAROND_MNEMOSYNED_TLS_ENABLED} \
