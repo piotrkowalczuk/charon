@@ -16,6 +16,29 @@ type UserFinder interface {
 	FindUser(context.Context) (*model.UserEntity, error)
 }
 
+type UserFinderFactory struct {
+	UserRepository         model.UserProvider
+	RefreshTokenRepository model.RefreshTokenProvider
+	Hasher                 password.Hasher
+}
+
+func (f *UserFinderFactory) ByUsernameAndPassword(username, password string) UserFinder {
+	return &byUsernameAndPasswordUserFinder{
+		username:       username,
+		password:       password,
+		userRepository: f.UserRepository,
+		hasher:         f.Hasher,
+	}
+}
+
+func (f *UserFinderFactory) ByRefreshToken(refreshToken string) UserFinder {
+	return &byRefreshTokenUserFinder{
+		refreshToken:           refreshToken,
+		userRepository:         f.UserRepository,
+		refreshTokenRepository: f.RefreshTokenRepository,
+	}
+}
+
 type byUsernameAndPasswordUserFinder struct {
 	username, password string
 	userRepository     model.UserProvider
@@ -56,6 +79,8 @@ type byRefreshTokenUserFinder struct {
 	refreshTokenRepository model.RefreshTokenProvider
 }
 
+var _ UserFinder = &byRefreshTokenUserFinder{}
+
 func (f *byRefreshTokenUserFinder) FindUser(ctx context.Context) (*model.UserEntity, error) {
 	if f.refreshToken == "" {
 		return nil, grpcerr.E(codes.InvalidArgument, "empty refresh token")
@@ -71,27 +96,4 @@ func (f *byRefreshTokenUserFinder) FindUser(ctx context.Context) (*model.UserEnt
 	}
 
 	return user, nil
-}
-
-type UserFinderFactory struct {
-	UserRepository         model.UserProvider
-	RefreshTokenRepository model.RefreshTokenProvider
-	Hasher                 password.Hasher
-}
-
-func (f *UserFinderFactory) ByUsernameAndPassword(username, password string) UserFinder {
-	return &byUsernameAndPasswordUserFinder{
-		username:       username,
-		password:       password,
-		userRepository: f.UserRepository,
-		hasher:         f.Hasher,
-	}
-}
-
-func (f *UserFinderFactory) ByRefreshToken(refreshToken string) UserFinder {
-	return &byRefreshTokenUserFinder{
-		refreshToken:           refreshToken,
-		userRepository:         f.UserRepository,
-		refreshTokenRepository: f.RefreshTokenRepository,
-	}
 }
