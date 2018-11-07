@@ -208,6 +208,7 @@ jobs:
   publish_python:
     executor: python-executor
     steps:
+    - mkdir_working_directory
     - checkout
     - run:
         name: Init VERSION.txt file
