@@ -6,7 +6,7 @@ mkdir -p ./tmp/protoc ./tmp/bin ./tmp/pb/google
 unzip protoc.zip -d ./tmp/protoc
 
 mv -f ./tmp/protoc/bin/protoc ./tmp/bin/protoc
-mv -f ./tmp/protoc/include/google/ ./tmp/pb/google
+mv -f ./tmp/protoc/include/google ./tmp/pb
 
 rm -rf ./tmp/protoc
 
