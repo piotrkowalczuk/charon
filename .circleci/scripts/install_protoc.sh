@@ -1,3 +1,5 @@
+echo "protoc installation in ${PWD}/tmp/bin"
+
 curl -L https://github.com/google/protobuf/releases/download/v3.7.1/protoc-3.7.1-linux-x86_64.zip > protoc.zip
 
 rm -rf ./tmp/protoc ./tmp/pb/google
