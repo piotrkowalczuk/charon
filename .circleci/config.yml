@@ -206,7 +206,7 @@ jobs:
         key: v1-python-dependency-{{ .Branch }}-{{ .Revision }}
         paths:
         - "venv"
-        - "publish/python"
+        - "publish/python/github"
   publish_python:
     executor: python-executor
     steps:
