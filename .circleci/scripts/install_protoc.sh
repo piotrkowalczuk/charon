@@ -4,9 +4,9 @@ rm -rf ./tmp/protoc
 mkdir -p ./tmp/protoc
 unzip protoc.zip -d ./tmp/protoc
 
-sudo mv -f ./tmp/protoc/bin/protoc /usr/local/bin/protoc
+mv -f ./tmp/protoc/bin/protoc /tmp/bin/protoc
 
-sudo rm -rf /usr/include/google
-sudo mv -f ./tmp/protoc/include/google/ /usr/include/google
+rm -rf /tmp/include/google
+mv -f ./tmp/protoc/include/google/ /tmp/include/google
 
 protoc --version
