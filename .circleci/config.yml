@@ -199,6 +199,8 @@ jobs:
         command: bash ./.circleci/scripts/install_protoc.sh
     - run:
         name: Generate protobuf
+        environment:
+          GOPATH: "/go"
         command: |
           . venv/bin/activate
           bash ./.circleci/scripts/generate.sh python
