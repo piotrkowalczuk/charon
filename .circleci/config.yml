@@ -74,9 +74,9 @@ jobs:
         environment:
           CHAROND_POSTGRES_ADDRESS: "postgres://test@localhost/test?sslmode=disable"
         command: |
-          mkdir -p /.tmp/test-results/golang
+          mkdir -p /tmp/test-results/golang
           make test
-          cp results.xml /.tmp/test-results/golang/results.xml
+          cp results.xml /tmp/test-results/golang/results.xml
           test-reporter format-coverage -d -t=gocov cover.out
     - run:
         name: Code Climate (after build)
@@ -84,9 +84,9 @@ jobs:
           cp cover.out c.out
           test-reporter after-build --coverage-input-type=gocov
     - store_test_results:
-        path: /.tmp/test-results
+        path: /tmp/test-results
     - store_artifacts:
-        path: /.tmp/test-results
+        path: /tmp/test-results
     - save_cache:
         key: v1-golang-dependency-{{ checksum "Gopkg.lock" }}
         paths:

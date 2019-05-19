@@ -51,9 +51,9 @@ get:
 
 
 get-tool:
-	rm -rf .tmp/tools/$< && \
-		mkdir -p .tmp/tools/$< && \
-		cd .tmp/tools/$< && \
+	rm -rf tmp/tools/$< && \
+		mkdir -p tmp/tools/$< && \
+		cd tmp/tools/$< && \
 		GO111MODULE=on go mod init && \
 		GO111MODULE=on go get $<@$(word 2,$^)
 		GO111MODULE=on go install $<

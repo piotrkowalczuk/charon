@@ -1,7 +1,7 @@
 .vagrant
 .idea
 .glide
-.tmp
+tmp
 example/client/client
 vendor
 _vendor-*
