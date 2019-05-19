@@ -220,10 +220,9 @@ jobs:
         - v1-python-dependency-{{ .Branch }}-{{ .Revision }}
     - run:
         name: Create package
-        working_directory: /publish/python
         command: |
-          python setup.py sdist
-          python setup.py bdist_wheel
+          cd publish/python && python setup.py sdist
+          cd publish/python && python setup.py bdist_wheel
     - run:
         name: Upload to pypi
         command: |
