@@ -65,7 +65,7 @@ jobs:
         command: bash ./.circleci/scripts/generate.sh golang
     - run:
         name: Check generated code for mismatch
-        command: git diff --exit-code ./charonrpc
+        command: git diff --exit-code ./pb
     - run:
         name: Code Climate (before build)
         command: test-reporter before-build

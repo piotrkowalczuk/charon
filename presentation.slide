@@ -84,7 +84,7 @@ Examples:
 
 Management:
 
-.code charonrpc/permission.pb.go /^type PermissionManagerServer interface/,/^}/
+.code pb/rpc/charond/v1/permission.pb.go /^type PermissionManagerServer interface/,/^}/
 
 * Security Context
 
