@@ -21,7 +21,7 @@ do
         java)
             rm -rf ./publish/java
             mkdir -p ./publish/java
-            ${PROTOC} ${PROTO_INCLUDE} --java_out=publish/java ${PWD}/pb/${protobuf}/*.proto
+            ${PROTOC} ${PROTO_INCLUDE} --java_out=./publish/java ${PWD}/pb/${protobuf}/*.proto
             ;;
         golang | go)
             ${PROTOC} ${PROTO_INCLUDE} --go_out=plugins=grpc:${GOPATH}/src ${PWD}/pb/${protobuf}/*.proto
