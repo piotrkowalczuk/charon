@@ -223,8 +223,9 @@ jobs:
     - run:
         name: Create package
         command: |
-          cd publish/python && python setup.py sdist
-          cd publish/python && python setup.py bdist_wheel
+          cd publish/python
+          python setup.py sdist
+          python setup.py bdist_wheel
     - run:
         name: Upload to pypi
         command: |
