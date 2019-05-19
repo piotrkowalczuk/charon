@@ -1,7 +1,7 @@
 #@IgnoreInspection BashAddShebang
 SERVICE="charon"
 SERVICE_PATH=${GOPATH}/src/github.com/piotrkowalczuk/${SERVICE}
-PROTO_INCLUDE="-I=./tmp/include -I=./vendor/github.com/piotrkowalczuk -I=${GOPATH}/src"
+PROTO_INCLUDE="-I=./tmp/pb -I=./vendor/github.com/piotrkowalczuk -I=${GOPATH}/src"
 
 : ${PROTOC:="${SERVICE_PATH}/tmp/bin/protoc"}
 
