@@ -3,7 +3,7 @@ package charonctl
 import (
 	"context"
 
-	"github.com/piotrkowalczuk/charon/charonrpc"
+	charonrpc "github.com/piotrkowalczuk/charon/pb/rpc/charond/v1"
 	"github.com/piotrkowalczuk/mnemosyne"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"

@@ -9,7 +9,7 @@ import (
 
 	"github.com/golang/protobuf/ptypes/wrappers"
 	"github.com/piotrkowalczuk/charon"
-	"github.com/piotrkowalczuk/charon/charonrpc"
+	charonrpc "github.com/piotrkowalczuk/charon/pb/rpc/charond/v1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"

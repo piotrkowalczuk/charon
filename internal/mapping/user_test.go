@@ -8,9 +8,9 @@ import (
 	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/timestamp"
 	"github.com/lib/pq"
-	"github.com/piotrkowalczuk/charon/charonrpc"
 	"github.com/piotrkowalczuk/charon/internal/mapping"
 	"github.com/piotrkowalczuk/charon/internal/model"
+	charonrpc "github.com/piotrkowalczuk/charon/pb/rpc/charond/v1"
 	"github.com/piotrkowalczuk/ntypes"
 )
 

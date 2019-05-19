@@ -3,7 +3,7 @@ package mapping
 import (
 	"github.com/golang/protobuf/ptypes"
 	pbts "github.com/golang/protobuf/ptypes/timestamp"
-	"github.com/piotrkowalczuk/charon/charonrpc"
+	charonrpc "github.com/piotrkowalczuk/charon/pb/rpc/charond/v1"
 	"github.com/piotrkowalczuk/charon/internal/model"
 	"github.com/piotrkowalczuk/ntypes"
 )

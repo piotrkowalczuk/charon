@@ -4,9 +4,9 @@ import (
 	"testing"
 
 	"github.com/piotrkowalczuk/charon"
-	"github.com/piotrkowalczuk/charon/charonrpc"
 	"github.com/piotrkowalczuk/charon/internal/model"
 	"github.com/piotrkowalczuk/charon/internal/session"
+	charonrpc "github.com/piotrkowalczuk/charon/pb/rpc/charond/v1"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )

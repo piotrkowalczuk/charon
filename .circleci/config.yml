@@ -74,9 +74,9 @@ jobs:
         environment:
           CHAROND_POSTGRES_ADDRESS: "postgres://test@localhost/test?sslmode=disable"
         command: |
-          mkdir -p /tmp/test-results/golang
+          mkdir -p /.tmp/test-results/golang
           make test
-          cp results.xml /tmp/test-results/golang/results.xml
+          cp results.xml /.tmp/test-results/golang/results.xml
           test-reporter format-coverage -d -t=gocov cover.out
     - run:
         name: Code Climate (after build)
@@ -84,9 +84,9 @@ jobs:
           cp cover.out c.out
           test-reporter after-build --coverage-input-type=gocov
     - store_test_results:
-        path: /tmp/test-results
+        path: /.tmp/test-results
     - store_artifacts:
-        path: /tmp/test-results
+        path: /.tmp/test-results
     - save_cache:
         key: v1-golang-dependency-{{ checksum "Gopkg.lock" }}
         paths:
@@ -204,7 +204,7 @@ jobs:
         key: v1-python-dependency-{{ .Branch }}-{{ .Revision }}
         paths:
         - "venv"
-        - "charonrpc"
+        - "publish/python"
   publish_python:
     executor: python-executor
     steps:
@@ -218,14 +218,15 @@ jobs:
         - v1-python-dependency-{{ .Branch }}-{{ .Revision }}
     - run:
         name: Create package
+        working_directory: /publish/python
         command: |
           python setup.py sdist
           python setup.py bdist_wheel
     - run:
         name: Upload to pypi
         command: |
-          . venv/bin/activate
-          twine upload dist/*
+          . ./venv/bin/activate
+          twine upload ./publish/python/dist/*
 workflows:
   version: 2
   generate:

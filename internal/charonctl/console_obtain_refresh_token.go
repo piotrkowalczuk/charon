@@ -7,7 +7,7 @@ import (
 
 	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/timestamp"
-	"github.com/piotrkowalczuk/charon/charonrpc"
+	charonrpc "github.com/piotrkowalczuk/charon/pb/rpc/charond/v1"
 	"github.com/piotrkowalczuk/ntypes"
 )
 

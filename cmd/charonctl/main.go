@@ -8,7 +8,7 @@ import (
 
 	"google.golang.org/grpc/status"
 
-	"github.com/piotrkowalczuk/charon/charonrpc"
+	charonrpc "github.com/piotrkowalczuk/charon/pb/rpc/charond/v1"
 	"github.com/piotrkowalczuk/charon/internal/charonctl"
 	"github.com/piotrkowalczuk/ntypes"
 	"google.golang.org/grpc"

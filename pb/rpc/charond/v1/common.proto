@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package charon.rpc.charond.v1;
+
+option go_package = "github.com/piotrkowalczuk/charon/pb/rpc/charond/v1;charond";
+option java_multiple_files = true;
+option java_package = "com.github.charon.rpc.charond.v1";
+
+// Order represents single field within OrderBy clause.
+message Order {
+    string name = 1;
+    bool descending = 2;
+}

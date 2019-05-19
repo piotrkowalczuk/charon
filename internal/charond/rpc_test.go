@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/piotrkowalczuk/charon/charonrpc"
+	charonrpc "github.com/piotrkowalczuk/charon/pb/rpc/charond/v1"
 	"github.com/piotrkowalczuk/mnemosyne"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"

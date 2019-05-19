@@ -9,8 +9,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/piotrkowalczuk/charon/charonrpc"
 	"github.com/piotrkowalczuk/charon/internal/password"
+	charonrpc "github.com/piotrkowalczuk/charon/pb/rpc/charond/v1"
 	"github.com/piotrkowalczuk/mnemosyne/mnemosyned"
 	"github.com/piotrkowalczuk/mnemosyne/mnemosynerpc"
 	"github.com/piotrkowalczuk/ntypes"
