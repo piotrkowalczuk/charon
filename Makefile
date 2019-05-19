@@ -19,7 +19,7 @@ LDFLAGS = -X 'main.version=$(VERSION)'
 all: get install
 
 version:
-	echo ${VERSION} > VERSION.txt
+	echo ${VERSION} > publish/VERSION.txt
 
 build:
 	CGO_ENABLED=0 GOOS=linux go build -ldflags "${LDFLAGS}" -a -o bin/${SERVICE}g ${PACKAGE_CMD_GENERATOR}
@@ -32,7 +32,7 @@ install:
 	go install -ldflags "${LDFLAGS}" ${PACKAGE_CMD_CONTROL}
 
 gen:
-	./scripts/generate.sh
+	#./scripts/generate.sh
 	bash ./.circleci/scripts/generate.sh golang
 
 test:
@@ -43,8 +43,7 @@ cover: test
 	go tool cover -html=cover.out
 
 get:
-	go get -u github.com/golang/protobuf/{proto,protoc-gen-go}
-	go get -u google.golang.org/grpc
+	bash ./.circleci/scripts/get_tool.sh github.com/golang/protobuf/proto v1.2.0
 	go get -u gotest.tools/gotestsum
 	go get -u github.com/vektra/mockery/cmd/mockery
 	go get -u github.com/golang/dep/cmd/dep
@@ -56,3 +55,9 @@ publish:
 		--build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
 		-t piotrkowalczuk/${SERVICE}:${TAG} .
 	docker push piotrkowalczuk/${SERVICE}:${TAG}
+
+setup-python:
+	python3 -m venv venv
+	source ./venv/bin/activate.fish
+	pip install grpc_tools
+	pip install grpcio-tools

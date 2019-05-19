@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"github.com/piotrkowalczuk/charon"
-	"github.com/piotrkowalczuk/charon/charonrpc"
+	charonrpc "github.com/piotrkowalczuk/charon/pb/rpc/charond/v1"
 	"github.com/piotrkowalczuk/ntypes"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"

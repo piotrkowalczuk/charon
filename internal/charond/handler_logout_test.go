@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/piotrkowalczuk/charon/charonrpc"
+	charonrpc "github.com/piotrkowalczuk/charon/pb/rpc/charond/v1"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )

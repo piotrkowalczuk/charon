@@ -1,0 +1,144 @@
+syntax = "proto3";
+
+package charon.rpc.charond.v1;
+
+option go_package = "github.com/piotrkowalczuk/charon/pb/rpc/charond/v1;charond";
+option java_multiple_files = true;
+option java_package = "com.github.charon.rpc.charond.v1";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+import "github.com/piotrkowalczuk/charon/pb/rpc/charond/v1/common.proto";
+import "github.com/piotrkowalczuk/charon/pb/rpc/charond/v1/group.proto";
+import "qtypes/qtypes.proto";
+import "ntypes/ntypes.proto";
+
+service UserManager {
+    rpc Create(CreateUserRequest) returns (CreateUserResponse) {};
+    rpc Modify(ModifyUserRequest) returns (ModifyUserResponse) {};
+    rpc Get(GetUserRequest) returns (GetUserResponse) {};
+    rpc List(ListUsersRequest) returns (ListUsersResponse) {};
+    rpc Delete(DeleteUserRequest) returns (google.protobuf.BoolValue) {};
+
+    rpc ListPermissions(ListUserPermissionsRequest) returns (ListUserPermissionsResponse) {};
+    rpc SetPermissions(SetUserPermissionsRequest) returns (SetUserPermissionsResponse) {};
+
+    rpc ListGroups(ListUserGroupsRequest) returns (ListUserGroupsResponse) {};
+    rpc SetGroups(SetUserGroupsRequest) returns (SetUserGroupsResponse) {};
+}
+
+
+message User {
+    int64 id = 1;
+    string username = 2;
+    string first_name = 3;
+    string last_name = 4;
+    bool is_superuser = 5;
+    bool is_active = 6;
+    bool is_staff = 7;
+    bool is_confirmed = 8;
+    google.protobuf.Timestamp created_at = 9;
+    ntypes.Int64 created_by = 10;
+    google.protobuf.Timestamp updated_at = 11;
+    ntypes.Int64 updated_by = 12;
+}
+
+message CreateUserRequest {
+    string username = 1;
+    string plain_password = 2;
+    bytes secure_password = 3;
+    string first_name = 4;
+    string last_name = 5;
+    ntypes.Bool is_superuser = 6;
+    ntypes.Bool is_active = 7;
+    ntypes.Bool is_staff = 8;
+    ntypes.Bool is_confirmed = 9;
+}
+
+message CreateUserResponse {
+    User user = 1;
+}
+
+message GetUserRequest {
+    int64 id = 1;
+}
+
+message GetUserResponse {
+    User user = 1;
+}
+
+message ListUsersRequest {
+    reserved 4 to 99;
+    ntypes.Bool is_superuser = 1;
+    ntypes.Bool is_staff = 2;
+    qtypes.Int64 created_by = 3;
+    ntypes.Int64 offset = 100;
+    ntypes.Int64 limit = 101;
+    map<string, bool> sort = 102 [deprecated=true];
+    repeated Order order_by = 103;
+}
+
+message ListUsersResponse {
+    repeated User users = 1;
+}
+
+message DeleteUserRequest {
+    int64 id = 1;
+}
+
+message ModifyUserRequest {
+    int64 id = 1;
+    ntypes.String username = 2;
+    ntypes.String plain_password = 3;
+    bytes secure_password = 4;
+    ntypes.String first_name = 5;
+    ntypes.String last_name = 6;
+    ntypes.Bool is_superuser = 7;
+    ntypes.Bool is_active = 8;
+    ntypes.Bool is_staff = 9;
+    ntypes.Bool is_confirmed = 10;
+}
+
+message ModifyUserResponse {
+    User user = 1;
+}
+
+message ListUserPermissionsRequest {
+    int64 id = 1;
+}
+
+message ListUserPermissionsResponse {
+    repeated string permissions = 1;
+}
+
+message SetUserPermissionsRequest {
+    int64 user_id = 1;
+    repeated string permissions = 2;
+    // Force tells if permission should be created in case if it does not exists.
+    bool force = 3;
+}
+
+message SetUserPermissionsResponse {
+    int64 created = 1;
+    int64 removed = 2;
+    int64 untouched = 3;
+}
+
+message ListUserGroupsRequest {
+    int64 id = 1;
+}
+
+message ListUserGroupsResponse {
+    repeated Group groups = 1;
+}
+
+message SetUserGroupsRequest {
+    int64 user_id = 1;
+    repeated int64 groups = 2;
+}
+
+message SetUserGroupsResponse {
+    int64 created = 1;
+    int64 removed = 2;
+    int64 untouched = 3;
+}

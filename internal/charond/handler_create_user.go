@@ -5,7 +5,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/piotrkowalczuk/charon"
-	"github.com/piotrkowalczuk/charon/charonrpc"
+	charonrpc "github.com/piotrkowalczuk/charon/pb/rpc/charond/v1"
 	"github.com/piotrkowalczuk/charon/internal/grpcerr"
 	"github.com/piotrkowalczuk/charon/internal/mapping"
 	"github.com/piotrkowalczuk/charon/internal/model"

@@ -24,7 +24,6 @@ exclude_patterns:
   - "**/*.pb.go"
   - "**/*.pqt.go"
   - "**/mock_*.go"
-  - "charontest/"
-  - "charonrpc/"
+  - "pb/"
   - "scripts/"
   - "vendor/**/*"

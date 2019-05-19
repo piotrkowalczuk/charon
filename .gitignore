@@ -1,18 +1,30 @@
 .vagrant
 .idea
 .glide
-.tmp
+tmp
 example/client/client
-/temp
 vendor
 _vendor-*
-charon.iml
 run.sh
 coverage.txt
 *.out
 bin
-charon_client.egg-info
-VERSION.txt
-*.pyc
+
+publish/VERSION.txt
+
 *.xml
 *.test
+*.zip
+
+// Python
+venv
+charon.iml
+charon_client.egg-info
+*.pyc
+publish/python/github*
+publish/python/charon_client*
+publish/python/charon-client*
+publish/python/dist
+
+// Java
+publish/java

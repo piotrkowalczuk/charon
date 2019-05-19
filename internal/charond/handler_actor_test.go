@@ -2,17 +2,16 @@ package charond
 
 import (
 	"context"
-	"testing"
-
 	"database/sql"
+	"testing"
 
 	"github.com/golang/protobuf/ptypes/wrappers"
 	"github.com/lib/pq"
 	"github.com/piotrkowalczuk/charon"
-	"github.com/piotrkowalczuk/charon/charonrpc"
 	"github.com/piotrkowalczuk/charon/internal/grpcerr"
 	"github.com/piotrkowalczuk/charon/internal/model"
 	"github.com/piotrkowalczuk/charon/internal/model/modelmock"
+	charonrpc "github.com/piotrkowalczuk/charon/pb/rpc/charond/v1"
 	"github.com/piotrkowalczuk/mnemosyne"
 	"github.com/piotrkowalczuk/mnemosyne/mnemosynerpc"
 	"github.com/piotrkowalczuk/mnemosyne/mnemosynetest"

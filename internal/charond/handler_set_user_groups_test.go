@@ -7,9 +7,9 @@ import (
 	"google.golang.org/grpc/status"
 
 	"github.com/piotrkowalczuk/charon"
-	"github.com/piotrkowalczuk/charon/charonrpc"
 	"github.com/piotrkowalczuk/charon/internal/model"
 	"github.com/piotrkowalczuk/charon/internal/session"
+	charonrpc "github.com/piotrkowalczuk/charon/pb/rpc/charond/v1"
 )
 
 func TestSetUserGroupsHandler_SetGroups(t *testing.T) {

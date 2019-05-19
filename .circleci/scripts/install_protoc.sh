@@ -1,12 +1,15 @@
-curl -L https://github.com/google/protobuf/releases/download/v3.6.1/protoc-3.6.1-linux-x86_64.zip > protoc.zip
+echo "protoc installation in ${PWD}/tmp/bin"
 
-rm -rf ./tmp/protoc
-mkdir -p ./tmp/protoc
+curl -L https://github.com/google/protobuf/releases/download/v3.7.1/protoc-3.7.1-linux-x86_64.zip > protoc.zip
+
+rm -rf ./tmp/protoc ./tmp/pb/google
+mkdir -p ./tmp/protoc ./tmp/bin ./tmp/pb/google
+
 unzip protoc.zip -d ./tmp/protoc
 
-sudo mv -f ./tmp/protoc/bin/protoc /usr/local/bin/protoc
+mv -f ./tmp/protoc/bin/protoc ./tmp/bin/protoc
+mv -f ./tmp/protoc/include/google ./tmp/pb
 
-sudo rm -rf /usr/include/google
-sudo mv -f ./tmp/protoc/include/google/ /usr/include/google
+rm -rf ./tmp/protoc
 
-protoc --version
+./tmp/bin/protoc --version

@@ -1,0 +1,96 @@
+syntax = "proto3";
+
+package charon.rpc.charond.v1;
+
+option go_package = "github.com/piotrkowalczuk/charon/pb/rpc/charond/v1;charond";
+option java_multiple_files = true;
+option java_package = "com.github.charon.rpc.charond.v1";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+import "github.com/piotrkowalczuk/charon/pb/rpc/charond/v1/common.proto";
+import "ntypes/ntypes.proto";
+
+service GroupManager {
+    rpc Create(CreateGroupRequest) returns (CreateGroupResponse) {};
+    rpc Modify(ModifyGroupRequest) returns (ModifyGroupResponse) {};
+    rpc Get(GetGroupRequest) returns (GetGroupResponse) {};
+    rpc List(ListGroupsRequest) returns (ListGroupsResponse) {};
+    rpc Delete(DeleteGroupRequest) returns (google.protobuf.BoolValue) {};
+
+    rpc ListPermissions(ListGroupPermissionsRequest) returns (ListGroupPermissionsResponse) {};
+    rpc SetPermissions(SetGroupPermissionsRequest) returns (SetGroupPermissionsResponse) {};
+}
+
+message Group {
+    int64 id = 1;
+    string name = 2;
+    string description = 3;
+    google.protobuf.Timestamp created_at = 4;
+    ntypes.Int64 created_by = 5;
+    google.protobuf.Timestamp updated_at = 6;
+    ntypes.Int64 updated_by = 7;
+}
+
+message CreateGroupRequest {
+    string name = 1;
+    ntypes.String description = 2;
+}
+
+message CreateGroupResponse {
+    Group group = 1;
+}
+
+message GetGroupRequest {
+    int64 id = 1;
+}
+
+message GetGroupResponse {
+    Group group = 1;
+}
+
+message ListGroupsRequest {
+    reserved 1 to 99;
+    ntypes.Int64 offset = 100;
+    ntypes.Int64 limit = 101;
+    repeated Order order_by = 102;
+}
+
+message ListGroupsResponse {
+    repeated Group groups = 1;
+}
+
+message DeleteGroupRequest {
+    int64 id = 1;
+}
+
+message ModifyGroupRequest {
+    int64 id = 1;
+    ntypes.String name = 2;
+    ntypes.String description = 3;
+}
+
+message ModifyGroupResponse {
+    Group group = 1;
+}
+
+message SetGroupPermissionsRequest {
+    int64 group_id = 1;
+    repeated string permissions = 2;
+    // Force tells if permission should be created in case if it does not exists.
+    bool force = 3;
+}
+
+message SetGroupPermissionsResponse {
+    int64 created = 1;
+    int64 removed = 2;
+    int64 untouched = 3;
+}
+
+message ListGroupPermissionsRequest {
+    int64 id = 1;
+}
+
+message ListGroupPermissionsResponse {
+    repeated string permissions = 1;
+}

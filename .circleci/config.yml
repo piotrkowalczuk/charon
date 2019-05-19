@@ -55,7 +55,7 @@ jobs:
     - run:
         name: Install tools
         command: |
-          go get -u github.com/golang/protobuf/{proto,protoc-gen-go}
+          bash ./.circleci/scripts/get_tool.sh github.com/golang/protobuf/protoc-gen-go v1.2.0
           go get -u google.golang.org/grpc
           go get -u golang.org/x/tools/cmd/goimports
           go get -u github.com/codeclimate/test-reporter
@@ -65,7 +65,7 @@ jobs:
         command: bash ./.circleci/scripts/generate.sh golang
     - run:
         name: Check generated code for mismatch
-        command: git diff --exit-code ./charonrpc
+        command: git diff --exit-code ./pb
     - run:
         name: Code Climate (before build)
         command: test-reporter before-build
@@ -177,6 +177,8 @@ jobs:
         name: Install protoc
         command: bash ./.circleci/scripts/install_protoc.sh
     - run:
+        environment:
+          GOPATH: "/go"
         name: Generate protobuf
         command: bash ./.circleci/scripts/generate.sh java
   generate_python:
@@ -204,7 +206,7 @@ jobs:
         key: v1-python-dependency-{{ .Branch }}-{{ .Revision }}
         paths:
         - "venv"
-        - "charonrpc"
+        - "publish/python"
   publish_python:
     executor: python-executor
     steps:
@@ -218,14 +220,15 @@ jobs:
         - v1-python-dependency-{{ .Branch }}-{{ .Revision }}
     - run:
         name: Create package
+        working_directory: /publish/python
         command: |
           python setup.py sdist
           python setup.py bdist_wheel
     - run:
         name: Upload to pypi
         command: |
-          . venv/bin/activate
-          twine upload dist/*
+          . ./venv/bin/activate
+          twine upload ./publish/python/dist/*
 workflows:
   version: 2
   generate:
