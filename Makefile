@@ -43,20 +43,11 @@ cover: test
 	go tool cover -html=cover.out
 
 get:
-	get-tool github.com/golang/protobuf/proto v1.2.0
+	bash ./.circleci/scripts/get_tool.sh github.com/golang/protobuf/proto v1.2.0
 	go get -u gotest.tools/gotestsum
 	go get -u github.com/vektra/mockery/cmd/mockery
 	go get -u github.com/golang/dep/cmd/dep
 	dep ensure
-
-
-get-tool:
-	rm -rf tmp/tools/$< && \
-		mkdir -p tmp/tools/$< && \
-		cd tmp/tools/$< && \
-		GO111MODULE=on go mod init && \
-		GO111MODULE=on go get $<@$(word 2,$^)
-		GO111MODULE=on go install $<
 
 publish:
 	docker build \
