@@ -20,9 +20,9 @@ do
             rm -rf publish/python/github.com
             ;;
         java)
-            rm -rf ./.tmp/java
-            mkdir -p ./.tmp/java
-            ${PROTOC} ${PROTO_INCLUDE} --java_out=./.tmp/java ./pb/${protobuf}/*.proto
+            rm -rf ./publish/java
+            mkdir -p ./publish/java
+            ${PROTOC} ${PROTO_INCLUDE} --java_out=publish/java ${SERVICE_PATH}/pb/${protobuf}/*.proto
             ;;
         golang | go)
             ${PROTOC} ${PROTO_INCLUDE} --go_out=plugins=grpc:${GOPATH}/src ${SERVICE_PATH}/pb/${protobuf}/*.proto

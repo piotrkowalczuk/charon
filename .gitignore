@@ -25,3 +25,6 @@ publish/python/github*
 publish/python/charon_client*
 publish/python/charon-client*
 publish/python/dist
+
+// Java
+publish/java
