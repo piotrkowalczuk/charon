@@ -177,8 +177,6 @@ jobs:
         name: Install protoc
         command: bash ./.circleci/scripts/install_protoc.sh
     - run:
-        environment:
-          PROTOC: "/go/src/github.com/piotrkowalczuk/charon/tmp/bin/protoc"
         name: Generate protobuf
         command: bash ./.circleci/scripts/generate.sh java
   generate_python:
