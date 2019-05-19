@@ -10,4 +10,4 @@ mv -f ./tmp/protoc/include/google/ ./tmp/pb/google
 
 rm -rf ./tmp/protoc
 
-protoc --version
+./tmp/bin/protoc --version
